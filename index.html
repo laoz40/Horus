@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Workout Tracker</h1>
+        <nav>
+            <button data-page="home-page">Home</button>
+            <button data-page="new-workout-page">New Workout</button>
+            <button data-page="history-page">History</button>
+            <button data-page="progress-page">Progress</button>
+            <button data-page="presets-page">Presets</button>
+            <button data-page="settings-page">Settings</button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home-page" class="page active">
+            <h2>Dashboard</h2>
+            <button id="start-workout-btn">Start Workout</button>
+            <button id="view-history-btn">View History</button>
+            <button id="presets-btn">Presets</button>
+            <div id="last-workout-summary">
+                <h3>Last Workout</h3>
+                <p>No workout data yet.</p>
+            </div>
+        </section>
+
+        <section id="new-workout-page" class="page">
+            <h2>New Workout</h2>
+            <!-- Content for New Workout Page will go here -->
+        </section>
+
+        <section id="history-page" class="page">
+            <h2>Workout History</h2>
+            <!-- Content for Workout History Page will go here -->
+        </section>
+
+        <section id="progress-page" class="page">
+            <h2>Exercise Progress</h2>
+            <!-- Content for Exercise Progress Page will go here -->
+        </section>
+
+        <section id="presets-page" class="page">
+            <h2>Presets</h2>
+            <!-- Content for Presets Page will go here -->
+        </section>
+
+        <section id="settings-page" class="page">
+            <h2>Settings / Data</h2>
+            <!-- Content for Settings / Data Page will go here -->
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
