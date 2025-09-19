@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -14,17 +17,17 @@
             <button data-page="new-workout-page">New Workout</button>
             <button data-page="history-page">History</button>
             <button data-page="progress-page">Progress</button>
-            <button data-page="presets-page">Presets</button>
             <button data-page="settings-page">Settings</button>
         </nav>
     </header>
 
     <main>
+        <div class="container">
         <section id="home-page" class="page active">
             <h2>Dashboard</h2>
             <button id="start-workout-btn">Start Workout</button>
             <button id="view-history-btn">View History</button>
-            <button id="presets-btn">Presets</button>
+            <button id="view-progress-btn">Progress</button>
             <div id="last-workout-summary">
                 <h3>Last Workout</h3>
                 <p>No workout data yet.</p>
@@ -33,7 +36,31 @@
 
         <section id="new-workout-page" class="page">
             <h2>New Workout</h2>
-            <!-- Content for New Workout Page will go here -->
+            <form id="workout-form" class="card">
+                <div class="field-row">
+                    <label for="workout-name">Workout Name</label>
+                    <input type="text" id="workout-name" required>
+                </div>
+                <div class="field-row">
+                    <label for="workout-date">Date</label>
+                    <div id="workout-date" class="readout" aria-readonly="true"></div>
+                </div>
+            </form>
+
+            <section class="card">
+                <div class="section-header">
+                    <h3>Exercises</h3>
+                    <button id="add-exercise-btn" type="button" class="secondary">Add Exercise</button>
+                    <button id="open-presets-from-new" type="button" class="secondary">Presets</button>
+                </div>
+                <div id="exercise-list" class="accordion">
+                    <!-- Rendered exercises will appear here -->
+                </div>
+            </section>
+
+            <div class="actions">
+                <button id="finish-workout-btn" type="button">Finish Workout</button>
+            </div>
         </section>
 
         <section id="history-page" class="page">
@@ -54,9 +81,50 @@
         <section id="settings-page" class="page">
             <h2>Settings / Data</h2>
             <!-- Content for Settings / Data Page will go here -->
+            <div class="actions">
+                <button id="open-presets-from-settings" type="button" class="secondary">Presets</button>
+            </div>
         </section>
+        </div>
     </main>
 
-    <script src="app.js"></script>
+    <script src="script.js"></script>
+
+    <!-- Add Exercise Modal -->
+    <div id="exercise-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Exercise</h3>
+                <button type="button" id="close-exercise-modal" class="icon-btn" aria-label="Close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="field-row">
+                    <label for="exercise-name">Exercise Name</label>
+                    <input list="exercise-name-list" id="exercise-name" placeholder="Bench Press" autocomplete="off" required>
+                    <datalist id="exercise-name-list"></datalist>
+                </div>
+
+                <div class="sets">
+                    <div class="sets-header">
+                        <h4>Sets</h4>
+                        <button type="button" id="add-set-btn" class="secondary small">Add Set</button>
+                    </div>
+                    <div class="sets-table" id="sets-table">
+                        <!-- Set rows injected here -->
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <label for="exercise-notes">Exercise Notes</label>
+                    <textarea id="exercise-notes" rows="3" placeholder="Optional notes for the exercise"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="save-exercise-btn">Save Exercise</button>
+                <button type="button" id="cancel-exercise-btn" class="secondary">Cancel</button>
+            </div>
+        </div>
+        <div class="modal-backdrop"></div>
+    </div>
 </body>
 </html>

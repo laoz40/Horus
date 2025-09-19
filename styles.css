@@ -1,27 +1,72 @@
+:root {
+    /* Typography */
+    --font-family-base: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    --font-size-xs: 0.875rem; /* 14px */
+    --font-size-sm: 0.95rem; /* 15px */
+    --font-size-md: 1rem;    /* 16px */
+    --font-size-lg: 1.25rem;  /* 20px */
+    --line-height: 1.5;
+
+    /* Controls */
+    --control-h: 2.5rem;            /* overall height of inputs/selects */
+    --control-py: 0.2rem;           /* vertical padding */
+    --control-px: 0.6rem;           /* horizontal padding */
+
+    /* Spacing */
+    --space-2xs: 0.25rem;
+    --space-xs: 0.5rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.25rem;
+    --space-xl: 1.5rem;
+
+    /* Colors */
+    --bg: #f7f7f8;
+    --fg: #222222;
+    --muted: #6c757d;
+    --border: #d0d7de;
+    --elev: rgba(0,0,0,0.06);
+    --header-bg: #333333;
+    --btn-bg: #333333;
+    --btn-bg-hover: #555555;
+    --btn-fg: #ffffff;
+    --btn-secondary-bg: #e9ecef;
+    --btn-secondary-hover: #dee2e6;
+    --btn-danger-bg: #dc3545;
+    --btn-danger-hover: #c82333;
+
+    /* Radius */
+    --radius: 10px;
+    /* Header vertical padding for in-card and list headers */
+    --header-py: var(--space-sm);
+    --header-px: var(--space-md);
+}
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.6;
-    background-color: #f4f4f4;
-    color: #333;
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height);
+    background-color: var(--bg);
+    color: var(--fg);
     margin: 0;
     padding: 0;
 }
 
 header {
-    background-color: #333;
-    color: #fff;
-    padding: 1rem;
+    background-color: var(--header-bg);
+    color: var(--btn-fg);
+    padding: var(--space-md);
     text-align: center;
 }
 
 nav button {
-    background: #444;
-    color: #fff;
+    background: #444444;
+    color: var(--btn-fg);
     border: none;
-    padding: 0.5rem 1rem;
-    margin: 0 0.5rem;
+    padding: var(--space-xs) var(--space-md);
+    margin: 0 var(--space-xs);
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 8px;
 }
 
 nav button:hover {
@@ -29,7 +74,7 @@ nav button:hover {
 }
 
 main {
-    padding: 1rem;
+    padding: var(--space-md);
 }
 
 .page {
@@ -41,15 +86,249 @@ main {
 }
 
 button {
-    background: #333;
-    color: #fff;
-    border: none;
-    padding: 0.7rem 1.5rem;
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    border: 1px solid transparent;
+    padding: var(--control-py) var(--control-px);
+    height: var(--control-h);
     cursor: pointer;
-    border-radius: 5px;
-    margin-top: 0.5rem;
+    border-radius: var(--radius);
+    font-size: var(--font-size-sm);
+    line-height: 1.2;
 }
 
-button:hover {
-    background: #555;
+button:hover { background: var(--btn-bg-hover); }
+
+/* Layout helpers */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 8px var(--elev);
+    padding: var(--space-md);
+    margin: var(--space-md) 0;
+}
+
+.field-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-sm);
+}
+
+label {
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+}
+
+input[type="text"], input[type="date"], input[type="number"], select, textarea {
+    padding: var(--control-py) var(--control-px);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: var(--font-size-md);
+    font-family: inherit;
+}
+
+/* Set uniform heights for inputs/selects (textarea excluded) */
+input[type="text"], input[type="date"], input[type="number"], select {
+    height: var(--control-h);
+}
+
+/* Normalize select look across browsers and keep size compact */
+select {
+    -webkit-appearance: menulist;
+    -moz-appearance: menulist;
+    appearance: menulist;
+    line-height: 1.2;
+    height: var(--control-h);
+    padding: var(--control-py) var(--control-px);
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+/* Normalize number inputs (remove giant spinners) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }
+
+/* Ensure textareas don't cause horizontal scrolling */
+textarea { 
+    resize: vertical; 
+    max-width: 100%;
+    padding-block: var(--control-px);
+}
+
+/* Unified placeholder style */
+input::placeholder, textarea::placeholder { color: var(--muted); font-family: inherit; opacity: 1; }
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-xs);
+    margin-top: var(--space-md);
+}
+
+button.secondary {
+    background: var(--btn-secondary-bg);
+    color: var(--fg);
+    border: 1px solid var(--border);
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal.show { display: flex; }
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 1;
+}
+
+.modal-content {
+    position: relative;
+    background: #fff;
+    width: min(680px, 92vw);
+    max-height: 88vh;
+    overflow: auto;
+    overflow-x: hidden;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 2;
+}
+
+.modal-header, .modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: var(--header-py) var(--header-px);
+    border-bottom: 1px solid var(--border);
+    height: var(--control-h);
+}
+
+.modal-footer { border-bottom: none; }
+
+.modal-body { padding: var(--space-md); }
+
+/* Sets table */
+.sets-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--header-py) 0;
+    height: var(--control-h);
+    gap: var(--space-xs);
+}
+
+.sets-table { display: flex; flex-direction: column; gap: var(--space-xs); }
+
+.set-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    gap: var(--space-sm);
+    padding: var(--space-2xs) 0;
+    border-bottom: none;
+}
+
+/* Prevent controls from overflowing grid columns */
+.set-row > * { min-width: 0; align-self: stretch; }
+.set-row input, .set-row select {
+    width: 100%;
+    height: var(--control-h);
+    padding: var(--control-py) var(--control-px);
+    font-size: var(--font-size-md);
+    box-sizing: border-box;
+}
+
+.set-line {
+    display: flex;
+    gap: var(--space-sm);
+    padding: var(--space-2xs) 0;
+}
+
+/* Accordion */
+.accordion { display: flex; flex-direction: column; gap: 0.5rem; }
+.accordion-item { border: 1px solid #e6e6e6; border-radius: 8px; overflow: hidden; }
+.accordion-summary {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--header-py) var(--space-md); background: #fafafa; cursor: pointer;
+}
+.accordion-details { padding: var(--space-sm) var(--space-md); }
+
+/* History */
+.history-list { padding: 0.5rem; }
+.history-item { border: 1px solid #ececec; border-radius: 8px; margin: 0.5rem 0; overflow: hidden; }
+.history-summary { display: flex; gap: var(--space-md); align-items: center; padding: var(--header-py) var(--space-md); background: #fafafa; cursor: pointer; flex-wrap: wrap; }
+.history-details { padding: var(--space-sm) var(--space-md); }
+
+/* Utility */
+.muted { color: var(--muted); }
+.section-header { display: flex; justify-content: space-between; align-items: center; }
+
+/* Make the New Workout date look like plain text */
+#workout-date.readout { color: var(--muted); padding: 0; }
+
+/* Distinct inline labels like "Set 1:" and "Difficulty:" */
+.label { font-weight: 600; color: var(--fg); margin-right: var(--space-2xs); }
+
+/* Placeholder style for select difficulty */
+.set-difficulty.is-placeholder {
+    color: var(--muted);
+    height: var(--control-h);
+}
+.set-difficulty:not(.is-placeholder) {
+    color: inherit;
+}
+
+/* Exercise Name input inherits same control style */
+#exercise-name {
+    padding: calc(var(--control-py) - 0.15rem) var(--control-px);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: var(--font-size-md);
+    font-family: inherit;
+    height: var(--control-h);
+}
+
+/* Slightly tighter padding for the top Workout Name field to avoid visual overflow */
+#workout-name { padding: calc(var(--control-py) - 0.15rem) var(--control-px); height: var(--control-h); }
+
+/* Give the Exercise Notes label the same vertical padding as other headers */
+label[for="exercise-notes"] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--header-py) 0;
+    padding-bottom: var(--space-xs);
+    height: var(--control-h);
+}
+
+/* Hide all scrollbars (WebKit, Firefox, IE/Edge) */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; width: 0; height: 0; }
+html, body { -ms-overflow-style: none; }
+
+/* Responsive tweaks */
+@media (max-width: 640px) {
+  nav button { margin: 0.25rem 0.25rem; padding: 0.45rem 0.7rem; }
+  .set-row { grid-template-columns: repeat(3, minmax(0, 1fr)) auto; }
+  .container { padding-left: var(--space-sm); padding-right: var(--space-sm); }
 }
