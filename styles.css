@@ -1,3 +1,9 @@
+/* ============================================================
+   styles.css — Visual styles and layout for Gym Tracker
+   Sections below briefly describe what each block controls.
+   ============================================================ */
+
+/* Theme variables and design tokens used across the app */
 :root {
     /* Typography */
     --font-family-base: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
@@ -42,6 +48,7 @@
     --header-px: var(--space-md);
 }
 
+/* Base text, background color, and page defaults */
 body {
     font-family: var(--font-family-base);
     font-size: var(--font-size-md);
@@ -52,6 +59,7 @@ body {
     padding: 0;
 }
 
+/* Header bar at the top and its look */
 header {
     background-color: var(--header-bg);
     color: var(--btn-fg);
@@ -59,6 +67,7 @@ header {
     text-align: center;
 }
 
+/* Top navigation buttons inside the header */
 nav button {
     background: #444444;
     color: var(--btn-fg);
@@ -73,10 +82,12 @@ nav button:hover {
     background: #555;
 }
 
+/* Main content padding */
 main {
     padding: var(--space-md);
 }
 
+/* Page visibility control (single-page app switching) */
 .page {
     display: none;
 }
@@ -85,6 +96,7 @@ main {
     display: block;
 }
 
+/* Primary button styling (height matches inputs) */
 button {
     background: var(--btn-bg);
     color: var(--btn-fg);
@@ -113,6 +125,7 @@ button:hover { background: var(--btn-bg-hover); }
     margin: var(--space-md) 0;
 }
 
+/* Simple stacked form rows with labels and controls */
 .field-row {
     display: flex;
     flex-direction: column;
@@ -125,6 +138,7 @@ label {
     font-size: var(--font-size-sm);
 }
 
+/* Generic control look shared by inputs, selects and textareas */
 input[type="text"], input[type="date"], input[type="number"], select, textarea {
     padding: var(--control-py) var(--control-px);
     border: 1px solid var(--border);
@@ -159,7 +173,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 input[type="number"] { -moz-appearance: textfield; }
 
-/* Ensure textareas don't cause horizontal scrolling */
+/* Textarea tweaks: only vertical resize, no horizontal scroll */
 textarea { 
     resize: vertical; 
     max-width: 100%;
@@ -176,13 +190,14 @@ input::placeholder, textarea::placeholder { color: var(--muted); font-family: in
     margin-top: var(--space-md);
 }
 
+/* Secondary button look (neutral background) */
 button.secondary {
     background: var(--btn-secondary-bg);
     color: var(--fg);
     border: 1px solid var(--border);
 }
 
-/* Modal */
+/* Fullscreen modal wrapper + panel for adding exercises */
 .modal {
     position: fixed;
     inset: 0;
@@ -220,25 +235,26 @@ button.secondary {
     gap: var(--space-sm);
     padding: var(--header-py) var(--header-px);
     border-bottom: 1px solid var(--border);
-    height: var(--control-h);
+    min-height: var(--control-h);
 }
 
 .modal-footer { border-bottom: none; }
 
 .modal-body { padding: var(--space-md); }
 
-/* Sets table */
+/* Header above the sets list inside the modal */
 .sets-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: var(--header-py) 0;
-    height: var(--control-h);
+    min-height: var(--control-h);
     gap: var(--space-xs);
 }
 
 .sets-table { display: flex; flex-direction: column; gap: var(--space-xs); }
 
+/* Single row of controls for a set (Weight, Reps, Difficulty, X) */
 .set-row {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
@@ -263,7 +279,7 @@ button.secondary {
     padding: var(--space-2xs) 0;
 }
 
-/* Accordion */
+/* Expand/collapse UI used for exercises and history items */
 .accordion { display: flex; flex-direction: column; gap: 0.5rem; }
 .accordion-item { border: 1px solid #e6e6e6; border-radius: 8px; overflow: hidden; }
 .accordion-summary {
@@ -272,13 +288,13 @@ button.secondary {
 }
 .accordion-details { padding: var(--space-sm) var(--space-md); }
 
-/* History */
+/* Cards and rows for the saved workouts history */
 .history-list { padding: 0.5rem; }
 .history-item { border: 1px solid #ececec; border-radius: 8px; margin: 0.5rem 0; overflow: hidden; }
 .history-summary { display: flex; gap: var(--space-md); align-items: center; padding: var(--header-py) var(--space-md); background: #fafafa; cursor: pointer; flex-wrap: wrap; }
 .history-details { padding: var(--space-sm) var(--space-md); }
 
-/* Utility */
+/* Tiny helpers for muted text and section headers */
 .muted { color: var(--muted); }
 .section-header { display: flex; justify-content: space-between; align-items: center; }
 
@@ -288,14 +304,9 @@ button.secondary {
 /* Distinct inline labels like "Set 1:" and "Difficulty:" */
 .label { font-weight: 600; color: var(--fg); margin-right: var(--space-2xs); }
 
-/* Placeholder style for select difficulty */
-.set-difficulty.is-placeholder {
-    color: var(--muted);
-    height: var(--control-h);
-}
-.set-difficulty:not(.is-placeholder) {
-    color: inherit;
-}
+/* Show muted color while the required Difficulty select is still invalid */
+.set-difficulty:invalid { color: var(--muted); }
+.set-difficulty:valid { color: inherit; }
 
 /* Exercise Name input inherits same control style */
 #exercise-name {
@@ -318,15 +329,15 @@ label[for="exercise-notes"] {
     justify-content: space-between;
     padding: var(--header-py) 0;
     padding-bottom: var(--space-xs);
-    height: var(--control-h);
+    min-height: var(--control-h);
 }
 
-/* Hide all scrollbars (WebKit, Firefox, IE/Edge) */
+/* Global rule to visually hide scrollbars while preserving scroll */
 * { scrollbar-width: none; }
 *::-webkit-scrollbar { display: none; width: 0; height: 0; }
 html, body { -ms-overflow-style: none; }
 
-/* Responsive tweaks */
+/* Small-screen adjustments for paddings and grids */
 @media (max-width: 640px) {
   nav button { margin: 0.25rem 0.25rem; padding: 0.45rem 0.7rem; }
   .set-row { grid-template-columns: repeat(3, minmax(0, 1fr)) auto; }
