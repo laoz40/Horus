@@ -29,6 +29,7 @@
     /* Colors */
     --bg: #f7f7f8;
     --fg: #222222;
+    --card-bg: #ffffff;
     --muted: #6c757d;
     --border: #d0d7de;
     --elev: rgba(0,0,0,0.06);
@@ -105,6 +106,7 @@ button {
     height: var(--control-h);
     cursor: pointer;
     border-radius: var(--radius);
+    font-family: var(--font-family-base);
     font-size: var(--font-size-sm);
     line-height: 1.2;
 }
@@ -112,30 +114,48 @@ button {
 button:hover { background: var(--btn-bg-hover); }
 
 /* Layout helpers */
-.container {
+.workout-dashboard-container {
     max-width: 900px;
     margin: 0 auto;
 }
 
 .card {
-    background: #fff;
+    background: var(--card-bg);
     border-radius: var(--radius);
     box-shadow: 0 2px 8px var(--elev);
     padding: var(--space-md);
     margin: var(--space-md) 0;
 }
 
+/* Inline exercise form as a compact card */
+.add-exercise-form {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    border-color: var(--fg);
+    padding: var(--space-md);
+    background: #fff;
+    margin-bottom: var(--space-sm);
+}
+
 /* Simple stacked form rows with labels and controls */
-.field-row {
+.workout-text-container, .exercise-text-container, .sets-container {
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.workout-text-container:last-child, .exercise-text-container:last-child, .sets-container:last-child {
+    margin-bottom: 0;
 }
 
 label {
     font-weight: 600;
     font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
 }
 
 /* Generic control look shared by inputs, selects and textareas */
@@ -171,7 +191,10 @@ input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
-input[type="number"] { -moz-appearance: textfield; }
+input[type="number"] { 
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
 
 /* Textarea tweaks: only vertical resize, no horizontal scroll */
 textarea { 
@@ -197,70 +220,48 @@ button.secondary {
     border: 1px solid var(--border);
 }
 
-/* Fullscreen modal wrapper + panel for adding exercises */
-.modal {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
+/* (Modal styles removed — inline forms are used instead) */
 
-.modal.show { display: flex; }
-
-.modal-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.35);
-    z-index: 1;
-}
-
-.modal-content {
-    position: relative;
-    background: #fff;
-    width: min(680px, 92vw);
-    max-height: 88vh;
-    overflow: auto;
-    overflow-x: hidden;
-    border-radius: var(--radius);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    z-index: 2;
-}
-
-.modal-header, .modal-footer {
+.sets-table {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-sm);
-    padding: var(--header-py) var(--header-px);
-    border-bottom: 1px solid var(--border);
-    min-height: var(--control-h);
-}
-
-.modal-footer { border-bottom: none; }
-
-.modal-body { padding: var(--space-md); }
-
-/* Header above the sets list inside the modal */
-.sets-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--header-py) 0;
-    min-height: var(--control-h);
+    flex-direction: column;
     gap: var(--space-xs);
+    margin-bottom: var(--space-sm);
 }
 
-.sets-table { display: flex; flex-direction: column; gap: var(--space-xs); }
+/* Move the Add Set button below the sets table */
+#add-set-btn {
+    margin-top: var(--space-sm);
+    width: 100%;
+}
 
-/* Single row of controls for a set (Weight, Reps, Difficulty, X) */
+/* Single row of controls for a set (Set #, Weight, Reps, Difficulty, X) */
 .set-row {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    grid-template-columns: 2.5rem repeat(2, minmax(0, 1fr)) auto;
     gap: var(--space-sm);
-    padding: var(--space-2xs) 0;
-    border-bottom: none;
+    align-items: center;
+    position: relative;
+}
+
+/* Set number indicator */
+.set-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--control-h);
+    height: var(--control-h);
+    border-radius: 50%;
+    background-color: var(--btn-secondary-bg);
+    color: var(--muted);
+    font-weight: bold;
+    font-size: 0.85em;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    user-select: none;
+    align-self: stretch;
+    box-sizing: border-box;
 }
 
 /* Prevent controls from overflowing grid columns */
@@ -279,20 +280,95 @@ button.secondary {
     padding: var(--space-2xs) 0;
 }
 
-/* Expand/collapse UI used for exercises and history items */
-.accordion { display: flex; flex-direction: column; gap: 0.5rem; }
-.accordion-item { border: 1px solid #e6e6e6; border-radius: 8px; overflow: hidden; }
-.accordion-summary {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: var(--header-py) var(--space-md); background: #fafafa; cursor: pointer;
+/* Accordion styles for exercise list and history items */
+.accordion-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: var(--space-sm);
+    overflow: hidden;
+    background-color: white;
 }
-.accordion-details { padding: var(--space-sm) var(--space-md); }
 
-/* Cards and rows for the saved workouts history */
-.history-list { padding: 0.5rem; }
-.history-item { border: 1px solid #ececec; border-radius: 8px; margin: 0.5rem 0; overflow: hidden; }
-.history-summary { display: flex; gap: var(--space-md); align-items: center; padding: var(--header-py) var(--space-md); background: #fafafa; cursor: pointer; flex-wrap: wrap; }
-.history-details { padding: var(--space-sm) var(--space-md); }
+.accordion-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-sm) var(--space-md);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.accordion-summary:hover { 
+    background-color: rgba(0,0,0,0.02);
+}
+
+.exercise-title {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    flex-grow: 1;
+}
+
+.exercise-actions {
+    display: flex;
+    gap: var(--space-xs);
+    margin-left: var(--space-sm);
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-2xs);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    transition: background-color 0.2s, color 0.2s;
+    font-size: 1.1em;
+    line-height: 1;
+}
+
+.icon-btn:hover {
+    background-color: var(--btn-secondary-hover);
+    color: var(--fg);
+}
+
+.remove-exercise:hover {
+    color: #dc3545;
+}
+
+.accordion-details {
+    padding: var(--space-sm) var(--space-md);
+    border-top: 1px solid var(--border);
+    background-color: var(--bg);
+}
+
+.history-list { 
+    padding: 0rem; 
+}
+
+.history-item { 
+    border: 1px solid #ececec; 
+    border-radius: 8px; 
+    margin: 0.5rem 0; 
+    overflow: hidden; 
+}
+
+.history-summary { 
+    display: flex; 
+    gap: var(--space-md); 
+    align-items: center; 
+    padding: var(--header-py) var(--space-md); 
+    background: #fafafa; 
+    cursor: pointer; 
+    flex-wrap: wrap; 
+}
+
+.history-details { 
+    padding: var(--space-sm) var(--space-md); 
+}
 
 /* Tiny helpers for muted text and section headers */
 .muted { color: var(--muted); }
@@ -301,15 +377,15 @@ button.secondary {
 /* Make the New Workout date look like plain text */
 #workout-date.readout { color: var(--muted); padding: 0; }
 
-/* Distinct inline labels like "Set 1:" and "Difficulty:" */
+/* Distinct inline labels like "Set 1:" and "Difficulty:" (When viewing a completed exercise in history*/
 .label { font-weight: 600; color: var(--fg); margin-right: var(--space-2xs); }
 
-/* Show muted color while the required Difficulty select is still invalid */
-.set-difficulty:invalid { color: var(--muted); }
-.set-difficulty:valid { color: inherit; }
+/* Show muted color while the exercise Difficulty select is still invalid */
+#exercise-difficulty:invalid, .exercise-difficulty:invalid { color: var(--muted); }
+#exercise-difficulty:valid, .exercise-difficulty:valid { color: inherit; }
 
 /* Exercise Name input inherits same control style */
-#exercise-name {
+#exercise-name, .exercise-name {
     padding: calc(var(--control-py) - 0.15rem) var(--control-px);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -317,19 +393,6 @@ button.secondary {
     font-size: var(--font-size-md);
     font-family: inherit;
     height: var(--control-h);
-}
-
-/* Slightly tighter padding for the top Workout Name field to avoid visual overflow */
-#workout-name { padding: calc(var(--control-py) - 0.15rem) var(--control-px); height: var(--control-h); }
-
-/* Give the Exercise Notes label the same vertical padding as other headers */
-label[for="exercise-notes"] {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--header-py) 0;
-    padding-bottom: var(--space-xs);
-    min-height: var(--control-h);
 }
 
 /* Global rule to visually hide scrollbars while preserving scroll */
@@ -340,6 +403,16 @@ html, body { -ms-overflow-style: none; }
 /* Small-screen adjustments for paddings and grids */
 @media (max-width: 640px) {
   nav button { margin: 0.25rem 0.25rem; padding: 0.45rem 0.7rem; }
-  .set-row { grid-template-columns: repeat(3, minmax(0, 1fr)) auto; }
-  .container { padding-left: var(--space-sm); padding-right: var(--space-sm); }
+  .set-row { grid-template-columns: 2.5rem repeat(2, minmax(0, 1fr)) auto; }
+  .workout-dashboard-container { padding-left: var(--space-sm); padding-right: var(--space-sm); }
+}
+
+#exercise-difficulty {
+    padding: calc(var(--control-py) - 0.15rem) var(--control-px);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: var(--font-size-md);
+    font-family: inherit;
+    height: var(--control-h);
 }
