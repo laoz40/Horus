@@ -1,0 +1,30 @@
+.history-item { 
+    border: 1px solid var(--border-color); 
+    border-radius: var(--border-radius); 
+    overflow: hidden;
+    margin-bottom: var(--space-12);
+}
+
+.history-item:last-child {
+    margin-bottom: 0;
+}
+
+.history-summary { 
+    display: flex; 
+    gap: var(--space-16); 
+    align-items: center; 
+    padding: var(--space-12) var(--space-16); 
+    background: var(--card-bg); 
+    cursor: pointer; 
+    flex-wrap: wrap; 
+}
+
+.history-details { 
+    padding: var(--space-12) var(--space-16); 
+}
+
+.set-line {
+    display: flex;
+    gap: var(--space-12);
+    padding: var(--space-4) 0;
+}

@@ -2,11 +2,42 @@
 // This file controls page navigation, data storage (localStorage),
 // and rendering of workouts (current, last, and history).
 
-// Global constants and helpers (defined once)
 /** Short month names used to format dates for display */
 const monthsShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 /** Day names to create a friendly default workout name (e.g., "Saturday") */
 const weekdays = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+/**
+ * Current data schema version for workouts saved to localStorage.
+ * Each time we change the structure/meaning of the stored data, bump this.
+ * New workouts are stamped with this number so we can tell which version
+ * they were created under and migrate older ones forward automatically.
+ */
+const SCHEMA_VERSION = 2;
+
+/**
+ * Helper that translates a numeric difficulty from old data (v1)
+ * into the new labeled string used in v2. Returns null if unknown.
+ */
+function mapDifficultyNumberToLabel(n) {
+    const map = {
+        1: '1. Zero effort required',
+        2: '2. Easy',
+        3: '3. Challenging',
+        4: '4. Struggled',
+        5: '5. Impossible'
+    };
+    return map[n] || null;
+}
+
+/**
+ * Format difficulty labels for display in history.
+ */
+function toDifficultyDisplay(label) {
+    if (label == null) return '';
+    const m = String(label).match(/^\s*\d+\.\s*(.+)$/);
+    return m ? m[1] : String(label);
+}
 
 /**
  * Convert a Date object into a friendly string like "20 Sep, 2025".
@@ -25,14 +56,103 @@ const formatDisplayDate = (d) => {
 const WORKOUTS_KEY = 'workouts';
 /** Key used to store the list of exercise names (for suggestions) */
 const EXERCISES_KEY = 'exerciseNames';
-/** Load all saved workouts from localStorage */
-const loadAllWorkouts = () => JSON.parse(localStorage.getItem(WORKOUTS_KEY) || '[]');
+/**
+ * Load all saved workouts from localStorage and ensure they match the
+ * current schema by running them through our migration pipeline.
+ * If migrations make changes, the updated data will be persisted.
+ */
+const loadAllWorkouts = () => {
+    const raw = JSON.parse(localStorage.getItem(WORKOUTS_KEY) || '[]');
+    return runMigrations(raw);
+};
 /** Save all workouts back to localStorage */
 const saveAllWorkouts = (arr) => localStorage.setItem(WORKOUTS_KEY, JSON.stringify(arr));
 /** Load saved exercise names (used for the datalist suggestions) */
 const loadAllExerciseNames = () => JSON.parse(localStorage.getItem(EXERCISES_KEY) || '[]');
 /** Save exercise names (kept unique and sorted) */
 const saveAllExerciseNames = (arr) => localStorage.setItem(EXERCISES_KEY, JSON.stringify(arr));
+
+// --- Schema migration system ---
+// We define small, forward-only steps that convert data from version N -> N+1.
+// When loading, we detect each workout's version and apply missing steps
+// until it reaches SCHEMA_VERSION.
+const MIGRATIONS = {
+    /**
+     * Upgrade a workout from v1 to v2.
+     * - difficulty used to be numeric (optionally per-set); now it's a labeled string on the exercise
+     * - we choose the highest per-set difficulty (if present) and set it on the exercise
+     * - per-set difficulty fields are removed
+     * - schemaVersion is set to 2
+     * @param {object} w - a workout object in schema v1
+     * @returns {object} - the upgraded workout in schema v2
+     */
+    1: (w) => {
+        if (!w || typeof w !== 'object') return w;
+        const newW = { ...w };
+        newW.schemaVersion = 2;
+        if (!Array.isArray(newW.exercises)) return newW;
+        newW.exercises = newW.exercises.map((ex) => {
+            const newEx = { ...ex };
+            // Promote per-set difficulty -> exercise.difficulty (take max across sets)
+            let promoted = null;
+            if (Array.isArray(newEx.sets)) {
+                let maxDiff = null;
+                newEx.sets = newEx.sets.map((s) => {
+                    const ns = { ...s };
+                    if (ns && typeof ns.difficulty !== 'undefined' && ns.difficulty !== null) {
+                        const num = Number(ns.difficulty);
+                        if (!Number.isNaN(num)) {
+                            maxDiff = (maxDiff == null) ? num : Math.max(maxDiff, num);
+                        }
+                    }
+                    // Remove per-set difficulty in v2
+                    if ('difficulty' in ns) delete ns.difficulty;
+                    return ns;
+                });
+                if (maxDiff != null) promoted = mapDifficultyNumberToLabel(maxDiff);
+            }
+            // Normalize exercise-level difficulty
+            if (newEx.difficulty == null && promoted) {
+                newEx.difficulty = promoted;
+            } else if (typeof newEx.difficulty === 'number') {
+                newEx.difficulty = mapDifficultyNumberToLabel(newEx.difficulty);
+            }
+            return newEx;
+        });
+        return newW;
+    }
+};
+
+/**
+ * Apply all missing migrations to each workout in the given array.
+ * - Figures out the source version (defaults to 1 if missing)
+ * - Sequentially applies MIGRATIONS[v] for v ..< SCHEMA_VERSION
+ * - If any item changes, we write the upgraded array back to storage
+ * @param {Array<object>} workouts
+ * @returns {Array<object>} the data, possibly upgraded to the latest schema
+ */
+function runMigrations(workouts) {
+    let changed = false;
+    const upgraded = workouts.map((w) => {
+        const from = (w && typeof w === 'object' && 'schemaVersion' in w) ? (w.schemaVersion || 1) : 1;
+        let curr = { ...w };
+        for (let v = from; v < SCHEMA_VERSION; v++) {
+            const migrate = MIGRATIONS[v];
+            if (typeof migrate === 'function') {
+                const next = migrate(curr) || curr;
+                if (next !== curr) changed = true;
+                curr = next;
+            }
+        }
+        return curr;
+    });
+    if (changed) {
+        // Only persist if something actually changed
+        saveAllWorkouts(upgraded);
+        return upgraded;
+    }
+    return workouts;
+}
 
 /**
  * Escape user-provided text so it is safe to insert into innerHTML strings.
@@ -61,14 +181,13 @@ function workoutDetailsHTML(workout) {
                 ${ex.sets
                     .map((s, i) => `
                         <div class="set-line">
-                            <span class="label">${i + 1}</span>
+                            <span class="muted">${i + 1}</span>
                             <span>${s.weight} kg × ${s.reps}</span>
                         </div>
                     `)
                     .join('')}
-                    ${ex.difficulty != null ? `<span class="label">Difficulty:</span> <span>${ex.difficulty}</span>` : ''}
-                    ${ex.notes ? `<span class="label">Note:</span> <span>${esc(ex.notes)}</span>` : ''}
-
+                    ${ex.difficulty ? `<span class="muted">Difficulty:</span> <span>${esc(toDifficultyDisplay(ex.difficulty))}</span>` : ''}
+                    ${ex.notes ? `<span class="muted">Note:</span> <span>${esc(ex.notes)}</span>` : ''}
             </div>
         `)
         .join('');
@@ -117,6 +236,26 @@ document.addEventListener('DOMContentLoaded', () => {
         startWorkoutBtn.addEventListener('click', () => showPage('new-workout-page'));
     }
 
+    // Settings section: show the current schema version and let users
+    // manually re-run migrations (useful after importing older data
+    // or while developing migration logic). Normally migrations run
+    // automatically on page load via loadAllWorkouts().
+    const schemaVersionEl = document.getElementById('current-schema-version');
+    if (schemaVersionEl) schemaVersionEl.textContent = String(SCHEMA_VERSION);
+    const rerunBtn = document.getElementById('rerun-migrations-btn');
+    if (rerunBtn) {
+        rerunBtn.addEventListener('click', () => {
+            // Load raw array (bypass auto-upgrade) and force-run migrations now
+            const raw = JSON.parse(localStorage.getItem(WORKOUTS_KEY) || '[]');
+            const migrated = runMigrations(raw);
+            // If runMigrations persisted changes, migrated may differ
+            // Update UI summaries either way
+            updateLastWorkoutSummary();
+            renderHistory();
+            alert('Migrations completed.');
+        });
+    }
+
     // New Workout flow and storage
 
     /** Current workout object held in memory until saved */
@@ -138,12 +277,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (workoutNameInput) workoutNameInput.value = dayName;
         currentWorkout = {
             id: `${Date.now()}`,
+            schemaVersion: SCHEMA_VERSION,
             name: workoutNameInput ? workoutNameInput.value.trim() : dayName,
             date: workoutDateEl ? workoutDateEl.textContent : displayDate,
             exercises: []
         };
         // Reset inline exercise forms to a fresh single form
-        const exerciseFormsContainer = document.getElementById('add-exercise-forms');
+        const exerciseFormsContainer = document.getElementById('add-exercise-form');
         if (exerciseFormsContainer) {
             exerciseFormsContainer.innerHTML = '';
             exerciseFormsContainer.appendChild(createExerciseForm());
@@ -157,22 +297,30 @@ document.addEventListener('DOMContentLoaded', () => {
     function createExerciseForm(initial = { name: '', notes: '', difficulty: '', sets: [] }) {
         const wrapper = document.createElement('div');
         wrapper.className = 'add-exercise-form';
+        
+        // Define difficulty options with their values and display text
+        const difficultyOptions = [
+            {value: "1", text: "1. Zero effort required"},
+            {value: "2", text: "2. Easy"},
+            {value: "3", text: "3. Challenging"},
+            {value: "4", text: "4. Struggled"},
+            {value: "5", text: "5. Impossible"}
+        ];
+
         wrapper.innerHTML = `
-            <div class=\"exercise-text-container\">
-                <input list=\"exercise-name-list\" class=\"exercise-name\" placeholder=\"Exercise Name\" autocomplete=\"off\" required value=\"${esc(initial.name)}\">
+            <div class="exercise-text-container">
+                <input list="exercise-name-list" class="exercise-name" placeholder="Exercise Name" autocomplete="off" required value="${esc(initial.name)}">
             </div>
             <div class="sets-container">
                 <div class="sets-table"></div>
                 <button type="button" class="secondary add-set">Add Set</button>
             </div>
             <div class="exercise-text-container">
-                <select class="exercise-difficulty">
-                    <option value="" disabled ${initial.difficulty === '' ? 'selected' : ''} hidden>Difficulty</option>
-                    <option value="1" ${String(initial.difficulty) === '1' ? 'selected' : ''}>1. Zero effort required</option>
-                    <option value="2" ${String(initial.difficulty) === '2' ? 'selected' : ''}>2. Easy</option>
-                    <option value="3" ${String(initial.difficulty) === '3' ? 'selected' : ''}>3. Challenging</option>
-                    <option value="4" ${String(initial.difficulty) === '4' ? 'selected' : ''}>4. Struggled</option>
-                    <option value="5" ${String(initial.difficulty) === '5' ? 'selected' : ''}>5. Impossible</option>
+                <select class="exercise-difficulty" required>
+                    <option value="" disabled ${!initial.difficulty ? 'selected' : ''} hidden>Difficulty</option>
+                    ${difficultyOptions.map(opt => 
+                        `<option value="${opt.value}" ${initial.difficulty === opt.text ? 'selected' : ''}>${opt.text}</option>`
+                    ).join('')}
                 </select>
             </div>
             <div class="exercise-text-container">
@@ -193,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="set-number" aria-label="Set ${setNumber}">${setNumber}</span>
                 <input type="number" inputmode="decimal" min="0" step="0.5" placeholder="Weight" class="set-weight" value="${defaults.weight}">
                 <input type="number" inputmode="numeric" min="1" step="1" placeholder="Reps" class="set-reps" value="${defaults.reps}">
-                <button type="button" class="icon-btn remove-set" aria-label="Remove set">✕</button>
+                <button type="button" class="x-delete-btn remove-set" aria-label="Remove set">✕</button>
             `;
             row.querySelector('.remove-set').addEventListener('click', () => {
                 row.remove();
@@ -219,14 +367,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Gather all exercises from inline forms on the New Workout page
     function readExercisesFromForms() {
-        const container = document.getElementById('add-exercise-forms');
+        const container = document.getElementById('add-exercise-form');
         if (!container) return [];
         const forms = [...container.querySelectorAll('.add-exercise-form')];
         return forms.map(form => {
             const name = (form.querySelector('.exercise-name')?.value || '').trim();
             const notes = (form.querySelector('.exercise-notes')?.value || '').trim();
-            const diffRaw = form.querySelector('.exercise-difficulty')?.value || '';
-            const difficulty = diffRaw ? parseInt(diffRaw, 10) : null;
+            const diffSelect = form.querySelector('.exercise-difficulty');
+            const difficulty = diffSelect?.value ? diffSelect.options[diffSelect.selectedIndex].text : null;
             const sets = [...form.querySelectorAll('.set-row')]
                 .map(row => {
                     const weight = parseFloat((row.querySelector('.set-weight')?.value || '0'));
@@ -260,12 +408,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const workouts = loadAllWorkouts();
         const last = workouts[workouts.length - 1];
         if (!last) {
-            summaryEl.innerHTML = '<h2>Last Workout</h2><p>No workout data yet.</p>';
+            summaryEl.innerHTML = '<h2 class="section-header-text">Last Workout</h2><p>No workout data yet.</p>';
             return;
         }
         const totalSets = last.exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
         summaryEl.innerHTML = `
-            <h2>Last Workout</h2>
+            <h2 class="section-header-text">Last Workout</h2>
             <div class="history-item">
                 <div class="history-summary">
                     <strong>${esc(last.name)}</strong>
@@ -296,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear old list
         historySection.querySelectorAll('.history-list').forEach(n => n.remove());
         const list = document.createElement('div');
-        list.className = 'history-list card';
+        list.className = 'history-list';
         const workouts = loadAllWorkouts();
         if (workouts.length === 0) {
             list.innerHTML = '<p class="muted">No workouts saved yet.</p>';
@@ -310,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <strong>${esc(w.name)}</strong>
                                 <span class="muted">${esc(w.date)}</span>
                                 <span class="muted">${w.exercises.length} exercises, ${totalSets} sets</span>
-                                <button type="button" class="icon-btn danger delete-workout" data-index="${wi}">Delete</button>
+                                <button type="button" class="x-delete-btn danger delete-workout" data-index="${wi}">✕</button>
                             </div>
                             <div class="history-details" hidden>
                                 ${workoutDetailsHTML(w)}
@@ -356,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addExerciseBtn = document.getElementById('add-exercise-btn');
 
     // Add a new inline exercise form
-    const exerciseFormsContainer = document.getElementById('add-exercise-forms');
+    const exerciseFormsContainer = document.getElementById('add-exercise-form');
     addExerciseBtn && addExerciseBtn.addEventListener('click', () => {
         if (!exerciseFormsContainer) return;
         exerciseFormsContainer.appendChild(createExerciseForm());

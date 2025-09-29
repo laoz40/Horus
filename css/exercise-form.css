@@ -1,0 +1,136 @@
+#add-exercises-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--space-16);
+}
+
+/* Inline exercise form as a compact card */
+.add-exercise-form {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--space-20) var(--space-12);
+    background: var(--card-bg);
+    margin-bottom: var(--space-24);
+}
+
+/* New Workout date */
+#workout-date.readout { 
+    color: var(--muted); 
+    padding: 0; 
+}
+
+/* Simple stacked form rows with labels and controls */
+.workout-name-container, .exercise-text-container, .sets-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    margin-bottom: var(--space-12);
+}
+
+.sets-container {
+    gap: 0;
+}
+
+.exercise-text-container:last-child {
+    margin-bottom: 0;
+}
+
+/* Generic control look shared by inputs, selects and textareas */
+input[type="text"], input[type="number"], select, textarea, .exercise-name {
+    padding: var(--control-py) var(--control-px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--card-bg);
+    font-size: var(--font-size-md);
+    font-family: inherit;
+}
+
+/* Set uniform heights for inputs/selects (textarea excluded) */
+input[type="text"], input[type="number"], select, .exercise-name {
+    height: var(--control-h);
+}
+
+/* Normalize select look across browsers and keep size compact */
+select {
+    -webkit-appearance: menulist;
+    -moz-appearance: menulist;
+    appearance: menulist;
+    line-height: 1.2;
+    height: var(--control-h);
+    padding: var(--control-py) var(--control-px);
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+/* Difficulty placeholder color */
+.exercise-difficulty:invalid { color: var(--muted); }
+.exercise-difficulty:valid { color: inherit; }
+
+/* Normalize select look across browsers and keep size compact */
+select {
+    -webkit-appearance: menulist;
+    -moz-appearance: menulist;
+    appearance: menulist;
+    line-height: 1.2;
+    height: var(--control-h);
+    padding: var(--control-py) var(--control-px);
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+/* Normalize number inputs (remove giant spinners) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] { 
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Textarea tweaks: only vertical resize, no horizontal scroll */
+textarea { 
+    resize: vertical; 
+    max-width: 100%;
+    padding-block: var(--control-px);
+}
+
+/* Unified placeholder style */
+input::placeholder, textarea::placeholder { 
+    color: var(--muted); 
+    font-family: inherit; 
+    opacity: 1; 
+}
+
+.sets-table {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    margin-bottom: var(--space-8);
+}
+
+/* Single row of controls for a set (Set #, Weight, Reps, Difficulty, X) */
+.set-row {
+    display: grid;
+    grid-template-columns: 2.5rem repeat(2, minmax(0, 1fr)) auto;
+    gap: var(--space-12);
+    align-items: center;
+    position: relative;
+}
+
+/* Set number indicator */
+.set-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--control-h);
+    height: var(--control-h);
+    color: var(--muted);
+    font-weight: var(--fw-semibold);
+    font-size: var(--font-size-sm);
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+    user-select: none;
+}

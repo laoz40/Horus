@@ -8,12 +8,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/general.css">
+    <link rel="stylesheet" href="css/text+elements.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/exercise-form.css">
+    <link rel="stylesheet" href="css/history.css">
 </head>
 <body>
     <!-- App header with title and navigation buttons -->
     <header>
-        <h1>Workout Tracker</h1>
         <nav>
             <button data-page="workout-dashboard-page">Workout</button>
             <button data-page="history-page">History</button>
@@ -24,67 +28,73 @@
 
     <!-- Main content area. Only one .page is shown at a time by JS -->
     <main>
-        <div class="workout-dashboard-container">
         <!-- Home/Dashboard page -->
         <section id="workout-dashboard-page" class="page active">
-            <button id="start-workout-btn">Start Workout</button>
-            <button id="new-preset-btn">New Preset</button>
+            <div id="create-workout-container">
+                <h2 class="section-header-text">Create a Workout</h2>
+                <div class="create-workout-buttons-container">
+                    <button id="start-workout-btn">New Workout</button>
+                    <button id="new-preset-btn" class="secondary">New Preset</button>
+                </div>
+            </div>
             <!-- Shows the most recent saved workout -->
             <div id="last-workout-summary">
-                <h2>Last Workout</h2>
-                <p>No workout data yet.</p>
+                <h2 class="section-header-text">Last Workout</h2>
+                <p>No workout saved yet.</p>
             </div>
         </section>
 
         <!-- New Workout page: name/date form + list of exercises -->
         <section id="new-workout-page" class="page">
             <!-- Workout details card -->
-            <form id="new-workout-form" class="card">
-                <div class="workout-text-container">
+            <form id="new-workout-form">
+                <div class="workout-name-container">
                     <input type="text" id="workout-name" required>
                     <div id="workout-date" class="readout" aria-readonly="true"></div>
                 </div>
-                <section id="add-exercises-container">
-                    <div id="add-exercise-forms"><!-- Inline exercise forms --></div>
+                <div id="add-exercises-container">
+                    <div id="add-exercise-form"><!-- Inline exercise forms --></div>
                     <button id="add-exercise-btn" type="button">Add Exercise</button>
                     <datalist id="exercise-name-list"></datalist>
-                </section>
+                </div>
             </form>
 
-            <!-- Exercises card with inline forms populated by JS -->
-
-
             <!-- Main call-to-action to save the current workout -->
-            <div class="actions">
+            <div>
                 <button id="finish-workout-btn" type="button">Finish Workout</button>
             </div>
         </section>
 
         <!-- History page: JS fills this with saved workouts -->
         <section id="history-page" class="page">
-            <h2>Workout History</h2>
+            <h2 class="section-header-text">Workout History</h2>
             <!-- Content for Workout History Page will go here -->
         </section>
 
         <!-- Progress page: placeholder for charts/stats -->
         <section id="progress-page" class="page">
-            <h2>Exercise Progress</h2>
+            <h2 class="section-header-text">Exercise Progress</h2>
             <!-- Content for Exercise Progress Page will go here -->
         </section>
 
         <!-- Presets page: placeholder for exercise templates -->
         <section id="presets-page" class="page">
-            <h2>Presets</h2>
+            <h2 class="section-header-text">Presets</h2>
             <!-- Content for Presets Page will go here -->
         </section>
 
         <!-- Settings/data page: export/import and other options -->
         <section id="settings-page" class="page">
-            <h2>Settings / Data</h2>
-            <!-- Content for Settings / Data Page will go here -->
-            <button id="open-presets-from-settings" type="button" class="secondary">Presets</button>
+            <h2 class="section-header-text">Settings</h2>
+            <div id="data-version-card" class="settings-card">
+                <p>
+                    <strong>App schema version:</strong>
+                    <span id="current-schema-version">—</span>
+                </p>
+                <button id="rerun-migrations-btn" type="button" class="secondary">Re-run migrations</button>
+                </p>
+            </div>
         </section>
-        </div>
     </main>
 
     <!-- Main application script -->

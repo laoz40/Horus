@@ -1,0 +1,138 @@
+/* Theme variables and design tokens used across the app */
+:root {
+    /* Typography */
+    --font-family-base: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    
+    /* Font sizes scale */
+    --font-size-xs: 0.875rem; /* 14px */
+    --font-size-sm: 0.95rem; /* 15px */
+    --font-size-md: 1rem;    /* 16px */
+    --font-size-lg: 1.25rem;  /* 20px */
+
+    /* Font weights scale */
+    --fw-thin: 100;
+    --fw-extralight: 200;
+    --fw-light: 300;
+    --fw-regular: 400;
+    --fw-medium: 500;
+    --fw-semibold: 600;
+    --fw-bold: 700;
+    --fw-extrabold: 800;
+    --fw-black: 900;
+
+    /* Spacing scale */
+    --space-4: 0.25rem;  /* 4px */
+    --space-8: 0.5rem;   /* 8px */
+    --space-12: 0.75rem;  /* 12px */
+    --space-16: 1rem;     /* 16px */
+    --space-20: 1.25rem;  /* 20px */
+    --space-24: 1.5rem;   /* 24px */
+    --space-28: 1.75rem;  /* 28px */
+    --space-32: 2rem;     /* 32px */
+    --space-36: 2.25rem;  /* 36px */
+    --space-40: 2.5rem;  /* 40px */
+    /* Base font size (default is usually 16px) */
+    /* 1rem = 16px, so 4px = 0.25rem */
+
+    /* Colors */
+    --bg: #f7f7f8;
+    --fg: #222222;
+    --card-bg: #ffffff;
+    --muted: #717171;
+    --border-color: #d0d7de;
+    --header-bg: rgba(51, 51, 51, 0.9);
+    --btn-bg: #333333;
+    --btn-bg-hover: #555555;
+    --btn-bg-active: #444444;
+    --btn-fg: #ffffff;
+    --btn-secondary-bg: #e9ecef;
+    --btn-secondary-hover: #dee2e6;
+    --btn-secondary-active: #c8c8c8;
+    --btn-danger-bg: #dc3545;
+    --btn-danger-hover: #c82333;
+
+    /* Border Radius */
+    --border-radius: 4px;
+
+    /* Controls (inputs/selects) */
+    --control-h: 2.5rem;            /* overall height of inputs/selects */
+    --control-py: 0.2rem;           /* vertical padding */
+    --control-px: 0.6rem;           /* horizontal padding */
+}
+
+/* Base text, background color, and page defaults */
+body {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height);
+    background-color: var(--bg);
+    color: var(--fg);
+    margin: 0;
+    padding: 0;
+}
+
+/* Header bar at the top and its look */
+header {
+    background-color: var(--header-bg);
+    color: var(--btn-fg);
+    padding: var(--space-16);
+    text-align: center;
+}
+
+/* Top navigation buttons inside the header */
+nav button {
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    border: none;
+    padding: var(--space-8) var(--space-16);
+    margin: 0 var(--space-8);
+    cursor: pointer;
+    border-radius: var(--border-radius);
+}
+
+nav button:hover {
+    background: var(--btn-bg-hover);
+}
+
+/* Layout helpers */
+main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--space-16);
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    flex: 1;
+}
+
+/* Page visibility control (single-page app switching) */
+.page {
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.page.active {
+    display: block;
+}
+
+/* Global rule to visually hide scrollbars while preserving scroll */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; width: 0; height: 0; }
+html, body { -ms-overflow-style: none; }
+
+/* Small-screen adjustments for paddings and grids */
+@media (max-width: 760px) {
+    nav button { 
+        margin: var(--space-4) var(--space-8); 
+        padding: var(--space-4) var(--space-8); 
+    }
+
+    .set-row { 
+        grid-template-columns: var(--space-12) repeat(2, minmax(0, 1fr)) auto; 
+    }
+
+    main { 
+        padding: var(--space-12); 
+        max-width: 420px; }
+  }

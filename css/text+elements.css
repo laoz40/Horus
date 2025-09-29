@@ -1,0 +1,69 @@
+.section-header-text {
+    font-size: var(--font-size-md);
+    font-weight: var(--fw-regular);
+    margin: 0;
+    padding: 0;
+    color: var(--muted);
+}
+
+.muted { 
+    color: var(--muted); 
+}
+
+/* Primary button styling (height matches inputs) */
+button {
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    border: 1px solid transparent;
+    padding: var(--control-py) var(--control-px);
+    height: var(--control-h);
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-sm);
+    line-height: 1.2;
+}
+
+button:hover { 
+    background: var(--btn-bg-hover); 
+}
+
+button:active { 
+    background: var(--btn-bg-active); 
+}
+
+/* Secondary button look (neutral background) */
+button.secondary {
+    background: var(--btn-secondary-bg);
+    color: var(--fg);
+    border: 1px solid var(--border-color);
+}
+
+button.secondary:hover {
+    background: var(--btn-secondary-hover);
+}
+
+button.secondary:active {
+    background: var(--btn-secondary-active);
+}
+
+.x-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    transition: background-color 0.2s, color 0.2s;
+    font-size: 1.1em;
+    font-weight: var(--fw-regular);
+    line-height: 1;
+}
+
+.x-delete-btn:hover {
+    background-color: transparent;
+    font-weight: var(--fw-black);
+    color: var(--btn-danger-hover);
+}
