@@ -11,20 +11,33 @@
     <!-- CSS -->
     <link rel="stylesheet" href="css/general.css">
     <link rel="stylesheet" href="css/text+elements.css">
+    <link rel="stylesheet" href="css/nav.css">
     <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/exercise-form.css">
+    <link rel="stylesheet" href="css/add-exercise.css">
     <link rel="stylesheet" href="css/history.css">
+    <!-- Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 <body>
     <!-- App header with title and navigation buttons -->
-    <header>
-        <nav>
-            <button data-page="workout-dashboard-page">Workout</button>
-            <button data-page="history-page">History</button>
-            <button data-page="progress-page">Progress</button>
-            <button data-page="settings-page">Settings</button>
-        </nav>
-    </header>
+    <nav>
+        <button class="nav-button nav-active" data-page="workout-dashboard-page">
+            <i class="nav-icon material-icons">fitness_center</i>
+            <span class="nav-text">Workout</span>
+        </button>
+        <button class="nav-button" data-page="history-page">
+            <i class="nav-icon material-icons">history</i>
+            <span class="nav-text">History</span>
+        </button>
+        <button class="nav-button" data-page="progress-page">
+            <i class="nav-icon material-icons">trending_up</i>
+            <span class="nav-text">Progress</span>
+        </button>
+        <button class="nav-button" data-page="settings-page">
+            <i class="material-icons nav-icon">settings</i>
+            <span class="nav-text">Settings</span>
+        </button>
+    </nav>
 
     <!-- Main content area. Only one .page is shown at a time by JS -->
     <main>
@@ -46,6 +59,12 @@
 
         <!-- New Workout page: name/date form + list of exercises -->
         <section id="new-workout-page" class="page">
+            <!-- Save the current workout -->
+            <div class="top-action-buttons-container">
+                <button id="workout-back-btn" class="secondary">Back</button>
+                <button id="finish-workout-btn">Finish</button>
+            </div>
+
             <!-- Workout details card -->
             <form id="new-workout-form">
                 <div class="workout-name-container">
@@ -58,11 +77,6 @@
                     <datalist id="exercise-name-list"></datalist>
                 </div>
             </form>
-
-            <!-- Main call-to-action to save the current workout -->
-            <div>
-                <button id="finish-workout-btn" type="button">Finish Workout</button>
-            </div>
         </section>
 
         <!-- History page: JS fills this with saved workouts -->
@@ -91,13 +105,12 @@
                     <strong>App schema version:</strong>
                     <span id="current-schema-version">—</span>
                 </p>
-                <button id="rerun-migrations-btn" type="button" class="secondary">Re-run migrations</button>
                 </p>
             </div>
         </section>
     </main>
 
-    <!-- Main application script -->
-    <script src="script.js"></script>
-</body>
-</html>
+    <!-- Main application script (ES modules) -->
+    <script type="module" src="js/main.js"></script>
+  </body>
+  </html>

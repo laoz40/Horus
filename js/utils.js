@@ -1,0 +1,25 @@
+// Shared utilities
+export const monthsShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+export const weekdays = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+/**
+ * Turn a Date into a short, friendly string like "20 Sep, 2025".
+ * This is used anywhere we want a nice-looking date.
+ */
+export const formatDisplayDate = (d) => {
+  const dd = String(d.getDate());
+  const mon = monthsShort[d.getMonth()];
+  const yyyy = d.getFullYear();
+  return `${dd} ${mon}, ${yyyy}`;
+};
+
+/**
+ * Make text safe to insert into innerHTML (prevents broken HTML and XSS).
+ * Always use this on user-entered text before adding to the page.
+ */
+export const esc = (s) => String(s)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');

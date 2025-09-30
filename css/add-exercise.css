@@ -1,0 +1,144 @@
+#add-exercises-container {
+    display: flex;
+    flex-direction: column;
+}
+
+#new-workout-form {
+    padding: var(--space-12) 0 0 0;
+}
+
+/* Inline exercise form as a compact card */
+.add-exercise-form {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--space-20) var(--space-12);
+    background: var(--card-bg);
+    margin-bottom: var(--space-24);
+}
+
+.workout-name-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--space-24);
+    gap: var(--space-4);
+}
+
+/* New Workout date */
+#workout-date.readout { 
+    color: var(--muted); 
+}
+
+.exercise-text-container, .sets-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-24);
+}
+
+.exercise-text-container:last-child {
+    margin-bottom: 0;
+}
+
+.sets-table {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    margin-bottom: var(--space-8);
+}
+
+/* Single row of controls for a set (Set #, Weight, Reps, Difficulty, X) */
+.set-row {
+    display: grid;
+    grid-template-columns: auto repeat(2, minmax(0, 1fr)) auto;
+    gap: var(--space-12);
+    align-items: center;
+    position: relative;
+}
+
+/* Set number indicator */
+.set-number {
+    color: var(--muted);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+    user-select: none;
+}
+
+/* Generic control look shared by inputs, selects and textareas */
+input[type="text"], input[type="number"], select, textarea, .exercise-name {
+    padding: var(--control-py) var(--control-px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--card-bg);
+    font-size: var(--font-size-md);
+    font-family: inherit;
+}
+
+/* Set uniform heights for inputs/selects (textarea excluded) */
+input[type="text"], input[type="number"], select, .exercise-name {
+    height: var(--control-h);
+}
+
+/* Normalize select look across browsers and keep size compact */
+select {
+    -webkit-appearance: menulist;
+    -moz-appearance: menulist;
+    appearance: menulist;
+    line-height: 1.2;
+    height: var(--control-h);
+    padding: var(--control-py) var(--control-px);
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+/* Difficulty placeholder color */
+.exercise-difficulty:invalid { color: var(--muted); }
+.exercise-difficulty:valid { color: inherit; }
+
+/* Normalize number inputs (remove giant spinners) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] { 
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Textarea tweaks: only vertical resize, no horizontal scroll */
+textarea { 
+    resize: vertical; 
+    max-width: 100%;
+    padding-block: var(--control-px);
+}
+
+/* Unified placeholder style */
+input::placeholder, textarea::placeholder { 
+    color: var(--muted); 
+    font-family: inherit; 
+    opacity: 1; 
+}
+
+.x-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    transition: background-color 0.2s, color 0.2s;
+    font-size: 1.1em;
+    font-weight: var(--font-weight-regular);
+    line-height: 1;
+}
+
+.x-delete-btn:hover {
+    background-color: var(--btn-secondary-hover);
+    font-weight: var(--font-weight-black);
+    color: var(--btn-danger-hover);
+}

@@ -1,0 +1,76 @@
+/* Nav bar and its look */
+nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background-color: var(--nav-bg);
+    color: var(--btn-fg);
+    padding: 0 0;
+    height: auto;
+    border-top: 1px solid var(--border-color);
+    overflow: auto;
+}
+
+/* Nav buttons */
+.nav-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    color: var(--muted);
+    background: var(--nav-bg);
+    padding: var(--space-12) var(--space-16);
+    cursor: pointer;
+    border: none;
+    border-radius: 0;
+    gap: var(--space-4);
+    height: auto;
+    transition: background-color 0.2s ease;
+}
+
+.nav-button:hover {
+    background: var(--btn-secondary-hover);
+}
+
+.nav-active {
+    color: var(--primary);
+    font-weight: var(--font-weight-semibold);
+    transition: all 0.2s ease-out;
+}
+
+.nav-icon {
+    font-size: 20px;
+    line-height: 1;
+    display: block;
+}
+
+.nav-text {
+    font-size: var(--font-size-2xs);
+    line-height: 1.2;
+    display: block;
+}
+
+.nav-button:hover .nav-text, .nav-button:hover .nav-icon {
+    color: var(--primary);
+}
+
+/* Small-screen adjustments for paddings and grids */
+@media (max-width: 768px) {
+    nav {
+        flex-direction: row;
+        justify-content: space-evenly;
+        height: var(--nav-height);
+    }
+    
+    .nav-button { 
+        flex-direction: column;
+        padding: var(--space-8) var(--space-16); 
+        min-width: 70px;
+        flex: 1;
+    }
+  }

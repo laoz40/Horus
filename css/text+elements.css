@@ -1,6 +1,6 @@
 .section-header-text {
     font-size: var(--font-size-md);
-    font-weight: var(--fw-regular);
+    font-weight: var(--font-weight-regular);
     margin: 0;
     padding: 0;
     color: var(--muted);
@@ -47,23 +47,16 @@ button.secondary:active {
     background: var(--btn-secondary-active);
 }
 
-.x-delete-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: var(--space-4);
+.top-action-buttons-container {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--muted);
-    transition: background-color 0.2s, color 0.2s;
-    font-size: 1.1em;
-    font-weight: var(--fw-regular);
-    line-height: 1;
-}
-
-.x-delete-btn:hover {
-    background-color: transparent;
-    font-weight: var(--fw-black);
-    color: var(--btn-danger-hover);
+    justify-content: space-between;
+    background-color: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    /* Use negative margin to cancel out the main container's horizontal and top padding */
+    margin: calc(-1 * var(--space-16)) calc(-1 * var(--space-16)) 0 calc(-1 * var(--space-16));
+    /* Adds back padding */
+    padding: var(--space-16) calc(var(--space-16) + var(--space-8)) var(--space-12) calc(var(--space-16) + var(--space-8));
+    border-bottom: 1px solid var(--border-color);
 }
