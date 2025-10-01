@@ -43,6 +43,7 @@
     --fg: #222222;
     --muted: #717171;
     --border-color: #d0d7de;
+    --shadow-color: rgba(100, 100, 100, 0.1);
     --nav-bg: rgba(255, 255, 255, 1);
     --btn-bg: var(--primary);
     --btn-bg-hover: var(--primary-hover);
@@ -53,7 +54,7 @@
     --btn-secondary-active: #c8c8c8;
     --btn-danger-bg: #dc3545;
     --btn-danger-hover: #c82333;
-    --shadow-color: rgba(100, 100, 100, 0.1);
+    --input-bg: #ececec;
 
     /* Border Radius */
     --border-radius: 4px;

@@ -36,11 +36,9 @@ nav {
 .nav-button:hover {
     background: var(--btn-secondary-hover);
 }
-
 .nav-active {
     color: var(--primary);
     font-weight: var(--font-weight-semibold);
-    transition: all 0.2s ease-out;
 }
 
 .nav-icon {
