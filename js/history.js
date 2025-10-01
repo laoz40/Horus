@@ -1,6 +1,7 @@
 // History rendering and summaries
 import { esc } from './utils.js';
 import { loadAllWorkouts, saveAllWorkouts, toDifficultyDisplay } from './data-storage.js';
+import { openAppModal } from './modal.js';
 
 /**
  * Build the HTML that shows a workout's exercises and sets.
@@ -111,16 +112,27 @@ export function renderHistory() {
       const workouts = loadAllWorkouts();
       const w = workouts[idx];
       if (!w) return;
-      const ok = confirm(`Delete workout "${w.name}" on ${w.date}? This cannot be undone.`);
-      if (!ok) return;
-      workouts.splice(idx, 1);
-      saveAllWorkouts(workouts);
-      const itemEl = btn.closest('.history-item');
-      if (itemEl) itemEl.remove();
-      if (!list.querySelector('.history-item')) {
-        list.innerHTML = '<p class="muted">No workouts saved yet.</p>';
-      }
-      updateLastWorkoutSummary();
+      openAppModal({
+        title: 'Delete workout?',
+        message: `Delete workout "${w.name}" on ${w.date}? This cannot be undone.`,
+        primaryText: 'Delete',
+        primaryButtonClass: 'danger',
+        secondaryText: 'Cancel',
+        onPrimary: () => {
+          const updated = loadAllWorkouts();
+          // re-check in case of concurrent changes
+          if (!updated[idx]) return;
+          updated.splice(idx, 1);
+          saveAllWorkouts(updated);
+          const itemEl = btn.closest('.history-item');
+          if (itemEl) itemEl.remove();
+          if (!list.querySelector('.history-item')) {
+            list.innerHTML = '<p class="muted">No workouts saved yet.</p>';
+          }
+          updateLastWorkoutSummary();
+        },
+        onSecondary: () => {}
+      });
     });
   });
 }

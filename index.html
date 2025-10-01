@@ -101,16 +101,26 @@
         <section id="settings-page" class="page">
             <h2 class="section-header-text">Settings</h2>
             <div id="data-version-card" class="settings-card">
-                <p>
-                    <strong>App schema version:</strong>
-                    <span id="current-schema-version">—</span>
-                </p>
-                </p>
+                <strong>App schema version:</strong>
+                <span id="current-schema-version">—</span>
             </div>
         </section>
     </main>
 
     <!-- Main application script (ES modules) -->
     <script type="module" src="js/main.js"></script>
+
+    <!-- Generic App Modal -->
+    <div id="app-modal-overlay" class="modal-overlay" aria-hidden="true" hidden>
+      <div class="modal" role="dialog" aria-labelledby="app-modal-title" aria-modal="true">
+        <h3 id="app-modal-title">Notice</h3>
+        <p id="app-modal-message">Message</p>
+        <div class="modal-actions">
+          <button id="app-modal-primary-btn">OK</button>
+          <button id="app-modal-secondary-btn" class="secondary" hidden>Cancel</button>
+        </div>
+      </div>
+    </div>
+
   </body>
   </html>

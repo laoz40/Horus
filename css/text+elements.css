@@ -42,7 +42,6 @@ button.secondary {
 button.secondary:hover {
     background: var(--btn-secondary-hover);
 }
-
 button.secondary:active {
     background: var(--btn-secondary-active);
 }
@@ -58,4 +57,62 @@ button.secondary:active {
     margin: calc(-1 * var(--space-16)) calc(-1 * var(--space-16)) 0 calc(-1 * var(--space-16));
     padding: var(--space-16) var(--space-16) var(--space-12) var(--space-16);
     border-bottom: 1px solid var(--border-color);
+}
+
+/* -------------------- */
+/* Modal (Draft decision) */
+/* -------------------- */
+.modal-overlay[hidden],
+.modal-overlay[aria-hidden="true"] {
+    display: none !important;
+}
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal {
+    background: #ffffff;
+    color: var(--fg);
+    width: min(520px, calc(100vw - 2 * var(--space-16)));
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 30px var(--shadow-color);
+    padding: var(--space-24);
+}
+.modal h3 {
+    margin: 0 0 var(--space-12) 0;
+    font-size: var(--font-size-lg);
+}
+.modal p {
+    margin: 0 0 var(--space-20) 0;
+    color: var(--muted);
+}
+.modal-actions {
+    display: flex;
+    gap: var(--space-12);
+    justify-content: flex-end;
+}
+.modal-actions button {
+    min-width: 110px;
+    height: var(--control-h);
+}
+
+.modal-actions button.danger {
+    background-color: var(--btn-danger-bg);
+    color: white;
+    border: 1px solid var(--btn-danger-bg);
+}
+
+.modal-actions button.danger:hover {
+    background-color: var(--btn-danger-hover);
+    border-color: var(--btn-danger-hover);
+}
+
+.modal-actions button.danger:active {
+    background-color: #bd2130;
+    border-color: #b21f2d;
 }

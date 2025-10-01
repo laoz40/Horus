@@ -1,5 +1,6 @@
 // Add Exercise form: creation and reading helpers
 import { esc } from './utils.js';
+import { openAppModal } from './modal.js';
 
 /**
  * Creates a form block with:
@@ -59,11 +60,30 @@ export function createExerciseForm(initial = { name: '', notes: '', difficulty: 
       <button type="button" class="x-delete-btn remove-set" aria-label="Remove set">✕</button>
     `;
     row.querySelector('.remove-set').addEventListener('click', () => {
-      row.remove();
-      tableEl.querySelectorAll('.set-row').forEach((r, idx) => {
-        const num = r.querySelector('.set-number');
-        num.textContent = String(idx + 1);
-        num.setAttribute('aria-label', `Set ${idx + 1}`);
+      openAppModal({
+        title: 'Delete set?',
+        message: 'This will remove the set from the exercise.',
+        primaryText: 'Delete',
+        primaryButtonClass: 'danger',
+        secondaryText: 'Cancel',
+        onPrimary: () => {
+          row.remove();
+          const rows = tableEl.querySelectorAll('.set-row');
+          if (rows.length === 0) {
+            // If no sets remain, remove the entire exercise form
+            wrapper.remove();
+          } else {
+            // Re-number remaining sets
+            rows.forEach((r, idx) => {
+              const num = r.querySelector('.set-number');
+              num.textContent = String(idx + 1);
+              num.setAttribute('aria-label', `Set ${idx + 1}`);
+            });
+          }
+          // Notify the app to save the draft immediately after removal
+          try { document.dispatchEvent(new Event('draft-save-request')); } catch (_) { /* ignore */ }
+        },
+        onSecondary: () => {}
       });
     });
     tableEl.appendChild(row);

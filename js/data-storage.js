@@ -13,6 +13,29 @@ export function getCurrentWorkout() {
 export const WORKOUTS_KEY = 'workouts';
 export const EXERCISES_KEY = 'exerciseNames';
 export const SCHEMA_VERSION = 2;
+// Draft storage key for preserving in-progress form data across refresh
+export const WORKOUT_DRAFT_KEY = 'workoutDraft';
+
+// Draft load/save helpers
+export const loadWorkoutDraft = () => {
+  try {
+    return JSON.parse(localStorage.getItem(WORKOUT_DRAFT_KEY) || 'null');
+  } catch (_) {
+    return null;
+  }
+};
+export const saveWorkoutDraft = (draft) => {
+  try {
+    if (draft && typeof draft === 'object') {
+      localStorage.setItem(WORKOUT_DRAFT_KEY, JSON.stringify(draft));
+    }
+  } catch (_) {
+    // ignore
+  }
+};
+export const clearWorkoutDraft = () => {
+  try { localStorage.removeItem(WORKOUT_DRAFT_KEY); } catch (_) { /* ignore */ }
+};
 
 // Load/save helpers
 export const loadAllWorkouts = () => {
