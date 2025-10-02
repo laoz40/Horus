@@ -1,4 +1,5 @@
-#create-workout-container, #last-workout-summary {
+#create-workout-container,
+#last-workout-summary {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -12,6 +13,7 @@
     gap: var(--space-8);
 }
 
-#start-workout-btn, #new-preset-btn {
+#start-workout-btn,
+#new-preset-btn {
     flex: 1;
 }

@@ -1,9 +1,4 @@
 // Generic App Modal helper
-// Exports openAppModal to show a modal with optional primary/secondary actions.
-// Expected HTML IDs:
-// - #app-modal-overlay, #app-modal-title, #app-modal-message
-// - #app-modal-primary-btn, optional #app-modal-secondary-btn
-
 export function openAppModal({
   title = 'Notice',
   message = '',
@@ -40,7 +35,7 @@ export function openAppModal({
   titleEl.textContent = title;
   messageEl.textContent = message;
   primaryBtn.textContent = primaryText || 'OK';
-  
+
   // Set primary button class
   primaryBtn.className = ''; // Reset any existing classes
   if (primaryButtonClass) {
@@ -68,7 +63,7 @@ export function openAppModal({
 
   const onPrimaryClick = () => { close(); if (typeof onPrimary === 'function') onPrimary(); };
   const onSecondaryClick = () => { close(); if (typeof onSecondary === 'function') onSecondary(); };
-  const onBackdrop = (e) => { 
+  const onBackdrop = (e) => {
     if (dismissOnBackdrop && e.target === overlay) {
       if (typeof onBackdropClick === 'function') {
         onBackdropClick();

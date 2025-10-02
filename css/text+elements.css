@@ -6,8 +6,8 @@
     color: var(--muted);
 }
 
-.muted { 
-    color: var(--muted); 
+.muted {
+    color: var(--muted);
 }
 
 /* Primary button styling (height matches inputs) */
@@ -24,12 +24,12 @@ button {
     line-height: 1.2;
 }
 
-button:hover { 
-    background: var(--btn-bg-hover); 
+button:hover {
+    background: var(--btn-bg-hover);
 }
 
-button:active { 
-    background: var(--btn-bg-active); 
+button:active {
+    background: var(--btn-bg-active);
 }
 
 /* Secondary button look (neutral background) */
@@ -42,6 +42,7 @@ button.secondary {
 button.secondary:hover {
     background: var(--btn-secondary-hover);
 }
+
 button.secondary:active {
     background: var(--btn-secondary-active);
 }
@@ -59,22 +60,21 @@ button.secondary:active {
     border-bottom: 1px solid var(--border-color);
 }
 
-/* -------------------- */
-/* Modal (Draft decision) */
-/* -------------------- */
 .modal-overlay[hidden],
 .modal-overlay[aria-hidden="true"] {
     display: none !important;
 }
+
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.35);
+    background: rgba(0, 0, 0, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
 }
+
 .modal {
     background: #ffffff;
     color: var(--fg);
@@ -83,19 +83,23 @@ button.secondary:active {
     box-shadow: 0 10px 30px var(--shadow-color);
     padding: var(--space-24);
 }
+
 .modal h3 {
     margin: 0 0 var(--space-12) 0;
     font-size: var(--font-size-lg);
 }
+
 .modal p {
     margin: 0 0 var(--space-20) 0;
     color: var(--muted);
 }
+
 .modal-actions {
     display: flex;
     gap: var(--space-12);
     justify-content: flex-end;
 }
+
 .modal-actions button {
     min-width: 110px;
     height: var(--control-h);

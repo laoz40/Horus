@@ -1,4 +1,4 @@
-// History rendering and summaries
+// import all the functions and variables we need from other files
 import { esc } from './utils.js';
 import { loadAllWorkouts, saveAllWorkouts, toDifficultyDisplay } from './data-storage.js';
 import { openAppModal } from './modal.js';
@@ -13,13 +13,13 @@ export function workoutDetailsHTML(workout) {
       <div class="history-exercise-item">
         <strong>${esc(ex.name)}</strong>
         ${ex.sets
-          .map((s, i) => `
+        .map((s, i) => `
             <div class="set-line">
               <span class="muted">${i + 1}</span>
               <span>${s.weight} kg × ${s.reps}</span>
             </div>
           `)
-          .join('')}
+        .join('')}
           ${ex.difficulty ? `<span class="muted">Difficulty:</span> <span>${esc(toDifficultyDisplay(ex.difficulty))}</span>` : ''}
           ${ex.notes ? `<span class="muted">Note:</span> <span>${esc(ex.notes)}</span>` : ''}
       </div>
@@ -131,7 +131,7 @@ export function renderHistory() {
           }
           updateLastWorkoutSummary();
         },
-        onSecondary: () => {}
+        onSecondary: () => { }
       });
     });
   });

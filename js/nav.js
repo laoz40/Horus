@@ -1,5 +1,6 @@
-// Page navigation and active state handling
+// import all the functions and variables we need from other files
 import { renderHistory, updateLastWorkoutSummary } from './history.js';
+import { saveDraftNow, restoreDraftIfAny } from './draft.js';
 
 /**
  * Show one page by id and hide the others.
@@ -24,7 +25,7 @@ export function showPage(pageId) {
   } else if (pageId === 'workout-dashboard-page') {
     updateLastWorkoutSummary();
   }
-  
+
   // Update nav active state
   const navButtons = document.querySelectorAll('nav .nav-button');
   navButtons.forEach(btn => btn.classList.toggle('nav-active', btn.dataset.page === pageId));
@@ -45,5 +46,21 @@ export function wireNavButtons() {
       const pageId = button.dataset.page;
       showPage(pageId);
     });
+  });
+
+  // Save the draft when navigating away from the New Workout page
+  document.addEventListener('page-will-hide', (e) => {
+    const fromId = e?.detail?.pageId;
+    if (fromId === 'new-workout-page') {
+      saveDraftNow();
+    }
+  });
+
+  // Restore the draft when showing the New Workout page
+  document.addEventListener('page-did-show', (e) => {
+    const toId = e?.detail?.pageId;
+    if (toId === 'new-workout-page') {
+      restoreDraftIfAny();
+    }
   });
 }

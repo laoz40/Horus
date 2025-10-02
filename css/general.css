@@ -111,9 +111,9 @@ html, body { -ms-overflow-style: none; }
 
 /* Small-screen adjustments for paddings and grids */
 @media (max-width: 768px) {
-    main { 
-        padding: 0 var(--space-16) var(--space-16) var(--space-16); 
-        max-width: 768px; 
+    main {
+        padding: 0 var(--space-16) var(--space-16) var(--space-16);
+        max-width: 768px;
         margin: var(--space-16) 0 var(--nav-height) 0;
     }
-  }
+}

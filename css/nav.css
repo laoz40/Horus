@@ -36,6 +36,7 @@ nav {
 .nav-button:hover {
     background: var(--btn-secondary-hover);
 }
+
 .nav-active {
     color: var(--primary);
     font-weight: var(--font-weight-semibold);
@@ -53,7 +54,8 @@ nav {
     display: block;
 }
 
-.nav-button:hover .nav-text, .nav-button:hover .nav-icon {
+.nav-button:hover .nav-text,
+.nav-button:hover .nav-icon {
     color: var(--primary);
 }
 
@@ -64,11 +66,11 @@ nav {
         justify-content: space-evenly;
         height: var(--nav-height);
     }
-    
-    .nav-button { 
+
+    .nav-button {
         flex-direction: column;
-        padding: var(--space-8) var(--space-16); 
+        padding: var(--space-8) var(--space-16);
         min-width: 70px;
         flex: 1;
     }
-  }
+}

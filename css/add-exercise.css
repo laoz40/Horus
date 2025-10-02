@@ -28,11 +28,12 @@
 }
 
 /* New Workout date */
-#workout-date.readout { 
-    color: var(--muted); 
+#workout-date.readout {
+    color: var(--muted);
 }
 
-.exercise-text-container, .sets-container {
+.exercise-text-container,
+.sets-container {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -71,7 +72,11 @@
 }
 
 /* Generic control look shared by inputs, selects and textareas */
-input[type="text"], input[type="number"], select, textarea, .exercise-name {
+input[type="text"],
+input[type="number"],
+select,
+textarea,
+.exercise-name {
     padding: var(--control-py) var(--control-px);
     border: 0px solid var(--border-color);
     border-radius: var(--border-radius);
@@ -81,16 +86,21 @@ input[type="text"], input[type="number"], select, textarea, .exercise-name {
 }
 
 /* Set uniform heights for inputs/selects (textarea excluded) */
-input[type="text"], input[type="number"], select, .exercise-name {
+input[type="text"],
+input[type="number"],
+select,
+.exercise-name {
     height: var(--control-h);
 }
 
-.exercise-name, .exercise-name::placeholder {
+.exercise-name,
+.exercise-name::placeholder {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
 }
 
-.set-reps, .set-weight {
+.set-reps,
+.set-weight {
     font-weight: var(--font-weight-semibold);
 }
 
@@ -99,8 +109,8 @@ input[type="number"] {
 }
 
 /* Textarea tweaks: only vertical resize, no horizontal scroll */
-textarea { 
-    resize: vertical; 
+textarea {
+    resize: vertical;
     max-width: 100%;
     padding-block: var(--control-px);
 }
@@ -122,26 +132,28 @@ input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
-input[type="number"] { 
+
+input[type="number"] {
     -moz-appearance: textfield;
     appearance: textfield;
 }
 
 /* Unified placeholder style */
-input::placeholder, textarea::placeholder { 
-    color: var(--muted); 
-    font-family: inherit; 
+input::placeholder,
+textarea::placeholder {
+    color: var(--muted);
+    font-family: inherit;
     font-weight: var(--font-weight-regular);
-    opacity: 1; 
+    opacity: 1;
 }
 
 /* Difficulty placeholder color */
-.exercise-difficulty:invalid { 
-    color: var(--muted); 
+.exercise-difficulty:invalid {
+    color: var(--muted);
 }
 
-.exercise-difficulty:valid { 
-    color: inherit; 
+.exercise-difficulty:valid {
+    color: inherit;
 }
 
 .x-delete-btn {

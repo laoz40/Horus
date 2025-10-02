@@ -1,6 +1,7 @@
+// import all the functions and variables we need from other files
 import { weekdays, formatDisplayDate } from './utils.js';
 import { updateLastWorkoutSummary } from './history.js';
-import { createExerciseForm } from './add-exercise.js';
+import { createExerciseForm } from './workout-builder.js';
 
 // Internal state
 let currentWorkout = null;
@@ -120,28 +121,24 @@ export function runMigrations(workouts) {
   return workouts;
 }
 
-/**
- * Fill the exercise name suggestions list.
- * Reads saved exercise names and adds them to the datalist so you can pick
- * from names you used before instead of typing them again.
- */
+// Fill the exercise name suggestions list.
+// Reads saved exercise names and adds them to the datalist so you can pick
+// from names you used before instead of typing them again.
 export function populateExerciseDatalist() {
-    const list = document.getElementById('exercise-name-list');
-    if (!list) return;
-    list.innerHTML = '';
-    loadAllExerciseNames().forEach(name => {
-      const opt = document.createElement('option');
-      opt.value = name;
-      list.appendChild(opt);
-    });
-  }
+  const list = document.getElementById('exercise-name-list');
+  if (!list) return;
+  list.innerHTML = '';
+  loadAllExerciseNames().forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    list.appendChild(opt);
+  });
+}
 
-/**
- * Start a brand-new workout in memory and reset the form.
- * Sets today's date, uses the weekday as a default name, clears old forms,
- * adds one blank exercise form, refreshes suggestions, and updates the
- * dashboard summary.
- */
+// Start a brand-new workout in memory and reset the form.
+// Sets today's date, uses the weekday as a default name, clears old forms,
+// adds one blank exercise form, refreshes suggestions, and updates the
+// dashboard summary.
 export function initNewWorkout() {
   // Clear any existing workout
   currentWorkout = null;
@@ -149,9 +146,12 @@ export function initNewWorkout() {
   const displayDate = formatDisplayDate(today);
   const workoutDateEl = document.getElementById('workout-date');
   const workoutNameInput = document.getElementById('workout-name');
-  if (workoutDateEl) workoutDateEl.textContent = displayDate;
+  // Set the date
+  workoutDateEl && (workoutDateEl.textContent = displayDate);
+  // Set the name
   const dayName = weekdays[today.getDay()];
-  if (workoutNameInput) workoutNameInput.value = dayName;
+  workoutNameInput && (workoutNameInput.value = dayName);
+  // Create the workout
   currentWorkout = {
     id: `${Date.now()}`,
     schemaVersion: SCHEMA_VERSION,
