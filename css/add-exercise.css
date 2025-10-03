@@ -104,6 +104,11 @@ select,
     font-weight: var(--font-weight-semibold);
 }
 
+.set-reps:invalid,
+.set-weight:invalid {
+    color: var(--btn-danger-hover);
+}
+
 input[type="number"] {
     text-align: center;
 }

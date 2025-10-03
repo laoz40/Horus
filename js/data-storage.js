@@ -139,7 +139,7 @@ export function populateExerciseDatalist() {
 // Sets today's date, uses the weekday as a default name, clears old forms,
 // adds one blank exercise form, refreshes suggestions, and updates the
 // dashboard summary.
-export function initNewWorkout() {
+export function setupNewWorkout() {
   // Clear any existing workout
   currentWorkout = null;
   const today = new Date();

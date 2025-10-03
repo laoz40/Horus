@@ -4,9 +4,7 @@ nav {
     flex-direction: column;
     justify-content: center;
     position: fixed;
-    bottom: 0;
     left: 0;
-    right: 0;
     z-index: 100;
     background-color: var(--nav-bg);
     color: var(--btn-fg);
@@ -65,6 +63,9 @@ nav {
         flex-direction: row;
         justify-content: space-evenly;
         height: var(--nav-height);
+        bottom: 0;
+        left: 0;
+        right: 0;
     }
 
     .nav-button {

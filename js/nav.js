@@ -2,10 +2,8 @@
 import { renderHistory, updateLastWorkoutSummary } from './history.js';
 import { saveDraftNow, restoreDraftIfAny } from './draft.js';
 
-/**
- * Show one page by id and hide the others.
- * Also triggers a refresh of that page's content when opened.
- */
+// Show one page by id and hide the others.
+// Also triggers a refresh of that page's content when opened.
 export function showPage(pageId) {
   const pages = document.querySelectorAll('.page');
   // Find the currently active page (to notify listeners we're leaving it)
