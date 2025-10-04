@@ -36,11 +36,10 @@ export function wireUiEvents() {
         // Continue: load workout page, apply draft, and wire draft autosave
         onContinue: () => {
           showPage('new-workout-page');
-          setupNewWorkout();
           applyDraft(draft);
           wireDraftAutosave();
         },
-        // Discard: clear draft, load workout page, and wire draft autosave
+        // Start New: clear draft, load workout page, and wire draft autosave
         onDiscard: () => {
           clearWorkoutDraft();
           showPage('new-workout-page');
@@ -138,7 +137,7 @@ export function wireUiEvents() {
     // Display a success message
     openAppModal({
       title: "Workout saved",
-      message: `Your workout "${currentWorkout.name} Workout" has been saved.`,
+      message: `Your workout "${currentWorkout.name}" has been saved.`,
     });
     // Redirect to the history page
     showPage("history-page");

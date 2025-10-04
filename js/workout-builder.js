@@ -24,7 +24,7 @@ export function createExerciseForm(initial = { name: '', notes: '', difficulty: 
   //  - Notes textarea for additional details
   exerciseFormContainer.innerHTML = `
     <div class="exercise-text-container">
-      <input list="exercise-name-list" class="exercise-name" placeholder="Exercise Name" autocomplete="off" required value="${esc(initial.name)}">
+      <input list="exercise-name-list" class="exercise-name" placeholder="Enter Exercise" autocomplete="off" required value="${esc(initial.name)}">
     </div>
 
     <div class="sets-container">

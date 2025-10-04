@@ -3,13 +3,14 @@ import { openAppModal } from './modal.js';
 import { loadWorkoutDraft, saveWorkoutDraft } from './data-storage.js';
 import { createExerciseForm } from './workout-builder.js';
 
+const workoutNameInput = document.getElementById('workout-name');
+const workoutDateText = document.getElementById('workout-date');
+
 // read the current draft from the form and return it as a JSON object
 export function serializeDraft() {
-  const workoutNameInput = document.getElementById('workout-name');
-  const workoutDateEl = document.getElementById('workout-date');
-  const container = document.getElementById('add-exercise-form');
-  const forms = container ? [...container.querySelectorAll('.add-exercise-form')] : [];
-  const exercises = forms.map((form) => {
+  const exerciseFormContainer = document.getElementById('add-exercise-form');
+  const exerciseForms = exerciseFormContainer ? [...exerciseFormContainer.querySelectorAll('.add-exercise-form')] : [];
+  const exercises = exerciseForms.map((form) => {
     const name = (form.querySelector('.exercise-name')?.value || '').trim();
     const notes = (form.querySelector('.exercise-notes')?.value || '').trim();
     const diffSelect = form.querySelector('.exercise-difficulty');
@@ -23,7 +24,7 @@ export function serializeDraft() {
   });
   return {
     name: workoutNameInput ? workoutNameInput.value : '',
-    date: workoutDateEl ? workoutDateEl.textContent : '',
+    date: workoutDateText ? workoutDateText.textContent : '',
     exercises
   };
 }
@@ -31,31 +32,21 @@ export function serializeDraft() {
 // Applies a draft to the form
 export function applyDraft(draft) {
   if (!draft || typeof draft !== 'object') return;
-  const workoutNameInput = document.getElementById('workout-name');
-  const workoutDateEl = document.getElementById('workout-date');
   workoutNameInput && (workoutNameInput.value = draft.name || '');
-  workoutDateEl && (workoutDateEl.textContent = draft.date || workoutDateEl.textContent || '');
+  workoutDateText && (workoutDateText.textContent = draft.date || workoutDateText.textContent || '');
 
-  const container = document.getElementById('add-exercise-form');
-  if (!container) return;
-  container.innerHTML = '';
+  const exerciseFormContainer = document.getElementById('add-exercise-form');
+  if (!exerciseFormContainer) return;
+  exerciseFormContainer.innerHTML = '';
   const list = Array.isArray(draft.exercises) && draft.exercises.length ? draft.exercises : [{}];
   list.forEach((ex) => {
-    container.appendChild(createExerciseForm({
+    exerciseFormContainer.appendChild(createExerciseForm({
       name: ex.name || '',
       notes: ex.notes || '',
       difficulty: ex.difficulty || '',
       sets: Array.isArray(ex.sets) && ex.sets.length ? ex.sets : [{ weight: '', reps: '' }]
     }));
   });
-}
-
-// Restores the draft if any
-export function restoreDraftIfAny() {
-  const draft = loadWorkoutDraft();
-  if (draft) {
-    applyDraft(draft);
-  }
 }
 
 // Saves the current draft to localStorage
