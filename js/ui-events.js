@@ -11,6 +11,8 @@ export function wireUiEvents() {
   // Start workout button
   const startWorkoutBtn = document.getElementById('start-workout-btn');
   startWorkoutBtn && startWorkoutBtn.addEventListener('click', () => {
+    // Initialize a new workout
+    setupNewWorkout();
     // Check if there's a draft that has data
     const draft = loadWorkoutDraft();
     const hasDraft = !!(
@@ -34,13 +36,13 @@ export function wireUiEvents() {
     if (hasDraft) {
       openDraftModal({
         // Continue: load workout page, apply draft, and wire draft autosave
-        onContinue: () => {
+        clickedContinue: () => {
           showPage('new-workout-page');
           applyDraft(draft);
           wireDraftAutosave();
         },
         // Start New: clear draft, load workout page, and wire draft autosave
-        onDiscard: () => {
+        clickedDiscard: () => {
           clearWorkoutDraft();
           showPage('new-workout-page');
           setupNewWorkout();
@@ -141,8 +143,9 @@ export function wireUiEvents() {
     });
     // Redirect to the history page
     showPage("history-page");
-    // Reset the form to a blank state in background
+    // Reset the form to a blank state in background and clear the draft
     setupNewWorkout();
+    clearWorkoutDraft();
   });
 
   // wire up the navigation buttons

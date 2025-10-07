@@ -9,7 +9,7 @@ export function createExerciseForm(initial = { name: '', notes: '', difficulty: 
 
   // map difficulty values to labels
   const difficultyOptions = [
-    { value: '1', text: '1. Zero effort required' },
+    { value: '1', text: '1. Zero effort' },
     { value: '2', text: '2. Easy' },
     { value: '3', text: '3. Challenging' },
     { value: '4', text: '4. Struggled' },

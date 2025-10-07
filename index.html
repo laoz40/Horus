@@ -21,7 +21,7 @@
 </head>
 
 <body>
-    <!-- App header with title and navigation buttons -->
+    <!-- Nav bar -->
     <nav>
         <button class="nav-button nav-active" data-page="workout-dashboard-page">
             <i class="nav-icon material-icons">fitness_center</i>
@@ -41,10 +41,13 @@
         </button>
     </nav>
 
-    <!-- Main content area. Only one .page is shown at a time by JS -->
+    <!-- Main (Only one .page is shown at a time by JS) -->
     <main>
-        <!-- Home/Dashboard page -->
+        <!-- Home/Dashboard -->
         <section id="workout-dashboard-page" class="page active">
+            <div class="page-header">
+                <h1 class="page-header-text">Workout</h1>
+            </div>
             <div id="create-workout-container">
                 <h2 class="section-header-text">Create a Workout</h2>
                 <div class="create-workout-buttons-container">
@@ -52,55 +55,65 @@
                     <button id="new-preset-btn" class="secondary">New Preset</button>
                 </div>
             </div>
-            <!-- Shows the most recent saved workout -->
+            <!-- Most recent workout summary -->
             <div id="last-workout-summary">
                 <h2 class="section-header-text">Last Workout</h2>
                 <p>No workout saved yet.</p>
             </div>
         </section>
 
-        <!-- New Workout page: name/date form + list of exercises -->
+        <!-- New Workout -->
         <section id="new-workout-page" class="page">
-            <!-- Save the current workout -->
-            <div class="top-action-buttons-container">
+            <!-- Top actions (Back/Finish) -->
+            <div class="page-header">
                 <button id="workout-back-btn" class="secondary">Back</button>
+                <h1 class="page-header-text">New Workout</h1>
                 <button id="finish-workout-btn">Finish</button>
             </div>
 
-            <!-- Workout details card -->
+            <!-- Workout Form -->
             <form id="new-workout-form">
                 <div class="workout-name-container">
                     <input type="text" id="workout-name" required />
                     <div id="workout-date" class="readout" aria-readonly="true"></div>
                 </div>
                 <div id="add-exercises-container">
-                    <div id="add-exercise-form"><!-- Inline exercise forms --></div>
+                    <div id="add-exercise-form"><!-- Exercise forms --></div>
                     <button id="add-exercise-btn" type="button">Add Exercise</button>
                     <datalist id="exercise-name-list"></datalist>
                 </div>
             </form>
         </section>
 
-        <!-- History page: JS fills this with saved workouts -->
+        <!-- History page -->
         <section id="history-page" class="page">
-            <h2 class="section-header-text">Workout History</h2>
-            <!-- Content for Workout History Page will go here -->
+            <div class="page-header">
+                <h1 class="page-header-text">History</h1>
+            </div>
+            <div class="workouts-history"><!-- Workout List --></div>
         </section>
 
-        <!-- Progress page: placeholder for charts/stats -->
+        <!-- Progress page -->
         <section id="progress-page" class="page">
+            <div class="page-header">
+                <h1 class="page-header-text">Progress</h1>
+            </div>
             <h2 class="section-header-text">Exercise Progress</h2>
-            <!-- Content for Exercise Progress Page will go here -->
         </section>
 
-        <!-- Presets page: placeholder for exercise templates -->
+        <!-- Presets page -->
         <section id="presets-page" class="page">
+            <div class="page-header">
+                <h1 class="page-header-text">Presets</h1>
+            </div>
             <h2 class="section-header-text">Presets</h2>
-            <!-- Content for Presets Page will go here -->
         </section>
 
-        <!-- Settings/data page: export/import and other options -->
+        <!-- Settings -->
         <section id="settings-page" class="page">
+            <div class="page-header">
+                <h1 class="page-header-text">Settings</h1>
+            </div>
             <h2 class="section-header-text">Settings</h2>
             <div id="data-version-card" class="settings-card">
                 <strong>App schema version:</strong>
@@ -109,10 +122,10 @@
         </section>
     </main>
 
-    <!-- Main application script (ES modules) -->
+    <!-- JavaScript -->
     <script type="module" src="js/app.js"></script>
 
-    <!-- Generic App Modal -->
+    <!-- Modal -->
     <div id="app-modal-overlay" class="modal-overlay" aria-hidden="true" hidden>
         <div class="modal" role="dialog" aria-labelledby="app-modal-title" aria-modal="true">
             <h3 id="app-modal-title">Notice</h3>

@@ -1,30 +1,180 @@
-.history-item {
+/* Workout Card */
+.workout-summary-card {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     overflow: hidden;
-    margin-bottom: var(--space-12);
+    margin-bottom: var(--space-16);
+    background: var(--bg);
+    box-shadow: 0 1px 3px var(--shadow-color);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.history-item:last-child {
-    margin-bottom: 0;
+.workout-summary-card:active {
+    transform: translateY(1px);
 }
 
-.history-summary {
-    display: flex;
-    gap: var(--space-16);
-    align-items: center;
-    padding: var(--space-12) var(--space-16);
-    background: var(--card-bg);
+.workout-summary {
+    padding: var(--space-16);
     cursor: pointer;
-    flex-wrap: wrap;
 }
 
-.history-details {
-    padding: var(--space-12) var(--space-16);
+.workout-meta {
+    margin-bottom: var(--space-12);
+    width: 100%;
 }
 
-.set-line {
+.workout-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+    width: 100%;
+}
+
+.workout-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--fg);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.workout-stats-row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-12);
+    font-size: var(--font-size-sm);
+    color: var(--muted);
+}
+
+.workout-stats {
     display: flex;
     gap: var(--space-12);
-    padding: var(--space-4) 0;
+}
+
+.pr-tag {
+    background-color: var(--primary);
+    color: var(--btn-fg);
+    font-size: var(--font-size-2xs);
+    font-weight: var(--font-weight-medium);
+    padding: var(--space-4) var(--space-8);
+    border-radius: var(--border-radius-pill);
+    white-space: nowrap;
+    text-align: center;
+    display: inline-block;
+}
+
+.exercise-count, .workout-volume {
+    color: var(--fg);
+    display: flex;
+    align-items: center;
+}
+
+.workout-volume::before {
+    content: '•';
+    margin-right: var(--space-8);
+    color: var(--border-color);
+}
+
+.workout-details-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-4);
+}
+
+.workout-details-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    font-size: var(--font-size-xs);
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.workout-prs {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.workout-date,
+.workout-duration {
+    display: inline-flex;
+    align-items: center;
+}
+
+.workout-date::before {
+    content: '•';
+    margin-right: var(--space-8);
+    color: var(--border-color);
+}
+
+.workout-muscle-groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-8);
+    margin-top: var(--space-20);
+}
+
+.muscle-tag {
+    background-color: var(--btn-secondary-bg);
+    color: var(--muted);
+    font-size: var(--font-size-2xs);
+    padding: var(--space-4) var(--space-12);
+    border-radius: var(--border-radius-pill);
+    font-weight: var(--font-weight-medium);
+}
+
+.workout-details {
+    padding: var(--space-16);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+}
+
+.exercise-name {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-light);
+    color: var(--fg);
+    margin: 0 0 var(--space-4) 0;
+    line-height: 1.3;
+}
+
+.workout-details-footer {
+    margin-top: var(--space-16);
+    padding-top: var(--space-16);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.delete-button {
+    background-color: var(--btn-danger-bg);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: var(--space-8) var(--space-16);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-8);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.delete-button:hover {
+    background-color: var(--btn-danger-hover);
+}
+
+.delete-button:active {
+    transform: translateY(1px);
+}
+
+.exercise-set {
+    display: flex;
+    gap: var(--space-12);
+    padding: var(--space-8) 0;
+    align-items: center;
 }

@@ -1,6 +1,6 @@
 // import all the functions and variables we need from other files
 import { openAppModal } from './modal.js';
-import { loadWorkoutDraft, saveWorkoutDraft } from './data-storage.js';
+import { saveWorkoutDraft } from './data-storage.js';
 import { createExerciseForm } from './workout-builder.js';
 
 const workoutNameInput = document.getElementById('workout-name');
@@ -10,12 +10,12 @@ const workoutDateText = document.getElementById('workout-date');
 export function serializeDraft() {
   const exerciseFormContainer = document.getElementById('add-exercise-form');
   const exerciseForms = exerciseFormContainer ? [...exerciseFormContainer.querySelectorAll('.add-exercise-form')] : [];
-  const exercises = exerciseForms.map((form) => {
-    const name = (form.querySelector('.exercise-name')?.value || '').trim();
-    const notes = (form.querySelector('.exercise-notes')?.value || '').trim();
-    const diffSelect = form.querySelector('.exercise-difficulty');
+  const draftData = exerciseForms.map((exerciseData) => {
+    const name = (exerciseData.querySelector('.exercise-name')?.value || '').trim();
+    const notes = (exerciseData.querySelector('.exercise-notes')?.value || '').trim();
+    const diffSelect = exerciseData.querySelector('.exercise-difficulty');
     const difficulty = diffSelect?.value ? diffSelect.options[diffSelect.selectedIndex].text : '';
-    const sets = [...form.querySelectorAll('.set-row')].map((row) => {
+    const sets = [...exerciseData.querySelectorAll('.set-row')].map((row) => {
       const weight = (row.querySelector('.set-weight')?.value || '').toString();
       const reps = (row.querySelector('.set-reps')?.value || '').toString();
       return { weight, reps };
@@ -25,26 +25,40 @@ export function serializeDraft() {
   return {
     name: workoutNameInput ? workoutNameInput.value : '',
     date: workoutDateText ? workoutDateText.textContent : '',
-    exercises
+    exercises: draftData
   };
 }
 
 // Applies a draft to the form
 export function applyDraft(draft) {
+  // if draft is not an object, return
   if (!draft || typeof draft !== 'object') return;
+  // apply name and date
   workoutNameInput && (workoutNameInput.value = draft.name || '');
   workoutDateText && (workoutDateText.textContent = draft.date || workoutDateText.textContent || '');
 
   const exerciseFormContainer = document.getElementById('add-exercise-form');
+  // if no container, return
   if (!exerciseFormContainer) return;
+  
+  // clear the container
   exerciseFormContainer.innerHTML = '';
-  const list = Array.isArray(draft.exercises) && draft.exercises.length ? draft.exercises : [{}];
-  list.forEach((ex) => {
+  
+  // check if exercises is an array and has length, if not, use an empty array
+  const exercisesToLoad =
+    Array.isArray(draft.exercises) && draft.exercises.length
+      ? draft.exercises
+      : [{}];
+  
+  // loop through the exercises and create forms for them
+  exercisesToLoad.forEach((exerciseData) => {
     exerciseFormContainer.appendChild(createExerciseForm({
-      name: ex.name || '',
-      notes: ex.notes || '',
-      difficulty: ex.difficulty || '',
-      sets: Array.isArray(ex.sets) && ex.sets.length ? ex.sets : [{ weight: '', reps: '' }]
+      name: exerciseData.name || '',
+      notes: exerciseData.notes || '',
+      difficulty: exerciseData.difficulty || '',
+      sets: Array.isArray(exerciseData.sets) && exerciseData.sets.length 
+        ? exerciseData.sets 
+        : [{ weight: '', reps: '' }]
     }));
   });
 }
@@ -69,19 +83,19 @@ export function wireDraftAutosave() {
     saveDraftNow();
   });
 
-  // Listen for custom requests to save the draft (e.g., from remove-set)
+  // Listen for custom request to save the draft (e.g., from remove-set)
   document.addEventListener('draft-save-request', () => {
     saveDraftNow();
   });
 }
 
 // Opens a modal to ask the user whether to continue editing the last workout or start a new one
-export function openDraftModal({ onContinue, onDiscard }) {
-  // Create a wrapper for the discard action to track if it was explicitly triggered
+export function openDraftModal({ clickedContinue, clickedDiscard }) {
+  // check whether the discard action was explicitly triggered, in case of backdrop click
   let explicitDiscard = false;
   const handleDiscard = () => {
     explicitDiscard = true;
-    onDiscard();
+    clickedDiscard();
   };
 
   openAppModal({
@@ -89,7 +103,7 @@ export function openDraftModal({ onContinue, onDiscard }) {
     message: 'Do you want to continue editing the last workout or start a new one?',
     primaryText: 'Continue',
     secondaryText: 'Start New',
-    onPrimary: onContinue,
+    onPrimary: clickedContinue,
     onSecondary: handleDiscard,
     // When clicking outside, just close the modal without triggering any action
     onBackdropClick: () => {

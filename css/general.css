@@ -58,14 +58,16 @@
 
     /* Border Radius */
     --border-radius: 4px;
+    --border-radius-pill: 12px;
 
     /* Controls (inputs/selects) */
     --control-h: 2.5rem;            /* overall height of inputs/selects */
     --control-py: 0.2rem;           /* vertical padding */
     --control-px: 0.6rem;           /* horizontal padding */
 
-    /* Nav */
+    /* Page */
     --nav-height: 60px;
+    --header-height: 20px;
 }
 
 /* Base text, background color, and page defaults */

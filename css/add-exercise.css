@@ -3,10 +3,6 @@
     flex-direction: column;
 }
 
-#new-workout-form {
-    padding: var(--space-12) 0 0 0;
-}
-
 /* Inline exercise form as a compact card */
 .add-exercise-form {
     border: 1px solid var(--border-color);
@@ -76,7 +72,7 @@ input[type="text"],
 input[type="number"],
 select,
 textarea,
-.exercise-name {
+input.exercise-name {
     padding: var(--control-py) var(--control-px);
     border: 0px solid var(--border-color);
     border-radius: var(--border-radius);
@@ -89,12 +85,12 @@ textarea,
 input[type="text"],
 input[type="number"],
 select,
-.exercise-name {
+input.exercise-name {
     height: var(--control-h);
 }
 
-.exercise-name,
-.exercise-name::placeholder {
+input.exercise-name,
+input.exercise-name::placeholder {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
 }

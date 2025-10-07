@@ -1,7 +1,18 @@
-.section-header-text {
+
+.page-header-text {
     font-size: var(--font-size-md);
-    font-weight: var(--font-weight-regular);
+    font-weight: var(--font-weight-semibold);
     margin: 0;
+    padding: 0;
+    color: var(--fg);
+    text-align: center;
+    align-items: center;
+}
+
+.section-header-text {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-regular);
+    margin: 0 0 var(--space-4) 0;
     padding: 0;
     color: var(--muted);
 }
@@ -47,17 +58,41 @@ button.secondary:active {
     background: var(--btn-secondary-active);
 }
 
-.top-action-buttons-container {
+button.danger {
+    background-color: var(--btn-danger-bg);
+    color: white;
+}
+
+button.danger:hover {
+    background-color: var(--btn-danger-hover);
+}
+
+button.danger:active {
+    background-color: var(--btn-danger-active);
+}
+
+.page-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    align-items: center;
     background-color: var(--bg);
     position: sticky;
     top: 0;
     z-index: 1;
     /* Use negative margin to cancel out the main container's horizontal and top padding */
-    margin: calc(-1 * var(--space-16)) calc(-1 * var(--space-16)) 0 calc(-1 * var(--space-16));
+    margin: calc(-1 * var(--space-16)) calc(-1 * var(--space-16)) var(--space-16) calc(-1 * var(--space-16));
     padding: var(--space-16) var(--space-16) var(--space-12) var(--space-16);
     border-bottom: 1px solid var(--border-color);
+    height: var(--header-height);
+}
+
+.page-header button.secondary, .page-header button {
+    padding: var(--space-4) var(--space-8);
+    height: auto;
+}
+
+#new-workout-page .page-header {
+    justify-content: space-between;
 }
 
 .modal-overlay[hidden],
@@ -105,18 +140,3 @@ button.secondary:active {
     height: var(--control-h);
 }
 
-.modal-actions button.danger {
-    background-color: var(--btn-danger-bg);
-    color: white;
-    border: 1px solid var(--btn-danger-bg);
-}
-
-.modal-actions button.danger:hover {
-    background-color: var(--btn-danger-hover);
-    border-color: var(--btn-danger-hover);
-}
-
-.modal-actions button.danger:active {
-    background-color: #bd2130;
-    border-color: #b21f2d;
-}

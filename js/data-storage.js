@@ -14,7 +14,7 @@ export function getCurrentWorkout() {
 // Storage keys
 export const WORKOUTS_KEY = 'workouts';
 export const EXERCISES_KEY = 'exerciseNames';
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 export const WORKOUT_DRAFT_KEY = 'workoutDraft';
 
 // load the draft from localStorage
@@ -51,8 +51,16 @@ export const clearWorkoutDraft = () => {
 
 // Load all workouts from localStorage and run migrations
 export const loadAllWorkouts = () => {
-  const rawData = JSON.parse(localStorage.getItem(WORKOUTS_KEY) || '[]');
-  return runMigrations(rawData);
+  try {
+    const rawData = JSON.parse(localStorage.getItem(WORKOUTS_KEY) || '[]');
+    // Ensure we have an array before running migrations
+    const workoutsArray = Array.isArray(rawData) ? rawData : [];
+    return runMigrations(workoutsArray);
+  } catch (error) {
+    console.error('Error loading workouts:', error);
+    // Return empty array if there's an error
+    return [];
+  }
 };
 
 // Save all workouts to localStorage
@@ -67,7 +75,7 @@ export const saveAllExerciseNames = (array) => localStorage.setItem(EXERCISES_KE
 // Map difficulty number to label
 export function mapDifficultyNumberToLabel(n) {
   const map = {
-    1: '1. Zero effort required',
+    1: '1. Zero effort',
     2: '2. Easy',
     3: '3. Challenging',
     4: '4. Struggled',
@@ -88,6 +96,21 @@ export function toDifficultyDisplay(label) {
 
 // Migration function so that old workouts can be loaded in the new format
 export const MIGRATIONS = {
+  // Migration from version 2 to version 3 - Update difficulty labels
+  2: (workout) => {
+    if (!workout || !workout.exercises) return workout;
+    
+    const updatedWorkout = { ...workout };
+    updatedWorkout.exercises = workout.exercises.map(exercise => {
+      if (exercise.difficulty === '1. Zero effort required') {
+        return { ...exercise, difficulty: '1. Zero effort' };
+      }
+      return exercise;
+    });
+    
+    return updatedWorkout;
+  },
+  
   // Migration from version 1 to version 2
   1: (workout) => {
     // If no workout, return it as is
@@ -134,27 +157,65 @@ export const MIGRATIONS = {
 
 // Run migrations
 export function runMigrations(workouts) {
-  let changed = false;
-  const upgraded = workouts.map((workout) => {
-    const from = (workout && typeof workout === 'object' && 'schemaVersion' in workout) ? (workout.schemaVersion || 1) : 1;
-    let curr = { ...workout };
-    for (let v = from; v < SCHEMA_VERSION; v++) {
-      const migrate = MIGRATIONS[v];
-      if (typeof migrate === 'function') {
-        const next = migrate(curr) || curr;
-        if (next !== curr) changed = true;
-        curr = next;
-      }
-    }
-    return curr;
-  });
-  if (changed) {
-    saveAllWorkouts(upgraded);
-    // Store and return the new workout
-    currentWorkout = upgraded[upgraded.length - 1];
-    return currentWorkout;
+  // If workouts is not an array, return an empty array
+  if (!Array.isArray(workouts)) {
+    console.warn('Expected workouts to be an array, got:', workouts);
+    return [];
   }
-  return workouts;
+
+  let changed = false;
+  const migratedWorkouts = [];
+
+  // Process each workout
+  for (const workout of workouts) {
+    try {
+      // Skip invalid workouts
+      if (!workout || typeof workout !== 'object') {
+        console.warn('Skipping invalid workout:', workout);
+        continue;
+      }
+
+      // Determine the starting version for this workout
+      const fromVersion = ('schemaVersion' in workout) ? (workout.schemaVersion || 1) : 1;
+      let currentWorkout = { ...workout };
+      let workoutChanged = false;
+
+      // Apply each migration in sequence
+      for (let version = fromVersion; version < SCHEMA_VERSION; version++) {
+        const migrationFunction = MIGRATIONS[version];
+        if (typeof migrationFunction === 'function') {
+          const migratedWorkout = migrationFunction(currentWorkout) || currentWorkout;
+          if (migratedWorkout !== currentWorkout) {
+            workoutChanged = true;
+            currentWorkout = migratedWorkout;
+          }
+        }
+      }
+
+      // Update the schema version
+      if (workoutChanged) {
+        currentWorkout.schemaVersion = SCHEMA_VERSION;
+        changed = true;
+      }
+
+      migratedWorkouts.push(currentWorkout);
+    } catch (error) {
+      console.error('Error migrating workout:', error, 'Workout:', workout);
+      // If there's an error, try to keep the original workout
+      if (workout) migratedWorkouts.push(workout);
+    }
+  }
+
+  // If any workouts were changed, save them back to localStorage
+  if (changed) {
+    try {
+      saveAllWorkouts(migratedWorkouts);
+    } catch (error) {
+      console.error('Error saving migrated workouts:', error);
+    }
+  }
+
+  return migratedWorkouts;
 }
 
 // Reads saved exercise names and adds them to the datalist
