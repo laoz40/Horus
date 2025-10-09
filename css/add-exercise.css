@@ -69,7 +69,6 @@
 
 /* Generic control look shared by inputs, selects and textareas */
 input[type="text"],
-input[type="number"],
 select,
 textarea,
 input.exercise-name {
@@ -83,7 +82,6 @@ input.exercise-name {
 
 /* Set uniform heights for inputs/selects (textarea excluded) */
 input[type="text"],
-input[type="number"],
 select,
 input.exercise-name {
     height: var(--control-h);
@@ -105,10 +103,6 @@ input.exercise-name::placeholder {
     color: var(--btn-danger-hover);
 }
 
-input[type="number"] {
-    text-align: center;
-}
-
 /* Textarea tweaks: only vertical resize, no horizontal scroll */
 textarea {
     resize: vertical;
@@ -125,18 +119,6 @@ select {
     height: var(--control-h);
     vertical-align: middle;
     cursor: pointer;
-}
-
-/* Normalize number inputs (remove giant spinners) */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-input[type="number"] {
-    -moz-appearance: textfield;
-    appearance: textfield;
 }
 
 /* Unified placeholder style */

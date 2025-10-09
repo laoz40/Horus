@@ -56,10 +56,36 @@ export function createExerciseForm(initial = { name: '', notes: '', difficulty: 
 
     setRow.innerHTML = `
       <span class="set-number" aria-label="Set ${setNumber}">${setNumber}</span>
-      <input type="number" inputmode="decimal" min="0" step="0.5" placeholder="Weight" class="set-weight" value="${defaults.weight}">
-      <input type="number" inputmode="numeric" min="1" step="1" placeholder="Reps" class="set-reps" value="${defaults.reps}">
+      <input type="text" inputmode="decimal" placeholder="Weight" class="set-weight" value="${defaults.weight}">
+      <input type="text" inputmode="numeric" placeholder="Reps" class="set-reps" value="${defaults.reps}">
       <button type="button" class="x-delete-btn remove-set" aria-label="Remove set">✕</button>
     `;
+
+    // Add numeric input validation, to only allow digits and decimals
+    function validateNumericInput(input, allowDecimal = false) {
+      input.addEventListener('input', () => {
+        // remove anything that's not a digit or dot
+        let value = input.value.replace(/[^0-9.]/g, '');
+    
+        if (allowDecimal) {
+          // keep only the first dot, remove any others
+          const parts = value.split('.');
+          if (parts.length > 1) {
+            value = parts.shift() + '.' + parts.join('');
+          }
+        } else {
+          // remove dots entirely for integer-only inputs
+          value = value.replace(/\./g, '');
+        }
+    
+        input.value = value;
+      });
+    }
+    // weight allows decimal
+    setRow.querySelectorAll('.set-weight').forEach(input => validateNumericInput(input, true));
+    // reps integer only
+    setRow.querySelectorAll('.set-reps').forEach(input => validateNumericInput(input, false));
+
     // wire up the remove set button
     setRow.querySelector('.remove-set').addEventListener('click', () => {
       // show a confirmation modal
