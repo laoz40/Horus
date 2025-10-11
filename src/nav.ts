@@ -1,6 +1,6 @@
 // import all the functions and variables we need from other files
 import { renderHistory, updateLastWorkoutSummary } from "./history.js";
-import { saveDraftNow } from "./draft.js";
+import { saveWorkoutDraft } from "./draft.js";
 
 interface PageChangeEvent extends CustomEvent {
   detail: {
@@ -22,7 +22,7 @@ export function wireNavButtons() {
   document.addEventListener('page-will-hide', (e) => {
     const fromId = (e as PageChangeEvent).detail?.pageId;
     if (fromId === 'new-workout-page') {
-      saveDraftNow();
+      saveWorkoutDraft();
     }
   });
 }

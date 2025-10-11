@@ -1,6 +1,6 @@
 // import all the functions and variables we need from other files
 import { renderHistory, updateLastWorkoutSummary } from "./history.js";
-import { saveDraftNow } from "./draft.js";
+import { saveWorkoutDraft } from "./draft.js";
 // Connect header nav buttons so clicking them switches pages.
 export function wireNavButtons() {
     const navButtons = document.querySelectorAll("nav .nav-button");
@@ -15,7 +15,7 @@ export function wireNavButtons() {
         var _a;
         const fromId = (_a = e.detail) === null || _a === void 0 ? void 0 : _a.pageId;
         if (fromId === 'new-workout-page') {
-            saveDraftNow();
+            saveWorkoutDraft();
         }
     });
 }

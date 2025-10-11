@@ -2,6 +2,7 @@
 import { esc } from './utils.js';
 import { loadAllWorkouts, saveAllWorkouts, toDifficultyDisplay } from './data-storage.js';
 import { openAppModal } from './modal.js';
+import { DELETE_WORKOUT_BUTTON, HISTORY_CONTAINER, LAST_WORKOUT_SUMMARY } from './constants.js';
 // Build the HTML that shows workout details when expanded
 function buildExpandedDetailsHTML(exercise) {
     return `
@@ -34,14 +35,25 @@ function buildExpandedDetailsHTML(exercise) {
 }
 // Generate HTML for a workout summary card
 function buildSummaryCardHTML(workout, index = null, showDeleteButton = false) {
-    // Calculate workout duration (placeholder - in real app, this would be calculated from timestamps)
+    // Calculate workout duration (will add this later)
     const workoutDuration = '45m';
-    // Extract unique muscle groups (placeholder - in real app, this would come from exercise data)
+    // Extract unique muscle groups (will add this later)
     const muscleGroups = ['Chest', 'Triceps', 'Shoulders'];
-    // Calculate PRs (placeholder - in real app, this would be calculated from exercise history)
-    const prsSet = 1;
-    // Calculate total volume (placeholder - in real app, this would be calculated from exercise data)
-    const totalVolume = '2,340 kg';
+    // Calculate PRs (will add this later)
+    const prsSet = 0;
+    // Calculate the volume for a single set (weight × reps)
+    const calculateSetVolume = (set) => {
+        return (set.weight || 0) * (set.reps || 0);
+    };
+    // Calculate the total volume for all sets in an exercise
+    const calculateExerciseVolume = (exercise) => {
+        return exercise.sets.reduce((total, set) => total + calculateSetVolume(set), 0);
+    };
+    // Calculate the total volume for the entire workout
+    const calculateTotalVolume = (workout) => {
+        return workout.exercises.reduce((total, exercise) => total + calculateExerciseVolume(exercise), 0);
+    };
+    const totalVolume = calculateTotalVolume(workout);
     return `
     <div class="workout-summary-card" ${index !== null ? `data-workout-index="${index}"` : ''}>
       <div class="workout-summary">
@@ -57,7 +69,7 @@ function buildSummaryCardHTML(workout, index = null, showDeleteButton = false) {
             <div class="workout-stats-row">
               <div class="workout-stats">
                 <span class="exercise-count">${workout.exercises.length} Exercises</span>
-                <span class="workout-volume">${totalVolume}</span>
+                <span class="workout-volume">${totalVolume || '0'} kg</span>
               </div>
               ${prsSet > 0 ? `
                 <span class="pr-tag">${prsSet} PRs</span>
@@ -89,58 +101,55 @@ function buildSummaryCardHTML(workout, index = null, showDeleteButton = false) {
 }
 // Set up click handlers for a workout card
 function setupWorkoutCard(workoutCard) {
-    const summaryCard = workoutCard.querySelector('.workout-summary');
-    const DetailsExpanded = workoutCard.querySelector('.workout-details');
-    if (summaryCard && DetailsExpanded) {
-        // Initially hide the details
-        DetailsExpanded.style.display = 'none';
-        // Toggle function
-        const toggleExpandDetails = (event) => {
-            // Don't toggle if clicking on the delete button or its children
-            if (event.target && event.target.closest('.delete-button')) {
-                return;
-            }
-            // Toggle the display of the details
-            if (DetailsExpanded.style.display === 'none') {
-                DetailsExpanded.style.display = 'flex';
-                workoutCard.setAttribute('aria-expanded', 'true');
-            }
-            else {
-                DetailsExpanded.style.display = 'none';
-                workoutCard.setAttribute('aria-expanded', 'false');
-            }
-        };
-        // Add click event listener to the summary
-        summaryCard.addEventListener('click', toggleExpandDetails);
-        // Make the summary focusable and add ARIA attributes for accessibility
-        summaryCard.setAttribute('tabindex', '0');
-        summaryCard.setAttribute('role', 'button');
-        summaryCard.setAttribute('aria-expanded', 'false');
-        summaryCard.setAttribute('aria-controls', 'workout-details');
-    }
+    // Find elements within the workout card
+    const workoutSummary = workoutCard.querySelector('.workout-summary');
+    const workoutDetails = workoutCard.querySelector('.workout-details');
+    if (!workoutSummary || !workoutDetails)
+        return;
+    // Initially hide the details
+    workoutDetails.style.display = 'none';
+    // Toggle function
+    const toggleExpandDetails = (event) => {
+        // Don't toggle if clicking on the delete button or its children
+        if (event.target && event.target.closest('.delete-button')) {
+            return;
+        }
+        // Toggle the display of the details
+        const isHidden = workoutDetails.style.display === 'none';
+        workoutDetails.style.display = isHidden ? 'flex' : 'none';
+        workoutCard.setAttribute('aria-expanded', String(isHidden));
+    };
+    // Add click event listener to the summary
+    workoutSummary.addEventListener('click', toggleExpandDetails);
+    // Make the summary focusable and add ARIA attributes for accessibility
+    workoutSummary.setAttribute('tabindex', '0');
+    workoutSummary.setAttribute('role', 'button');
+    workoutSummary.setAttribute('aria-expanded', 'false');
+    workoutSummary.setAttribute('aria-controls', 'workout-details');
 }
 // Show the latest saved workout on the dashboard
 export function updateLastWorkoutSummary() {
     // Check if the summary container exists
-    const summaryContainer = document.getElementById('last-workout-summary');
-    if (!summaryContainer)
+    if (!LAST_WORKOUT_SUMMARY)
         return;
     // Get most recent workout
     const allWorkouts = loadAllWorkouts();
     const lastWorkout = allWorkouts[allWorkouts.length - 1];
     // Display nothing if no workouts
     if (!lastWorkout) {
-        summaryContainer.innerHTML = ``;
+        LAST_WORKOUT_SUMMARY.innerHTML = ``;
         return;
     }
     // Display the last workout
-    summaryContainer.innerHTML = `
+    LAST_WORKOUT_SUMMARY.innerHTML = `
     <h2 class="section-header-text">Last Workout</h2>
     ${buildSummaryCardHTML(lastWorkout)}
   `;
     // Setup the workout card
-    const workoutCard = summaryContainer.querySelector('.workout-summary-card');
-    workoutCard && setupWorkoutCard(workoutCard);
+    const workoutCard = LAST_WORKOUT_SUMMARY.querySelector('.workout-summary-card');
+    if (workoutCard) {
+        setupWorkoutCard(workoutCard);
+    }
 }
 // Delete a workout by index
 function deleteWorkout(workoutIndex) {
@@ -173,15 +182,14 @@ function deleteWorkout(workoutIndex) {
 }
 // Render the full list of saved workouts in the History page
 export function renderHistory() {
-    const historyContainer = document.querySelector('.workouts-history');
-    if (!historyContainer)
+    if (!HISTORY_CONTAINER)
         return;
     // Clear existing content
-    historyContainer.innerHTML = '';
+    HISTORY_CONTAINER.innerHTML = '';
     const allWorkouts = loadAllWorkouts();
     // If no workouts, display empty state
     if (allWorkouts.length === 0) {
-        historyContainer.innerHTML = `
+        HISTORY_CONTAINER.innerHTML = `
       <div class="empty-state">
         <p class="empty-message">No workouts saved yet.</p>
       </div>
@@ -189,19 +197,18 @@ export function renderHistory() {
     }
     else {
         // Render workouts in reverse chronological order (newest first)
-        historyContainer.innerHTML = allWorkouts
+        HISTORY_CONTAINER.innerHTML = allWorkouts
             .map((workout, index) => buildSummaryCardHTML(workout, index, true))
             .reverse()
             .join('');
     }
     // For each workout, setup workout card
-    historyContainer.querySelectorAll('.workout-summary-card').forEach((workoutCard) => {
+    HISTORY_CONTAINER.querySelectorAll('.workout-summary-card').forEach((workoutCard) => {
         workoutCard && setupWorkoutCard(workoutCard);
         // Setup delete button handler for each workout card
-        const deleteWorkoutButton = workoutCard.querySelector('.delete-button');
-        if (deleteWorkoutButton) {
-            deleteWorkoutButton.addEventListener('click', () => {
-                const WorkoutIndexString = deleteWorkoutButton.getAttribute('data-workout-index');
+        if (DELETE_WORKOUT_BUTTON) {
+            DELETE_WORKOUT_BUTTON.addEventListener('click', () => {
+                const WorkoutIndexString = DELETE_WORKOUT_BUTTON === null || DELETE_WORKOUT_BUTTON === void 0 ? void 0 : DELETE_WORKOUT_BUTTON.getAttribute('data-workout-index');
                 if (!WorkoutIndexString)
                     return;
                 // Convert the index to a number

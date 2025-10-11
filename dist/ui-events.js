@@ -1,15 +1,16 @@
 // import all the functions and variables we need from other files
 import { showPage, wireNavButtons } from './nav.js';
 import { createExerciseForm, readExercisesFromForms } from './workout-builder.js';
-import { loadAllExerciseNames, saveAllExerciseNames, loadAllWorkouts, saveAllWorkouts, setupNewWorkout, getCurrentWorkout, clearWorkoutDraft, populateExerciseDatalist, loadWorkoutDraft, SCHEMA_VERSION } from './data-storage.js';
+import { loadAllExerciseNames, saveAllExerciseNames, loadAllWorkouts, saveAllWorkouts, setupNewWorkout, getCurrentWorkout, populateExerciseDatalist } from './data-storage.js';
 import { updateLastWorkoutSummary, renderHistory } from './history.js';
 import { openAppModal } from './modal.js';
-import { openDraftModal, saveDraftNow, applyDraft, wireDraftAutosave } from './draft.js';
+import { openDraftModal, saveWorkoutDraft, applyWorkoutDraft, wireDraftAutosave, clearWorkoutDraft, loadWorkoutDraft } from './draft.js';
+import { SCHEMA_VERSION } from './migration.js';
+import { START_WORKOUT_BUTTON, ADD_EXERCISE_BUTTON, EXERCISE_FORM_CONTAINER, BACK_BUTTON_WORKOUT, FINISH_WORKOUT_BUTTON, WORKOUT_NAME_INPUT, WORKOUT_DATE_TEXT } from './constants.js';
 // Wire up all the UI events
 export function wireUiEvents() {
     // Start workout button
-    const startWorkoutBtn = document.getElementById('start-workout-btn');
-    startWorkoutBtn && startWorkoutBtn.addEventListener('click', () => {
+    START_WORKOUT_BUTTON && START_WORKOUT_BUTTON.addEventListener('click', () => {
         // Initialize a new workout
         setupNewWorkout();
         // Check if there's a draft that has data
@@ -28,7 +29,7 @@ export function wireUiEvents() {
                 // Continue: load workout page, apply draft, and wire draft autosave
                 clickedContinue: () => {
                     showPage('new-workout-page');
-                    applyDraft(draft);
+                    applyWorkoutDraft(draft);
                     wireDraftAutosave();
                 },
                 // Start New: clear draft, load workout page, and wire draft autosave
@@ -47,27 +48,23 @@ export function wireUiEvents() {
         wireDraftAutosave();
     });
     // Add exercise button
-    const addExerciseBtn = document.getElementById('add-exercise-btn');
-    const exerciseFormsContainer = document.getElementById('add-exercise-form');
-    addExerciseBtn && addExerciseBtn.addEventListener('click', () => {
+    ADD_EXERCISE_BUTTON && ADD_EXERCISE_BUTTON.addEventListener('click', () => {
         // Add a new exercise form
-        exerciseFormsContainer && exerciseFormsContainer.appendChild(createExerciseForm());
+        EXERCISE_FORM_CONTAINER && EXERCISE_FORM_CONTAINER.appendChild(createExerciseForm());
         // Save draft immediately when adding a new exercise block
-        saveDraftNow();
+        saveWorkoutDraft();
     });
     // Show one empty exercise form if none exist
-    exerciseFormsContainer &&
-        exerciseFormsContainer.childElementCount === 0 &&
-        exerciseFormsContainer.appendChild(createExerciseForm());
+    EXERCISE_FORM_CONTAINER &&
+        EXERCISE_FORM_CONTAINER.childElementCount === 0 &&
+        EXERCISE_FORM_CONTAINER.appendChild(createExerciseForm());
     // Back button: return to dashboard
-    const backButtonWorkout = document.getElementById('workout-back-btn');
-    backButtonWorkout && backButtonWorkout.addEventListener('click', (e) => {
+    BACK_BUTTON_WORKOUT && BACK_BUTTON_WORKOUT.addEventListener('click', (e) => {
         e.preventDefault(); // Prevent default action (form submission)
         showPage('workout-dashboard-page');
     });
     // Finish button: build the workout from the form and save it to localStorage
-    const finishWorkoutBtn = document.getElementById('finish-workout-btn');
-    finishWorkoutBtn && finishWorkoutBtn.addEventListener('click', () => {
+    FINISH_WORKOUT_BUTTON && FINISH_WORKOUT_BUTTON.addEventListener('click', () => {
         // Get current workout data
         const currentWorkout = getCurrentWorkout();
         // If no workout exists, show error and stop
@@ -78,15 +75,13 @@ export function wireUiEvents() {
             });
             return;
         }
-        const workoutNameInput = document.getElementById("workout-name");
-        const workoutDateText = document.getElementById("workout-date");
         // Update workout name and date if they've changed
-        workoutNameInput &&
+        WORKOUT_NAME_INPUT &&
             (currentWorkout.name =
-                workoutNameInput.value.trim() || currentWorkout.name);
-        workoutDateText &&
+                WORKOUT_NAME_INPUT.value.trim() || currentWorkout.name);
+        WORKOUT_DATE_TEXT &&
             (currentWorkout.date =
-                workoutDateText.textContent || currentWorkout.date);
+                WORKOUT_DATE_TEXT.textContent || currentWorkout.date);
         // Get exercises from forms
         currentWorkout.exercises = readExercisesFromForms();
         // If no exercises, show error and stop

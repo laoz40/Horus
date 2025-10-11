@@ -2,7 +2,9 @@
 import { weekdays, formatDisplayDate } from './utils.js';
 import { updateLastWorkoutSummary } from './history.js';
 import { createExerciseForm } from './workout-builder.js';
-import { Exercise, ExerciseSet, Migrations, Workout, WorkoutDraft } from './types.js';
+import { Exercise, Workout } from './types.js';
+import { runMigrations, SCHEMA_VERSION } from './migration.js';
+import { EXERCISE_FORM_CONTAINER, EXERCISE_NAME_LIST, WORKOUT_DATE_TEXT, WORKOUT_NAME_INPUT } from './constants.js';
 
 // Set current workout to null, because we don't have one yet
 let currentWorkout: Workout | null = null;
@@ -15,40 +17,7 @@ export function getCurrentWorkout() {
 // Storage keys
 export const WORKOUTS_KEY = 'workouts';
 export const EXERCISES_KEY = 'exerciseNames';
-export const SCHEMA_VERSION = 2;
 export const WORKOUT_DRAFT_KEY = 'workoutDraft';
-
-// load the draft from localStorage
-export const loadWorkoutDraft = () => {
-  try {
-    // Get the draft from localStorage
-    return JSON.parse(localStorage.getItem(WORKOUT_DRAFT_KEY) || 'null');
-  } catch (_) {
-    // If there's an error, return null
-    return null;
-  }
-};
-
-// Save the draft to localStorage
-export const saveWorkoutDraft = (draft: WorkoutDraft | null) => {
-  try {
-    // If the draft is an object, save it to localStorage
-    if (draft && typeof draft === 'object') {
-      localStorage.setItem(WORKOUT_DRAFT_KEY, JSON.stringify(draft));
-    }
-  } catch (_) {
-    // Ignore any errors
-  }
-};
-
-// Clear the draft from localStorage
-export const clearWorkoutDraft = () => {
-  try { 
-    localStorage.removeItem(WORKOUT_DRAFT_KEY); 
-  } catch (_) { 
-    // Ignore any errors
-  }
-};
 
 // Load all workouts from localStorage and run migrations
 export const loadAllWorkouts = () => {
@@ -95,100 +64,16 @@ export function toDifficultyDisplay(label: string) {
   return match ? match[1] : String(label);
 }
 
-// Migration function to update workout data when the app's data structure changes
-// Each migration is keyed by the version it migrates FROM
-
-export const MIGRATIONS: Migrations = {
-  // This migration (v2 to v3) updates the difficulty 1 label format for exercises
-  2: (workout: Workout) => {
-    if (!workout || !workout.exercises) return workout;
-    
-    const updatedWorkout = { ...workout };
-    updatedWorkout.exercises = workout.exercises.map((exercise: Exercise) => {
-      if (exercise.difficulty === '1. Zero effort required') {
-        return { ...exercise, difficulty: '1. Zero effort' };
-      }
-      return exercise;
-    });
-    
-    return updatedWorkout;
-  },
-};
-
-// Run migrations
-export function runMigrations(workouts: Workout[]) {
-  // If workouts is not an array, return an empty array
-  if (!Array.isArray(workouts)) {
-    console.warn('Expected workouts to be an array, got:', workouts);
-    return [];
-  }
-
-  let changed = false;
-  const migratedWorkouts = [];
-
-  // Process each workout
-  for (const workout of workouts) {
-    try {
-      // Skip invalid workouts
-      if (!workout || typeof workout !== 'object') {
-        console.warn('Skipping invalid workout:', workout);
-        continue;
-      }
-
-      // Determine the starting version for this workout
-      const fromVersion = ('schemaVersion' in workout) ? (workout.schemaVersion || 1) : 1;
-      let currentWorkout = { ...workout };
-      let workoutChanged = false;
-
-      // Apply each migration in sequence
-      for (let version = fromVersion; version < SCHEMA_VERSION; version++) {
-        const migrationFunction = MIGRATIONS[version];
-        if (typeof migrationFunction === 'function') {
-          const migratedWorkout = migrationFunction(currentWorkout) || currentWorkout;
-          if (migratedWorkout !== currentWorkout) {
-            workoutChanged = true;
-            currentWorkout = migratedWorkout;
-          }
-        }
-      }
-
-      // Update the schema version
-      if (workoutChanged) {
-        currentWorkout.schemaVersion = SCHEMA_VERSION;
-        changed = true;
-      }
-
-      migratedWorkouts.push(currentWorkout);
-    } catch (error) {
-      console.error('Error migrating workout:', error, 'Workout:', workout);
-      // If there's an error, try to keep the original workout
-      if (workout) migratedWorkouts.push(workout);
-    }
-  }
-
-  // If any workouts were changed, save them back to localStorage
-  if (changed) {
-    try {
-      saveAllWorkouts(migratedWorkouts);
-    } catch (error) {
-      console.error('Error saving migrated workouts:', error);
-    }
-  }
-
-  return migratedWorkouts;
-}
-
 // Reads saved exercise names and adds them to the datalist
 export function populateExerciseDatalist() {
-  const exerciseList = document.getElementById("exercise-name-list");
-  if (exerciseList) {
+  if (EXERCISE_NAME_LIST) {
     // Clear the list
-    exerciseList.innerHTML = "";
+    EXERCISE_NAME_LIST.innerHTML = "";
     // Add each exercise name to the list
     loadAllExerciseNames().forEach((name: string) => {
       const exerciseOption = document.createElement("option");
       exerciseOption.value = name;
-      exerciseList.appendChild(exerciseOption);
+      EXERCISE_NAME_LIST?.appendChild(exerciseOption);
     });
   }
 }
@@ -199,14 +84,12 @@ export function setupNewWorkout() {
   currentWorkout = null;
   const today = new Date();
   const displayDate = formatDisplayDate(today);
-  const workoutDateText = document.getElementById('workout-date');
-  const workoutNameInput = document.getElementById('workout-name');
   // Set the date
-  workoutDateText && (workoutDateText.textContent = displayDate);
+  WORKOUT_DATE_TEXT && (WORKOUT_DATE_TEXT.textContent = displayDate);
   // Set the name to the day of the week (default)
   const dayName = weekdays[today.getDay()];
-  if (workoutNameInput) {
-    (workoutNameInput as HTMLInputElement).value = dayName;
+  if (WORKOUT_NAME_INPUT) {
+    (WORKOUT_NAME_INPUT as HTMLInputElement).value = dayName;
   }
   // Create the workout object
   currentWorkout = {
@@ -217,15 +100,18 @@ export function setupNewWorkout() {
     exercises: [] as Exercise[]
   };
   // Create the exercise form
-  const exerciseFormsContainer = document.getElementById('add-exercise-form');
-  if (exerciseFormsContainer) {
+  if (EXERCISE_FORM_CONTAINER) {
     // Clear the container
-    exerciseFormsContainer.innerHTML = "";
+    EXERCISE_FORM_CONTAINER.innerHTML = "";
     // Add the exercise form
-    exerciseFormsContainer.appendChild(createExerciseForm());
+    EXERCISE_FORM_CONTAINER.appendChild(createExerciseForm());
   }
   // Populate the exercise name suggestions list
   populateExerciseDatalist();
   // Update the last workout summary
   updateLastWorkoutSummary();
+}
+
+export function validateWorkoutData(workout: Workout) {
+
 }

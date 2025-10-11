@@ -1,15 +1,13 @@
 // import all the functions and variables we need from other files
 import { openAppModal } from './modal.js';
-import { saveWorkoutDraft, getCurrentWorkout } from './data-storage.js';
+import { getCurrentWorkout, WORKOUT_DRAFT_KEY } from './data-storage.js';
 import { createExerciseForm } from './workout-builder.js';
 import { WorkoutDraft } from './types.js';
 import { formatDisplayDate } from './utils.js';
-
-const workoutNameInput = document.getElementById('workout-name');
-const workoutDateText = document.getElementById('workout-date');
+import { WORKOUT_NAME_INPUT, WORKOUT_DATE_TEXT, EXERCISE_FORM_CONTAINER, EXERCISE_NAME_INPUT, EXERCISE_NOTES_INPUT, EXERCISE_DIFFICULTY, MODAL_BG_OVERLAY } from './constants.js';
 
 // read the current draft from the form and return it as a JSON object
-export function serializeDraft(): WorkoutDraft {
+export function createWorkoutDraftData(): WorkoutDraft {
 
   // Converts a string to a number, to allow 0 as a valid value instead of empty string/null
   function convertToNumber(inputValue: string | undefined | null): number | null {
@@ -23,16 +21,11 @@ export function serializeDraft(): WorkoutDraft {
     return Number.isNaN(numberValue) ? null : numberValue;
   }
 
-  const exerciseFormContainer = document.getElementById('add-exercise-form');
-  const exerciseForms = exerciseFormContainer ? [...exerciseFormContainer.querySelectorAll('.add-exercise-form')] : [];
+  const exerciseForms = EXERCISE_FORM_CONTAINER ? [...EXERCISE_FORM_CONTAINER.querySelectorAll('.add-exercise-form')] : [];
   const draftData = exerciseForms.map((exerciseData) => {
-    const nameInput = exerciseData.querySelector<HTMLInputElement>('.exercise-name');
-    const notesInput = exerciseData.querySelector<HTMLTextAreaElement>('.exercise-notes');
-    const diffSelect = exerciseData.querySelector<HTMLSelectElement>('.exercise-difficulty');
-    
-    const name = (nameInput?.value || '').trim();
-    const notes = (notesInput?.value || '').trim();
-    const difficulty = diffSelect?.selectedOptions[0]?.text || '';
+    const name = (EXERCISE_NAME_INPUT?.value || '').trim();
+    const notes = (EXERCISE_NOTES_INPUT?.value || '').trim();
+    const difficulty = EXERCISE_DIFFICULTY?.selectedOptions[0]?.text || '';
     
     const sets = [...exerciseData.querySelectorAll('.set-row')].map((row) => {
       const weightInput = row.querySelector<HTMLInputElement>('.set-weight');
@@ -45,14 +38,14 @@ export function serializeDraft(): WorkoutDraft {
     return { name, notes, difficulty, sets };
   });
   return {
-    name: (workoutNameInput as HTMLInputElement)?.value || '',
-    date: (workoutDateText as HTMLDivElement)?.textContent || '',
+    name: (WORKOUT_NAME_INPUT as HTMLInputElement)?.value || '',
+    date: (WORKOUT_DATE_TEXT as HTMLDivElement)?.textContent || '',
     exercises: draftData
   };
 }
 
 // Applies a draft to the form
-export function applyDraft(draft: WorkoutDraft) {
+export function applyWorkoutDraft(draft: WorkoutDraft) {
   // if draft is not an object, return
   if (!draft || typeof draft !== 'object') return;
 
@@ -67,16 +60,13 @@ export function applyDraft(draft: WorkoutDraft) {
   currentWorkout.date = displayDate;
 
   // apply name and date to the html
-  workoutNameInput && ((workoutNameInput as HTMLInputElement).value = draft.name || '');
-  workoutDateText && (workoutDateText.textContent = draft.date || workoutDateText.textContent || '');
+  WORKOUT_NAME_INPUT && ((WORKOUT_NAME_INPUT as HTMLInputElement).value = draft.name || '');
+  WORKOUT_DATE_TEXT && (WORKOUT_DATE_TEXT.textContent = draft.date || WORKOUT_DATE_TEXT.textContent || '');
 
-  // apply exercises
-  const exerciseFormContainer = document.getElementById('add-exercise-form');
   // if no container, return
-  if (!exerciseFormContainer) return;
-  
+  if (!EXERCISE_FORM_CONTAINER) return;
   // clear the container
-  exerciseFormContainer.innerHTML = '';
+  EXERCISE_FORM_CONTAINER.innerHTML = '';
   
   // check if exercises is an array and has length, if not, use an empty array
   const exercisesToLoad=
@@ -86,7 +76,7 @@ export function applyDraft(draft: WorkoutDraft) {
   
   // loop through the exercises and create forms for them
   exercisesToLoad.forEach((exerciseData) => {
-    exerciseFormContainer.appendChild(createExerciseForm({
+    EXERCISE_FORM_CONTAINER?.appendChild(createExerciseForm({
       name: exerciseData.name || '',
       notes: exerciseData.notes || '',
       difficulty: exerciseData.difficulty || '',
@@ -101,29 +91,61 @@ export function applyDraft(draft: WorkoutDraft) {
   });
 }
 
+// load the draft from localStorage
+export const loadWorkoutDraft = () => {
+  try {
+    // Get the draft from localStorage
+    return JSON.parse(localStorage.getItem(WORKOUT_DRAFT_KEY) || 'null');
+  } catch (_) {
+    // If there's an error, return null
+    return null;
+  }
+};
+
+// Save the draft to localStorage
+export const saveDraftDataToStorage = (draft: WorkoutDraft | null) => {
+  try {
+    // If the draft is an object, save it to localStorage
+    if (draft && typeof draft === 'object') {
+      localStorage.setItem(WORKOUT_DRAFT_KEY, JSON.stringify(draft));
+    }
+  } catch (_) {
+    // Ignore any errors
+  }
+};
+
 // Saves the current draft to localStorage
-export function saveDraftNow() {
-  const draft = serializeDraft();
-  saveWorkoutDraft(draft);
+export function saveWorkoutDraft() {
+  const draft = createWorkoutDraftData();
+  saveDraftDataToStorage(draft);
 }
+
+// Clear the draft from localStorage
+export const clearWorkoutDraft = () => {
+  try { 
+    localStorage.removeItem(WORKOUT_DRAFT_KEY); 
+  } catch (_) { 
+    // Ignore any errors
+  }
+};
 
 // Sets up autosave listeners
 export function wireDraftAutosave() {
   // Save when the document is hidden (tab switch, app background)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
-      saveDraftNow();
+      saveWorkoutDraft();
     }
   });
 
   // Save right before the page unloads (refresh, close, back)
   window.addEventListener('beforeunload', () => {
-    saveDraftNow();
+    saveWorkoutDraft();
   });
 
   // Listen for custom request to save the draft (e.g., from remove-set)
   document.addEventListener('draft-save-request', () => {
-    saveDraftNow();
+    saveWorkoutDraft();
   });
 }
 
@@ -145,10 +167,9 @@ export function openDraftModal({ clickedContinue, clickedDiscard }: { clickedCon
     onSecondary: handleDiscard,
     // When clicking outside, just close the modal without triggering any action
     onBackdropClick: () => {
-      const overlay = document.getElementById('app-modal-overlay');
-      if (overlay) {
-        overlay.hidden = true;
-        overlay.setAttribute('aria-hidden', 'true');
+      if (MODAL_BG_OVERLAY) {
+        MODAL_BG_OVERLAY.hidden = true;
+        MODAL_BG_OVERLAY.setAttribute('aria-hidden', 'true');
       }
     },
     dismissOnBackdrop: true,
