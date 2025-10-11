@@ -2,14 +2,27 @@
 import { openAppModal } from './modal.js';
 import { saveWorkoutDraft, getCurrentWorkout } from './data-storage.js';
 import { createExerciseForm } from './workout-builder.js';
-import { Exercise, WorkoutDraft } from './types.js';
+import { WorkoutDraft } from './types.js';
 import { formatDisplayDate } from './utils.js';
 
 const workoutNameInput = document.getElementById('workout-name');
 const workoutDateText = document.getElementById('workout-date');
 
 // read the current draft from the form and return it as a JSON object
-export function serializeDraft() {
+export function serializeDraft(): WorkoutDraft {
+
+  // Converts a string to a number, to allow 0 as a valid value instead of empty string/null
+  function convertToNumber(inputValue: string | undefined | null): number | null {
+    // Return null if the input is empty, undefined, or null
+    if (inputValue === '' || inputValue === undefined || inputValue === null) {
+      return null;
+    }
+    // Convert the string to a number
+    const numberValue = Number(inputValue);
+    // Return the number if it's valid, otherwise return null
+    return Number.isNaN(numberValue) ? null : numberValue;
+  }
+
   const exerciseFormContainer = document.getElementById('add-exercise-form');
   const exerciseForms = exerciseFormContainer ? [...exerciseFormContainer.querySelectorAll('.add-exercise-form')] : [];
   const draftData = exerciseForms.map((exerciseData) => {
@@ -25,8 +38,8 @@ export function serializeDraft() {
       const weightInput = row.querySelector<HTMLInputElement>('.set-weight');
       const repsInput = row.querySelector<HTMLInputElement>('.set-reps');
       
-      const weight = parseFloat(weightInput?.value || '0') || 0;
-      const reps = parseInt(repsInput?.value || '0', 10) || 0;
+      const weight = convertToNumber(weightInput?.value);
+      const reps = convertToNumber(repsInput?.value);
       return { weight, reps };
     });
     return { name, notes, difficulty, sets };
@@ -49,10 +62,11 @@ export function applyDraft(draft: WorkoutDraft) {
   // Update name and date in currentWorkout data
   const currentWorkout = getCurrentWorkout();
   if (!currentWorkout) return;
+
   currentWorkout.name = draft.name || '';
   currentWorkout.date = displayDate;
 
-  // apply name and date
+  // apply name and date to the html
   workoutNameInput && ((workoutNameInput as HTMLInputElement).value = draft.name || '');
   workoutDateText && (workoutDateText.textContent = draft.date || workoutDateText.textContent || '');
 
@@ -65,7 +79,7 @@ export function applyDraft(draft: WorkoutDraft) {
   exerciseFormContainer.innerHTML = '';
   
   // check if exercises is an array and has length, if not, use an empty array
-  const exercisesToLoad: Exercise[] =
+  const exercisesToLoad=
     Array.isArray(draft.exercises) && draft.exercises.length
       ? draft.exercises
       : [{name: '', notes: '', difficulty: '', sets: [{ weight: 0, reps: 0 }]}];
@@ -77,8 +91,11 @@ export function applyDraft(draft: WorkoutDraft) {
       notes: exerciseData.notes || '',
       difficulty: exerciseData.difficulty || '',
       sets: (exerciseData.sets || []).map(set => ({
-        weight: Number(set.weight ?? 0),
-        reps: Number(set.reps ?? 0)
+        weight:
+          set.weight !== null && set.weight !== undefined
+            ? String(set.weight)
+            : '',
+        reps: set.reps ? String(set.reps) : ''
       }))
     }));
   });

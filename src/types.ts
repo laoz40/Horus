@@ -1,12 +1,12 @@
 export interface ExerciseSet {
-  weight: number;
-  reps: number;
+  weight: number | null;
+  reps: number | null;
 }
 
 export interface Exercise {
   name: string;
   sets: ExerciseSet[];
-  difficulty?: string | null | undefined;
+  difficulty?: string | null;
   notes?: string;
 }
 
@@ -22,6 +22,19 @@ export interface WorkoutDraft {
   name?: string;
   date?: string;
   exercises?: Exercise[];
+}
+
+// Form versions of the same data structures
+export interface ExerciseSetForm {
+  weight: string; // empty string represents 0
+  reps: string;    // empty string represents 0
+}
+
+export interface ExerciseForm {
+  name: string;
+  sets: ExerciseSetForm[];
+  difficulty?: string | null;
+  notes?: string;
 }
 
 // Update the type of MIGRATIONS to allow any number as a key

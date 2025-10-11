@@ -1,10 +1,10 @@
 // import all the functions and variables we need from other files
 import { esc } from './utils.js';
 import { openAppModal } from './modal.js';
-import { Exercise, ExerciseSet } from './types.js';
+import { ExerciseForm, ExerciseSetForm } from './types.js';
 
 // Creates an exercise form
-export function createExerciseForm(initial: Exercise = { name: '', notes: '', difficulty: '', sets: [] }) {
+export function createExerciseForm(initial: ExerciseForm = { name: '', notes: '', difficulty: '', sets: [] }) {
   const exerciseFormContainer = document.createElement('div');
   exerciseFormContainer.className = 'add-exercise-form';
 
@@ -48,7 +48,7 @@ export function createExerciseForm(initial: Exercise = { name: '', notes: '', di
   const addSetBtn = exerciseFormContainer.querySelector('.add-set');
 
   // add a set row to the table
-  function addSetRowTo(setsTable: HTMLDivElement, setNumber: number, defaults: ExerciseSet) {
+  function addSetRowTo(setsTable: HTMLDivElement, setNumber: number, defaults: ExerciseSetForm) {
     const setRow = document.createElement("div");
     setRow.className = "set-row";
 
@@ -58,8 +58,8 @@ export function createExerciseForm(initial: Exercise = { name: '', notes: '', di
 
     setRow.innerHTML = `
       <span class="set-number" aria-label="Set ${setNumber}">${setNumber}</span>
-      <input type="text" inputmode="decimal" placeholder="Weight" class="set-weight" value="${defaults.weight}">
-      <input type="text" inputmode="numeric" placeholder="Reps" class="set-reps" value="${defaults.reps}">
+      <input type="text" inputmode="decimal" placeholder="Weight" class="set-weight" value="${defaults.weight || ''}">
+      <input type="text" inputmode="numeric" placeholder="Reps" class="set-reps" value="${defaults.reps || ''}">
       <button type="button" class="x-delete-btn remove-set" aria-label="Remove set">✕</button>
     `;
 
@@ -144,17 +144,17 @@ export function createExerciseForm(initial: Exercise = { name: '', notes: '', di
     // if there are, map each set to a set row and add it to the table
     initial.sets.forEach((existingSet, setIndex) => {
       const initialInputValues = { weight: existingSet.weight, reps: existingSet.reps };
-      addSetRowTo(setsTable as HTMLDivElement, setIndex + 1, initialInputValues as ExerciseSet);
+      addSetRowTo(setsTable as HTMLDivElement, setIndex + 1, initialInputValues as ExerciseSetForm);
     });
   } else {
     // otherwise, add a default set row
-    addSetRowTo(setsTable as HTMLDivElement, 1, { weight: 0, reps: 0 });
+    addSetRowTo(setsTable as HTMLDivElement, 1, { weight: "", reps: "" });
   }
 
   // wire up the add set button
   addSetBtn?.addEventListener('click', () => {
     const currentSetCount = setsTable?.querySelectorAll('.set-row').length || 0;
-    addSetRowTo(setsTable as HTMLDivElement, currentSetCount + 1, { weight: 0, reps: 0 });
+    addSetRowTo(setsTable as HTMLDivElement, currentSetCount + 1, { weight: "", reps: "" });
   });
   // return the exercise form container
   return exerciseFormContainer;

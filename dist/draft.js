@@ -7,6 +7,17 @@ const workoutNameInput = document.getElementById('workout-name');
 const workoutDateText = document.getElementById('workout-date');
 // read the current draft from the form and return it as a JSON object
 export function serializeDraft() {
+    // Converts a string to a number, to allow 0 as a valid value instead of empty string/null
+    function convertToNumber(inputValue) {
+        // Return null if the input is empty, undefined, or null
+        if (inputValue === '' || inputValue === undefined || inputValue === null) {
+            return null;
+        }
+        // Convert the string to a number
+        const numberValue = Number(inputValue);
+        // Return the number if it's valid, otherwise return null
+        return Number.isNaN(numberValue) ? null : numberValue;
+    }
     const exerciseFormContainer = document.getElementById('add-exercise-form');
     const exerciseForms = exerciseFormContainer ? [...exerciseFormContainer.querySelectorAll('.add-exercise-form')] : [];
     const draftData = exerciseForms.map((exerciseData) => {
@@ -20,8 +31,8 @@ export function serializeDraft() {
         const sets = [...exerciseData.querySelectorAll('.set-row')].map((row) => {
             const weightInput = row.querySelector('.set-weight');
             const repsInput = row.querySelector('.set-reps');
-            const weight = parseFloat((weightInput === null || weightInput === void 0 ? void 0 : weightInput.value) || '0') || 0;
-            const reps = parseInt((repsInput === null || repsInput === void 0 ? void 0 : repsInput.value) || '0', 10) || 0;
+            const weight = convertToNumber(weightInput === null || weightInput === void 0 ? void 0 : weightInput.value);
+            const reps = convertToNumber(repsInput === null || repsInput === void 0 ? void 0 : repsInput.value);
             return { weight, reps };
         });
         return { name, notes, difficulty, sets };
@@ -46,7 +57,7 @@ export function applyDraft(draft) {
         return;
     currentWorkout.name = draft.name || '';
     currentWorkout.date = displayDate;
-    // apply name and date
+    // apply name and date to the html
     workoutNameInput && (workoutNameInput.value = draft.name || '');
     workoutDateText && (workoutDateText.textContent = draft.date || workoutDateText.textContent || '');
     // apply exercises
@@ -66,13 +77,12 @@ export function applyDraft(draft) {
             name: exerciseData.name || '',
             notes: exerciseData.notes || '',
             difficulty: exerciseData.difficulty || '',
-            sets: (exerciseData.sets || []).map(set => {
-                var _a, _b;
-                return ({
-                    weight: Number((_a = set.weight) !== null && _a !== void 0 ? _a : 0),
-                    reps: Number((_b = set.reps) !== null && _b !== void 0 ? _b : 0)
-                });
-            })
+            sets: (exerciseData.sets || []).map(set => ({
+                weight: set.weight !== null && set.weight !== undefined
+                    ? String(set.weight)
+                    : '',
+                reps: set.reps ? String(set.reps) : ''
+            }))
         }));
     });
 }

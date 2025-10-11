@@ -51,8 +51,8 @@ export function createExerciseForm(initial = { name: '', notes: '', difficulty: 
             (setNumber = setsTable.querySelectorAll(".set-row").length + 1);
         setRow.innerHTML = `
       <span class="set-number" aria-label="Set ${setNumber}">${setNumber}</span>
-      <input type="text" inputmode="decimal" placeholder="Weight" class="set-weight" value="${defaults.weight}">
-      <input type="text" inputmode="numeric" placeholder="Reps" class="set-reps" value="${defaults.reps}">
+      <input type="text" inputmode="decimal" placeholder="Weight" class="set-weight" value="${defaults.weight || ''}">
+      <input type="text" inputmode="numeric" placeholder="Reps" class="set-reps" value="${defaults.reps || ''}">
       <button type="button" class="x-delete-btn remove-set" aria-label="Remove set">✕</button>
     `;
         // Add numeric input validation, to only allow digits and decimals
@@ -133,12 +133,12 @@ export function createExerciseForm(initial = { name: '', notes: '', difficulty: 
     }
     else {
         // otherwise, add a default set row
-        addSetRowTo(setsTable, 1, { weight: 0, reps: 0 });
+        addSetRowTo(setsTable, 1, { weight: "", reps: "" });
     }
     // wire up the add set button
     addSetBtn === null || addSetBtn === void 0 ? void 0 : addSetBtn.addEventListener('click', () => {
         const currentSetCount = (setsTable === null || setsTable === void 0 ? void 0 : setsTable.querySelectorAll('.set-row').length) || 0;
-        addSetRowTo(setsTable, currentSetCount + 1, { weight: 0, reps: 0 });
+        addSetRowTo(setsTable, currentSetCount + 1, { weight: "", reps: "" });
     });
     // return the exercise form container
     return exerciseFormContainer;
