@@ -1,6 +1,46 @@
 import { MODAL_BG_OVERLAY, MODAL_TITLE, MODAL_MESSAGE, MODAL_PRIMARY_BUTTON, MODAL_SECONDARY_BUTTON } from "./constants.js";
+export const modalMessages = {
+    noExercises: {
+        title: "No Exercises",
+        message: "Please add at least one exercise to your workout.",
+    },
+    missingExerciseName: {
+        title: "Missing Exercise Name",
+        message: "Please enter a name for each exercise.",
+    },
+    missingReps: (setNumber, exerciseName) => ({
+        title: "Missing Reps",
+        message: `Please enter reps for Set ${setNumber} of ${exerciseName}.`,
+    }),
+    missingWeight: (setNumber, exerciseName) => ({
+        title: "Missing Weight",
+        message: `Please enter a weight for Set ${setNumber} of ${exerciseName}.`,
+    }),
+    deleteSet: (setNumber, exerciseName) => ({
+        title: "Delete set?",
+        message: `Delete Set ${setNumber} from ${exerciseName}?`,
+        primaryText: "Delete",
+        primaryButtonClass: "danger",
+        secondaryText: "Cancel",
+    }),
+    deleteWorkout: (workoutToDelete) => ({
+        title: 'Delete workout?',
+        message: `Delete workout "${workoutToDelete.name}" from ${workoutToDelete.date}? This cannot be undone.`,
+        primaryText: 'Delete',
+        primaryButtonClass: 'danger',
+        secondaryText: 'Cancel',
+    }),
+    resumeWorkout: (onContinue, onDiscard, workoutName = 'the last workout') => ({
+        title: `Resume ${workoutName}?`,
+        message: `Do you want to continue editing workout "${workoutName}" or start a new one?`,
+        primaryText: 'Continue',
+        secondaryText: 'Start New',
+        onPrimary: onContinue,
+        onSecondary: onDiscard,
+    }),
+};
 // creates a modal dialog with a title, message, and optional primary and secondary buttons
-export function openAppModal({ title = "Notice", message = "", primaryText = "OK", primaryButtonClass = "", secondaryText = "", onPrimary = null, onSecondary = null, onBackdropClick = null, dismissOnBackdrop = true, dismissOnEsc = true, } = {}) {
+export function openModal({ title = "Notice", message = "", primaryText = "OK", primaryButtonClass = "", secondaryText = "", onPrimary = null, onSecondary = null, onBackdropClick = null, dismissOnBackdrop = true, dismissOnEsc = true, } = {}) {
     // Fallbacks for when the modal elements don't exist
     if (!MODAL_BG_OVERLAY || !MODAL_TITLE || !MODAL_MESSAGE || !MODAL_PRIMARY_BUTTON || !MODAL_SECONDARY_BUTTON) {
         if (secondaryText) {

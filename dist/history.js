@@ -1,7 +1,7 @@
 // import all the functions and variables we need from other files
 import { esc } from './utils.js';
 import { loadAllWorkouts, saveAllWorkouts, toDifficultyDisplay } from './data-storage.js';
-import { openAppModal } from './modal.js';
+import { modalMessages, openModal } from './modal.js';
 import { HISTORY_CONTAINER, LAST_WORKOUT_SUMMARY } from './constants.js';
 // Build the HTML that shows workout details when expanded
 function buildExpandedDetailsHTML(exercise) {
@@ -157,12 +157,8 @@ function deleteWorkout(workoutIndex) {
     const workoutToDelete = allWorkouts[workoutIndex];
     if (!workoutToDelete)
         return;
-    openAppModal({
-        title: 'Delete workout?',
-        message: `Delete workout "${workoutToDelete.name}" from ${workoutToDelete.date}? This cannot be undone.`,
-        primaryText: 'Delete',
-        primaryButtonClass: 'danger',
-        secondaryText: 'Cancel',
+    openModal(Object.assign(Object.assign({}, modalMessages.deleteWorkout(workoutToDelete)), { 
+        // Delete the workout on primary button click
         onPrimary: () => {
             const updatedWorkouts = loadAllWorkouts();
             if (!updatedWorkouts[workoutIndex])
@@ -175,10 +171,7 @@ function deleteWorkout(workoutIndex) {
             renderHistory();
             // Update the last workout summary
             updateLastWorkoutSummary();
-        },
-        // Cancel the deletion
-        onSecondary: null,
-    });
+        } }));
 }
 // Render the full list of saved workouts in the History page
 export function renderHistory() {

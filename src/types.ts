@@ -1,3 +1,4 @@
+// Data structures for the app
 export interface ExerciseSet {
   weight: number | null;
   reps: number | null;
@@ -43,4 +44,17 @@ export interface MigrationFunction {
 }
 export interface Migrations {
   [key: number]: MigrationFunction | undefined;
+}
+
+// Modal messages
+export interface ModalMessage {
+  title: string;
+  message: string;
+  primaryText?: string;
+  secondaryText?: string;
+  onPrimary?: (data?: any) => void;
+  onSecondary?: () => void;
+  onBackdropClick?: () => void;
+  dismissOnBackdrop?: boolean;
+  dismissOnEsc?: boolean;
 }

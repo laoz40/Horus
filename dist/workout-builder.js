@@ -1,6 +1,6 @@
 // import all the functions and variables we need from other files
 import { esc } from './utils.js';
-import { openAppModal } from './modal.js';
+import { modalMessages, openModal } from './modal.js';
 import { EXERCISE_FORM_CONTAINER } from './constants.js';
 // Creates an exercise form
 export function createExerciseForm(initial = { name: '', notes: '', difficulty: '', sets: [] }) {
@@ -81,12 +81,10 @@ export function createExerciseForm(initial = { name: '', notes: '', difficulty: 
         setRow.querySelectorAll(".set-reps").forEach((input) => validateNumericInput(input, false));
         // wire up the remove set button
         (_a = setRow.querySelector(".remove-set")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", () => {
-            // show a confirmation modal
-            openAppModal({
-                title: "Delete set?",
-                message: "This will remove this set from the exercise.",
-                primaryText: "Delete",
-                secondaryText: "Cancel",
+            var _a;
+            // exercise name value  for the modal message
+            const exerciseName = ((_a = exerciseFormContainer.querySelector('.exercise-name')) === null || _a === void 0 ? void 0 : _a.value) || 'this exercise';
+            openModal(Object.assign(Object.assign({}, modalMessages.deleteSet(setNumber, exerciseName)), { 
                 // primary action: remove the set
                 onPrimary: () => {
                     setRow.remove();
@@ -98,14 +96,14 @@ export function createExerciseForm(initial = { name: '', notes: '', difficulty: 
                     else {
                         // Re-number remaining sets
                         SET_ROW.forEach((setRowElement, setIndex) => {
-                            const setNumberText = setRowElement.querySelector(".set-number");
-                            if (!setNumberText)
+                            const SET_NUMBER = setRowElement.querySelector(".set-number");
+                            if (!SET_NUMBER)
                                 return;
                             // adds 1 to index to make the set numbers start at 1 instead of 0
                             const newSetNumber = setIndex + 1;
                             // update the set number text and aria label
-                            setNumberText.textContent = String(newSetNumber);
-                            setNumberText.setAttribute("aria-label", `Set ${newSetNumber}`);
+                            SET_NUMBER.textContent = String(newSetNumber);
+                            SET_NUMBER.setAttribute("aria-label", `Set ${newSetNumber}`);
                         });
                     }
                     // Notify the app to save the draft immediately after removal
@@ -115,10 +113,7 @@ export function createExerciseForm(initial = { name: '', notes: '', difficulty: 
                     catch (_) {
                         /* ignore */
                     }
-                },
-                // secondary action: do nothing
-                onSecondary: () => { },
-            });
+                } }));
         });
         // add the set row to the table
         setsTable.appendChild(setRow);

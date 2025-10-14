@@ -4,7 +4,7 @@ import { updateLastWorkoutSummary } from './history.js';
 import { createExerciseForm } from './workout-builder.js';
 import { runMigrations, SCHEMA_VERSION } from './migration.js';
 import { EXERCISE_FORM_CONTAINER, EXERCISE_NAME_LIST, WORKOUT_DATE_TEXT, WORKOUT_NAME_INPUT } from './constants.js';
-import { openAppModal } from './modal.js';
+import { openModal, modalMessages } from './modal.js';
 // Set current workout to null, because we don't have one yet
 let currentWorkout = null;
 // Returns the current workout
@@ -108,10 +108,7 @@ export function validateWorkoutData() {
     // If no exercise forms, show error and stop
     const EXERCISE_FORMS = document.querySelectorAll('.add-exercise-form');
     if (!EXERCISE_FORMS || EXERCISE_FORMS.length === 0) {
-        openAppModal({
-            title: "No Exercises",
-            message: "Please add at least one exercise to your workout.",
-        });
+        openModal(modalMessages.noExercises);
         return false;
     }
     // Validate each exercise form
@@ -119,10 +116,7 @@ export function validateWorkoutData() {
         // If no exercise name, show error and stop
         const EXERCISE_NAME_INPUT = ((_a = exerciseForm.querySelector('.exercise-name')) === null || _a === void 0 ? void 0 : _a.value.trim()) || '';
         if (EXERCISE_NAME_INPUT === '') {
-            openAppModal({
-                title: "Missing exercise name",
-                message: "Please enter a name for each exercise.",
-            });
+            openModal(modalMessages.missingExerciseName);
             return false;
         }
         // Validate each set row inside this form
@@ -134,18 +128,12 @@ export function validateWorkoutData() {
             const setRepsNumber = SET_REPS === '' ? null : Number(SET_REPS);
             // reps cannot be empty or zero
             if (SET_WEIGHT !== '' && (SET_REPS === '' || setRepsNumber === null || setRepsNumber < 1)) {
-                openAppModal({
-                    title: "Missing reps",
-                    message: `Please enter reps for Set ${setIndex + 1} of ${EXERCISE_NAME_INPUT}.`,
-                });
+                openModal(modalMessages.missingReps(setIndex + 1, EXERCISE_NAME_INPUT));
                 return false;
             }
             // weight cannot be empty when reps has a value
             if (SET_REPS !== '' && SET_WEIGHT === '') {
-                openAppModal({
-                    title: "Missing weight",
-                    message: `Please enter a weight for Set ${setIndex + 1} of ${EXERCISE_NAME_INPUT}.`,
-                });
+                openModal(modalMessages.missingWeight(setIndex + 1, EXERCISE_NAME_INPUT));
                 return false;
             }
         }

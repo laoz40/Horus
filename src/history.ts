@@ -1,7 +1,7 @@
 // import all the functions and variables we need from other files
 import { esc } from './utils.js';
 import { loadAllWorkouts, saveAllWorkouts, toDifficultyDisplay } from './data-storage.js';
-import { openAppModal } from './modal.js';
+import { modalMessages, openModal } from './modal.js';
 import { Exercise, ExerciseSet, Workout } from './types.js';
 import { HISTORY_CONTAINER, LAST_WORKOUT_SUMMARY } from './constants.js';
 
@@ -184,12 +184,9 @@ function deleteWorkout(workoutIndex: number) {
   
   if (!workoutToDelete) return;
   
-  openAppModal({
-    title: 'Delete workout?',
-    message: `Delete workout "${workoutToDelete.name}" from ${workoutToDelete.date}? This cannot be undone.`,
-    primaryText: 'Delete',
-    primaryButtonClass: 'danger',
-    secondaryText: 'Cancel',
+  openModal({
+    ...modalMessages.deleteWorkout(workoutToDelete),
+    // Delete the workout on primary button click
     onPrimary: () => {
       const updatedWorkouts = loadAllWorkouts();
       if (!updatedWorkouts[workoutIndex]) return;
@@ -203,8 +200,6 @@ function deleteWorkout(workoutIndex: number) {
       // Update the last workout summary
       updateLastWorkoutSummary();
     },
-    // Cancel the deletion
-    onSecondary: null,
   });
 }
 

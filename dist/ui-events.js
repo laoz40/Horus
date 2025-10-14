@@ -3,7 +3,7 @@ import { showPage, wireNavButtons } from './nav.js';
 import { createExerciseForm, readExercisesFromForms } from './workout-builder.js';
 import { loadAllExerciseNames, saveAllExerciseNames, loadAllWorkouts, saveAllWorkouts, setupNewWorkout, getCurrentWorkout, populateExerciseDatalist, validateWorkoutData } from './data-storage.js';
 import { updateLastWorkoutSummary, renderHistory } from './history.js';
-import { openAppModal } from './modal.js';
+import { openModal } from './modal.js';
 import { openDraftModal, saveWorkoutDraft, applyWorkoutDraft, wireDraftAutosave, clearWorkoutDraft, loadWorkoutDraft } from './draft.js';
 import { SCHEMA_VERSION } from './migration.js';
 import { START_WORKOUT_BUTTON, ADD_EXERCISE_BUTTON, EXERCISE_FORM_CONTAINER, BACK_BUTTON_WORKOUT, FINISH_WORKOUT_BUTTON, WORKOUT_NAME_INPUT, WORKOUT_DATE_TEXT } from './constants.js';
@@ -104,7 +104,7 @@ export function wireUiEvents() {
         // Refresh the history page to show the new workout
         renderHistory();
         // Display a success message
-        openAppModal({
+        openModal({
             title: "Workout saved",
             message: `Your workout "${currentWorkout.name}" has been saved.`,
         });

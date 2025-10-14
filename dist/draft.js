@@ -1,5 +1,5 @@
 // import all the functions and variables we need from other files
-import { openAppModal } from './modal.js';
+import { modalMessages, openModal } from './modal.js';
 import { getCurrentWorkout, WORKOUT_DRAFT_KEY } from './data-storage.js';
 import { createExerciseForm } from './workout-builder.js';
 import { formatDisplayDate } from './utils.js';
@@ -138,28 +138,22 @@ export function wireDraftAutosave() {
 }
 // Opens a modal to ask the user whether to continue editing the last workout or start a new one
 export function openDraftModal({ clickedContinue, clickedDiscard }) {
+    var _a;
     // check whether the discard action was explicitly triggered, in case of backdrop click
     let explicitDiscard = false;
     const handleDiscard = () => {
         explicitDiscard = true;
         clickedDiscard();
     };
-    openAppModal({
-        title: 'Resume last workout?',
-        message: 'Do you want to continue editing the last workout or start a new one?',
-        primaryText: 'Continue',
-        secondaryText: 'Start New',
-        onPrimary: clickedContinue,
-        onSecondary: handleDiscard,
-        // When clicking outside, just close the modal without triggering any action
+    // load workout name for the modal message
+    const workoutName = ((_a = loadWorkoutDraft()) === null || _a === void 0 ? void 0 : _a.name) || 'the last workout';
+    openModal(Object.assign(Object.assign({}, modalMessages.resumeWorkout(clickedContinue, handleDiscard, workoutName)), { 
+        // Prevents backdrop click from triggering secondary action
         onBackdropClick: () => {
             if (MODAL_BG_OVERLAY) {
                 MODAL_BG_OVERLAY.hidden = true;
                 MODAL_BG_OVERLAY.setAttribute('aria-hidden', 'true');
             }
-        },
-        dismissOnBackdrop: true,
-        dismissOnEsc: true
-    });
+        } }));
 }
 //# sourceMappingURL=draft.js.map

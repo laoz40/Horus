@@ -1,6 +1,6 @@
 // import all the functions and variables we need from other files
 import { esc } from './utils.js';
-import { openAppModal } from './modal.js';
+import { modalMessages, openModal } from './modal.js';
 import { ExerciseForm, ExerciseSetForm } from './types.js';
 import { EXERCISE_FORM_CONTAINER } from './constants.js';
 
@@ -83,7 +83,6 @@ export function createExerciseForm(initial: ExerciseForm = { name: '', notes: ''
           // remove dots entirely for integer-only inputs
           value = value.replace(/\./g, "");
         }
-
         input.value = value;
       });
     }
@@ -98,12 +97,10 @@ export function createExerciseForm(initial: ExerciseForm = { name: '', notes: ''
 
     // wire up the remove set button
     setRow.querySelector(".remove-set")?.addEventListener("click", () => {
-      // show a confirmation modal
-      openAppModal({
-        title: "Delete set?",
-        message: "This will remove this set from the exercise.",
-        primaryText: "Delete",
-        secondaryText: "Cancel",
+      // exercise name value  for the modal message
+      const exerciseName = exerciseFormContainer.querySelector<HTMLInputElement>('.exercise-name')?.value || 'this exercise';
+      openModal({
+        ...modalMessages.deleteSet(setNumber, exerciseName),
         // primary action: remove the set
         onPrimary: () => {
           setRow.remove();
@@ -114,13 +111,13 @@ export function createExerciseForm(initial: ExerciseForm = { name: '', notes: ''
           } else {
             // Re-number remaining sets
             SET_ROW.forEach((setRowElement, setIndex) => {
-              const setNumberText = setRowElement.querySelector(".set-number");
-              if (!setNumberText) return;
+              const SET_NUMBER = setRowElement.querySelector(".set-number");
+              if (!SET_NUMBER) return;
               // adds 1 to index to make the set numbers start at 1 instead of 0
               const newSetNumber = setIndex + 1;
               // update the set number text and aria label
-              setNumberText.textContent = String(newSetNumber);
-              setNumberText.setAttribute("aria-label", `Set ${newSetNumber}`);
+              SET_NUMBER.textContent = String(newSetNumber);
+              SET_NUMBER.setAttribute("aria-label", `Set ${newSetNumber}`);
             });
           }
           // Notify the app to save the draft immediately after removal
@@ -129,9 +126,7 @@ export function createExerciseForm(initial: ExerciseForm = { name: '', notes: ''
           } catch (_) {
             /* ignore */
           }
-        },
-        // secondary action: do nothing
-        onSecondary: () => {},
+        }
       });
     });
 
