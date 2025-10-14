@@ -2,6 +2,7 @@
 import { esc } from './utils.js';
 import { openAppModal } from './modal.js';
 import { ExerciseForm, ExerciseSetForm } from './types.js';
+import { EXERCISE_FORM_CONTAINER } from './constants.js';
 
 // Creates an exercise form
 export function createExerciseForm(initial: ExerciseForm = { name: '', notes: '', difficulty: '', sets: [] }) {
@@ -107,12 +108,12 @@ export function createExerciseForm(initial: ExerciseForm = { name: '', notes: ''
         onPrimary: () => {
           setRow.remove();
           // If no sets remain, remove the entire exercise form
-          const setRowCount = setsTable.querySelectorAll(".set-row");
-          if (setRowCount.length === 0) {
+          const SET_ROW = setsTable.querySelectorAll(".set-row");
+          if (SET_ROW.length === 0) {
             exerciseFormContainer.remove();
           } else {
             // Re-number remaining sets
-            setRowCount.forEach((setRowElement, setIndex) => {
+            SET_ROW.forEach((setRowElement, setIndex) => {
               const setNumberText = setRowElement.querySelector(".set-number");
               if (!setNumberText) return;
               // adds 1 to index to make the set numbers start at 1 instead of 0
@@ -163,11 +164,10 @@ export function createExerciseForm(initial: ExerciseForm = { name: '', notes: ''
 // Read all the exercise forms currently on the page and turn them
 // into structured workout data ready for saving.
 export function readExercisesFromForms() {
-  const exerciseFormContainer = document.getElementById('add-exercise-form');
   // if there are no exercise forms, return an empty array
-  if (!exerciseFormContainer) return [];
+  if (!EXERCISE_FORM_CONTAINER) return [];
   // map each exercise form to a structured exercise object
-  const exerciseForms = [...exerciseFormContainer.querySelectorAll('.add-exercise-form')];
+  const exerciseForms = [...EXERCISE_FORM_CONTAINER.querySelectorAll('.add-exercise-form')];
   return exerciseForms.map(form => {
     // get the exercise name and notes if they exist, and trim whitespace
     const exerciseName = ((form.querySelector('.exercise-name') as HTMLInputElement)?.value || '').trim();

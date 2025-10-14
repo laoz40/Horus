@@ -1,10 +1,10 @@
 import { Exercise, Migrations, Workout } from "./types.js";
 import { saveAllWorkouts } from "./data-storage.js";
-// Migration function to update workout data when the app's data structure changes
-// Each migration is keyed by the version it migrates FROM
 
 export const SCHEMA_VERSION = 2;
 
+// Migration function to update workout data when the app's data structure changes
+// Each migration is keyed by the version it migrates FROM
 export const MIGRATIONS: Migrations = {
   // This migration (v2 to v3) updates the difficulty 1 label format for exercises
   2: (workout: Workout) => {

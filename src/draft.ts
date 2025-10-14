@@ -4,7 +4,7 @@ import { getCurrentWorkout, WORKOUT_DRAFT_KEY } from './data-storage.js';
 import { createExerciseForm } from './workout-builder.js';
 import { WorkoutDraft } from './types.js';
 import { formatDisplayDate } from './utils.js';
-import { WORKOUT_NAME_INPUT, WORKOUT_DATE_TEXT, EXERCISE_FORM_CONTAINER, EXERCISE_NAME_INPUT, EXERCISE_NOTES_INPUT, EXERCISE_DIFFICULTY, MODAL_BG_OVERLAY } from './constants.js';
+import { WORKOUT_NAME_INPUT, WORKOUT_DATE_TEXT, EXERCISE_FORM_CONTAINER, MODAL_BG_OVERLAY } from './constants.js';
 
 // read the current draft from the form and return it as a JSON object
 export function createWorkoutDraftData(): WorkoutDraft {
@@ -23,16 +23,20 @@ export function createWorkoutDraftData(): WorkoutDraft {
 
   const exerciseForms = EXERCISE_FORM_CONTAINER ? [...EXERCISE_FORM_CONTAINER.querySelectorAll('.add-exercise-form')] : [];
   const draftData = exerciseForms.map((exerciseData) => {
+    const EXERCISE_NAME_INPUT = exerciseData.querySelector<HTMLInputElement>('.exercise-name');
+    const EXERCISE_NOTES_INPUT = exerciseData.querySelector<HTMLTextAreaElement>('.exercise-notes');
+    const EXERCISE_DIFFICULTY = exerciseData.querySelector<HTMLSelectElement>('.exercise-difficulty');
+
     const name = (EXERCISE_NAME_INPUT?.value || '').trim();
     const notes = (EXERCISE_NOTES_INPUT?.value || '').trim();
     const difficulty = EXERCISE_DIFFICULTY?.selectedOptions[0]?.text || '';
     
     const sets = [...exerciseData.querySelectorAll('.set-row')].map((row) => {
-      const weightInput = row.querySelector<HTMLInputElement>('.set-weight');
-      const repsInput = row.querySelector<HTMLInputElement>('.set-reps');
+      const WEIGHT_INPUT = row.querySelector<HTMLInputElement>('.set-weight');
+      const REPS_INPUT = row.querySelector<HTMLInputElement>('.set-reps');
       
-      const weight = convertToNumber(weightInput?.value);
-      const reps = convertToNumber(repsInput?.value);
+      const weight = convertToNumber(WEIGHT_INPUT?.value);
+      const reps = convertToNumber(REPS_INPUT?.value);
       return { weight, reps };
     });
     return { name, notes, difficulty, sets };

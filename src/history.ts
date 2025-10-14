@@ -3,7 +3,7 @@ import { esc } from './utils.js';
 import { loadAllWorkouts, saveAllWorkouts, toDifficultyDisplay } from './data-storage.js';
 import { openAppModal } from './modal.js';
 import { Exercise, ExerciseSet, Workout } from './types.js';
-import { DELETE_WORKOUT_BUTTON, HISTORY_CONTAINER, LAST_WORKOUT_SUMMARY } from './constants.js';
+import { HISTORY_CONTAINER, LAST_WORKOUT_SUMMARY } from './constants.js';
 
 // Build the HTML that shows workout details when expanded
 function buildExpandedDetailsHTML(exercise: Exercise) {
@@ -118,13 +118,13 @@ function buildSummaryCardHTML(workout: Workout, index: number | null = null, sho
 // Set up click handlers for a workout card
 function setupWorkoutCard(workoutCard: HTMLElement) {
   // Find elements within the workout card
-  const workoutSummary = workoutCard.querySelector('.workout-summary') as HTMLElement;
-  const workoutDetails = workoutCard.querySelector('.workout-details') as HTMLElement;
+  const WORKOUT_SUMMARY = workoutCard.querySelector('.workout-summary') as HTMLElement;
+  const WORKOUT_DETAILS = workoutCard.querySelector('.workout-details') as HTMLElement;
   
-  if (!workoutSummary || !workoutDetails) return;
+  if (!WORKOUT_SUMMARY || !WORKOUT_DETAILS) return;
   
   // Initially hide the details
-  workoutDetails.style.display = 'none';
+  WORKOUT_DETAILS.style.display = 'none';
   
   // Toggle function
   const toggleExpandDetails = (event: Event) => {
@@ -134,19 +134,19 @@ function setupWorkoutCard(workoutCard: HTMLElement) {
     }
     
     // Toggle the display of the details
-    const isHidden = workoutDetails.style.display === 'none';
-    workoutDetails.style.display = isHidden ? 'flex' : 'none';
+    const isHidden = WORKOUT_DETAILS.style.display === 'none';
+    WORKOUT_DETAILS.style.display = isHidden ? 'flex' : 'none';
     workoutCard.setAttribute('aria-expanded', String(isHidden));
   };
   
   // Add click event listener to the summary
-  workoutSummary.addEventListener('click', toggleExpandDetails);
+  WORKOUT_SUMMARY.addEventListener('click', toggleExpandDetails);
   
   // Make the summary focusable and add ARIA attributes for accessibility
-  workoutSummary.setAttribute('tabindex', '0');
-  workoutSummary.setAttribute('role', 'button');
-  workoutSummary.setAttribute('aria-expanded', 'false');
-  workoutSummary.setAttribute('aria-controls', 'workout-details');
+  WORKOUT_SUMMARY.setAttribute('tabindex', '0');
+  WORKOUT_SUMMARY.setAttribute('role', 'button');
+  WORKOUT_SUMMARY.setAttribute('aria-expanded', 'false');
+  WORKOUT_SUMMARY.setAttribute('aria-controls', 'workout-details');
 }
 
 // Show the latest saved workout on the dashboard
@@ -236,9 +236,11 @@ export function renderHistory() {
   HISTORY_CONTAINER.querySelectorAll('.workout-summary-card').forEach((workoutCard) => {
     workoutCard && setupWorkoutCard(workoutCard as HTMLElement);
     
+    const DELETE_WORKOUT_BUTTON = workoutCard.querySelector('.delete-button') as HTMLButtonElement;
     // Setup delete button handler for each workout card
     if (DELETE_WORKOUT_BUTTON) {
       DELETE_WORKOUT_BUTTON.addEventListener('click', () => {
+
         const WorkoutIndexString = DELETE_WORKOUT_BUTTON?.getAttribute('data-workout-index');
         if (!WorkoutIndexString) return;
         // Convert the index to a number

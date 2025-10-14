@@ -1,7 +1,7 @@
 // import all the functions and variables we need from other files
 import { showPage, wireNavButtons } from './nav.js';
 import { createExerciseForm, readExercisesFromForms } from './workout-builder.js';
-import { loadAllExerciseNames, saveAllExerciseNames, loadAllWorkouts, saveAllWorkouts, setupNewWorkout, getCurrentWorkout, populateExerciseDatalist } from './data-storage.js';
+import { loadAllExerciseNames, saveAllExerciseNames, loadAllWorkouts, saveAllWorkouts, setupNewWorkout, getCurrentWorkout, populateExerciseDatalist, validateWorkoutData } from './data-storage.js';
 import { updateLastWorkoutSummary, renderHistory } from './history.js';
 import { openAppModal } from './modal.js';
 import { openDraftModal, saveWorkoutDraft, applyWorkoutDraft, wireDraftAutosave, clearWorkoutDraft, loadWorkoutDraft } from './draft.js';
@@ -82,12 +82,7 @@ export function wireUiEvents() {
   FINISH_WORKOUT_BUTTON && FINISH_WORKOUT_BUTTON.addEventListener('click', () => {
     // Get current workout data
     const currentWorkout = getCurrentWorkout();
-    // If no workout exists, show error and stop
     if (!currentWorkout) {
-      openAppModal({
-        title: "Cannot save",
-        message: "No active workout to save.",
-      });
       return;
     }
     // Update workout name and date if they've changed
@@ -100,12 +95,9 @@ export function wireUiEvents() {
 
     // Get exercises from forms
     currentWorkout.exercises = readExercisesFromForms();
-    // If no exercises, show error and stop
-    if (!currentWorkout.exercises.length) {
-      openAppModal({
-        title: "Incomplete workout",
-        message: "Add at least one exercise before finishing the workout.",
-      });
+
+    // Validate the workout data
+    if (!validateWorkoutData()) {
       return;
     }
 

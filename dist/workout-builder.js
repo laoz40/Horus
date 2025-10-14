@@ -1,6 +1,7 @@
 // import all the functions and variables we need from other files
 import { esc } from './utils.js';
 import { openAppModal } from './modal.js';
+import { EXERCISE_FORM_CONTAINER } from './constants.js';
 // Creates an exercise form
 export function createExerciseForm(initial = { name: '', notes: '', difficulty: '', sets: [] }) {
     const exerciseFormContainer = document.createElement('div');
@@ -90,13 +91,13 @@ export function createExerciseForm(initial = { name: '', notes: '', difficulty: 
                 onPrimary: () => {
                     setRow.remove();
                     // If no sets remain, remove the entire exercise form
-                    const setRowCount = setsTable.querySelectorAll(".set-row");
-                    if (setRowCount.length === 0) {
+                    const SET_ROW = setsTable.querySelectorAll(".set-row");
+                    if (SET_ROW.length === 0) {
                         exerciseFormContainer.remove();
                     }
                     else {
                         // Re-number remaining sets
-                        setRowCount.forEach((setRowElement, setIndex) => {
+                        SET_ROW.forEach((setRowElement, setIndex) => {
                             const setNumberText = setRowElement.querySelector(".set-number");
                             if (!setNumberText)
                                 return;
@@ -146,12 +147,11 @@ export function createExerciseForm(initial = { name: '', notes: '', difficulty: 
 // Read all the exercise forms currently on the page and turn them
 // into structured workout data ready for saving.
 export function readExercisesFromForms() {
-    const exerciseFormContainer = document.getElementById('add-exercise-form');
     // if there are no exercise forms, return an empty array
-    if (!exerciseFormContainer)
+    if (!EXERCISE_FORM_CONTAINER)
         return [];
     // map each exercise form to a structured exercise object
-    const exerciseForms = [...exerciseFormContainer.querySelectorAll('.add-exercise-form')];
+    const exerciseForms = [...EXERCISE_FORM_CONTAINER.querySelectorAll('.add-exercise-form')];
     return exerciseForms.map(form => {
         var _a, _b;
         // get the exercise name and notes if they exist, and trim whitespace

@@ -3,7 +3,7 @@ import { openAppModal } from './modal.js';
 import { getCurrentWorkout, WORKOUT_DRAFT_KEY } from './data-storage.js';
 import { createExerciseForm } from './workout-builder.js';
 import { formatDisplayDate } from './utils.js';
-import { WORKOUT_NAME_INPUT, WORKOUT_DATE_TEXT, EXERCISE_FORM_CONTAINER, EXERCISE_NAME_INPUT, EXERCISE_NOTES_INPUT, EXERCISE_DIFFICULTY, MODAL_BG_OVERLAY } from './constants.js';
+import { WORKOUT_NAME_INPUT, WORKOUT_DATE_TEXT, EXERCISE_FORM_CONTAINER, MODAL_BG_OVERLAY } from './constants.js';
 // read the current draft from the form and return it as a JSON object
 export function createWorkoutDraftData() {
     // Converts a string to a number, to allow 0 as a valid value instead of empty string/null
@@ -20,14 +20,17 @@ export function createWorkoutDraftData() {
     const exerciseForms = EXERCISE_FORM_CONTAINER ? [...EXERCISE_FORM_CONTAINER.querySelectorAll('.add-exercise-form')] : [];
     const draftData = exerciseForms.map((exerciseData) => {
         var _a;
+        const EXERCISE_NAME_INPUT = exerciseData.querySelector('.exercise-name');
+        const EXERCISE_NOTES_INPUT = exerciseData.querySelector('.exercise-notes');
+        const EXERCISE_DIFFICULTY = exerciseData.querySelector('.exercise-difficulty');
         const name = ((EXERCISE_NAME_INPUT === null || EXERCISE_NAME_INPUT === void 0 ? void 0 : EXERCISE_NAME_INPUT.value) || '').trim();
         const notes = ((EXERCISE_NOTES_INPUT === null || EXERCISE_NOTES_INPUT === void 0 ? void 0 : EXERCISE_NOTES_INPUT.value) || '').trim();
         const difficulty = ((_a = EXERCISE_DIFFICULTY === null || EXERCISE_DIFFICULTY === void 0 ? void 0 : EXERCISE_DIFFICULTY.selectedOptions[0]) === null || _a === void 0 ? void 0 : _a.text) || '';
         const sets = [...exerciseData.querySelectorAll('.set-row')].map((row) => {
-            const weightInput = row.querySelector('.set-weight');
-            const repsInput = row.querySelector('.set-reps');
-            const weight = convertToNumber(weightInput === null || weightInput === void 0 ? void 0 : weightInput.value);
-            const reps = convertToNumber(repsInput === null || repsInput === void 0 ? void 0 : repsInput.value);
+            const WEIGHT_INPUT = row.querySelector('.set-weight');
+            const REPS_INPUT = row.querySelector('.set-reps');
+            const weight = convertToNumber(WEIGHT_INPUT === null || WEIGHT_INPUT === void 0 ? void 0 : WEIGHT_INPUT.value);
+            const reps = convertToNumber(REPS_INPUT === null || REPS_INPUT === void 0 ? void 0 : REPS_INPUT.value);
             return { weight, reps };
         });
         return { name, notes, difficulty, sets };

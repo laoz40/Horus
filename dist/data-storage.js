@@ -4,6 +4,7 @@ import { updateLastWorkoutSummary } from './history.js';
 import { createExerciseForm } from './workout-builder.js';
 import { runMigrations, SCHEMA_VERSION } from './migration.js';
 import { EXERCISE_FORM_CONTAINER, EXERCISE_NAME_LIST, WORKOUT_DATE_TEXT, WORKOUT_NAME_INPUT } from './constants.js';
+import { openAppModal } from './modal.js';
 // Set current workout to null, because we don't have one yet
 let currentWorkout = null;
 // Returns the current workout
@@ -101,6 +102,55 @@ export function setupNewWorkout() {
     // Update the last workout summary
     updateLastWorkoutSummary();
 }
-export function validateWorkoutData(workout) {
+// Validate the workout data
+export function validateWorkoutData() {
+    var _a, _b, _c;
+    // If no exercise forms, show error and stop
+    const EXERCISE_FORMS = document.querySelectorAll('.add-exercise-form');
+    if (!EXERCISE_FORMS || EXERCISE_FORMS.length === 0) {
+        openAppModal({
+            title: "No Exercises",
+            message: "Please add at least one exercise to your workout.",
+        });
+        return false;
+    }
+    // Validate each exercise form
+    for (const exerciseForm of EXERCISE_FORMS) {
+        // If no exercise name, show error and stop
+        const EXERCISE_NAME_INPUT = ((_a = exerciseForm.querySelector('.exercise-name')) === null || _a === void 0 ? void 0 : _a.value.trim()) || '';
+        if (EXERCISE_NAME_INPUT === '') {
+            openAppModal({
+                title: "Missing exercise name",
+                message: "Please enter a name for each exercise.",
+            });
+            return false;
+        }
+        // Validate each set row inside this form
+        const SET_ROWS = exerciseForm.querySelectorAll('.set-row');
+        for (const [setIndex, setRow] of Array.from(SET_ROWS).entries()) {
+            const SET_WEIGHT = ((_b = setRow.querySelector('.set-weight')) === null || _b === void 0 ? void 0 : _b.value.trim()) || '';
+            const SET_REPS = ((_c = setRow.querySelector('.set-reps')) === null || _c === void 0 ? void 0 : _c.value.trim()) || '';
+            // Convert reps to number only for numeric check (but only if non-empty)
+            const setRepsNumber = SET_REPS === '' ? null : Number(SET_REPS);
+            // reps cannot be empty or zero
+            if (SET_WEIGHT !== '' && (SET_REPS === '' || setRepsNumber === null || setRepsNumber < 1)) {
+                openAppModal({
+                    title: "Missing reps",
+                    message: `Please enter reps for Set ${setIndex + 1} of ${EXERCISE_NAME_INPUT}.`,
+                });
+                return false;
+            }
+            // weight cannot be empty when reps has a value
+            if (SET_REPS !== '' && SET_WEIGHT === '') {
+                openAppModal({
+                    title: "Missing weight",
+                    message: `Please enter a weight for Set ${setIndex + 1} of ${EXERCISE_NAME_INPUT}.`,
+                });
+                return false;
+            }
+        }
+    }
+    // Everything is valid
+    return true;
 }
 //# sourceMappingURL=data-storage.js.map
