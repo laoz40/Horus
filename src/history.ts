@@ -2,8 +2,10 @@
 import { esc } from './utils.js';
 import { loadAllWorkouts, saveAllWorkouts, toDifficultyDisplay } from './data-storage.js';
 import { modalMessages, openModal } from './modal.js';
-import { Exercise, ExerciseSet, Workout } from './types.js';
-import { HISTORY_CONTAINER, LAST_WORKOUT_SUMMARY } from './constants.js';
+import { Exercise, ExerciseSet, Workout, EditData } from './types.js';
+import { EXERCISE_FORM_CONTAINER, HISTORY_CONTAINER, LAST_WORKOUT_SUMMARY } from './constants.js';
+import { createExerciseForm } from './workout-builder.js';
+import { showPage } from './nav.js';
 
 // Build the HTML that shows workout details when expanded
 function buildExpandedDetailsHTML(exercise: Exercise) {
@@ -103,10 +105,16 @@ function buildSummaryCardHTML(workout: Workout, index: number | null = null, sho
         ${showDeleteButton ? `
           <div class="workout-details-footer">
             <button type="button" 
+                    class="edit-button secondary" 
+                    aria-label="Edit workout"
+                    data-workout-index="${index}">
+              <span aria-hidden="true">Edit</span>
+            </button>
+            <button type="button" 
                     class="delete-button danger" 
                     aria-label="Delete workout"
                     data-workout-index="${index}">
-              <span aria-hidden="true">Delete Workout</span>
+              <span aria-hidden="true">Delete</span>
             </button>
           </div>
         ` : ''}
@@ -115,8 +123,8 @@ function buildSummaryCardHTML(workout: Workout, index: number | null = null, sho
   `;
 }
 
-// Set up click handlers for a workout card
-function setupWorkoutCard(workoutCard: HTMLElement) {
+// Set up click handlers for a workout card expand/collapse
+function setupExpandCollapseCard(workoutCard: HTMLElement) {
   // Find elements within the workout card
   const WORKOUT_SUMMARY = workoutCard.querySelector('.workout-summary') as HTMLElement;
   const WORKOUT_DETAILS = workoutCard.querySelector('.workout-details') as HTMLElement;
@@ -141,7 +149,7 @@ function setupWorkoutCard(workoutCard: HTMLElement) {
   
   // Add click event listener to the summary
   WORKOUT_SUMMARY.addEventListener('click', toggleExpandDetails);
-  
+
   // Make the summary focusable and add ARIA attributes for accessibility
   WORKOUT_SUMMARY.setAttribute('tabindex', '0');
   WORKOUT_SUMMARY.setAttribute('role', 'button');
@@ -173,8 +181,56 @@ export function updateLastWorkoutSummary() {
   // Setup the workout card
   const workoutCard = LAST_WORKOUT_SUMMARY.querySelector('.workout-summary-card') as HTMLElement;
   if (workoutCard) {
-    setupWorkoutCard(workoutCard);
+    setupExpandCollapseCard(workoutCard);
   }
+}
+
+// Get the data for the current edit
+let currentEditData: EditData | null = null;
+export function getEditData() {
+  return currentEditData;
+}
+// Update the data for the current edit
+export function setEditData(editData: EditData | null) {
+  currentEditData = editData;
+}
+
+// Edit a workout by index
+function editWorkout(workoutIndex: number) {
+  const allWorkouts = loadAllWorkouts();
+  const workoutToEdit = allWorkouts[workoutIndex];
+  if (!workoutToEdit || !workoutToEdit.exercises || workoutToEdit.exercises.length < 1) return;
+
+  // save a copy of the original workout data
+  currentEditData = {
+    index: workoutIndex,
+    originalWorkout: JSON.parse(JSON.stringify(workoutToEdit))
+  };
+
+  // show the new workout page
+  showPage('new-workout-page');
+
+  // clear the container
+  if (!EXERCISE_FORM_CONTAINER) return;
+  EXERCISE_FORM_CONTAINER.innerHTML = '';
+
+  // Load the workout into the forms
+  workoutToEdit.exercises.forEach((exercise: Exercise) => {
+  // Convert values to strings for the form cos typescript
+    const exerciseForm = {
+      ...exercise,
+      sets: exercise.sets.map(set => ({
+        weight: set.weight?.toString() || '',
+        reps: set.reps?.toString() || ''
+      }))
+    };
+    // create exercise form for each exercise
+    EXERCISE_FORM_CONTAINER?.appendChild(createExerciseForm(exerciseForm));
+  });
+}
+
+export function isInEditMode(): boolean {
+  return currentEditData !== null;
 }
 
 // Delete a workout by index
@@ -222,16 +278,28 @@ export function renderHistory() {
   } else {
     // Render workouts in reverse chronological order (newest first)
     HISTORY_CONTAINER.innerHTML = allWorkouts
-      .map((workout, index) => buildSummaryCardHTML(workout, index, true))
-      .reverse()
-      .join('');
+      .map((workout, index) => buildSummaryCardHTML(workout, index, true)).reverse().join('');
   }
   
-  // For each workout, setup workout card
+  // For each workout, setup delete button and edit button
   HISTORY_CONTAINER.querySelectorAll('.workout-summary-card').forEach((workoutCard) => {
-    workoutCard && setupWorkoutCard(workoutCard as HTMLElement);
+    workoutCard && setupExpandCollapseCard(workoutCard as HTMLElement);
     
+    const EDIT_WORKOUT_BUTTON = workoutCard.querySelector('.edit-button') as HTMLButtonElement;
     const DELETE_WORKOUT_BUTTON = workoutCard.querySelector('.delete-button') as HTMLButtonElement;
+
+    // Setup edit button handler for each workout card
+    if (EDIT_WORKOUT_BUTTON) {
+      EDIT_WORKOUT_BUTTON.addEventListener('click', () => {
+        const WorkoutIndexString = EDIT_WORKOUT_BUTTON?.getAttribute('data-workout-index');
+        if (!WorkoutIndexString) return;
+        // Convert the index to a number
+        const workoutIndex = parseInt(WorkoutIndexString, 10);
+        // Edit the workout
+        editWorkout(workoutIndex);
+      });
+    }
+    
     // Setup delete button handler for each workout card
     if (DELETE_WORKOUT_BUTTON) {
       DELETE_WORKOUT_BUTTON.addEventListener('click', () => {

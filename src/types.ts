@@ -58,3 +58,8 @@ export interface ModalMessage {
   dismissOnBackdrop?: boolean;
   dismissOnEsc?: boolean;
 }
+
+export interface EditData {
+  index: number;
+  originalWorkout: Workout;
+}

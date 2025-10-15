@@ -4,6 +4,7 @@ import { getCurrentWorkout, WORKOUT_DRAFT_KEY } from './data-storage.js';
 import { createExerciseForm } from './workout-builder.js';
 import { formatDisplayDate } from './utils.js';
 import { WORKOUT_NAME_INPUT, WORKOUT_DATE_TEXT, EXERCISE_FORM_CONTAINER, MODAL_BG_OVERLAY } from './constants.js';
+import { isInEditMode } from './history.js';
 // read the current draft from the form and return it as a JSON object
 export function createWorkoutDraftData() {
     // Converts a string to a number, to allow 0 as a valid value instead of empty string/null
@@ -107,8 +108,12 @@ export const saveDraftDataToStorage = (draft) => {
 };
 // Saves the current draft to localStorage
 export function saveWorkoutDraft() {
+    // if we're in edit mode, don't save the draft
+    if (isInEditMode())
+        return;
     const draft = createWorkoutDraftData();
     saveDraftDataToStorage(draft);
+    console.log('Draft saved:', draft);
 }
 // Clear the draft from localStorage
 export const clearWorkoutDraft = () => {

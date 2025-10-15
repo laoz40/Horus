@@ -2,7 +2,7 @@
 import { showPage, wireNavButtons } from './nav.js';
 import { createExerciseForm, readExercisesFromForms } from './workout-builder.js';
 import { loadAllExerciseNames, saveAllExerciseNames, loadAllWorkouts, saveAllWorkouts, setupNewWorkout, getCurrentWorkout, populateExerciseDatalist, validateWorkoutData } from './data-storage.js';
-import { updateLastWorkoutSummary, renderHistory } from './history.js';
+import { updateLastWorkoutSummary, renderHistory, setEditData, getEditData, isInEditMode } from './history.js';
 import { openModal } from './modal.js';
 import { openDraftModal, saveWorkoutDraft, applyWorkoutDraft, wireDraftAutosave, clearWorkoutDraft, loadWorkoutDraft } from './draft.js';
 import { Exercise, ExerciseSet } from './types.js';
@@ -75,7 +75,26 @@ export function wireUiEvents() {
   // Back button: return to dashboard
   BACK_BUTTON_WORKOUT && BACK_BUTTON_WORKOUT.addEventListener('click', (e) => {
     e.preventDefault(); // Prevent default action (form submission)
-    showPage('workout-dashboard-page');
+
+    // If we're in edit mode, reset the form to the original workout data and return to history
+
+    if (isInEditMode()) {
+      const editData = getEditData();
+      if (!editData) return;
+      
+      const allWorkouts = loadAllWorkouts();
+      // match the index of the current edit to the original workout
+      allWorkouts[editData.index] = editData.originalWorkout;
+      // clear the edit data
+
+      showPage('history-page');
+
+      // reset edit data AFTER returning to history page, to not trigger draft save from leaving the page
+      setEditData(null);
+    } else {
+      // Normal behavior: go back to the dashboard
+      showPage('workout-dashboard-page');
+    }
   });
 
   // Finish button: build the workout from the form and save it to localStorage
@@ -117,20 +136,20 @@ export function wireUiEvents() {
     allWorkouts.push(currentWorkout);
     saveAllWorkouts(allWorkouts);
 
-    // Clear any saved draft since we've just saved the workout
-    clearWorkoutDraft();
-
     // Update the last workout summary on the dashboard
     updateLastWorkoutSummary();
     // Refresh the history page to show the new workout
     renderHistory();
+
     // Display a success message
     openModal({
       title: "Workout saved",
       message: `Your workout "${currentWorkout.name}" has been saved.`,
     });
+
     // Redirect to the history page
     showPage("history-page");
+
     // Reset the form to a blank state in background and clear the draft
     setupNewWorkout();
     clearWorkoutDraft();

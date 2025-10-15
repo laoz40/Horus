@@ -36,10 +36,8 @@ export const loadAllWorkouts = () => {
 
 // Save all workouts to localStorage
 export const saveAllWorkouts = (workouts: Workout[]) => localStorage.setItem(WORKOUTS_KEY, JSON.stringify(workouts));
-
 // Load all exercise names from localStorage
 export const loadAllExerciseNames = (): string[] => JSON.parse(localStorage.getItem(EXERCISES_KEY) || '[]');
-
 // Save all exercise names to localStorage
 export const saveAllExerciseNames = (exerciseNames: string[]): void => localStorage.setItem(EXERCISES_KEY, JSON.stringify(exerciseNames));
 

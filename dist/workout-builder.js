@@ -15,11 +15,6 @@ export function createExerciseForm(initial = { name: '', notes: '', difficulty: 
         { value: '5', text: '5. Impossible' },
     ];
     // build the form in HTML
-    //  - Exercise name input with autocomplete from past exercises
-    //  - A table for sets with weight/reps inputs
-    //  - "Add Set" button to add more rows
-    //  - Difficulty dropdown (1-5 scale)
-    //  - Notes textarea for additional details
     exerciseFormContainer.innerHTML = `
     <div class="exercise-text-container">
       <input list="exercise-name-list" class="exercise-name" placeholder="Enter Exercise" autocomplete="off" required value="${esc(initial.name)}">
@@ -115,13 +110,12 @@ export function createExerciseForm(initial = { name: '', notes: '', difficulty: 
                     }
                 } }));
         });
-        // add the set row to the table
+        // add a set row to the table
         setsTable.appendChild(setRow);
     }
     // Map existing sets to rows and add them to the table
-    // check if there are initial sets
     if (initial.sets && initial.sets.length) {
-        // if there are, map each set to a set row and add it to the table
+        // map each set to a set row and add it to the table
         initial.sets.forEach((existingSet, setIndex) => {
             const initialInputValues = { weight: existingSet.weight, reps: existingSet.reps };
             addSetRowTo(setsTable, setIndex + 1, initialInputValues);

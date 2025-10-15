@@ -5,6 +5,7 @@ import { createExerciseForm } from './workout-builder.js';
 import { WorkoutDraft } from './types.js';
 import { formatDisplayDate } from './utils.js';
 import { WORKOUT_NAME_INPUT, WORKOUT_DATE_TEXT, EXERCISE_FORM_CONTAINER, MODAL_BG_OVERLAY } from './constants.js';
+import { isInEditMode } from './history.js';
 
 // read the current draft from the form and return it as a JSON object
 export function createWorkoutDraftData(): WorkoutDraft {
@@ -59,7 +60,6 @@ export function applyWorkoutDraft(draft: WorkoutDraft) {
   // Update name and date in currentWorkout data
   const currentWorkout = getCurrentWorkout();
   if (!currentWorkout) return;
-
   currentWorkout.name = draft.name || '';
   currentWorkout.date = displayDate;
 
@@ -120,8 +120,12 @@ export const saveDraftDataToStorage = (draft: WorkoutDraft | null) => {
 
 // Saves the current draft to localStorage
 export function saveWorkoutDraft() {
+  // if we're in edit mode, don't save the draft
+  if (isInEditMode()) return;
+
   const draft = createWorkoutDraftData();
   saveDraftDataToStorage(draft);
+  console.log('Draft saved:', draft);
 }
 
 // Clear the draft from localStorage
