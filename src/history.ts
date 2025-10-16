@@ -3,7 +3,7 @@ import { esc, formatDisplayDate } from './utils.js';
 import { loadAllWorkouts, saveAllWorkouts, toDifficultyDisplay, getCurrentWorkout, setCurrentWorkout, validateWorkoutData, saveAllExerciseNames, loadAllExerciseNames, populateExerciseDatalist, setupNewWorkout } from './data-storage.js';
 import { modalMessages, openModal } from './modal.js';
 import { Exercise, ExerciseSet, Workout, EditWorkoutData } from './types.js';
-import { EXERCISE_FORM_CONTAINER, HISTORY_CONTAINER, LAST_WORKOUT_SUMMARY, WORKOUT_NAME_INPUT, WORKOUT_DATE_TEXT, BACK_BUTTON_WORKOUT, FINISH_WORKOUT_BUTTON } from './constants.js';
+import { EXERCISE_FORM_CONTAINER, HISTORY_CONTAINER, LAST_WORKOUT_SUMMARY, WORKOUT_NAME_INPUT, WORKOUT_DATE_TEXT } from './constants.js';
 import { createExerciseForm, readExercisesFromForms } from './workout-builder.js';
 import { showPage } from './nav.js';
 import { clearWorkoutDraft } from './draft.js';
