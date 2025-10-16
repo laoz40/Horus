@@ -125,7 +125,6 @@ export function saveWorkoutDraft() {
 
   const draft = createWorkoutDraftData();
   saveDraftDataToStorage(draft);
-  console.log('Draft saved:', draft);
 }
 
 // Clear the draft from localStorage

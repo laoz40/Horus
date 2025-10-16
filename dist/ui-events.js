@@ -3,6 +3,7 @@ import { showPage, wireNavButtons } from './nav.js';
 import { createExerciseForm } from './workout-builder.js';
 import { setupNewWorkout } from './data-storage.js';
 import { setEditData, isInEditMode, saveEditedWorkout, saveNewWorkout } from './history.js';
+import { modalMessages, openModal } from './modal.js';
 import { openDraftModal, saveWorkoutDraft, applyWorkoutDraft, wireDraftAutosave, clearWorkoutDraft, loadWorkoutDraft } from './draft.js';
 import { SCHEMA_VERSION } from './migration.js';
 import { START_WORKOUT_BUTTON, ADD_EXERCISE_BUTTON, EXERCISE_FORM_CONTAINER, BACK_BUTTON_WORKOUT, FINISH_WORKOUT_BUTTON } from './constants.js';
@@ -62,9 +63,11 @@ export function wireUiEvents() {
         e.preventDefault(); // Prevent default action (form submission)
         // If we're in edit mode, reset the form to the original workout data and return to history
         if (isInEditMode()) {
-            showPage('history-page');
-            // reset edit data AFTER returning to history page, to not trigger draft save from leaving the page
-            setEditData(null);
+            openModal(Object.assign(Object.assign({}, modalMessages.discardChanges()), { onPrimary: () => {
+                    showPage('history-page');
+                    // reset edit data AFTER returning to history page, to not trigger draft save from leaving the page
+                    setEditData(null);
+                } }));
         }
         else {
             // Normal behavior: go back to the dashboard
@@ -75,11 +78,9 @@ export function wireUiEvents() {
     FINISH_WORKOUT_BUTTON && FINISH_WORKOUT_BUTTON.addEventListener('click', () => {
         // if we're in edit mode, update the original workout
         if (isInEditMode()) {
-            console.log('Editing workout');
             saveEditedWorkout();
         }
         else {
-            console.log('Saving new workout');
             saveNewWorkout();
         }
     });

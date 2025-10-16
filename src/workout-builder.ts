@@ -2,7 +2,8 @@
 import { esc } from './utils.js';
 import { modalMessages, openModal } from './modal.js';
 import { ExerciseForm, ExerciseSetForm } from './types.js';
-import { EXERCISE_FORM_CONTAINER } from './constants.js';
+import { EXERCISE_FORM_CONTAINER, BACK_BUTTON_WORKOUT, FINISH_WORKOUT_BUTTON } from './constants.js';
+import { isInEditMode } from './history.js';
 
 // Creates an exercise form
 export function createExerciseForm(initial: ExerciseForm = { name: '', notes: '', difficulty: '', sets: [] }) {
@@ -182,4 +183,28 @@ export function readExercisesFromForms() {
   })
   // filter out any exercises with no name or sets
   .filter(ex => ex.name && ex.sets.length > 0);
+}
+
+export function updateWorkoutButtons() {
+  if (isInEditMode()) {
+    // update buttons in edit mode
+    BACK_BUTTON_WORKOUT && (
+      BACK_BUTTON_WORKOUT.classList.add("danger-secondary"),
+      BACK_BUTTON_WORKOUT.classList.remove("secondary"),
+      BACK_BUTTON_WORKOUT.textContent="Discard"
+    );
+    FINISH_WORKOUT_BUTTON && (
+      FINISH_WORKOUT_BUTTON.textContent="Save"
+    );
+  } else {
+    // else revert buttons
+    BACK_BUTTON_WORKOUT && (
+      BACK_BUTTON_WORKOUT.classList.remove("danger-secondary"), 
+      BACK_BUTTON_WORKOUT.classList.add("secondary"),
+      BACK_BUTTON_WORKOUT.textContent="Back"
+    );
+    FINISH_WORKOUT_BUTTON && (
+      FINISH_WORKOUT_BUTTON.textContent="Finish"
+    );
+  }
 }

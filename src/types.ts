@@ -64,3 +64,9 @@ export interface ModalMessage {
   dismissOnEsc?: boolean;
 }
 
+// Page change event
+export interface PageChangeEvent extends CustomEvent {
+  detail: {
+    pageId: string;
+  };
+}

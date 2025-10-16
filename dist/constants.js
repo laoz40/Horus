@@ -1,3 +1,5 @@
+// Nav
+export const NAV_ELEMENT = document.querySelector('nav');
 // Dashboard page elements
 export const START_WORKOUT_BUTTON = document.getElementById('start-workout-btn');
 export const LAST_WORKOUT_SUMMARY = document.getElementById('last-workout-summary');

@@ -1,12 +1,9 @@
 // import all the functions and variables we need from other files
 import { renderHistory, updateLastWorkoutSummary } from "./history.js";
 import { saveWorkoutDraft } from "./draft.js";
-
-interface PageChangeEvent extends CustomEvent {
-  detail: {
-    pageId: string;
-  };
-}
+import { updateWorkoutButtons } from "./workout-builder.js";
+import { NAV_ELEMENT } from "./constants.js";
+import { PageChangeEvent } from "./types.js";
 
 // Connect header nav buttons so clicking them switches pages.
 export function wireNavButtons() {
@@ -27,9 +24,23 @@ export function wireNavButtons() {
   });
 }
 
+// Function to update nav visibility based on current page
+function updateNavVisibility(pageId: string) {
+  if (!NAV_ELEMENT) return;
+  
+  if (pageId === 'new-workout-page') {
+    NAV_ELEMENT.classList.add('nav-hidden');
+  } else {
+    NAV_ELEMENT.classList.remove('nav-hidden');
+  }
+}
+
 // Show one page by id and hide the others.
 // Also triggers a refresh of that page's content when opened.
 export function showPage(pageId: string) {
+  
+  // Update nav visibility
+  updateNavVisibility(pageId);
   // Determine the page we are leaving BEFORE toggling classes
   const prevActive = document.querySelector<HTMLElement>(".page.active");
 
@@ -54,6 +65,7 @@ export function showPage(pageId: string) {
 
   // Map each page ID to a function that should run when that page is displayed
   const pageShowFunctions = {
+    "new-workout-page": updateWorkoutButtons,
     "history-page": renderHistory,
     "workout-dashboard-page": updateLastWorkoutSummary,
   };

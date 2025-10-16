@@ -60,7 +60,7 @@ button.secondary:active {
 
 button.danger {
     background-color: var(--btn-danger-bg);
-    color: white;
+    color: var(--btn-fg);
 }
 
 button.danger:hover {
@@ -69,6 +69,20 @@ button.danger:hover {
 
 button.danger:active {
     background-color: var(--btn-danger-active);
+}
+
+button.danger-secondary {
+    background: var(--btn-secondary-bg);
+    color: var(--btn-danger-bg);
+    border: 1px solid var(--border-color);
+}
+
+button.danger-secondary:hover {
+    background: var(--btn-secondary-hover);
+}
+
+button.danger-secondary:active {
+    background: var(--btn-secondary-active);
 }
 
 .page-header {

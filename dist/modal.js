@@ -46,6 +46,13 @@ export const modalMessages = {
         title: "Workout updated",
         message: `Your workout "${currentWorkout.name}" has been updated.`,
     }),
+    discardChanges: () => ({
+        title: "Discard Changes",
+        message: "Are you sure you want to discard these changes?",
+        primaryText: "Discard",
+        primaryButtonClass: "danger",
+        secondaryText: "Cancel",
+    }),
 };
 // creates a modal dialog with a title, message, and optional primary and secondary buttons
 export function openModal({ title = "Notice", message = "", primaryText = "OK", primaryButtonClass = "", secondaryText = "", onPrimary = null, onSecondary = null, onBackdropClick = null, dismissOnBackdrop = true, dismissOnEsc = true, } = {}) {

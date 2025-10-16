@@ -3,7 +3,7 @@ import { showPage, wireNavButtons } from './nav.js';
 import { createExerciseForm, readExercisesFromForms } from './workout-builder.js';
 import { loadAllExerciseNames, saveAllExerciseNames, loadAllWorkouts, saveAllWorkouts, setupNewWorkout, getCurrentWorkout, populateExerciseDatalist, validateWorkoutData } from './data-storage.js';
 import { updateLastWorkoutSummary, renderHistory, setEditData, getEditData, isInEditMode, saveEditedWorkout, saveNewWorkout } from './history.js';
-import { openModal } from './modal.js';
+import { modalMessages, openModal } from './modal.js';
 import { openDraftModal, saveWorkoutDraft, applyWorkoutDraft, wireDraftAutosave, clearWorkoutDraft, loadWorkoutDraft } from './draft.js';
 import { Exercise, ExerciseSet, Workout } from './types.js';
 import { SCHEMA_VERSION } from './migration.js';
@@ -77,11 +77,15 @@ export function wireUiEvents() {
     e.preventDefault(); // Prevent default action (form submission)
 
     // If we're in edit mode, reset the form to the original workout data and return to history
-
     if (isInEditMode()) {
-      showPage('history-page');
-      // reset edit data AFTER returning to history page, to not trigger draft save from leaving the page
-      setEditData(null);
+      openModal({
+        ...modalMessages.discardChanges(),
+        onPrimary: () => {
+          showPage('history-page');
+          // reset edit data AFTER returning to history page, to not trigger draft save from leaving the page
+          setEditData(null);
+        },
+      });
     } else {
       // Normal behavior: go back to the dashboard
       showPage('workout-dashboard-page');
@@ -92,10 +96,8 @@ export function wireUiEvents() {
   FINISH_WORKOUT_BUTTON && FINISH_WORKOUT_BUTTON.addEventListener('click', () => {
     // if we're in edit mode, update the original workout
     if (isInEditMode()) {
-      console.log('Editing workout');
       saveEditedWorkout();
     } else {
-      console.log('Saving new workout');
       saveNewWorkout();
     }
   });

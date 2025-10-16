@@ -113,7 +113,6 @@ export function saveWorkoutDraft() {
         return;
     const draft = createWorkoutDraftData();
     saveDraftDataToStorage(draft);
-    console.log('Draft saved:', draft);
 }
 // Clear the draft from localStorage
 export const clearWorkoutDraft = () => {

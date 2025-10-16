@@ -209,22 +209,12 @@ function editWorkout(workoutIndex) {
         EXERCISE_FORM_CONTAINER === null || EXERCISE_FORM_CONTAINER === void 0 ? void 0 : EXERCISE_FORM_CONTAINER.appendChild(createExerciseForm(exerciseForm));
     });
 }
-export function saveNewWorkout() {
+function saveWorkout() {
     let currentWorkout = getCurrentWorkout();
     if (!currentWorkout)
         return;
-    // Update workout name and date if they've changed
-    WORKOUT_NAME_INPUT &&
-        (currentWorkout.name =
-            WORKOUT_NAME_INPUT.value.trim() || currentWorkout.name);
-    WORKOUT_DATE_TEXT &&
-        (currentWorkout.date =
-            WORKOUT_DATE_TEXT.textContent || currentWorkout.date);
     // Saves exercises from forms
     currentWorkout.exercises = readExercisesFromForms();
-    // Validate the workout data
-    if (!validateWorkoutData())
-        return;
     // Save exercise names for autocomplete
     const exerciseNames = new Set(loadAllExerciseNames());
     // Add all unique exercise names to the set
@@ -235,14 +225,23 @@ export function saveNewWorkout() {
     // Save the names to localStorage in an array sorted alphabetically 
     saveAllExerciseNames([...exerciseNames].sort());
     populateExerciseDatalist();
-    // Add the workout to localStorage
-    const allWorkouts = loadAllWorkouts();
-    allWorkouts.push(currentWorkout);
-    saveAllWorkouts(allWorkouts);
     // Update the last workout summary on the dashboard
     updateLastWorkoutSummary();
     // Refresh the history page to show the new workout
     renderHistory();
+}
+export function saveNewWorkout() {
+    // Validate the workout data
+    if (!validateWorkoutData())
+        return;
+    let currentWorkout = getCurrentWorkout();
+    if (!currentWorkout)
+        return;
+    saveWorkout();
+    // Add the workout to localStorage
+    const allWorkouts = loadAllWorkouts();
+    allWorkouts.push(currentWorkout);
+    saveAllWorkouts(allWorkouts);
     // Display a success message
     openModal(modalMessages.saveWorkout(currentWorkout));
     // Redirect to the history page
@@ -252,37 +251,18 @@ export function saveNewWorkout() {
     clearWorkoutDraft();
 }
 export function saveEditedWorkout() {
+    // Validate the workout data
+    if (!validateWorkoutData())
+        return;
     let editData = getEditData();
     let currentWorkout = getCurrentWorkout();
     if (!currentWorkout || !editData)
         return;
-    // Update workout name
-    WORKOUT_NAME_INPUT &&
-        (currentWorkout.name =
-            WORKOUT_NAME_INPUT.value.trim() || currentWorkout.name);
-    // Save exercises from forms
-    currentWorkout.exercises = readExercisesFromForms();
-    // Validate the workout data
-    if (!validateWorkoutData())
-        return;
-    // Save exercise names for autocomplete
-    const exerciseNames = new Set(loadAllExerciseNames());
-    // Add all unique exercise names to a set
-    currentWorkout.exercises.forEach((ex) => {
-        // if not empty, add trimmed name to the set
-        (ex.name) && exerciseNames.add(ex.name.trim());
-    });
-    // Save the names to localStorage in an array sorted alphabetically 
-    saveAllExerciseNames([...exerciseNames].sort());
-    populateExerciseDatalist();
+    saveWorkout();
     // Update the workout in localStorage
     let allWorkouts = loadAllWorkouts();
     allWorkouts[editData.index] = currentWorkout;
     saveAllWorkouts(allWorkouts);
-    // Update the last workout summary on the dashboard
-    updateLastWorkoutSummary();
-    // Refresh the history page to show the new workout
-    renderHistory();
     // Display a success message
     openModal(modalMessages.updateWorkout(currentWorkout));
     // Redirect to the history page
