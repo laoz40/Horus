@@ -38,6 +38,14 @@ export const modalMessages = {
         onPrimary: onContinue,
         onSecondary: onDiscard,
     }),
+    saveWorkout: (currentWorkout) => ({
+        title: "Workout saved",
+        message: `Your workout "${currentWorkout.name}" has been saved.`,
+    }),
+    updateWorkout: (currentWorkout) => ({
+        title: "Workout updated",
+        message: `Your workout "${currentWorkout.name}" has been updated.`,
+    }),
 };
 // creates a modal dialog with a title, message, and optional primary and secondary buttons
 export function openModal({ title = "Notice", message = "", primaryText = "OK", primaryButtonClass = "", secondaryText = "", onPrimary = null, onSecondary = null, onBackdropClick = null, dismissOnBackdrop = true, dismissOnEsc = true, } = {}) {

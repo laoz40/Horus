@@ -7,7 +7,11 @@ import { EXERCISE_FORM_CONTAINER, EXERCISE_NAME_LIST, WORKOUT_DATE_TEXT, WORKOUT
 import { openModal, modalMessages } from './modal.js';
 // Set current workout to null, because we don't have one yet
 let currentWorkout = null;
-// Returns the current workout
+// Set the current workout
+export function setCurrentWorkout(workout) {
+    currentWorkout = workout;
+}
+// Get the current workout
 export function getCurrentWorkout() {
     return currentWorkout;
 }

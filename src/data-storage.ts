@@ -10,7 +10,12 @@ import { openModal, modalMessages } from './modal.js';
 // Set current workout to null, because we don't have one yet
 let currentWorkout: Workout | null = null;
 
-// Returns the current workout
+// Set the current workout
+export function setCurrentWorkout(workout: Workout | null) {
+  currentWorkout = workout;
+}
+
+// Get the current workout
 export function getCurrentWorkout() {
   return currentWorkout;
 }
@@ -52,7 +57,6 @@ export function mapDifficultyNumberToLabel(n: number) {
   };
   return map[n as keyof typeof map] || null;
 }
-
 // Remove the number prefix from the difficulty label
 export function toDifficultyDisplay(label: string) {
   // If no label, return an empty string

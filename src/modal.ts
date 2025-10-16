@@ -40,6 +40,14 @@ export const modalMessages = {
     onPrimary: onContinue,
     onSecondary: onDiscard,
   }),
+  saveWorkout: (currentWorkout: Workout) => ({
+    title: "Workout saved",
+    message: `Your workout "${currentWorkout.name}" has been saved.`,
+  }),
+  updateWorkout: (currentWorkout: Workout) => ({
+    title: "Workout updated",
+    message: `Your workout "${currentWorkout.name}" has been updated.`,
+  }),
 } as const;
 
 // creates a modal dialog with a title, message, and optional primary and secondary buttons

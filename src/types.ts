@@ -19,6 +19,11 @@ export interface Workout {
   exercises: Exercise[];
 }
 
+export interface EditWorkoutData {
+  index: number;
+  originalWorkout: Workout;
+}
+
 export interface WorkoutDraft {
   name?: string;
   date?: string;
@@ -59,7 +64,3 @@ export interface ModalMessage {
   dismissOnEsc?: boolean;
 }
 
-export interface EditData {
-  index: number;
-  originalWorkout: Workout;
-}
