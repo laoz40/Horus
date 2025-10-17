@@ -12,16 +12,19 @@ Simple workout tracker web app for tracking workouts and fitness progress. Slowl
 
 1. Clone the repository
    ```bash
-   git clone [https://github.com/laoz40/workout-tracker.git](https://github.com/laoz40/workout-tracker.git)
+   git clone https://github.com/laoz40/workout-tracker.git
    cd workout-tracker
+   ```
 
 2. Install dependencies
    ```bash
    npm install
+   ```
 
 #### 📦 Dependencies
 
 - TypeScript - For type-safe JavaScript
+- Biome - For code formatting and linting
 
 ## 🛠️ Development
 
@@ -38,4 +41,10 @@ Automatically compiles TypeScript files on save.
 npm run build
 ```
 Compiles TypeScript into the /dist directory.
+
+#### Lint and Format
+```bash
+npm run lint-format
+```
+Automatically fixes linting and formatting issues where possible.
 

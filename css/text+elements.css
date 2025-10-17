@@ -1,156 +1,156 @@
-
 .page-header-text {
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
-    margin: 0;
-    padding: 0;
-    color: var(--fg);
-    text-align: center;
-    align-items: center;
+	align-items: center;
+	padding: 0;
+	margin: 0;
+	font-size: var(--font-size-md);
+	font-weight: var(--font-weight-semibold);
+	color: var(--fg);
+	text-align: center;
 }
 
 .section-header-text {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-regular);
-    margin: 0 0 var(--space-4) 0;
-    padding: 0;
-    color: var(--muted);
+	padding: 0;
+	margin: 0 0 var(--space-4) 0;
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-weight-regular);
+	color: var(--muted);
 }
 
 .muted {
-    color: var(--muted);
+	color: var(--muted);
 }
 
 /* Primary button styling (height matches inputs) */
 button {
-    background: var(--btn-bg);
-    color: var(--btn-fg);
-    border: 1px solid transparent;
-    padding: var(--control-py) var(--control-px);
-    height: var(--control-h);
-    cursor: pointer;
-    border-radius: var(--border-radius);
-    font-family: var(--font-family-base);
-    font-size: var(--font-size-sm);
-    line-height: 1.2;
+	height: var(--control-h);
+	padding: var(--control-py) var(--control-px);
+	font-family: var(--font-family-base);
+	font-size: var(--font-size-sm);
+	line-height: 1.2;
+	color: var(--btn-fg);
+	cursor: pointer;
+	background: var(--btn-bg);
+	border: 1px solid transparent;
+	border-radius: var(--border-radius);
 }
 
 button:hover {
-    background: var(--btn-bg-hover);
+	background: var(--btn-bg-hover);
 }
 
 button:active {
-    background: var(--btn-bg-active);
+	background: var(--btn-bg-active);
 }
 
 /* Secondary button look (neutral background) */
 button.secondary {
-    background: var(--btn-secondary-bg);
-    color: var(--fg);
-    border: 1px solid var(--border-color);
+	color: var(--fg);
+	background: var(--btn-secondary-bg);
+	border: 1px solid var(--border-color);
 }
 
 button.secondary:hover {
-    background: var(--btn-secondary-hover);
+	background: var(--btn-secondary-hover);
 }
 
 button.secondary:active {
-    background: var(--btn-secondary-active);
+	background: var(--btn-secondary-active);
 }
 
 button.danger {
-    background-color: var(--btn-danger-bg);
-    color: var(--btn-fg);
+	color: var(--btn-fg);
+	background-color: var(--btn-danger-bg);
 }
 
 button.danger:hover {
-    background-color: var(--btn-danger-hover);
+	background-color: var(--btn-danger-hover);
 }
 
 button.danger:active {
-    background-color: var(--btn-danger-active);
+	background-color: var(--btn-danger-active);
 }
 
 button.danger-secondary {
-    background: var(--btn-secondary-bg);
-    color: var(--btn-danger-bg);
-    border: 1px solid var(--border-color);
+	color: var(--btn-danger-bg);
+	background: var(--btn-secondary-bg);
+	border: 1px solid var(--border-color);
 }
 
 button.danger-secondary:hover {
-    background: var(--btn-secondary-hover);
+	background: var(--btn-secondary-hover);
 }
 
 button.danger-secondary:active {
-    background: var(--btn-secondary-active);
+	background: var(--btn-secondary-active);
 }
 
 .page-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--bg);
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    /* Use negative margin to cancel out the main container's horizontal and top padding */
-    margin: calc(-1 * var(--space-16)) calc(-1 * var(--space-16)) var(--space-16) calc(-1 * var(--space-16));
-    padding: var(--space-16) var(--space-16) var(--space-12) var(--space-16);
-    border-bottom: 1px solid var(--border-color);
-    height: var(--header-height);
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: var(--header-height);
+	padding: var(--space-16) var(--space-16) var(--space-12) var(--space-16);
+	/* Use negative margin to cancel out the main container's horizontal and top padding */
+	margin: calc(-1 * var(--space-16)) calc(-1 * var(--space-16)) var(--space-16)
+		calc(-1 * var(--space-16));
+	background-color: var(--bg);
+	border-bottom: 1px solid var(--border-color);
 }
 
-.page-header button.secondary, .page-header button {
-    padding: var(--space-4) var(--space-8);
-    height: auto;
+.page-header button.secondary,
+.page-header button {
+	height: auto;
+	padding: var(--space-4) var(--space-8);
 }
 
 #new-workout-page .page-header {
-    justify-content: space-between;
+	justify-content: space-between;
 }
 
 .modal-overlay[hidden],
 .modal-overlay[aria-hidden="true"] {
-    display: none !important;
+	display: none;
 }
 
 .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.35);
 }
 
 .modal {
-    background: #ffffff;
-    color: var(--fg);
-    width: min(520px, calc(100vw - 2 * var(--space-16)));
-    border-radius: var(--border-radius);
-    box-shadow: 0 10px 30px var(--shadow-color);
-    padding: var(--space-24);
+	width: min(520px, calc(100vw - 2 * var(--space-16)));
+	padding: var(--space-24);
+	color: var(--fg);
+	background: #ffffff;
+	border-radius: var(--border-radius);
+	box-shadow: 0 10px 30px var(--shadow-color);
 }
 
 .modal h3 {
-    margin: 0 0 var(--space-12) 0;
-    font-size: var(--font-size-lg);
+	margin: 0 0 var(--space-12) 0;
+	font-size: var(--font-size-lg);
 }
 
 .modal p {
-    margin: 0 0 var(--space-20) 0;
-    color: var(--muted);
+	margin: 0 0 var(--space-20) 0;
+	color: var(--muted);
 }
 
 .modal-actions {
-    display: flex;
-    gap: var(--space-12);
-    justify-content: flex-end;
+	display: flex;
+	gap: var(--space-12);
+	justify-content: flex-end;
 }
 
 .modal-actions button {
-    min-width: 110px;
-    height: var(--control-h);
+	min-width: 110px;
+	height: var(--control-h);
 }
-

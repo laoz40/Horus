@@ -1,122 +1,144 @@
 /* Theme variables and design tokens used across the app */
 :root {
-    /* Typography */
-    --font-family-base: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    
-    /* Font sizes scale */
-    --font-size-2xs: 0.8125rem; /* 13px */
-    --font-size-xs: 0.875rem; /* 14px */
-    --font-size-sm: 0.95rem; /* 15px */
-    --font-size-md: 1rem;    /* 16px */
-    --font-size-lg: 1.25rem;  /* 20px */
+	/* Typography */
+	--font-family-base:
+		"Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+		sans-serif;
 
-    /* Font weights scale */
-    --font-weight-thin: 100;
-    --font-weight-extralight: 200;
-    --font-weight-light: 300;
-    --font-weight-regular: 400;
-    --font-weight-medium: 500;
-    --font-weight-semibold: 600;
-    --font-weight-bold: 700;
-    --font-weight-extrabold: 800;
-    --font-weight-black: 900;
+	/* Font sizes scale */
+	/* 13px */
+	--font-size-2xs: 0.8125rem;
+	/* 14px */
+	--font-size-xs: 0.875rem;
+	/* 15px */
+	--font-size-sm: 0.95rem;
+	/* 16px */
+	--font-size-md: 1rem;
+	/* 20px */
+	--font-size-lg: 1.25rem;
 
-    /* Spacing scale */
-    --space-4: 0.25rem;  /* 4px */
-    --space-8: 0.5rem;   /* 8px */
-    --space-12: 0.75rem;  /* 12px */
-    --space-16: 1rem;     /* 16px */
-    --space-20: 1.25rem;  /* 20px */
-    --space-24: 1.5rem;   /* 24px */
-    --space-28: 1.75rem;  /* 28px */
-    --space-32: 2rem;     /* 32px */
-    --space-36: 2.25rem;  /* 36px */
-    --space-40: 2.5rem;  /* 40px */
-    /* Base font size (default is usually 16px) */
-    /* 1rem = 16px, so 4px = 0.25rem */
+	/* Font weights scale */
+	--font-weight-thin: 100;
+	--font-weight-extralight: 200;
+	--font-weight-light: 300;
+	--font-weight-regular: 400;
+	--font-weight-medium: 500;
+	--font-weight-semibold: 600;
+	--font-weight-bold: 700;
+	--font-weight-extrabold: 800;
+	--font-weight-black: 900;
 
-    /* Colors */
-    --primary: #4887e8;
-    --primary-hover: #3b76d2;
-    --primary-active: #2e65b6;
-    --bg: #f7f7f8;
-    --fg: #222222;
-    --muted: #717171;
-    --border-color: #d0d7de;
-    --shadow-color: rgba(100, 100, 100, 0.1);
-    --nav-bg: rgba(255, 255, 255, 1);
-    --btn-bg: var(--primary);
-    --btn-bg-hover: var(--primary-hover);
-    --btn-bg-active: var(--primary-active);
-    --btn-fg: #ffffff;
-    --btn-secondary-bg: #e9ecef;
-    --btn-secondary-hover: #dee2e6;
-    --btn-secondary-active: #c8c8c8;
-    --btn-danger-bg: #dc3545;
-    --btn-danger-hover: #c82333;
-    --btn-danger-active: #b31d28;
-    --input-bg: #ececec;
+	/* Spacing scale */
+	--space-4: 0.25rem;
+	--space-8: 0.5rem;
+	--space-12: 0.75rem;
+	--space-16: 1rem;
+	--space-20: 1.25rem;
+	--space-24: 1.5rem;
+	--space-28: 1.75rem;
+	--space-32: 2rem;
+	--space-36: 2.25rem;
+	--space-40: 2.5rem;
+	--space-44: 2.75rem;
+	/* Base font size (default is usually 16px) */
+	/* 1rem = 16px, so 4px = 0.25rem */
 
-    /* Border Radius */
-    --border-radius: 4px;
-    --border-radius-pill: 12px;
+	/* Colors */
+	--primary: #4887e8;
+	--primary-hover: #3b76d2;
+	--primary-active: #2e65b6;
+	--bg: #f7f7f8;
+	--fg: #222222;
+	--muted: #717171;
+	--border-color: #d0d7de;
+	--shadow-color: rgba(100, 100, 100, 0.1);
+	--nav-bg: rgba(255, 255, 255, 1);
+	--btn-bg: var(--primary);
+	--btn-bg-hover: var(--primary-hover);
+	--btn-bg-active: var(--primary-active);
+	--btn-fg: #ffffff;
+	--btn-secondary-bg: #e9ecef;
+	--btn-secondary-hover: #dee2e6;
+	--btn-secondary-active: #c8c8c8;
+	--btn-danger-bg: #dc3545;
+	--btn-danger-hover: #c82333;
+	--btn-danger-active: #b31d28;
+	--input-bg: #ececec;
 
-    /* Controls (inputs/selects) */
-    --control-h: 2.5rem;            /* overall height of inputs/selects */
-    --control-py: 0.2rem;           /* vertical padding */
-    --control-px: 0.6rem;           /* horizontal padding */
+	/* Border Radius */
+	--border-radius: 4px;
+	--border-radius-pill: 12px;
 
-    /* Page */
-    --nav-height: 60px;
-    --header-height: 20px;
+	/* Controls (inputs/selects) */
+	--control-h: 2.5rem;
+	/* overall height of inputs/selects */
+	--control-py: 0.2rem;
+	/* vertical padding */
+	--control-px: 0.6rem;
+	/* horizontal padding */
+
+	/* Page */
+	--nav-height: 60px;
+	--header-height: 20px;
 }
 
 /* Base text, background color, and page defaults */
 body {
-    font-family: var(--font-family-base);
-    font-size: var(--font-size-md);
-    line-height: var(--line-height);
-    background-color: var(--bg);
-    color: var(--fg);
-    padding: 0;
-    margin: 0 0 0 0;
-    overflow-y: auto;
-    display: flex;
-    justify-content: center;
+	display: flex;
+	justify-content: center;
+	padding: 0;
+	margin: 0 0 0 0;
+	overflow-y: auto;
+	font-family: var(--font-family-base);
+	font-size: var(--font-size-md);
+	line-height: var(--line-height);
+	color: var(--fg);
+	background-color: var(--bg);
 }
 
 /* Layout helpers */
 main {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: var(--space-16);
-    display: flex;
-    align-items: start;
-    justify-content: center;
-    flex: 1;
+	display: flex;
+	flex: 1;
+	align-items: start;
+	justify-content: center;
+	max-width: 720px;
+	padding: var(--space-16);
+	margin: 0 auto;
 }
 
 /* Page visibility control (single-page app switching) */
 .page {
-    display: none;
-    width: 100%;
-    box-sizing: border-box;
+	box-sizing: border-box;
+	display: none;
+	width: 100%;
 }
 
 .page.active {
-    display: block;
+	display: block;
 }
 
 /* Global rule to visually hide scrollbars while preserving scroll */
-* { scrollbar-width: none; }
-*::-webkit-scrollbar { display: none; width: 0; height: 0; }
-html, body { -ms-overflow-style: none; }
+* {
+	scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+	display: none;
+	width: 0;
+	height: 0;
+}
+
+html,
+body {
+	-ms-overflow-style: none;
+}
 
 /* Small-screen adjustments for paddings and grids */
 @media (max-width: 768px) {
-    main {
-        padding: 0 var(--space-16) var(--space-16) var(--space-16);
-        max-width: 768px;
-        margin: var(--space-16) 0 var(--nav-height) 0;
-    }
+	main {
+		max-width: 768px;
+		padding: 0 var(--space-16) var(--space-16) var(--space-16);
+		margin: var(--space-16) 0 var(--nav-height) 0;
+	}
 }

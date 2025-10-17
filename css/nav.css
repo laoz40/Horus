@@ -1,81 +1,81 @@
 /* Nav bar and its look */
 .nav-hidden {
-  display: none !important;
+	display: none;
 }
 
 nav {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: fixed;
-    left: 0;
-    z-index: 100;
-    background-color: var(--nav-bg);
-    color: var(--btn-fg);
-    padding: 0 0;
-    height: auto;
-    border-top: 1px solid var(--border-color);
-    overflow: auto;
+	position: fixed;
+	left: 0;
+	z-index: 100;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	height: auto;
+	padding: 0 0;
+	overflow: auto;
+	color: var(--btn-fg);
+	background-color: var(--nav-bg);
+	border-top: 1px solid var(--border-color);
 }
 
 /* Nav buttons */
 .nav-button {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: start;
-    color: var(--muted);
-    background: var(--nav-bg);
-    padding: var(--space-12) var(--space-16);
-    cursor: pointer;
-    border: none;
-    border-radius: 0;
-    gap: var(--space-4);
-    height: auto;
-    transition: background-color 0.2s ease;
+	display: flex;
+	flex-direction: row;
+	gap: var(--space-4);
+	align-items: center;
+	justify-content: start;
+	height: auto;
+	padding: var(--space-12) var(--space-16);
+	color: var(--muted);
+	cursor: pointer;
+	background: var(--nav-bg);
+	border: none;
+	border-radius: 0;
+	transition: background-color 0.2s ease;
 }
 
 .nav-button:hover {
-    background: var(--btn-secondary-hover);
+	background: var(--btn-secondary-hover);
 }
 
 .nav-active {
-    color: var(--primary);
-    font-weight: var(--font-weight-semibold);
+	font-weight: var(--font-weight-semibold);
+	color: var(--primary);
 }
 
 .nav-icon {
-    font-size: 20px;
-    line-height: 1;
-    display: block;
+	display: block;
+	font-size: 20px;
+	line-height: 1;
 }
 
 .nav-text {
-    font-size: var(--font-size-2xs);
-    line-height: 1.2;
-    display: block;
+	display: block;
+	font-size: var(--font-size-2xs);
+	line-height: 1.2;
 }
 
 .nav-button:hover .nav-text,
 .nav-button:hover .nav-icon {
-    color: var(--primary);
+	color: var(--primary);
 }
 
 /* Small-screen adjustments for paddings and grids */
 @media (max-width: 768px) {
-    nav {
-        flex-direction: row;
-        justify-content: space-evenly;
-        height: var(--nav-height);
-        bottom: 0;
-        left: 0;
-        right: 0;
-    }
+	nav {
+		right: 0;
+		bottom: 0;
+		left: 0;
+		flex-direction: row;
+		justify-content: space-evenly;
+		height: var(--nav-height);
+	}
 
-    .nav-button {
-        flex-direction: column;
-        padding: var(--space-8) var(--space-16);
-        min-width: 70px;
-        flex: 1;
-    }
+	.nav-button {
+		flex: 1;
+		flex-direction: column;
+		min-width: 70px;
+		padding: var(--space-8) var(--space-16);
+	}
 }

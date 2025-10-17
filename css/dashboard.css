@@ -1,19 +1,19 @@
 #create-workout-container,
 #last-workout-summary {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: var(--space-16);
+	display: flex;
+	flex-direction: column;
+	margin-bottom: var(--space-16);
 }
 
 .create-workout-buttons-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: var(--space-8);
+	display: flex;
+	flex-direction: row;
+	gap: var(--space-8);
+	align-items: center;
+	justify-content: center;
 }
 
 #start-workout-btn,
 #new-preset-btn {
-    flex: 1;
+	flex: 1;
 }

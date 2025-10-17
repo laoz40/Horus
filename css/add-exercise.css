@@ -1,73 +1,73 @@
 #add-exercises-container {
-    display: flex;
-    flex-direction: column;
+	display: flex;
+	flex-direction: column;
 }
 
 /* Inline exercise form as a compact card */
 .add-exercise-form {
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--space-20) var(--space-12);
-    background: var(--bg);
-    margin-bottom: var(--space-24);
+	padding: var(--space-20) var(--space-12);
+	margin-bottom: var(--space-24);
+	background: var(--bg);
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius);
 }
 
 #add-exercise-btn {
-    width: 100%;
+	width: 100%;
 }
 
 .workout-name-container {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: var(--space-24);
-    gap: var(--space-4);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-4);
+	margin-bottom: var(--space-24);
 }
 
 #workout-name {
-    font-weight: var(--font-weight-semibold);
+	font-weight: var(--font-weight-semibold);
 }
 
 /* New Workout date */
 #workout-date.readout {
-    color: var(--muted);
+	color: var(--muted);
 }
 
 .exercise-text-container,
 .sets-container {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    margin-bottom: var(--space-16);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-4);
+	margin-bottom: var(--space-16);
 }
 
 .exercise-text-container:last-child {
-    margin-bottom: 0;
+	margin-bottom: 0;
 }
 
 .sets-table {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-4);
 }
 
 /* Single row of controls for a set (Set #, Weight, Reps, Difficulty, X) */
 .set-row {
-    display: grid;
-    grid-template-columns: auto repeat(2, minmax(0, 1fr)) auto;
-    gap: var(--space-24);
-    align-items: center;
-    position: relative;
+	position: relative;
+	display: grid;
+	grid-template-columns: auto repeat(2, minmax(0, 1fr)) auto;
+	gap: var(--space-24);
+	align-items: center;
 }
 
 /* Set number indicator */
 .set-number {
-    color: var(--muted);
-    font-weight: var(--font-weight-regular);
-    font-size: var(--font-size-sm);
-    margin: 0;
-    padding: 0;
-    line-height: 1.2;
-    user-select: none;
+	padding: 0;
+	margin: 0;
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-regular);
+	line-height: 1.2;
+	color: var(--muted);
+	user-select: none;
 }
 
 /* Generic control look shared by inputs, selects and textareas */
@@ -75,90 +75,92 @@ input[type="text"],
 select,
 textarea,
 input.exercise-name {
-    padding: var(--control-py) var(--control-px);
-    border: 0px solid var(--border-color);
-    border-radius: var(--border-radius);
-    background: var(--input-bg);
-    font-size: var(--font-size-md);
-    font-family: inherit;
+	padding: var(--control-py) var(--control-px);
+	font-family: inherit;
+	font-size: var(--font-size-md);
+	background: var(--input-bg);
+	border: 0px solid var(--border-color);
+	border-radius: var(--border-radius);
 }
 
 /* Set uniform heights for inputs/selects (textarea excluded) */
 input[type="text"],
 select,
 input.exercise-name {
-    height: var(--control-h);
+	height: var(--control-h);
 }
 
 input.exercise-name,
 input.exercise-name::placeholder {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-semibold);
 }
 
 .set-reps,
 .set-weight {
-    font-weight: var(--font-weight-semibold);
+	font-weight: var(--font-weight-semibold);
 }
 
 .set-reps:invalid,
 .set-weight:invalid {
-    color: var(--btn-danger-hover);
+	color: var(--btn-danger-hover);
 }
 
 /* Textarea tweaks: only vertical resize, no horizontal scroll */
 textarea {
-    resize: vertical;
-    max-width: 100%;
-    padding-block: var(--control-px);
+	max-width: 100%;
+	padding-block: var(--control-px);
+	resize: vertical;
 }
 
 /* Normalize select look across browsers and keep size compact */
 select {
-    -webkit-appearance: menulist;
-    -moz-appearance: menulist;
-    appearance: menulist;
-    line-height: 1.2;
-    height: var(--control-h);
-    vertical-align: middle;
-    cursor: pointer;
+	height: var(--control-h);
+	line-height: 1.2;
+	vertical-align: middle;
+	-moz-appearance: menulist;
+	-webkit-appearance: menulist;
+	appearance: menulist;
+	cursor: pointer;
 }
 
 /* Unified placeholder style */
 input::placeholder,
 textarea::placeholder {
-    color: var(--muted);
-    font-family: inherit;
-    font-weight: var(--font-weight-regular);
-    opacity: 1;
+	font-family: inherit;
+	font-weight: var(--font-weight-regular);
+	color: var(--muted);
+	opacity: 1;
 }
 
 /* Difficulty placeholder color */
 .exercise-difficulty:invalid {
-    color: var(--muted);
+	color: var(--muted);
 }
 
 .exercise-difficulty:valid {
-    color: inherit;
+	color: inherit;
 }
 
 .x-delete-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: var(--space-4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--muted);
-    transition: background-color 0.2s, color 0.2s;
-    font-size: 1.1em;
-    font-weight: var(--font-weight-regular);
-    line-height: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--space-4);
+	font-size: 1.1em;
+	font-weight: var(--font-weight-regular);
+	line-height: 1;
+	color: var(--muted);
+	cursor: pointer;
+	background: none;
+	border: none;
+	transition:
+		background-color 0.2s,
+		color 0.2s;
 }
 
 .x-delete-btn:hover {
-    background-color: var(--btn-secondary-hover);
-    font-weight: var(--font-weight-black);
-    color: var(--btn-danger-hover);
+	font-weight: var(--font-weight-black);
+	color: var(--btn-danger-hover);
+	background-color: var(--btn-secondary-hover);
 }
