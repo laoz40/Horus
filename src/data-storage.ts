@@ -4,7 +4,6 @@ import {
 	EXERCISE_FORM_CONTAINER,
 	EXERCISE_NAME_LIST,
 	WORKOUT_DATE_TEXT,
-	WORKOUT_NAME_INPUT,
 } from "./constants.js";
 import { updateLastWorkoutSummary } from "./history.js";
 import { runMigrations, SCHEMA_VERSION } from "./migration.js";
@@ -100,7 +99,7 @@ export function setupNewWorkout() {
 	if (WORKOUT_DATE_TEXT) WORKOUT_DATE_TEXT.textContent = displayDate;
 	// Set the name to the day of the week (default)
 	const dayName = weekdays[today.getDay()];
-	if (WORKOUT_NAME_INPUT) WORKOUT_NAME_INPUT.value = dayName;
+	// if (WORKOUT_NAME_INPUT) WORKOUT_NAME_INPUT.value = dayName;
 
 	// Create the workout object
 	currentWorkout = {

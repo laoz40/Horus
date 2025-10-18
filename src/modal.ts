@@ -43,8 +43,8 @@ export const modalMessages = {
 		onDiscard: () => void,
 		workoutName: string = "the last workout",
 	) => ({
-		title: `Resume ${workoutName}?`,
-		message: `Do you want to continue editing workout "${workoutName}" or start a new one?`,
+		title: `Resume ${workoutName} workout?`,
+		message: `Do you want to continue editing "${workoutName}" workout or start a new one?`,
 		primaryText: "Continue",
 		secondaryText: "Start New",
 		onPrimary: onContinue,

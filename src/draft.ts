@@ -1,5 +1,4 @@
 // import all the functions and variables we need from other files
-
 import {
 	EXERCISE_FORM_CONTAINER,
 	MODAL_BG_OVERLAY,
@@ -10,7 +9,7 @@ import { getCurrentWorkout, WORKOUT_DRAFT_KEY } from "./data-storage.js";
 import { isInEditMode } from "./history.js";
 import { modalMessages, openModal } from "./modal.js";
 import type { WorkoutDraft } from "./types.js";
-import { formatDisplayDate } from "./utils.js";
+import { formatDisplayDate, weekdays } from "./utils.js";
 import { createExerciseForm } from "./workout-builder.js";
 
 // read the current draft from the form and return it as a JSON object
@@ -78,7 +77,9 @@ export function applyWorkoutDraft(draft: WorkoutDraft) {
 
 	// apply name and date to the html
 	if (WORKOUT_NAME_INPUT)
-		(WORKOUT_NAME_INPUT as HTMLInputElement).value = draft.name || "";
+		if (draft.name) {
+			(WORKOUT_NAME_INPUT as HTMLInputElement).value = draft.name || "";
+		}
 	if (WORKOUT_DATE_TEXT)
 		WORKOUT_DATE_TEXT.textContent =
 			draft.date || WORKOUT_DATE_TEXT.textContent || "";
@@ -190,7 +191,9 @@ export function openDraftModal({
 	clickedDiscard: () => void;
 }) {
 	// load workout name for the modal message
-	const workoutName = loadWorkoutDraft()?.name || "the last workout";
+	const today = new Date();
+	const dayName = weekdays[today.getDay()];
+	const workoutName = loadWorkoutDraft()?.name || `${dayName}`;
 	openModal({
 		...modalMessages.resumeWorkout(
 			clickedContinue,

@@ -1,5 +1,4 @@
 // import all the functions and variables we need from other files
-
 import {
 	BACK_BUTTON_WORKOUT,
 	EXERCISE_FORM_CONTAINER,

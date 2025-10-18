@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Workout Tracker</title>
     <!-- Google font + main stylesheet -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+    />
     <!-- CSS -->
     <link rel="stylesheet" href="css/general.css" />
     <link rel="stylesheet" href="css/text+elements.css" />
@@ -17,109 +19,117 @@
     <link rel="stylesheet" href="css/add-exercise.css" />
     <link rel="stylesheet" href="css/history.css" />
     <!-- Material Icons -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
-</head>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
+  </head>
 
-<body>
+  <body>
     <!-- Nav bar -->
     <nav>
-        <button class="nav-button nav-active" data-page="workout-dashboard-page">
-            <i class="nav-icon material-icons">fitness_center</i>
-            <span class="nav-text">Workout</span>
-        </button>
-        <button class="nav-button" data-page="history-page">
-            <i class="nav-icon material-icons">history</i>
-            <span class="nav-text">History</span>
-        </button>
-        <button class="nav-button" data-page="progress-page">
-            <i class="nav-icon material-icons">trending_up</i>
-            <span class="nav-text">Progress</span>
-        </button>
-        <button class="nav-button" data-page="settings-page">
-            <i class="material-icons nav-icon">settings</i>
-            <span class="nav-text">Settings</span>
-        </button>
+      <button class="nav-button nav-active" data-page="workout-dashboard-page">
+        <i class="nav-icon material-icons">fitness_center</i>
+        <span class="nav-text">Workout</span>
+      </button>
+      <button class="nav-button" data-page="history-page">
+        <i class="nav-icon material-icons">history</i>
+        <span class="nav-text">History</span>
+      </button>
+      <button class="nav-button" data-page="progress-page">
+        <i class="nav-icon material-icons">trending_up</i>
+        <span class="nav-text">Progress</span>
+      </button>
+      <button class="nav-button" data-page="settings-page">
+        <i class="material-icons nav-icon">settings</i>
+        <span class="nav-text">Settings</span>
+      </button>
     </nav>
 
     <!-- Main (Only one .page is shown at a time by JS) -->
     <main>
-        <!-- Home/Dashboard -->
-        <section id="workout-dashboard-page" class="page active">
-            <div class="page-header">
-                <h1 class="page-header-text">Workout</h1>
-            </div>
-            <div id="create-workout-container">
-                <h2 class="section-header-text">Create a Workout</h2>
-                <div class="create-workout-buttons-container">
-                    <button id="start-workout-btn">New Workout</button>
-                    <button id="new-preset-btn" class="secondary">New Preset</button>
-                </div>
-            </div>
-            <!-- Most recent workout summary -->
-            <div id="last-workout-summary">
-                <h2 class="section-header-text">Last Workout</h2>
-                <p>No workout saved yet.</p>
-            </div>
-        </section>
+      <!-- Home/Dashboard -->
+      <section id="workout-dashboard-page" class="page active">
+        <div class="page-header">
+          <h1 class="page-header-text">Workout</h1>
+        </div>
+        <div id="create-workout-container">
+          <h2 class="section-header-text">Create a Workout</h2>
+          <div class="create-workout-buttons-container">
+            <button id="start-workout-btn">New Workout</button>
+            <button id="new-preset-btn" class="secondary">New Preset</button>
+          </div>
+        </div>
+        <!-- Most recent workout summary -->
+        <div id="last-workout-summary">
+          <h2 class="section-header-text">Last Workout</h2>
+          <p>No workout saved yet.</p>
+        </div>
+      </section>
 
-        <!-- New Workout -->
-        <section id="new-workout-page" class="page">
-            <!-- Top actions (Back/Finish) -->
-            <div class="page-header">
-                <button id="workout-back-btn" class="secondary">Back</button>
-                <h1 class="page-header-text">New Workout</h1>
-                <button id="finish-workout-btn">Finish</button>
-            </div>
+      <!-- New Workout -->
+      <section id="new-workout-page" class="page">
+        <!-- Top actions (Back/Finish) -->
+        <div class="page-header">
+          <button id="workout-back-btn" class="secondary">Back</button>
+          <h1 class="page-header-text">New Workout</h1>
+          <button id="finish-workout-btn">Finish</button>
+        </div>
 
-            <!-- Workout Form -->
-            <form id="new-workout-form">
-                <div class="workout-name-container">
-                    <input type="text" id="workout-name" required />
-                    <div id="workout-date" class="readout" aria-readonly="true"></div>
-                </div>
-                <div id="exercises-container">
-                    <div id="exercise-form-container"><!-- Exercise forms --></div>
-                    <button id="add-exercise-btn" type="button">Add Exercise</button>
-                    <datalist id="exercise-name-list"></datalist>
-                </div>
-            </form>
-        </section>
+        <!-- Workout Form -->
+        <form id="new-workout-form">
+          <div class="workout-name-container">
+            <input
+              type="text"
+              id="workout-name"
+              placeholder="Enter Workout Name"
+              required
+            />
+            <div id="workout-date" class="readout" aria-readonly="true"></div>
+          </div>
+          <div id="exercises-container">
+            <div id="exercise-form-container"><!-- Exercise forms --></div>
+            <button id="add-exercise-btn" type="button">Add Exercise</button>
+            <datalist id="exercise-name-list"></datalist>
+          </div>
+        </form>
+      </section>
 
-        <!-- History page -->
-        <section id="history-page" class="page">
-            <div class="page-header">
-                <h1 class="page-header-text">History</h1>
-            </div>
-            <div id="workouts-history-container"><!-- Workout List --></div>
-        </section>
+      <!-- History page -->
+      <section id="history-page" class="page">
+        <div class="page-header">
+          <h1 class="page-header-text">History</h1>
+        </div>
+        <div id="workouts-history-container"><!-- Workout List --></div>
+      </section>
 
-        <!-- Progress page -->
-        <section id="progress-page" class="page">
-            <div class="page-header">
-                <h1 class="page-header-text">Progress</h1>
-            </div>
-            <h2 class="section-header-text">Exercise Progress</h2>
-        </section>
+      <!-- Progress page -->
+      <section id="progress-page" class="page">
+        <div class="page-header">
+          <h1 class="page-header-text">Progress</h1>
+        </div>
+        <h2 class="section-header-text">Exercise Progress</h2>
+      </section>
 
-        <!-- Presets page -->
-        <section id="presets-page" class="page">
-            <div class="page-header">
-                <h1 class="page-header-text">Presets</h1>
-            </div>
-            <h2 class="section-header-text">Presets</h2>
-        </section>
+      <!-- Presets page -->
+      <section id="presets-page" class="page">
+        <div class="page-header">
+          <h1 class="page-header-text">Presets</h1>
+        </div>
+        <h2 class="section-header-text">Presets</h2>
+      </section>
 
-        <!-- Settings -->
-        <section id="settings-page" class="page">
-            <div class="page-header">
-                <h1 class="page-header-text">Settings</h1>
-            </div>
-            <h2 class="section-header-text">Settings</h2>
-            <div id="data-version-card" class="settings-card">
-                <strong>App schema version:</strong>
-                <span id="current-schema-version">—</span>
-            </div>
-        </section>
+      <!-- Settings -->
+      <section id="settings-page" class="page">
+        <div class="page-header">
+          <h1 class="page-header-text">Settings</h1>
+        </div>
+        <h2 class="section-header-text">Settings</h2>
+        <div id="data-version-card" class="settings-card">
+          <strong>App schema version:</strong>
+          <span id="current-schema-version">—</span>
+        </div>
+      </section>
     </main>
 
     <!-- JavaScript -->
@@ -127,15 +137,21 @@
 
     <!-- Modal -->
     <div id="app-modal-overlay" class="modal-overlay" aria-hidden="true" hidden>
-        <div class="modal" role="dialog" aria-labelledby="app-modal-title" aria-modal="true">
-            <h3 id="app-modal-title">Notice</h3>
-            <p id="app-modal-message">Message</p>
-            <div class="modal-actions">
-                <button id="app-modal-primary-btn">OK</button>
-                <button id="app-modal-secondary-btn" class="secondary" hidden>Cancel</button>
-            </div>
+      <div
+        class="modal"
+        role="dialog"
+        aria-labelledby="app-modal-title"
+        aria-modal="true"
+      >
+        <h3 id="app-modal-title">Notice</h3>
+        <p id="app-modal-message">Message</p>
+        <div class="modal-actions">
+          <button id="app-modal-primary-btn">OK</button>
+          <button id="app-modal-secondary-btn" class="secondary" hidden>
+            Cancel
+          </button>
         </div>
+      </div>
     </div>
-</body>
-
+  </body>
 </html>
