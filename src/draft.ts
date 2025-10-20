@@ -72,14 +72,19 @@ export function applyWorkoutDraft(draft: WorkoutDraft) {
 	// Update name and date in currentWorkout data
 	const currentWorkout = getCurrentWorkout();
 	if (!currentWorkout) return;
+	// Only set the name if it exists in the draft, otherwise leave it empty
 	currentWorkout.name = draft.name || "";
 	currentWorkout.date = displayDate;
 
 	// apply name and date to the html
-	if (WORKOUT_NAME_INPUT)
+	if (WORKOUT_NAME_INPUT) {
 		if (draft.name) {
-			(WORKOUT_NAME_INPUT as HTMLInputElement).value = draft.name || "";
+			(WORKOUT_NAME_INPUT as HTMLInputElement).value = draft.name;
+		} else {
+			// Clear the input to show placeholder
+			(WORKOUT_NAME_INPUT as HTMLInputElement).value = "";
 		}
+	}
 	if (WORKOUT_DATE_TEXT)
 		WORKOUT_DATE_TEXT.textContent =
 			draft.date || WORKOUT_DATE_TEXT.textContent || "";
@@ -193,7 +198,7 @@ export function openDraftModal({
 	// load workout name for the modal message
 	const today = new Date();
 	const dayName = weekdays[today.getDay()];
-	const workoutName = loadWorkoutDraft()?.name || `${dayName}`;
+	const workoutName = loadWorkoutDraft()?.name || `${dayName} Workout`;
 	openModal({
 		...modalMessages.resumeWorkout(
 			clickedContinue,

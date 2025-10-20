@@ -32,8 +32,6 @@ export function wireUiEvents() {
 	// Start workout button
 	if (START_WORKOUT_BUTTON) {
 		START_WORKOUT_BUTTON.addEventListener("click", () => {
-			// Initialize a new workout
-			setupNewWorkout();
 			// Check if there's a draft that has data
 			const draft = loadWorkoutDraft();
 			const hasDraft = !!(
@@ -57,6 +55,7 @@ export function wireUiEvents() {
 					// Continue: load workout page, apply draft, and wire draft autosave
 					clickedContinue: () => {
 						showPage("new-workout-page");
+						setupNewWorkout();
 						applyWorkoutDraft(draft);
 						wireDraftAutosave();
 					},

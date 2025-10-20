@@ -28,7 +28,7 @@ import type {
 	ExerciseSet,
 	Workout,
 } from "./types.js";
-import { esc, formatDisplayDate } from "./utils.js";
+import { esc, formatDisplayDate, weekdays } from "./utils.js";
 import {
 	createExerciseForm,
 	readExercisesFromForms,
@@ -340,6 +340,12 @@ export function saveNewWorkout() {
 
 	const currentWorkout = getCurrentWorkout();
 	if (!currentWorkout) return;
+
+	if (!currentWorkout.name?.trim()) {
+		const today = new Date();
+		const dayName = weekdays[today.getDay()];
+		currentWorkout.name = `${dayName} Workout`;
+	}
 
 	saveWorkout();
 	// Add the workout to localStorage

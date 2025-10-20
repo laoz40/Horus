@@ -4,12 +4,13 @@ import {
 	EXERCISE_FORM_CONTAINER,
 	EXERCISE_NAME_LIST,
 	WORKOUT_DATE_TEXT,
+	WORKOUT_NAME_INPUT,
 } from "./constants.js";
 import { updateLastWorkoutSummary } from "./history.js";
 import { runMigrations, SCHEMA_VERSION } from "./migration.js";
 import { modalMessages, openModal } from "./modal.js";
 import type { Exercise, Workout } from "./types.js";
-import { formatDisplayDate, weekdays } from "./utils.js";
+import { formatDisplayDate } from "./utils.js";
 import { createExerciseForm } from "./workout-builder.js";
 
 // Set current workout to null, because we don't have one yet
@@ -96,16 +97,14 @@ export function setupNewWorkout() {
 	const today = new Date();
 	const displayDate = formatDisplayDate(today);
 	// Set the date
+	if (WORKOUT_NAME_INPUT) WORKOUT_NAME_INPUT.value = "";
 	if (WORKOUT_DATE_TEXT) WORKOUT_DATE_TEXT.textContent = displayDate;
-	// Set the name to the day of the week (default)
-	const dayName = weekdays[today.getDay()];
-	// if (WORKOUT_NAME_INPUT) WORKOUT_NAME_INPUT.value = dayName;
 
 	// Create the workout object
 	currentWorkout = {
 		id: `${Date.now()}`,
 		schemaVersion: SCHEMA_VERSION,
-		name: dayName,
+		name: "",
 		date: displayDate,
 		exercises: [] as Exercise[],
 	};
@@ -127,6 +126,36 @@ export function validateWorkoutData() {
 	// If no exercise forms, show error and stop
 	const EXERCISE_FORMS = document.querySelectorAll(".add-exercise-form");
 	if (!EXERCISE_FORMS || EXERCISE_FORMS.length === 0) {
+		openModal(modalMessages.noExercises);
+		return false;
+	}
+
+	// Check if there's at least one complete set across all exercises
+	let validSet = false;
+	for (const exerciseForm of EXERCISE_FORMS) {
+		const SET_ROWS = exerciseForm.querySelectorAll(".set-row");
+		for (const setRow of SET_ROWS) {
+			const SET_WEIGHT =
+				setRow.querySelector<HTMLInputElement>(".set-weight")?.value.trim() ||
+				"";
+			const SET_REPS =
+				setRow.querySelector<HTMLInputElement>(".set-reps")?.value.trim() || "";
+			const setRepsNumber = SET_REPS === "" ? null : Number(SET_REPS);
+
+			if (
+				SET_WEIGHT !== "" &&
+				SET_REPS !== "" &&
+				setRepsNumber !== null &&
+				setRepsNumber > 0
+			) {
+				validSet = true;
+				break;
+			}
+		}
+		if (validSet) break;
+	}
+
+	if (!validSet) {
 		openModal(modalMessages.noExercises);
 		return false;
 	}
