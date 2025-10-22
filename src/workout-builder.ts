@@ -259,3 +259,50 @@ export function updateWorkoutButtons() {
 		}
 	}
 }
+
+export function scrollToExercise(direction: "prev" | "next" | "last") {
+	if (!EXERCISE_FORM_CONTAINER) return;
+
+	const exerciseForms =
+		EXERCISE_FORM_CONTAINER.querySelectorAll(".add-exercise-form");
+	if (exerciseForms.length === 0) return;
+
+	const formContainerTopPosition =
+		EXERCISE_FORM_CONTAINER.getBoundingClientRect().top;
+	let targetForm = null;
+
+	if (direction === "prev") {
+		// Find first form above current position
+		for (
+			let formIndex = exerciseForms.length - 1;
+			formIndex >= 0;
+			formIndex--
+		) {
+			const exerciseForm = exerciseForms[formIndex] as HTMLElement;
+			const formTopPosition = exerciseForm.getBoundingClientRect().top;
+			if (formTopPosition < formContainerTopPosition) {
+				targetForm = exerciseForm;
+				break;
+			}
+		}
+	}
+	if (direction === "next") {
+		// Find first form below current position
+		for (let formIndex = 0; formIndex < exerciseForms.length; formIndex++) {
+			const exerciseForm = exerciseForms[formIndex] as HTMLElement;
+			const formTopPosition = exerciseForm.getBoundingClientRect().top;
+			// 16px threshold to account for the current form's padding, otherwise it will be true for the current form
+			if (formTopPosition > formContainerTopPosition + 16) {
+				targetForm = exerciseForm;
+				break;
+			}
+		}
+	}
+	if (direction === "last") {
+		targetForm = exerciseForms[exerciseForms.length - 1];
+	}
+
+	if (targetForm) {
+		targetForm.scrollIntoView({ behavior: "smooth", block: "start" });
+	}
+}
