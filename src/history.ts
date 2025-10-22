@@ -28,7 +28,7 @@ import type {
 	ExerciseSet,
 	Workout,
 } from "./types.js";
-import { esc, formatDisplayDate, weekdays } from "./utils.js";
+import { displayFullDate, displayHistoryDate, esc, weekdays } from "./utils.js";
 import {
 	createExerciseForm,
 	readExercisesFromForms,
@@ -119,14 +119,14 @@ function buildSummaryCardHTML(
             <div class="workout-title-row">
               <h3 class="workout-title">${esc(workout.name)}</h3>
               <div class="workout-details-row">
-                  <span class="workout-duration">${workoutDuration}</span>
-                  <span class="workout-date">${esc(workout.date)}</span>
+                  <span class="workout-date">${displayHistoryDate(workout.date)}</span>
               </div>
             </div>
             <div class="workout-stats-row">
               <div class="workout-stats">
                 <span class="exercise-count">${workout.exercises.length} Exercises</span>
                 <span class="workout-volume">${totalVolume || "0"} kg</span>
+                <span class="workout-duration">${workoutDuration}</span>
               </div>
               ${
 								prsSet > 0
@@ -156,14 +156,14 @@ function buildSummaryCardHTML(
 					showDeleteButton
 						? `
           <div class="workout-details-footer">
-            <button type="button" 
-                    class="edit-button secondary" 
+            <button type="button"
+                    class="edit-button secondary"
                     aria-label="Edit workout"
                     data-workout-index="${index}">
               <span aria-hidden="true">Edit</span>
             </button>
-            <button type="button" 
-                    class="delete-button danger" 
+            <button type="button"
+                    class="delete-button danger"
                     aria-label="Delete workout"
                     data-workout-index="${index}">
               <span aria-hidden="true">Delete</span>
@@ -289,7 +289,7 @@ function editWorkout(workoutIndex: number) {
 	if (WORKOUT_NAME_INPUT) WORKOUT_NAME_INPUT.value = workoutToEdit.name || "";
 	if (WORKOUT_DATE_TEXT)
 		WORKOUT_DATE_TEXT.textContent =
-			formatDisplayDate(new Date(workoutToEdit.date)) || "";
+			displayFullDate(new Date(workoutToEdit.date)) || "";
 
 	// clear the container
 	if (!EXERCISE_FORM_CONTAINER) return;

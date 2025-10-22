@@ -10,7 +10,7 @@ import { updateLastWorkoutSummary } from "./history.js";
 import { runMigrations, SCHEMA_VERSION } from "./migration.js";
 import { modalMessages, openModal } from "./modal.js";
 import type { Exercise, Workout } from "./types.js";
-import { formatDisplayDate } from "./utils.js";
+import { displayFullDate } from "./utils.js";
 import { createExerciseForm } from "./workout-builder.js";
 
 // Set current workout to null, because we don't have one yet
@@ -95,7 +95,7 @@ export function setupNewWorkout() {
 	// Clear any existing workout
 	currentWorkout = null;
 	const today = new Date();
-	const displayDate = formatDisplayDate(today);
+	const displayDate = displayFullDate(today);
 	// Set the date
 	if (WORKOUT_NAME_INPUT) WORKOUT_NAME_INPUT.value = "";
 	if (WORKOUT_DATE_TEXT) WORKOUT_DATE_TEXT.textContent = displayDate;
@@ -105,7 +105,7 @@ export function setupNewWorkout() {
 		id: `${Date.now()}`,
 		schemaVersion: SCHEMA_VERSION,
 		name: "",
-		date: displayDate,
+		date: today.toISOString(),
 		exercises: [] as Exercise[],
 	};
 	// Create the exercise form

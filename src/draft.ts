@@ -9,7 +9,7 @@ import { getCurrentWorkout, WORKOUT_DRAFT_KEY } from "./data-storage.js";
 import { isInEditMode } from "./history.js";
 import { modalMessages, openModal } from "./modal.js";
 import type { WorkoutDraft } from "./types.js";
-import { formatDisplayDate, weekdays } from "./utils.js";
+import { displayHistoryDate, weekdays } from "./utils.js";
 import { createExerciseForm } from "./workout-builder.js";
 
 // read the current draft from the form and return it as a JSON object
@@ -68,7 +68,7 @@ export function applyWorkoutDraft(draft: WorkoutDraft) {
 
 	// Get current date for the draft
 	const today = new Date();
-	const displayDate = formatDisplayDate(today);
+	const displayDate = displayHistoryDate(today);
 	// Update name and date in currentWorkout data
 	const currentWorkout = getCurrentWorkout();
 	if (!currentWorkout) return;

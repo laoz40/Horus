@@ -104,7 +104,7 @@ main {
 	align-items: start;
 	justify-content: center;
 	max-width: 720px;
-	padding: var(--space-16);
+	padding: 0 var(--space-16);
 	margin: 0 auto;
 }
 

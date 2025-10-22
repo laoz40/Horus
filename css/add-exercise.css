@@ -5,15 +5,16 @@
 #new-workout-page.active {
 	display: flex;
 	flex-direction: column;
-	height: 100vh;
+	height: 100svh;
 }
 
 #new-workout-page .page-header {
 	justify-content: space-between;
+	margin-bottom: var(--space-16);
 	border-bottom: none;
 }
 
-.add-workout-header {
+.add-workout-header-container {
 	z-index: 1;
 	margin: 0 var(--space-16);
 }
