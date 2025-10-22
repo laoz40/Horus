@@ -84,6 +84,7 @@ export function wireUiEvents() {
 			// Add a new exercise form
 			if (EXERCISE_FORM_CONTAINER) {
 				EXERCISE_FORM_CONTAINER.appendChild(createExerciseForm());
+				scrollToExercise("last");
 			}
 			// Save draft immediately when adding a new exercise block
 			saveWorkoutDraft();
@@ -132,7 +133,7 @@ export function wireUiEvents() {
 		});
 	}
 
-	function scrollToExercise(direction: "prev" | "next") {
+	function scrollToExercise(direction: "prev" | "next" | "last") {
 		if (!EXERCISE_FORM_CONTAINER) return;
 
 		const exerciseForms =
@@ -157,7 +158,8 @@ export function wireUiEvents() {
 					break;
 				}
 			}
-		} else {
+		}
+		if (direction === "next") {
 			// Find first form below current position
 			for (let formIndex = 0; formIndex < exerciseForms.length; formIndex++) {
 				const exerciseForm = exerciseForms[formIndex] as HTMLElement;
@@ -168,6 +170,9 @@ export function wireUiEvents() {
 					break;
 				}
 			}
+		}
+		if (direction === "last") {
+			targetForm = exerciseForms[exerciseForms.length - 1];
 		}
 
 		if (targetForm) {
