@@ -4,6 +4,8 @@ import {
 	BACK_BUTTON_WORKOUT,
 	EXERCISE_FORM_CONTAINER,
 	FINISH_WORKOUT_BUTTON,
+	NEXT_EXERCISE_BUTTON,
+	PREV_EXERCISE_BUTTON,
 	START_WORKOUT_BUTTON,
 } from "./constants.js";
 import { setupNewWorkout } from "./data-storage.js";
@@ -129,6 +131,63 @@ export function wireUiEvents() {
 			}
 		});
 	}
+
+	function scrollToExercise(direction: "prev" | "next") {
+		if (!EXERCISE_FORM_CONTAINER) return;
+
+		const exerciseForms =
+			EXERCISE_FORM_CONTAINER.querySelectorAll(".add-exercise-form");
+		if (exerciseForms.length === 0) return;
+
+		const formContainerTopPosition =
+			EXERCISE_FORM_CONTAINER.getBoundingClientRect().top;
+		let targetForm = null;
+
+		if (direction === "prev") {
+			// Find first form above current position
+			for (
+				let formIndex = exerciseForms.length - 1;
+				formIndex >= 0;
+				formIndex--
+			) {
+				const exerciseForm = exerciseForms[formIndex] as HTMLElement;
+				const formTopPosition = exerciseForm.getBoundingClientRect().top;
+				if (formTopPosition < formContainerTopPosition) {
+					targetForm = exerciseForm;
+					break;
+				}
+			}
+		} else {
+			// Find first form below current position
+			for (let formIndex = 0; formIndex < exerciseForms.length; formIndex++) {
+				const exerciseForm = exerciseForms[formIndex] as HTMLElement;
+				const formTopPosition = exerciseForm.getBoundingClientRect().top;
+				// 16px threshold to account for the current form's padding, otherwise it will be true for the current form
+				if (formTopPosition > formContainerTopPosition + 16) {
+					targetForm = exerciseForm;
+					break;
+				}
+			}
+		}
+
+		if (targetForm) {
+			targetForm.scrollIntoView({ behavior: "smooth", block: "start" });
+		}
+	}
+
+	// Set up event listeners
+	if (PREV_EXERCISE_BUTTON) {
+		PREV_EXERCISE_BUTTON.addEventListener("click", () =>
+			scrollToExercise("prev"),
+		);
+	}
+
+	if (NEXT_EXERCISE_BUTTON) {
+		NEXT_EXERCISE_BUTTON.addEventListener("click", () =>
+			scrollToExercise("next"),
+		);
+	}
+
 	// wire up the navigation buttons
 	wireNavButtons();
 

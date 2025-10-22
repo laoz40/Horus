@@ -1,35 +1,74 @@
-#add-exercises-container {
+#new-workout-page:not(.active) {
+	display: none;
+}
+
+#new-workout-page.active {
 	display: flex;
 	flex-direction: column;
+	height: 100vh;
+}
+
+#new-workout-page .page-header {
+	justify-content: space-between;
+	border-bottom: none;
+}
+
+.add-workout-header {
+	z-index: 1;
+	margin: 0 var(--space-16);
+}
+
+#workout-name-container {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-8);
+	padding: var(--space-8) var(--space-16);
+	/* Use negative margin to cancel out the main container's horizontal and top padding */
+	margin: 0 calc(-1 * var(--space-16)) 0 calc(-1 * var(--space-16));
+	background-color: var(--bg);
+	border-bottom: 1px solid var(--border-color);
+}
+
+#workout-name {
+	width: fit-content;
+	height: var(--header-height);
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-semibold);
+}
+
+#workout-date {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-4);
+	font-size: var(--font-size-xs);
+}
+
+#exercises-container {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	overflow-y: auto;
+}
+
+#exercise-form-container {
+	box-sizing: border-box;
+	flex: 1;
+	padding: var(--space-16);
+	overflow-y: auto;
+	scroll-snap-type: y mandatory;
 }
 
 /* Inline exercise form as a compact card */
 .add-exercise-form {
-	padding: var(--space-20) var(--space-12);
-	margin-bottom: var(--space-24);
+	height: 90%;
+	padding: var(--space-24) var(--space-16);
+	margin-bottom: var(--space-16);
+	overflow-y: auto;
+	scroll-snap-align: center;
+	scroll-snap-stop: always;
 	background: var(--bg);
 	border: 1px solid var(--border-color);
 	border-radius: var(--border-radius);
-}
-
-#add-exercise-btn {
-	width: 100%;
-}
-
-.workout-name-container {
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-4);
-	margin-bottom: var(--space-24);
-}
-
-#workout-name {
-	font-weight: var(--font-weight-semibold);
-}
-
-/* New Workout date */
-#workout-date.readout {
-	color: var(--muted);
 }
 
 .exercise-text-container,
@@ -85,8 +124,7 @@ input.exercise-name {
 
 /* Set uniform heights for inputs/selects (textarea excluded) */
 input[type="text"],
-select,
-input.exercise-name {
+select {
 	height: var(--control-h);
 }
 
@@ -111,6 +149,7 @@ textarea {
 	max-width: 100%;
 	padding-block: var(--control-px);
 	resize: vertical;
+	field-sizing: content;
 }
 
 /* Normalize select look across browsers and keep size compact */
@@ -163,4 +202,28 @@ textarea::placeholder {
 	font-weight: var(--font-weight-black);
 	color: var(--btn-danger-hover);
 	background-color: var(--btn-secondary-hover);
+}
+
+.add-exercise-buttons {
+	z-index: 10;
+	padding: 0 0 var(--space-16) 0;
+	margin: 0 var(--space-16);
+	background-color: var(--bg);
+}
+
+.exercise-scroll-buttons {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+.exercise-scroll-buttons button {
+	height: auto;
+	padding: var(--space-4) var(--space-8);
+}
+
+#add-exercise-btn {
+	bottom: var(--space-16);
+	width: 100%;
+	margin-top: var(--space-8);
 }

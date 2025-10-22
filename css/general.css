@@ -40,6 +40,7 @@
 	--space-36: 2.25rem;
 	--space-40: 2.5rem;
 	--space-44: 2.75rem;
+	--space-48: 3rem;
 	/* Base font size (default is usually 16px) */
 	/* 1rem = 16px, so 4px = 0.25rem */
 
@@ -140,5 +141,10 @@ body {
 		max-width: 768px;
 		padding: 0 var(--space-16) var(--space-16) var(--space-16);
 		margin: var(--space-16) 0 var(--nav-height) 0;
+	}
+
+	main:has(#new-workout-page.active) {
+		padding: 0;
+		margin: 0;
 	}
 }

@@ -27,6 +27,12 @@ export const BACK_BUTTON_WORKOUT = document.getElementById(
 export const FINISH_WORKOUT_BUTTON = document.getElementById(
 	"finish-workout-btn",
 ) as HTMLButtonElement | null;
+export const NEXT_EXERCISE_BUTTON = document.getElementById(
+	"next-exercise",
+) as HTMLButtonElement | null;
+export const PREV_EXERCISE_BUTTON = document.getElementById(
+	"prev-exercise",
+) as HTMLButtonElement | null;
 
 // Exercise form elements
 export const ADD_EXERCISE_BUTTON = document.getElementById(

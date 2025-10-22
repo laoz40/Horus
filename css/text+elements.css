@@ -106,10 +106,6 @@ button.danger-secondary:active {
 	padding: var(--space-4) var(--space-8);
 }
 
-#new-workout-page .page-header {
-	justify-content: space-between;
-}
-
 .modal-overlay[hidden],
 .modal-overlay[aria-hidden="true"] {
 	display: none;

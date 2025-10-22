@@ -70,29 +70,39 @@
       <!-- New Workout -->
       <section id="new-workout-page" class="page">
         <!-- Top actions (Back/Finish) -->
-        <div class="page-header">
-          <button id="workout-back-btn" class="secondary">Back</button>
-          <h1 class="page-header-text">New Workout</h1>
-          <button id="finish-workout-btn">Finish</button>
-        </div>
-
-        <!-- Workout Form -->
-        <form id="new-workout-form">
-          <div class="workout-name-container">
+        <div class="add-workout-header">
+          <div class="page-header">
+            <button id="workout-back-btn" class="secondary">Back</button>
+            <!-- <h1 class="page-header-text">New Workout</h1> -->
+            <button id="finish-workout-btn">Finish</button>
+          </div>
+          <div id="workout-name-container">
+            <div id="workout-date" class="muted" aria-readonly="true"></div>
             <input
               type="text"
               id="workout-name"
               placeholder="Enter Workout Name"
               required
             />
-            <div id="workout-date" class="readout" aria-readonly="true"></div>
           </div>
-          <div id="exercises-container">
-            <div id="exercise-form-container"><!-- Exercise forms --></div>
-            <button id="add-exercise-btn" type="button">Add Exercise</button>
-            <datalist id="exercise-name-list"></datalist>
+        </div>
+
+        <!-- Workout Form -->
+        <div id="exercises-container">
+          <div id="exercise-form-container"><!-- Exercise forms --></div>
+          <datalist id="exercise-name-list"></datalist>
+        </div>
+        <div class="add-exercise-buttons">
+          <div class="exercise-scroll-buttons">
+            <button id="prev-exercise" class="secondary" type="button">
+              Prev
+            </button>
+            <button id="next-exercise" class="secondary" type="button">
+              Next
+            </button>
           </div>
-        </form>
+          <button id="add-exercise-btn" type="button">Add Exercise</button>
+        </div>
       </section>
 
       <!-- History page -->

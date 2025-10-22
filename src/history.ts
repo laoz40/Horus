@@ -341,11 +341,10 @@ export function saveNewWorkout() {
 	const currentWorkout = getCurrentWorkout();
 	if (!currentWorkout) return;
 
-	if (!currentWorkout.name?.trim()) {
-		const today = new Date();
-		const dayName = weekdays[today.getDay()];
-		currentWorkout.name = `${dayName} Workout`;
-	}
+	const today = new Date();
+	const dayName = weekdays[today.getDay()];
+	currentWorkout.name =
+		WORKOUT_NAME_INPUT?.value?.trim() || `${dayName} Workout`;
 
 	saveWorkout();
 	// Add the workout to localStorage
