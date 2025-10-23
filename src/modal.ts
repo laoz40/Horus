@@ -1,5 +1,5 @@
 import {
-	MODAL_BG_OVERLAY,
+	MODAL,
 	MODAL_MESSAGE,
 	MODAL_PRIMARY_BUTTON,
 	MODAL_SECONDARY_BUTTON,
@@ -67,7 +67,7 @@ export const modalMessages = {
 	}),
 } as const;
 
-// creates a modal dialog with a title, message, and optional primary and secondary buttons
+// creates a modal with a title, message, and optional primary and secondary buttons
 export function openModal({
 	title = "Notice",
 	message = "",
@@ -76,45 +76,27 @@ export function openModal({
 	secondaryText = "",
 	onPrimary = null as (() => void) | null,
 	onSecondary = null as (() => void) | null,
-	onBackdropClick = null as (() => void) | null,
-	dismissOnBackdrop = true,
-	dismissOnEsc = true,
 } = {}) {
 	// Fallbacks for when the modal elements don't exist
-	if (
-		!MODAL_BG_OVERLAY ||
-		!MODAL_TITLE ||
-		!MODAL_MESSAGE ||
-		!MODAL_PRIMARY_BUTTON ||
-		!MODAL_SECONDARY_BUTTON
-	) {
+	if (!MODAL || !MODAL_TITLE || !MODAL_MESSAGE || !MODAL_PRIMARY_BUTTON) {
 		if (secondaryText) {
-			// Fallback to ok/cancel if secondary button is specified
 			const ok = confirm(`${title ? `${title}\n\n` : ""}${message}`.trim());
-			// Call the primary callback if the user clicked OK
-			if (ok && typeof onPrimary === "function") onPrimary();
-			// Call the secondary callback if the user clicked Cancel
-			if (!ok && typeof onSecondary === "function") onSecondary();
+			if (ok) onPrimary?.();
+			else onSecondary?.();
 		} else {
-			// Simple alert fallback if no secondary button
 			alert(`${title ? `${title}\n\n` : ""}${message}`.trim());
-			// Call the primary callback if the user clicked OK
-			if (typeof onPrimary === "function") onPrimary();
+			onPrimary?.();
 		}
-		// exit after fallback if we don't have the modal elements
 		return;
 	}
 
-	// Set title, message, and primary button text to the provided values
+	// Set modal content
 	MODAL_TITLE.textContent = title;
 	MODAL_MESSAGE.textContent = message;
-	MODAL_PRIMARY_BUTTON.textContent = primaryText || "OK";
+	MODAL_PRIMARY_BUTTON.textContent = primaryText;
+	MODAL_PRIMARY_BUTTON.className = primaryButtonClass;
 
-	// Set primary button class
-	MODAL_PRIMARY_BUTTON.className = ""; // Reset any existing classes
-	primaryButtonClass && MODAL_PRIMARY_BUTTON.classList.add(primaryButtonClass);
-
-	// If secondary button is specified, set its text and visibility
+	// Configure secondary button if needed
 	if (MODAL_SECONDARY_BUTTON) {
 		if (secondaryText) {
 			MODAL_SECONDARY_BUTTON.textContent = secondaryText;
@@ -124,56 +106,47 @@ export function openModal({
 		}
 	}
 
-	// Event listeners for primary and secondary modal buttons
-	const onPrimaryClick = () => {
-		closeModal();
-		// check for function in case its null
-		typeof onPrimary === "function" && onPrimary();
-	};
-	const onSecondaryClick = () => {
-		closeModal();
-		// check for function in case its null
-		typeof onSecondary === "function" && onSecondary();
-	};
-	const onBackdrop = (e: MouseEvent) => {
-		if (dismissOnBackdrop && e.target === MODAL_BG_OVERLAY) {
-			// check for function in case its null
-			if (typeof onBackdropClick === "function") {
-				onBackdropClick();
-				// fallback to secondary click if no function
-			} else {
-				onSecondaryClick();
-			}
+	// Handle modal action buttons
+	const handleModalActions = () => {
+		if (MODAL?.returnValue === "primary") {
+			onPrimary?.();
+		} else if (MODAL?.returnValue === "secondary") {
+			onSecondary?.();
 		}
 	};
-	// Event listener for escape key
-	const onEsc = (e: KeyboardEvent) =>
-		dismissOnEsc && e.key === "Escape" && onSecondaryClick();
 
-	// Show the modal and add event listeners
-	MODAL_BG_OVERLAY.hidden = false;
-	MODAL_BG_OVERLAY.setAttribute("aria-hidden", "false");
-	MODAL_PRIMARY_BUTTON.addEventListener("click", onPrimaryClick, {
+	const handlePrimaryClick = () => {
+		MODAL?.close("primary");
+	};
+
+	const handleSecondaryClick = () => {
+		MODAL?.close("secondary");
+	};
+
+	MODAL.addEventListener("close", handleModalActions, { once: true });
+	MODAL_PRIMARY_BUTTON.addEventListener("click", handlePrimaryClick, {
 		once: true,
 	});
-	MODAL_SECONDARY_BUTTON &&
-		!MODAL_SECONDARY_BUTTON.hidden &&
-		MODAL_SECONDARY_BUTTON.addEventListener("click", onSecondaryClick, {
+
+	if (MODAL_SECONDARY_BUTTON && !MODAL_SECONDARY_BUTTON.hidden) {
+		MODAL_SECONDARY_BUTTON.addEventListener("click", handleSecondaryClick, {
 			once: true,
 		});
-	MODAL_BG_OVERLAY.addEventListener("click", onBackdrop);
-	document.addEventListener("keydown", onEsc);
+	}
 
-	// Close the modal and remove event listeners
-	const closeModal = () => {
-		// Hide the modal overlay if it exists
-		MODAL_BG_OVERLAY?.setAttribute("aria-hidden", "true");
-		if (MODAL_BG_OVERLAY) MODAL_BG_OVERLAY.hidden = true;
+	// Close modal when clicking outside
+	MODAL.addEventListener("click", (backdropClick: MouseEvent) => {
+		if (!MODAL) return;
+		const dialogDimensions = MODAL.getBoundingClientRect();
+		if (
+			backdropClick.clientX < dialogDimensions.left ||
+			backdropClick.clientX > dialogDimensions.right ||
+			backdropClick.clientY < dialogDimensions.top ||
+			backdropClick.clientY > dialogDimensions.bottom
+		) {
+			MODAL.close();
+		}
+	});
 
-		// Clean up event listeners
-		MODAL_PRIMARY_BUTTON?.removeEventListener("click", onPrimaryClick);
-		MODAL_SECONDARY_BUTTON?.removeEventListener("click", onSecondaryClick);
-		MODAL_BG_OVERLAY?.removeEventListener("click", onBackdrop);
-		document.removeEventListener("keydown", onEsc);
-	};
+	MODAL.showModal();
 }

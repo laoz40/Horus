@@ -43,20 +43,20 @@ export const EXERCISE_NAME_LIST = document.getElementById(
 ) as HTMLDataListElement | null;
 
 // Modal elements
-export const MODAL_BG_OVERLAY = document.getElementById(
-	"app-modal-overlay",
-) as HTMLDivElement | null;
+export const MODAL = document.getElementById(
+	"modal",
+) as HTMLDialogElement | null;
 export const MODAL_TITLE = document.getElementById(
-	"app-modal-title",
+	"modal-title",
 ) as HTMLElement | null;
 export const MODAL_MESSAGE = document.getElementById(
-	"app-modal-message",
+	"modal-message",
 ) as HTMLElement | null;
 export const MODAL_PRIMARY_BUTTON = document.getElementById(
-	"app-modal-primary-btn",
+	"modal-primary-btn",
 ) as HTMLButtonElement | null;
 export const MODAL_SECONDARY_BUTTON = document.getElementById(
-	"app-modal-secondary-btn",
+	"modal-secondary-btn",
 ) as HTMLButtonElement | null;
 
 // History page elements

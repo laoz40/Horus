@@ -1,7 +1,6 @@
 // import all the functions and variables we need from other files
 import {
 	EXERCISE_FORM_CONTAINER,
-	MODAL_BG_OVERLAY,
 	WORKOUT_DATE_TEXT,
 	WORKOUT_NAME_INPUT,
 } from "./constants.js";
@@ -206,11 +205,11 @@ export function openDraftModal({
 			workoutName,
 		),
 		// Prevents backdrop click from triggering secondary action
-		onBackdropClick: () => {
-			if (MODAL_BG_OVERLAY) {
-				MODAL_BG_OVERLAY.hidden = true;
-				MODAL_BG_OVERLAY.setAttribute("aria-hidden", "true");
-			}
-		},
+		// onBackdropClick: () => {
+		// 	if (MODAL) {
+		// 		MODAL?.close();
+		// 		MODAL?.setAttribute("aria-hidden", "true");
+		// 	}
+		// },
 	});
 }

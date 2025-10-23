@@ -100,53 +100,49 @@ button.danger-secondary:active {
 	border-bottom: 1px solid var(--border-color);
 }
 
+@media (max-width: 768px) {
+	.page-header {
+		margin-bottom: var(--space-16);
+	}
+}
+
 .page-header button.secondary,
 .page-header button {
 	height: auto;
 	padding: var(--space-4) var(--space-8);
 }
 
-.modal-overlay[hidden],
-.modal-overlay[aria-hidden="true"] {
-	display: none;
-}
-
-.modal-overlay {
-	position: fixed;
-	inset: 0;
-	z-index: 1000;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: rgba(0, 0, 0, 0.35);
-}
-
-.modal {
-	width: min(520px, calc(100vw - 2 * var(--space-16)));
-	padding: var(--space-24);
+#modal {
+	padding: var(--space-20);
 	color: var(--fg);
-	background: #ffffff;
+	background: var(--bg);
+	border: 1px solid var(--border-color);
 	border-radius: var(--border-radius);
 	box-shadow: 0 10px 30px var(--shadow-color);
 }
 
-.modal h3 {
+#modal::backdrop {
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+#modal-title {
 	margin: 0 0 var(--space-12) 0;
 	font-size: var(--font-size-lg);
 }
 
-.modal p {
+#modal-message {
 	margin: 0 0 var(--space-20) 0;
 	color: var(--muted);
 }
 
-.modal-actions {
+#modal .modal-actions {
 	display: flex;
 	gap: var(--space-12);
 	justify-content: flex-end;
 }
 
-.modal-actions button {
+#modal-primary-btn,
+#modal-secondary-btn {
 	min-width: 110px;
 	height: var(--control-h);
 }

@@ -146,22 +146,15 @@
     <script type="module" src="./dist/app.js"></script>
 
     <!-- Modal -->
-    <div id="app-modal-overlay" class="modal-overlay" aria-hidden="true" hidden>
-      <div
-        class="modal"
-        role="dialog"
-        aria-labelledby="app-modal-title"
-        aria-modal="true"
-      >
-        <h3 id="app-modal-title">Notice</h3>
-        <p id="app-modal-message">Message</p>
-        <div class="modal-actions">
-          <button id="app-modal-primary-btn">OK</button>
-          <button id="app-modal-secondary-btn" class="secondary" hidden>
-            Cancel
-          </button>
-        </div>
+    <dialog id="modal" aria-labelledby="modal-title" aria-modal="true">
+      <h3 id="modal-title">Notice</h3>
+      <p id="modal-message">Message</p>
+      <div class="modal-actions">
+        <button id="modal-primary-btn">OK</button>
+        <button id="modal-secondary-btn" class="secondary" hidden>
+          Cancel
+        </button>
       </div>
-    </div>
+    </dialog>
   </body>
 </html>
