@@ -130,36 +130,6 @@ export function validateWorkoutData() {
 		return false;
 	}
 
-	// Check if there's at least one complete set across all exercises
-	let validSet = false;
-	for (const exerciseForm of EXERCISE_FORMS) {
-		const SET_ROWS = exerciseForm.querySelectorAll(".set-row");
-		for (const setRow of SET_ROWS) {
-			const SET_WEIGHT =
-				setRow.querySelector<HTMLInputElement>(".set-weight")?.value.trim() ||
-				"";
-			const SET_REPS =
-				setRow.querySelector<HTMLInputElement>(".set-reps")?.value.trim() || "";
-			const setRepsNumber = SET_REPS === "" ? null : Number(SET_REPS);
-
-			if (
-				SET_WEIGHT !== "" &&
-				SET_REPS !== "" &&
-				setRepsNumber !== null &&
-				setRepsNumber > 0
-			) {
-				validSet = true;
-				break;
-			}
-		}
-		if (validSet) break;
-	}
-
-	if (!validSet) {
-		openModal(modalMessages.noExercises);
-		return false;
-	}
-
 	// Validate each exercise form
 	for (const exerciseForm of EXERCISE_FORMS) {
 		// If no exercise name, show error and stop
@@ -201,6 +171,50 @@ export function validateWorkoutData() {
 			}
 		}
 	}
+
+	// Check if each exercise has at least one complete set
+	const incompleteExercises: string[] = [];
+
+	for (const exerciseForm of EXERCISE_FORMS) {
+		const EXERCISE_NAME =
+			exerciseForm
+				.querySelector<HTMLInputElement>(".exercise-name")
+				?.value.trim() || "";
+		const SET_ROWS = exerciseForm.querySelectorAll(".set-row");
+		let hasValidSet = false;
+
+		// Skip if this is an empty exercise (no name and no sets)
+		if (!EXERCISE_NAME && SET_ROWS.length === 0) continue;
+
+		for (const setRow of SET_ROWS) {
+			const SET_WEIGHT =
+				setRow.querySelector<HTMLInputElement>(".set-weight")?.value.trim() ||
+				"";
+			const SET_REPS =
+				setRow.querySelector<HTMLInputElement>(".set-reps")?.value.trim() || "";
+			const setRepsNumber = SET_REPS === "" ? null : Number(SET_REPS);
+
+			if (
+				SET_WEIGHT !== "" &&
+				SET_REPS !== "" &&
+				setRepsNumber !== null &&
+				setRepsNumber > 0
+			) {
+				hasValidSet = true;
+				break;
+			}
+		}
+
+		if (!hasValidSet && EXERCISE_NAME) {
+			incompleteExercises.push(EXERCISE_NAME);
+		}
+	}
+
+	if (incompleteExercises.length > 0) {
+		openModal(modalMessages.incompleteExercise(incompleteExercises));
+		return false;
+	}
+
 	// Everything is valid
 	return true;
 }

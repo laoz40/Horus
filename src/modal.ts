@@ -6,6 +6,7 @@ import {
 	MODAL_TITLE,
 } from "./constants.js";
 import type { Workout } from "./types.js";
+import { displayFullDate } from "./utils.js";
 
 export const modalMessages = {
 	noExercises: {
@@ -18,22 +19,22 @@ export const modalMessages = {
 	},
 	missingReps: (setNumber: number, exerciseName: string) => ({
 		title: "Missing Reps",
-		message: `Please enter reps for Set ${setNumber} of ${exerciseName}.`,
+		message: `Please enter reps for <strong>Set ${setNumber}</strong> of <strong>${exerciseName}</strong>.`,
 	}),
 	missingWeight: (setNumber: number, exerciseName: string) => ({
 		title: "Missing Weight",
-		message: `Please enter a weight for Set ${setNumber} of ${exerciseName}.`,
+		message: `Please enter a weight for <strong>Set ${setNumber}</strong> of <strong>${exerciseName}</strong>.`,
 	}),
 	deleteSet: (setNumber: number, exerciseName: string) => ({
 		title: "Delete set?",
-		message: `Delete Set ${setNumber} from ${exerciseName}?`,
+		message: `Delete <strong>Set ${setNumber}</strong> from <strong>${exerciseName}</strong>?`,
 		primaryText: "Delete",
 		primaryButtonClass: "danger",
 		secondaryText: "Cancel",
 	}),
 	deleteWorkout: (workoutToDelete: Workout) => ({
 		title: "Delete workout?",
-		message: `Delete workout "${workoutToDelete.name}" from ${workoutToDelete.date}? This cannot be undone.`,
+		message: `Delete workout "<strong>${workoutToDelete.name}</strong>" from ${displayFullDate(workoutToDelete.date)}? This cannot be undone.`,
 		primaryText: "Delete",
 		primaryButtonClass: "danger",
 		secondaryText: "Cancel",
@@ -44,7 +45,7 @@ export const modalMessages = {
 		workoutName: string = "the last workout",
 	) => ({
 		title: `Resume ${workoutName}?`,
-		message: `Do you want to continue editing "${workoutName}" or start a new one?`,
+		message: `Do you want to continue editing "<strong>${workoutName}</strong>" or start a new one?`,
 		primaryText: "Continue",
 		secondaryText: "Start New",
 		onPrimary: onContinue,
@@ -52,11 +53,11 @@ export const modalMessages = {
 	}),
 	saveWorkout: (currentWorkout: Workout) => ({
 		title: "Workout saved",
-		message: `Your workout "${currentWorkout.name}" has been saved.`,
+		message: `Your workout "<strong>${currentWorkout.name}</strong>" has been saved.`,
 	}),
 	updateWorkout: (currentWorkout: Workout) => ({
 		title: "Workout updated",
-		message: `Your workout "${currentWorkout.name}" has been updated.`,
+		message: `Your workout "<strong>${currentWorkout.name}</strong>" has been updated.`,
 	}),
 	discardChanges: () => ({
 		title: "Discard Changes",
@@ -64,6 +65,10 @@ export const modalMessages = {
 		primaryText: "Discard",
 		primaryButtonClass: "danger",
 		secondaryText: "Cancel",
+	}),
+	incompleteExercise: (exerciseNames: string[]) => ({
+		title: `Incomplete ${exerciseNames.length === 1 ? "Exercise" : "Exercises"}`,
+		message: `The following ${exerciseNames.length === 1 ? "exercise has" : "exercises have"} no complete sets: <br><br>• ${exerciseNames.join("<br>• ")}`,
 	}),
 } as const;
 
@@ -92,7 +97,7 @@ export function openModal({
 
 	// Set modal content
 	MODAL_TITLE.textContent = title;
-	MODAL_MESSAGE.textContent = message;
+	MODAL_MESSAGE.innerHTML = message;
 	MODAL_PRIMARY_BUTTON.textContent = primaryText;
 	MODAL_PRIMARY_BUTTON.className = primaryButtonClass;
 

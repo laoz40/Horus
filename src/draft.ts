@@ -62,20 +62,16 @@ export function createWorkoutDraftData(): WorkoutDraft {
 
 // Applies a draft to the form
 export function applyWorkoutDraft(draft: WorkoutDraft) {
-	// if draft is not an object, return
 	if (!draft || typeof draft !== "object") return;
 
-	// Get current date for the draft
 	const today = new Date();
-	const displayDate = displayHistoryDate(today);
 	// Update name and date in currentWorkout data
 	const currentWorkout = getCurrentWorkout();
 	if (!currentWorkout) return;
-	// Only set the name if it exists in the draft, otherwise leave it empty
 	currentWorkout.name = draft.name || "";
-	currentWorkout.date = displayDate;
+	currentWorkout.date = today.toISOString();
 
-	// apply name and date to the html
+	// Update the UI with name and formatted date
 	if (WORKOUT_NAME_INPUT) {
 		if (draft.name) {
 			(WORKOUT_NAME_INPUT as HTMLInputElement).value = draft.name;
@@ -84,9 +80,9 @@ export function applyWorkoutDraft(draft: WorkoutDraft) {
 			(WORKOUT_NAME_INPUT as HTMLInputElement).value = "";
 		}
 	}
-	if (WORKOUT_DATE_TEXT)
-		WORKOUT_DATE_TEXT.textContent =
-			draft.date || WORKOUT_DATE_TEXT.textContent || "";
+	if (WORKOUT_DATE_TEXT) {
+		WORKOUT_DATE_TEXT.textContent = displayHistoryDate(today);
+	}
 
 	// if no container, return
 	if (!EXERCISE_FORM_CONTAINER) return;
