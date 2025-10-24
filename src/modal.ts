@@ -111,50 +111,40 @@ export function openModal({
 		}
 	}
 
-	// Handle modal action buttons
-	const handleModalActions = () => {
-		switch (MODAL?.returnValue) {
-			case "primary":
-				onPrimary?.();
-				break;
-			case "secondary":
-				onSecondary?.();
-				break;
-			default:
-				// do nothing
-				break;
-		}
-	};
+	// Handle primary button click
+	MODAL_PRIMARY_BUTTON.addEventListener(
+		"click",
+		() => {
+			onPrimary?.();
+			MODAL?.close();
+		},
+		{ once: true },
+	);
 
-	const handlePrimaryClick = () => {
-		MODAL?.close("primary");
-	};
-
-	const handleSecondaryClick = () => {
-		MODAL?.close("secondary");
-	};
-
-	MODAL.addEventListener("close", handleModalActions, { once: true });
-	MODAL_PRIMARY_BUTTON.addEventListener("click", handlePrimaryClick, {
-		once: true,
-	});
-
+	// Handle secondary button click if it exists and is visible
 	if (MODAL_SECONDARY_BUTTON && !MODAL_SECONDARY_BUTTON.hidden) {
-		MODAL_SECONDARY_BUTTON.addEventListener("click", handleSecondaryClick, {
-			once: true,
-		});
+		MODAL_SECONDARY_BUTTON.addEventListener(
+			"click",
+			() => {
+				onSecondary?.();
+				MODAL?.close();
+			},
+			{ once: true },
+		);
 	}
 
 	// Close modal when clicking outside
 	MODAL.addEventListener("click", (backdropClick: MouseEvent) => {
 		if (!MODAL) return;
+
 		const dialogDimensions = MODAL.getBoundingClientRect();
-		if (
+		const isOutside =
 			backdropClick.clientX < dialogDimensions.left ||
 			backdropClick.clientX > dialogDimensions.right ||
 			backdropClick.clientY < dialogDimensions.top ||
-			backdropClick.clientY > dialogDimensions.bottom
-		) {
+			backdropClick.clientY > dialogDimensions.bottom;
+
+		if (isOutside) {
 			MODAL.close();
 		}
 	});

@@ -1,12 +1,13 @@
 {
 	"type": "module",
 	"scripts": {
-		"build": "tsc",
-		"dev": "tsc --watch",
-		"lint-format": "biome check --write"
+		"dev": "concurrently -n TS,LIVE -c yellow,cyan \"tsc --watch\" \"live-server ./ --watch=index.html,css, dist\"",
+		"check": "biome check --write"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.6",
+		"concurrently": "^9.2.1",
+		"live-server": "^1.2.2",
 		"typescript": "^5.9.3"
 	}
 }

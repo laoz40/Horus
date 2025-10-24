@@ -23,14 +23,16 @@ Simple workout tracker web app for tracking workouts and fitness progress. Slowl
    npm install
    ```
 
-#### 📦 Dependencies
+#### 📦 Dev Dependencies
 
 - TypeScript - For type-safe JavaScript
 - Biome - For code formatting and linting
+- Concurrently - For running multiple scripts simultaneously
+- Live Server - For local development server with live reload
 
 ## 🛠️ Development
 
-### Available scripts
+### Available Scripts
 
 #### Development Mode (watch for changes)
 
@@ -38,20 +40,12 @@ Simple workout tracker web app for tracking workouts and fitness progress. Slowl
 npm run dev
 ```
 
-Automatically compiles TypeScript files on save.
+Runs TypeScript compiler in watch mode and starts a live development server that automatically reloads when you make changes to HTML, CSS, or JavaScript files.
 
-#### Build Once
-
-```bash
-npm run build
-```
-
-Compiles TypeScript into the /dist directory.
-
-#### Lint and Format
+#### Check and Fix Code
 
 ```bash
-npm run lint-format
+npm run check
 ```
 
-Automatically fixes linting and formatting issues where possible.
+Runs Biome to check and automatically fix linting and formatting issues in your code.

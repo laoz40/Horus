@@ -6,9 +6,8 @@ import {
 } from "./constants.js";
 import { getCurrentWorkout, WORKOUT_DRAFT_KEY } from "./data-storage.js";
 import { isInEditMode } from "./history.js";
-import { modalMessages, openModal } from "./modal.js";
 import type { WorkoutDraft } from "./types.js";
-import { displayHistoryDate, weekdays } from "./utils.js";
+import { displayHistoryDate } from "./utils.js";
 import { createExerciseForm } from "./workout-builder.js";
 
 // read the current draft from the form and return it as a JSON object
@@ -179,33 +178,5 @@ export function wireDraftAutosave() {
 	// Listen for custom request to save the draft (e.g., from remove-set)
 	document.addEventListener("draft-save-request", () => {
 		saveWorkoutDraft();
-	});
-}
-
-// Opens a modal to ask the user whether to continue editing the last workout or start a new one
-export function openDraftModal({
-	clickedContinue,
-	clickedDiscard,
-}: {
-	clickedContinue: () => void;
-	clickedDiscard: () => void;
-}) {
-	// load workout name for the modal message
-	const today = new Date();
-	const dayName = weekdays[today.getDay()];
-	const workoutName = loadWorkoutDraft()?.name || `${dayName} Workout`;
-	openModal({
-		...modalMessages.resumeWorkout(
-			clickedContinue,
-			clickedDiscard,
-			workoutName,
-		),
-		// Prevents backdrop click from triggering secondary action
-		// onBackdropClick: () => {
-		// 	if (MODAL) {
-		// 		MODAL?.close();
-		// 		MODAL?.setAttribute("aria-hidden", "true");
-		// 	}
-		// },
 	});
 }

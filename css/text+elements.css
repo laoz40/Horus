@@ -113,7 +113,8 @@ button.danger-secondary:active {
 }
 
 #modal {
-	padding: var(--space-20);
+	max-width: calc(100vw - 2 * var(--space-16));
+	padding: var(--space-16);
 	color: var(--fg);
 	background: var(--bg);
 	border: 1px solid var(--border-color);
