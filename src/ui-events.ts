@@ -13,7 +13,6 @@ import {
 	applyWorkoutDraft,
 	clearWorkoutDraft,
 	loadWorkoutDraft,
-	openDraftModal,
 	saveWorkoutDraft,
 	wireDraftAutosave,
 } from "./draft.js";
@@ -27,6 +26,7 @@ import { SCHEMA_VERSION } from "./migration.js";
 import { modalMessages, openModal } from "./modal.js";
 import { showPage, wireNavButtons } from "./nav.js";
 import type { Exercise, ExerciseSet } from "./types.js";
+import { weekdays } from "./utils.js";
 import { createExerciseForm, scrollToExercise } from "./workout-builder.js";
 
 // Wire up all the UI events
@@ -53,22 +53,32 @@ export function wireUiEvents() {
 
 			// If there's a draft, show the draft modal
 			if (hasDraft) {
-				openDraftModal({
-					// Continue: load workout page, apply draft, and wire draft autosave
-					clickedContinue: () => {
-						showPage("new-workout-page");
-						setupNewWorkout();
-						applyWorkoutDraft(draft);
-						wireDraftAutosave();
-					},
-					// Start New: clear draft, load workout page, and wire draft autosave
-					clickedDiscard: () => {
-						clearWorkoutDraft();
-						showPage("new-workout-page");
-						setupNewWorkout();
-						wireDraftAutosave();
-					},
-				});
+				// Show modal to confirm continuing draft or starting new
+				const today = new Date();
+				const dayName = weekdays[today.getDay()];
+				const workoutName = draft?.name || `${dayName} Workout`;
+
+				const continueAction = () => {
+					showPage("new-workout-page");
+					setupNewWorkout();
+					applyWorkoutDraft(draft);
+					wireDraftAutosave();
+				};
+
+				const startNewAction = () => {
+					clearWorkoutDraft();
+					showPage("new-workout-page");
+					setupNewWorkout();
+					wireDraftAutosave();
+				};
+
+				openModal(
+					modalMessages.continueWorkout(
+						workoutName,
+						continueAction,
+						startNewAction,
+					),
+				);
 				return; // stop default flow
 			}
 			// No draft -> proceed with a fresh workout

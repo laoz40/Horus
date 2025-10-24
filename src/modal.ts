@@ -9,6 +9,18 @@ import type { Workout } from "./types.js";
 import { displayFullDate } from "./utils.js";
 
 export const modalMessages = {
+	continueWorkout: (
+		workoutName: string,
+		onContinue: () => void,
+		onStartNew: () => void,
+	) => ({
+		title: `Continue ${workoutName}?`,
+		message: `You have an unsaved workout. Would you like to continue where you left off?`,
+		primaryText: "Continue",
+		secondaryText: "Start New",
+		onPrimary: onContinue,
+		onSecondary: onStartNew,
+	}),
 	noExercises: {
 		title: "No Exercises",
 		message: "Please add at least one exercise to your workout.",
@@ -38,18 +50,6 @@ export const modalMessages = {
 		primaryText: "Delete",
 		primaryButtonClass: "danger",
 		secondaryText: "Cancel",
-	}),
-	resumeWorkout: (
-		onContinue: () => void,
-		onDiscard: () => void,
-		workoutName: string = "the last workout",
-	) => ({
-		title: `Resume ${workoutName}?`,
-		message: `Do you want to continue editing "<strong>${workoutName}</strong>" or start a new one?`,
-		primaryText: "Continue",
-		secondaryText: "Start New",
-		onPrimary: onContinue,
-		onSecondary: onDiscard,
 	}),
 	saveWorkout: (currentWorkout: Workout) => ({
 		title: "Workout saved",
@@ -113,10 +113,16 @@ export function openModal({
 
 	// Handle modal action buttons
 	const handleModalActions = () => {
-		if (MODAL?.returnValue === "primary") {
-			onPrimary?.();
-		} else if (MODAL?.returnValue === "secondary") {
-			onSecondary?.();
+		switch (MODAL?.returnValue) {
+			case "primary":
+				onPrimary?.();
+				break;
+			case "secondary":
+				onSecondary?.();
+				break;
+			default:
+				// do nothing
+				break;
 		}
 	};
 
