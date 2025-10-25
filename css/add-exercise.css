@@ -223,6 +223,11 @@ textarea::placeholder {
 	padding: var(--space-4) var(--space-8);
 }
 
+.exercise-scroll-buttons button.hidden {
+	visibility: hidden;
+	pointer-events: none;
+}
+
 #add-exercise-btn {
 	bottom: var(--space-16);
 	width: 100%;

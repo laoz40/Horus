@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"scripts": {
-		"dev": "concurrently -n TS,LIVE -c yellow,cyan \"tsc --watch\" \"live-server ./ --watch=index.html,css, dist\"",
+		"dev": "concurrently -n TS,LIVE -c yellow,cyan \"tsc --watch\" \"live-server ./ --watch=./index.html,css,src,dist\"",
 		"check": "biome check --write"
 	},
 	"devDependencies": {

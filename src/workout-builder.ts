@@ -3,6 +3,8 @@ import {
 	BACK_BUTTON_WORKOUT,
 	EXERCISE_FORM_CONTAINER,
 	FINISH_WORKOUT_BUTTON,
+	NEXT_EXERCISE_BUTTON,
+	PREV_EXERCISE_BUTTON,
 } from "./constants.js";
 import { isInEditMode } from "./history.js";
 import { modalMessages, openModal } from "./modal.js";
@@ -260,18 +262,19 @@ export function updateWorkoutButtons() {
 	}
 }
 
-export function scrollToExercise(direction: "prev" | "next" | "last") {
+export function scrollToExercise(scrollDestination: "prev" | "next" | "last") {
 	if (!EXERCISE_FORM_CONTAINER) return;
 
 	const exerciseForms =
 		EXERCISE_FORM_CONTAINER.querySelectorAll(".add-exercise-form");
-	if (exerciseForms.length === 0) return;
+	const lastForm = exerciseForms[exerciseForms.length - 1] as HTMLElement;
+	if (exerciseForms.length === -1) return;
 
 	const formContainerTopPosition =
 		EXERCISE_FORM_CONTAINER.getBoundingClientRect().top;
 	let targetForm = null;
 
-	if (direction === "prev") {
+	if (scrollDestination === "prev") {
 		// Find first form above current position
 		for (
 			let formIndex = exerciseForms.length - 1;
@@ -286,23 +289,62 @@ export function scrollToExercise(direction: "prev" | "next" | "last") {
 			}
 		}
 	}
-	if (direction === "next") {
+	if (scrollDestination === "next") {
 		// Find first form below current position
 		for (let formIndex = 0; formIndex < exerciseForms.length; formIndex++) {
 			const exerciseForm = exerciseForms[formIndex] as HTMLElement;
 			const formTopPosition = exerciseForm.getBoundingClientRect().top;
-			// 16px threshold to account for the current form's padding, otherwise it will be true for the current form
+			// add 16px to the top position to account for top padding, otherwise current form returns as target
 			if (formTopPosition > formContainerTopPosition + 16) {
 				targetForm = exerciseForm;
 				break;
 			}
 		}
 	}
-	if (direction === "last") {
-		targetForm = exerciseForms[exerciseForms.length - 1];
+	if (scrollDestination === "last") {
+		targetForm = lastForm;
 	}
 
 	if (targetForm) {
 		targetForm.scrollIntoView({ behavior: "smooth", block: "start" });
+	}
+}
+
+export function updateScrollButtons() {
+	if (!EXERCISE_FORM_CONTAINER) return;
+
+	const exerciseForms =
+		EXERCISE_FORM_CONTAINER.querySelectorAll(".add-exercise-form");
+	const firstForm = exerciseForms[0] as HTMLElement;
+	const lastForm = exerciseForms[exerciseForms.length - 1] as HTMLElement;
+	let currentForm = null;
+
+	const formContainerTopPosition =
+		EXERCISE_FORM_CONTAINER.getBoundingClientRect().top;
+	// use Infinity as the initial value to ensure first form can be selected
+	let smallestDistanceToTop = Infinity;
+
+	// loops through each form to find the one with the smallest distance from the top of the container
+	for (let formIndex = 0; formIndex < exerciseForms.length; formIndex++) {
+		const exerciseForm = exerciseForms[formIndex] as HTMLElement;
+		const formTopPosition = exerciseForm.getBoundingClientRect().top;
+		const distanceFromContainerTop = Math.abs(
+			formTopPosition - formContainerTopPosition,
+		);
+		// if theres a smaller distance, update the current form
+		if (distanceFromContainerTop < smallestDistanceToTop) {
+			smallestDistanceToTop = distanceFromContainerTop;
+			currentForm = exerciseForm;
+		}
+	}
+	if (currentForm === firstForm) {
+		PREV_EXERCISE_BUTTON?.classList.add("hidden");
+	} else {
+		PREV_EXERCISE_BUTTON?.classList.remove("hidden");
+	}
+	if (currentForm === lastForm) {
+		NEXT_EXERCISE_BUTTON?.classList.add("hidden");
+	} else {
+		NEXT_EXERCISE_BUTTON?.classList.remove("hidden");
 	}
 }

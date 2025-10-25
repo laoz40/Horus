@@ -27,7 +27,11 @@ import { modalMessages, openModal } from "./modal.js";
 import { showPage, wireNavButtons } from "./nav.js";
 import type { Exercise, ExerciseSet } from "./types.js";
 import { weekdays } from "./utils.js";
-import { createExerciseForm, scrollToExercise } from "./workout-builder.js";
+import {
+	createExerciseForm,
+	scrollToExercise,
+	updateScrollButtons,
+} from "./workout-builder.js";
 
 // Wire up all the UI events
 export function wireUiEvents() {
@@ -155,6 +159,11 @@ export function wireUiEvents() {
 			scrollToExercise("next"),
 		);
 	}
+
+	// check for scroll end and update scroll buttons
+	EXERCISE_FORM_CONTAINER?.addEventListener("scrollend", () =>
+		updateScrollButtons(),
+	);
 
 	// wire up the navigation buttons
 	wireNavButtons();
