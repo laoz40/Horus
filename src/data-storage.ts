@@ -134,9 +134,7 @@ export function validateWorkoutData() {
 	for (const exerciseForm of EXERCISE_FORMS) {
 		// If no exercise name, show error and stop
 		const EXERCISE_NAME_INPUT =
-			exerciseForm
-				.querySelector<HTMLInputElement>(".exercise-name")
-				?.value.trim() || "";
+			exerciseForm.querySelector<HTMLInputElement>(".exercise-name")?.value.trim() || "";
 		if (EXERCISE_NAME_INPUT === "") {
 			openModal(modalMessages.missingExerciseName);
 			return false;
@@ -145,28 +143,20 @@ export function validateWorkoutData() {
 		// Validate each set row inside this form
 		const SET_ROWS = exerciseForm.querySelectorAll(".set-row");
 		for (const [setIndex, setRow] of Array.from(SET_ROWS).entries()) {
-			const SET_WEIGHT =
-				setRow.querySelector<HTMLInputElement>(".set-weight")?.value.trim() ||
-				"";
-			const SET_REPS =
-				setRow.querySelector<HTMLInputElement>(".set-reps")?.value.trim() || "";
+			const SET_WEIGHT = setRow.querySelector<HTMLInputElement>(".set-weight")?.value.trim() || "";
+			const SET_REPS = setRow.querySelector<HTMLInputElement>(".set-reps")?.value.trim() || "";
 
 			// Convert reps to number only for numeric check (but only if non-empty)
 			const setRepsNumber = SET_REPS === "" ? null : Number(SET_REPS);
 
 			// reps cannot be empty or zero
-			if (
-				SET_WEIGHT !== "" &&
-				(SET_REPS === "" || setRepsNumber === null || setRepsNumber < 1)
-			) {
+			if (SET_WEIGHT !== "" && (SET_REPS === "" || setRepsNumber === null || setRepsNumber < 1)) {
 				openModal(modalMessages.missingReps(setIndex + 1, EXERCISE_NAME_INPUT));
 				return false;
 			}
 			// weight cannot be empty when reps has a value
 			if (SET_REPS !== "" && SET_WEIGHT === "") {
-				openModal(
-					modalMessages.missingWeight(setIndex + 1, EXERCISE_NAME_INPUT),
-				);
+				openModal(modalMessages.missingWeight(setIndex + 1, EXERCISE_NAME_INPUT));
 				return false;
 			}
 		}
@@ -177,9 +167,7 @@ export function validateWorkoutData() {
 
 	for (const exerciseForm of EXERCISE_FORMS) {
 		const EXERCISE_NAME =
-			exerciseForm
-				.querySelector<HTMLInputElement>(".exercise-name")
-				?.value.trim() || "";
+			exerciseForm.querySelector<HTMLInputElement>(".exercise-name")?.value.trim() || "";
 		const SET_ROWS = exerciseForm.querySelectorAll(".set-row");
 		let hasValidSet = false;
 
@@ -187,19 +175,11 @@ export function validateWorkoutData() {
 		if (!EXERCISE_NAME && SET_ROWS.length === 0) continue;
 
 		for (const setRow of SET_ROWS) {
-			const SET_WEIGHT =
-				setRow.querySelector<HTMLInputElement>(".set-weight")?.value.trim() ||
-				"";
-			const SET_REPS =
-				setRow.querySelector<HTMLInputElement>(".set-reps")?.value.trim() || "";
+			const SET_WEIGHT = setRow.querySelector<HTMLInputElement>(".set-weight")?.value.trim() || "";
+			const SET_REPS = setRow.querySelector<HTMLInputElement>(".set-reps")?.value.trim() || "";
 			const setRepsNumber = SET_REPS === "" ? null : Number(SET_REPS);
 
-			if (
-				SET_WEIGHT !== "" &&
-				SET_REPS !== "" &&
-				setRepsNumber !== null &&
-				setRepsNumber > 0
-			) {
+			if (SET_WEIGHT !== "" && SET_REPS !== "" && setRepsNumber !== null && setRepsNumber > 0) {
 				hasValidSet = true;
 				break;
 			}

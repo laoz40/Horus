@@ -13,7 +13,7 @@ import { esc } from "./utils.js";
 
 // Creates an exercise form
 export function createExerciseForm(
-	initial: ExerciseForm = { name: "", notes: "", difficulty: "", sets: [] },
+	initial: ExerciseForm = { name: "", notes: "", difficulty: "", sets: [] }
 ) {
 	const exerciseFormContainer = document.createElement("div");
 	exerciseFormContainer.className = "add-exercise-form";
@@ -45,7 +45,7 @@ export function createExerciseForm(
 					.map(
 						(opt) => `
           <option value="${opt.value}" ${initial.difficulty === opt.text ? "selected" : ""}>${opt.text}</option>
-        `,
+        `
 					)
 					.join("")}
       </select>
@@ -57,11 +57,7 @@ export function createExerciseForm(
 	const addSetBtn = exerciseFormContainer.querySelector(".add-set");
 
 	// add a set row to the table
-	function addSetRowTo(
-		setsTable: HTMLDivElement,
-		setNumber: number,
-		defaults: ExerciseSetForm,
-	) {
+	function addSetRowTo(setsTable: HTMLDivElement, setNumber: number, defaults: ExerciseSetForm) {
 		const setRow = document.createElement("div");
 		setRow.className = "set-row";
 
@@ -78,10 +74,7 @@ export function createExerciseForm(
     `;
 
 		// Add numeric input validation, to only allow digits and decimals
-		function validateNumericInput(
-			input: HTMLInputElement,
-			allowDecimal = false,
-		) {
+		function validateNumericInput(input: HTMLInputElement, allowDecimal = false) {
 			input.addEventListener("input", () => {
 				// remove anything that's not a digit or dot
 				let value = input.value.replace(/[^0-9.]/g, "");
@@ -114,8 +107,8 @@ export function createExerciseForm(
 		setRow.querySelector(".remove-set")?.addEventListener("click", () => {
 			// exercise name value  for the modal message
 			const exerciseName =
-				exerciseFormContainer.querySelector<HTMLInputElement>(".exercise-name")
-					?.value || "this exercise";
+				exerciseFormContainer.querySelector<HTMLInputElement>(".exercise-name")?.value ||
+				"this exercise";
 			openModal({
 				...modalMessages.deleteSet(setNumber, exerciseName),
 				// primary action: remove the set
@@ -159,11 +152,7 @@ export function createExerciseForm(
 				weight: existingSet.weight,
 				reps: existingSet.reps,
 			};
-			addSetRowTo(
-				setsTable as HTMLDivElement,
-				setIndex + 1,
-				initialInputValues as ExerciseSetForm,
-			);
+			addSetRowTo(setsTable as HTMLDivElement, setIndex + 1, initialInputValues as ExerciseSetForm);
 		});
 	} else {
 		// otherwise, add a default set row
@@ -188,37 +177,27 @@ export function readExercisesFromForms() {
 	// if there are no exercise forms, return an empty array
 	if (!EXERCISE_FORM_CONTAINER) return [];
 	// map each exercise form to a structured exercise object
-	const exerciseForms = [
-		...EXERCISE_FORM_CONTAINER.querySelectorAll(".add-exercise-form"),
-	];
+	const exerciseForms = [...EXERCISE_FORM_CONTAINER.querySelectorAll(".add-exercise-form")];
 	return (
 		exerciseForms
 			.map((form) => {
 				// get the exercise name and notes if they exist, and trim whitespace
 				const exerciseName = (
-					(form.querySelector(".exercise-name") as HTMLInputElement)?.value ||
-					""
+					(form.querySelector(".exercise-name") as HTMLInputElement)?.value || ""
 				).trim();
 				const exerciseNotes = (
-					(form.querySelector(".exercise-notes") as HTMLInputElement)?.value ||
-					""
+					(form.querySelector(".exercise-notes") as HTMLInputElement)?.value || ""
 				).trim();
 				// get the difficulty text if it exists, otherwise null
-				const difficultySelect = form.querySelector(
-					".exercise-difficulty",
-				) as HTMLSelectElement;
+				const difficultySelect = form.querySelector(".exercise-difficulty") as HTMLSelectElement;
 				const exerciseDifficulty = difficultySelect?.value
 					? difficultySelect.options[difficultySelect.selectedIndex].text
 					: null;
 				// get all set rows and map them to structured set objects
 				const exerciseSets = [...form.querySelectorAll(".set-row")]
 					.map((row) => {
-						const weightInput = row.querySelector(
-							".set-weight",
-						) as HTMLInputElement;
-						const repsInput = row.querySelector(
-							".set-reps",
-						) as HTMLInputElement;
+						const weightInput = row.querySelector(".set-weight") as HTMLInputElement;
+						const repsInput = row.querySelector(".set-reps") as HTMLInputElement;
 
 						return {
 							weight: weightInput ? Number(weightInput.value) : 0,
@@ -264,16 +243,11 @@ export function updateWorkoutButtons() {
 
 function getExerciseFormsArray() {
 	return Array.from(
-		EXERCISE_FORM_CONTAINER?.querySelectorAll<HTMLElement>(
-			".add-exercise-form",
-		) ?? [],
+		EXERCISE_FORM_CONTAINER?.querySelectorAll<HTMLElement>(".add-exercise-form") ?? []
 	);
 }
 
-function findFormByPosition(
-	forms: HTMLElement[],
-	condition: (form: HTMLElement) => boolean,
-) {
+function findFormByPosition(forms: HTMLElement[], condition: (form: HTMLElement) => boolean) {
 	return forms.find(condition) ?? null;
 }
 
@@ -291,13 +265,13 @@ export function scrollToExercise(scrollDestination: "prev" | "next" | "last") {
 		// loop backwards and find the first form above the current position
 		targetForm = findFormByPosition(
 			[...exerciseForms].reverse(),
-			(form) => form.getBoundingClientRect().top < containerTop,
+			(form) => form.getBoundingClientRect().top < containerTop
 		);
 	} else if (scrollDestination === "next") {
 		// loop forwards and find the first form below the current position
 		targetForm = findFormByPosition(
 			exerciseForms,
-			(form) => form.getBoundingClientRect().top > containerTop + 16,
+			(form) => form.getBoundingClientRect().top > containerTop + 16
 			// add 16px to the top position to account for top padding, otherwise current form returns as target
 		);
 	} else if (scrollDestination === "last") {
@@ -324,22 +298,36 @@ function setupExerciseFormObserver() {
 	exerciseFormObserver = new IntersectionObserver(
 		(forms) => {
 			for (const form of forms) {
-				// skip if not intersecting
 				if (!form.isIntersecting) continue;
 
 				const currentForm = form.target as HTMLElement;
 				const isFirst = currentForm === firstForm;
 				const isLast = currentForm === lastForm;
+				const prevForm = currentForm.previousElementSibling as HTMLElement | null;
+				const nextForm = currentForm.nextElementSibling as HTMLElement | null;
 
+				// Update button visibility
 				PREV_EXERCISE_BUTTON?.classList.toggle("hidden", isFirst);
 				NEXT_EXERCISE_BUTTON?.classList.toggle("hidden", isLast);
+
+				// Update button text with exercise names
+				if (prevForm && PREV_EXERCISE_BUTTON) {
+					const prevExerciseInput = prevForm.querySelector(".exercise-name") as HTMLInputElement;
+					const prevExerciseName = prevExerciseInput?.value.trim() || "Previous";
+					PREV_EXERCISE_BUTTON.textContent = `← ${prevExerciseName}`;
+				}
+				if (nextForm && NEXT_EXERCISE_BUTTON) {
+					const nextExerciseInput = nextForm.querySelector(".exercise-name") as HTMLInputElement;
+					const nextExerciseName = nextExerciseInput?.value.trim() || "Next";
+					NEXT_EXERCISE_BUTTON.textContent = `${nextExerciseName} →`;
+				}
 			}
 		},
 		{
 			root: EXERCISE_FORM_CONTAINER,
 			threshold: 0.5, // Trigger when 50% of the form is visible
 			rootMargin: "-20% 0px", // Adjust this to control when the form is considered "in view"
-		},
+		}
 	);
 
 	// Observe all exercise forms

@@ -1,9 +1,5 @@
 // import all the functions and variables we need from other files
-import {
-	EXERCISE_FORM_CONTAINER,
-	WORKOUT_DATE_TEXT,
-	WORKOUT_NAME_INPUT,
-} from "./constants.js";
+import { EXERCISE_FORM_CONTAINER, WORKOUT_DATE_TEXT, WORKOUT_NAME_INPUT } from "./constants.js";
 import { getCurrentWorkout, WORKOUT_DRAFT_KEY } from "./data-storage.js";
 import { isInEditMode } from "./history.js";
 import type { WorkoutDraft } from "./types.js";
@@ -13,9 +9,7 @@ import { createExerciseForm } from "./workout-builder.js";
 // read the current draft from the form and return it as a JSON object
 export function createWorkoutDraftData(): WorkoutDraft {
 	// Converts a string to a number, to allow 0 as a valid value instead of empty string/null
-	function convertToNumber(
-		inputValue: string | undefined | null,
-	): number | null {
+	function convertToNumber(inputValue: string | undefined | null): number | null {
 		// Return null if the input is empty, undefined, or null
 		if (inputValue === "" || inputValue === undefined || inputValue === null) {
 			return null;
@@ -30,13 +24,10 @@ export function createWorkoutDraftData(): WorkoutDraft {
 		? [...EXERCISE_FORM_CONTAINER.querySelectorAll(".add-exercise-form")]
 		: [];
 	const draftData = exerciseForms.map((exerciseData) => {
-		const EXERCISE_NAME_INPUT =
-			exerciseData.querySelector<HTMLInputElement>(".exercise-name");
-		const EXERCISE_NOTES_INPUT =
-			exerciseData.querySelector<HTMLTextAreaElement>(".exercise-notes");
-		const EXERCISE_DIFFICULTY = exerciseData.querySelector<HTMLSelectElement>(
-			".exercise-difficulty",
-		);
+		const EXERCISE_NAME_INPUT = exerciseData.querySelector<HTMLInputElement>(".exercise-name");
+		const EXERCISE_NOTES_INPUT = exerciseData.querySelector<HTMLTextAreaElement>(".exercise-notes");
+		const EXERCISE_DIFFICULTY =
+			exerciseData.querySelector<HTMLSelectElement>(".exercise-difficulty");
 
 		const name = (EXERCISE_NAME_INPUT?.value || "").trim();
 		const notes = (EXERCISE_NOTES_INPUT?.value || "").trim();
@@ -109,13 +100,10 @@ export function applyWorkoutDraft(draft: WorkoutDraft) {
 				notes: exerciseData.notes || "",
 				difficulty: exerciseData.difficulty || "",
 				sets: (exerciseData.sets || []).map((set) => ({
-					weight:
-						set.weight !== null && set.weight !== undefined
-							? String(set.weight)
-							: "",
+					weight: set.weight !== null && set.weight !== undefined ? String(set.weight) : "",
 					reps: set.reps ? String(set.reps) : "",
 				})),
-			}),
+			})
 		);
 	});
 }

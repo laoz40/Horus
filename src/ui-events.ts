@@ -16,22 +16,13 @@ import {
 	saveWorkoutDraft,
 	wireDraftAutosave,
 } from "./draft.js";
-import {
-	isInEditMode,
-	saveEditedWorkout,
-	saveNewWorkout,
-	setEditData,
-} from "./history.js";
+import { isInEditMode, saveEditedWorkout, saveNewWorkout, setEditData } from "./history.js";
 import { SCHEMA_VERSION } from "./migration.js";
 import { modalMessages, openModal } from "./modal.js";
 import { showPage, wireNavButtons } from "./nav.js";
 import type { Exercise, ExerciseSet } from "./types.js";
 import { weekdays } from "./utils.js";
-import {
-	createExerciseForm,
-	scrollToExercise,
-	updateScrollButtons,
-} from "./workout-builder.js";
+import { createExerciseForm, scrollToExercise, updateScrollButtons } from "./workout-builder.js";
 
 // Wire up all the UI events
 export function wireUiEvents() {
@@ -49,9 +40,8 @@ export function wireUiEvents() {
 							ex.name?.trim() ||
 							ex.notes?.trim() ||
 							ex.sets?.some(
-								(s: ExerciseSet) =>
-									String(s.weight || "").trim() || String(s.reps || "").trim(),
-							),
+								(s: ExerciseSet) => String(s.weight || "").trim() || String(s.reps || "").trim()
+							)
 					))
 			);
 
@@ -76,13 +66,7 @@ export function wireUiEvents() {
 					wireDraftAutosave();
 				};
 
-				openModal(
-					modalMessages.continueWorkout(
-						workoutName,
-						continueAction,
-						startNewAction,
-					),
-				);
+				openModal(modalMessages.continueWorkout(workoutName, continueAction, startNewAction));
 				return; // stop default flow
 			}
 			// No draft -> proceed with a fresh workout
@@ -106,10 +90,7 @@ export function wireUiEvents() {
 	}
 
 	// Show one empty exercise form if none exist
-	if (
-		EXERCISE_FORM_CONTAINER &&
-		EXERCISE_FORM_CONTAINER.childElementCount === 0
-	) {
+	if (EXERCISE_FORM_CONTAINER && EXERCISE_FORM_CONTAINER.childElementCount === 0) {
 		EXERCISE_FORM_CONTAINER.appendChild(createExerciseForm());
 	}
 
@@ -149,29 +130,21 @@ export function wireUiEvents() {
 
 	// Set up event listeners
 	if (PREV_EXERCISE_BUTTON) {
-		PREV_EXERCISE_BUTTON.addEventListener("click", () =>
-			scrollToExercise("prev"),
-		);
+		PREV_EXERCISE_BUTTON.addEventListener("click", () => scrollToExercise("prev"));
 	}
 
 	if (NEXT_EXERCISE_BUTTON) {
-		NEXT_EXERCISE_BUTTON.addEventListener("click", () =>
-			scrollToExercise("next"),
-		);
+		NEXT_EXERCISE_BUTTON.addEventListener("click", () => scrollToExercise("next"));
 	}
 
 	// check for scroll end and update scroll buttons
-	EXERCISE_FORM_CONTAINER?.addEventListener("scrollend", () =>
-		updateScrollButtons(),
-	);
+	EXERCISE_FORM_CONTAINER?.addEventListener("scrollend", () => updateScrollButtons());
 
 	// wire up the navigation buttons
 	wireNavButtons();
 
 	// Set the schema version in the UI
-	const schemaVersionEl = document.getElementById(
-		"current-schema-version",
-	) as HTMLDivElement;
+	const schemaVersionEl = document.getElementById("current-schema-version") as HTMLDivElement;
 	if (schemaVersionEl) {
 		schemaVersionEl.textContent = String(SCHEMA_VERSION);
 	}

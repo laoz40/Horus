@@ -9,11 +9,7 @@ import type { Workout } from "./types.js";
 import { displayFullDate } from "./utils.js";
 
 export const modalMessages = {
-	continueWorkout: (
-		workoutName: string,
-		onContinue: () => void,
-		onStartNew: () => void,
-	) => ({
+	continueWorkout: (workoutName: string, onContinue: () => void, onStartNew: () => void) => ({
 		title: `Continue ${workoutName}?`,
 		message: `You have an unsaved workout. Would you like to continue where you left off?`,
 		primaryText: "Continue",
@@ -118,7 +114,7 @@ export function openModal({
 			onPrimary?.();
 			MODAL?.close();
 		},
-		{ once: true },
+		{ once: true }
 	);
 
 	// Handle secondary button click if it exists and is visible
@@ -129,7 +125,7 @@ export function openModal({
 				onSecondary?.();
 				MODAL?.close();
 			},
-			{ once: true },
+			{ once: true }
 		);
 	}
 

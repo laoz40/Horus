@@ -56,9 +56,7 @@ export const displayHistoryDate = (dateInput: Date | string) => {
 	const yyyy = date.getFullYear();
 
 	// Only show year if it's not the current year
-	return yyyy === today.getFullYear()
-		? `${dd} ${mon}`
-		: `${dd} ${mon}, ${yyyy}`;
+	return yyyy === today.getFullYear() ? `${dd} ${mon}` : `${dd} ${mon}, ${yyyy}`;
 };
 
 export const displayFullDate = (dateInput: Date | string) => {

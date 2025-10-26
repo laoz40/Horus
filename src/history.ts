@@ -22,17 +22,9 @@ import {
 import { clearWorkoutDraft } from "./draft.js";
 import { modalMessages, openModal } from "./modal.js";
 import { showPage } from "./nav.js";
-import type {
-	EditWorkoutData,
-	Exercise,
-	ExerciseSet,
-	Workout,
-} from "./types.js";
+import type { EditWorkoutData, Exercise, ExerciseSet, Workout } from "./types.js";
 import { displayFullDate, displayHistoryDate, esc, weekdays } from "./utils.js";
-import {
-	createExerciseForm,
-	readExercisesFromForms,
-} from "./workout-builder.js";
+import { createExerciseForm, readExercisesFromForms } from "./workout-builder.js";
 
 // Build the HTML that shows workout details when expanded
 function buildExpandedDetailsHTML(exercise: Exercise) {
@@ -47,7 +39,7 @@ function buildExpandedDetailsHTML(exercise: Exercise) {
             <span class="set-number">${setIndex + 1}.</span>
             <span class="set-details">${set.weight} kg × ${set.reps} reps</span>
           </div>
-        `,
+        `
 					)
 					.join("")}
       </div>
@@ -79,7 +71,7 @@ function buildExpandedDetailsHTML(exercise: Exercise) {
 function buildSummaryCardHTML(
 	workout: Workout,
 	index: number | null = null,
-	showDeleteButton = false,
+	showDeleteButton = false
 ) {
 	// Calculate workout duration (will add this later)
 	const workoutDuration = "45m";
@@ -96,16 +88,13 @@ function buildSummaryCardHTML(
 	};
 	// Calculate the total volume for all sets in an exercise
 	const calculateExerciseVolume = (exercise: Exercise): number => {
-		return exercise.sets.reduce(
-			(total, set) => total + calculateSetVolume(set),
-			0,
-		);
+		return exercise.sets.reduce((total, set) => total + calculateSetVolume(set), 0);
 	};
 	// Calculate the total volume for the entire workout
 	const calculateTotalVolume = (workout: Workout): number => {
 		return workout.exercises.reduce(
 			(total, exercise) => total + calculateExerciseVolume(exercise),
-			0,
+			0
 		);
 	};
 
@@ -142,16 +131,14 @@ function buildSummaryCardHTML(
 							.map(
 								(group) => `
               <span class="muscle-tag">${group}</span>
-            `,
+            `
 							)
 							.join("")}
           </div>
         </div>
       </div> <!-- Close workout-summary -->
       <div class="workout-details" hidden>
-        ${workout.exercises
-					.map((exercise) => buildExpandedDetailsHTML(exercise))
-					.join("")}
+        ${workout.exercises.map((exercise) => buildExpandedDetailsHTML(exercise)).join("")}
         ${
 					showDeleteButton
 						? `
@@ -180,12 +167,8 @@ function buildSummaryCardHTML(
 // Set up click handlers for a workout card expand/collapse
 function setupExpandCollapseCard(workoutCard: HTMLElement) {
 	// Find elements within the workout card
-	const WORKOUT_SUMMARY = workoutCard.querySelector(
-		".workout-summary",
-	) as HTMLElement;
-	const WORKOUT_DETAILS = workoutCard.querySelector(
-		".workout-details",
-	) as HTMLElement;
+	const WORKOUT_SUMMARY = workoutCard.querySelector(".workout-summary") as HTMLElement;
+	const WORKOUT_DETAILS = workoutCard.querySelector(".workout-details") as HTMLElement;
 
 	if (!WORKOUT_SUMMARY || !WORKOUT_DETAILS) return;
 
@@ -195,10 +178,7 @@ function setupExpandCollapseCard(workoutCard: HTMLElement) {
 	// Toggle function
 	const toggleExpandDetails = (event: Event) => {
 		// Don't toggle if clicking on the delete button or its children
-		if (
-			event.target &&
-			(event.target as HTMLElement).closest(".delete-button")
-		) {
+		if (event.target && (event.target as HTMLElement).closest(".delete-button")) {
 			return;
 		}
 
@@ -240,9 +220,7 @@ export function updateLastWorkoutSummary() {
   `;
 
 	// Setup the workout card
-	const workoutCard = LAST_WORKOUT_SUMMARY.querySelector(
-		".workout-summary-card",
-	) as HTMLElement;
+	const workoutCard = LAST_WORKOUT_SUMMARY.querySelector(".workout-summary-card") as HTMLElement;
 	if (workoutCard) {
 		setupExpandCollapseCard(workoutCard);
 	}
@@ -265,12 +243,7 @@ export function isInEditMode(): boolean {
 function editWorkout(workoutIndex: number) {
 	const allWorkouts = loadAllWorkouts();
 	const workoutToEdit = allWorkouts[workoutIndex];
-	if (
-		!workoutToEdit ||
-		!workoutToEdit.exercises ||
-		workoutToEdit.exercises.length < 1
-	)
-		return;
+	if (!workoutToEdit || !workoutToEdit.exercises || workoutToEdit.exercises.length < 1) return;
 
 	// make a copy of the workout to edit, and set it as the current workout
 	const workoutCopy = JSON.parse(JSON.stringify(workoutToEdit));
@@ -288,8 +261,7 @@ function editWorkout(workoutIndex: number) {
 	// Set the workout name and date
 	if (WORKOUT_NAME_INPUT) WORKOUT_NAME_INPUT.value = workoutToEdit.name || "";
 	if (WORKOUT_DATE_TEXT)
-		WORKOUT_DATE_TEXT.textContent =
-			displayFullDate(new Date(workoutToEdit.date)) || "";
+		WORKOUT_DATE_TEXT.textContent = displayFullDate(new Date(workoutToEdit.date)) || "";
 
 	// clear the container
 	if (!EXERCISE_FORM_CONTAINER) return;
@@ -343,8 +315,7 @@ export function saveNewWorkout() {
 
 	const today = new Date();
 	const dayName = weekdays[today.getDay()];
-	currentWorkout.name =
-		WORKOUT_NAME_INPUT?.value?.trim() || `${dayName} Workout`;
+	currentWorkout.name = WORKOUT_NAME_INPUT?.value?.trim() || `${dayName} Workout`;
 
 	saveWorkout();
 	// Add the workout to localStorage
@@ -433,42 +404,34 @@ export function renderHistory() {
 	}
 
 	// For each workout, setup delete button and edit button
-	HISTORY_CONTAINER.querySelectorAll(".workout-summary-card").forEach(
-		(workoutCard) => {
-			workoutCard && setupExpandCollapseCard(workoutCard as HTMLElement);
+	HISTORY_CONTAINER.querySelectorAll(".workout-summary-card").forEach((workoutCard) => {
+		workoutCard && setupExpandCollapseCard(workoutCard as HTMLElement);
 
-			const EDIT_WORKOUT_BUTTON = workoutCard.querySelector(
-				".edit-button",
-			) as HTMLButtonElement;
-			const DELETE_WORKOUT_BUTTON = workoutCard.querySelector(
-				".delete-button",
-			) as HTMLButtonElement;
+		const EDIT_WORKOUT_BUTTON = workoutCard.querySelector(".edit-button") as HTMLButtonElement;
+		const DELETE_WORKOUT_BUTTON = workoutCard.querySelector(".delete-button") as HTMLButtonElement;
 
-			// Setup edit button handler for each workout card
-			if (EDIT_WORKOUT_BUTTON) {
-				EDIT_WORKOUT_BUTTON.addEventListener("click", () => {
-					const WorkoutIndexString =
-						EDIT_WORKOUT_BUTTON?.getAttribute("data-workout-index");
-					if (!WorkoutIndexString) return;
-					// Convert the index to a number
-					const workoutIndex = parseInt(WorkoutIndexString, 10);
-					// Edit the workout
-					editWorkout(workoutIndex);
-				});
-			}
+		// Setup edit button handler for each workout card
+		if (EDIT_WORKOUT_BUTTON) {
+			EDIT_WORKOUT_BUTTON.addEventListener("click", () => {
+				const WorkoutIndexString = EDIT_WORKOUT_BUTTON?.getAttribute("data-workout-index");
+				if (!WorkoutIndexString) return;
+				// Convert the index to a number
+				const workoutIndex = parseInt(WorkoutIndexString, 10);
+				// Edit the workout
+				editWorkout(workoutIndex);
+			});
+		}
 
-			// Setup delete button handler for each workout card
-			if (DELETE_WORKOUT_BUTTON) {
-				DELETE_WORKOUT_BUTTON.addEventListener("click", () => {
-					const WorkoutIndexString =
-						DELETE_WORKOUT_BUTTON?.getAttribute("data-workout-index");
-					if (!WorkoutIndexString) return;
-					// Convert the index to a number
-					const workoutIndex = parseInt(WorkoutIndexString, 10);
-					// Delete the workout
-					deleteWorkout(workoutIndex);
-				});
-			}
-		},
-	);
+		// Setup delete button handler for each workout card
+		if (DELETE_WORKOUT_BUTTON) {
+			DELETE_WORKOUT_BUTTON.addEventListener("click", () => {
+				const WorkoutIndexString = DELETE_WORKOUT_BUTTON?.getAttribute("data-workout-index");
+				if (!WorkoutIndexString) return;
+				// Convert the index to a number
+				const workoutIndex = parseInt(WorkoutIndexString, 10);
+				// Delete the workout
+				deleteWorkout(workoutIndex);
+			});
+		}
+	});
 }

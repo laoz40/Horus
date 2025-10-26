@@ -43,8 +43,7 @@ export function runMigrations(workouts: Workout[]) {
 			}
 
 			// Determine the starting version for this workout
-			const fromVersion =
-				"schemaVersion" in workout ? workout.schemaVersion || 1 : 1;
+			const fromVersion = "schemaVersion" in workout ? workout.schemaVersion || 1 : 1;
 			let currentWorkout = { ...workout };
 			let workoutChanged = false;
 
@@ -52,8 +51,7 @@ export function runMigrations(workouts: Workout[]) {
 			for (let version = fromVersion; version < SCHEMA_VERSION; version++) {
 				const migrationFunction = MIGRATIONS[version];
 				if (typeof migrationFunction === "function") {
-					const migratedWorkout =
-						migrationFunction(currentWorkout) || currentWorkout;
+					const migratedWorkout = migrationFunction(currentWorkout) || currentWorkout;
 					if (migratedWorkout !== currentWorkout) {
 						workoutChanged = true;
 						currentWorkout = migratedWorkout;

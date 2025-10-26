@@ -48,7 +48,7 @@ export function showPage(pageId: string) {
 			document.dispatchEvent(
 				new CustomEvent("page-will-hide", {
 					detail: { pageId: prevActive.id },
-				}),
+				})
 			);
 		} catch (_) {
 			/* ignore */
@@ -64,16 +64,13 @@ export function showPage(pageId: string) {
 
 	// If there's a function mapped to this page, call it
 	if (pageId in pageShowFunctions) {
-		const pageFunction =
-			pageShowFunctions[pageId as keyof typeof pageShowFunctions];
+		const pageFunction = pageShowFunctions[pageId as keyof typeof pageShowFunctions];
 		pageFunction();
 	}
 
 	// Notify listeners that the target page became visible
 	try {
-		document.dispatchEvent(
-			new CustomEvent("page-did-show", { detail: { pageId } }),
-		);
+		document.dispatchEvent(new CustomEvent("page-did-show", { detail: { pageId } }));
 	} catch (_) {
 		/* ignore */
 	}
