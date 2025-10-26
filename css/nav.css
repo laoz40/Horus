@@ -5,6 +5,7 @@
 
 nav {
 	position: fixed;
+	left: 0;
 	z-index: 100;
 	display: flex;
 	flex-direction: column;
@@ -63,6 +64,7 @@ nav {
 /* Small-screen adjustments for paddings and grids */
 @media (max-width: 768px) {
 	nav {
+		right: 0;
 		bottom: 0;
 		flex-direction: row;
 		width: 100%;
@@ -74,5 +76,9 @@ nav {
 		flex: 1;
 		flex-direction: column;
 		min-width: 70px;
+	}
+
+	body:has(#new-workout-page.active) nav {
+		display: none;
 	}
 }

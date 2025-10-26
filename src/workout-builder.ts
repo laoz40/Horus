@@ -307,38 +307,47 @@ export function scrollToExercise(scrollDestination: "prev" | "next" | "last") {
 	targetForm?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-export function updateScrollButtons() {
+// checks which form is in view, and updates the scroll buttons accordingly
+let exerciseFormObserver: IntersectionObserver | null = null;
+function setupExerciseFormObserver() {
 	const exerciseForms = getExerciseFormsArray();
 	if (exerciseForms.length === 0) return;
+	const firstForm = exerciseForms[0];
+	const lastForm = exerciseForms[exerciseForms.length - 1];
 
-	const [firstForm, lastForm] = [
-		exerciseForms[0],
-		exerciseForms[exerciseForms.length - 1],
-	];
-	const containerTop =
-		EXERCISE_FORM_CONTAINER?.getBoundingClientRect().top ?? 0;
+	// Clean up any existing observer
+	if (exerciseFormObserver) {
+		exerciseFormObserver.disconnect();
+	}
 
-	const currentForm = exerciseForms.reduce(
-		(closestForm, exerciseForm) => {
-			// calculate closestForm distance from top of container
-			const distance = Math.abs(
-				exerciseForm.getBoundingClientRect().top - containerTop,
-			);
-			// if this exerciseForm is closer to the top than the closestForm, update the closestForm
-			return distance < (closestForm.distance ?? Infinity)
-				? { form: exerciseForm, distance }
-				: closestForm;
+	// loops through all forms and checks which is intersecting the container element
+	exerciseFormObserver = new IntersectionObserver(
+		(forms) => {
+			for (const form of forms) {
+				// skip if not intersecting
+				if (!form.isIntersecting) continue;
+
+				const currentForm = form.target as HTMLElement;
+				const isFirst = currentForm === firstForm;
+				const isLast = currentForm === lastForm;
+
+				PREV_EXERCISE_BUTTON?.classList.toggle("hidden", isFirst);
+				NEXT_EXERCISE_BUTTON?.classList.toggle("hidden", isLast);
+			}
 		},
-		// initial value
-		{ form: null as HTMLElement | null, distance: Infinity },
-		// use infinity to ensure the first form is selected
-	).form;
+		{
+			root: EXERCISE_FORM_CONTAINER,
+			threshold: 0.5, // Trigger when 50% of the form is visible
+			rootMargin: "-20% 0px", // Adjust this to control when the form is considered "in view"
+		},
+	);
 
-	if (!currentForm) return;
+	// Observe all exercise forms
+	for (const form of exerciseForms) {
+		exerciseFormObserver?.observe(form);
+	}
+}
 
-	const isFirst = currentForm === firstForm;
-	const isLast = currentForm === lastForm;
-
-	PREV_EXERCISE_BUTTON?.classList.toggle("hidden", isFirst);
-	NEXT_EXERCISE_BUTTON?.classList.toggle("hidden", isLast);
+export function updateScrollButtons() {
+	setupExerciseFormObserver();
 }
