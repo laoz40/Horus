@@ -262,89 +262,83 @@ export function updateWorkoutButtons() {
 	}
 }
 
+function getExerciseFormsArray() {
+	return Array.from(
+		EXERCISE_FORM_CONTAINER?.querySelectorAll<HTMLElement>(
+			".add-exercise-form",
+		) ?? [],
+	);
+}
+
+function findFormByPosition(
+	forms: HTMLElement[],
+	condition: (form: HTMLElement) => boolean,
+) {
+	return forms.find(condition) ?? null;
+}
+
 export function scrollToExercise(scrollDestination: "prev" | "next" | "last") {
 	if (!EXERCISE_FORM_CONTAINER) return;
 
-	const exerciseForms =
-		EXERCISE_FORM_CONTAINER.querySelectorAll(".add-exercise-form");
-	const lastForm = exerciseForms[exerciseForms.length - 1] as HTMLElement;
-	if (exerciseForms.length === -1) return;
+	const exerciseForms = getExerciseFormsArray();
+	if (exerciseForms.length === 0) return;
 
-	const formContainerTopPosition =
-		EXERCISE_FORM_CONTAINER.getBoundingClientRect().top;
+	const containerTop = EXERCISE_FORM_CONTAINER.getBoundingClientRect().top;
+	const lastForm = exerciseForms[exerciseForms.length - 1];
 	let targetForm = null;
 
 	if (scrollDestination === "prev") {
-		// Find first form above current position
-		for (
-			let formIndex = exerciseForms.length - 1;
-			formIndex >= 0;
-			formIndex--
-		) {
-			const exerciseForm = exerciseForms[formIndex] as HTMLElement;
-			const formTopPosition = exerciseForm.getBoundingClientRect().top;
-			if (formTopPosition < formContainerTopPosition) {
-				targetForm = exerciseForm;
-				break;
-			}
-		}
-	}
-	if (scrollDestination === "next") {
-		// Find first form below current position
-		for (let formIndex = 0; formIndex < exerciseForms.length; formIndex++) {
-			const exerciseForm = exerciseForms[formIndex] as HTMLElement;
-			const formTopPosition = exerciseForm.getBoundingClientRect().top;
+		// loop backwards and find the first form above the current position
+		targetForm = findFormByPosition(
+			[...exerciseForms].reverse(),
+			(form) => form.getBoundingClientRect().top < containerTop,
+		);
+	} else if (scrollDestination === "next") {
+		// loop forwards and find the first form below the current position
+		targetForm = findFormByPosition(
+			exerciseForms,
+			(form) => form.getBoundingClientRect().top > containerTop + 16,
 			// add 16px to the top position to account for top padding, otherwise current form returns as target
-			if (formTopPosition > formContainerTopPosition + 16) {
-				targetForm = exerciseForm;
-				break;
-			}
-		}
-	}
-	if (scrollDestination === "last") {
+		);
+	} else if (scrollDestination === "last") {
 		targetForm = lastForm;
 	}
 
-	if (targetForm) {
-		targetForm.scrollIntoView({ behavior: "smooth", block: "start" });
-	}
+	targetForm?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 export function updateScrollButtons() {
-	if (!EXERCISE_FORM_CONTAINER) return;
+	const exerciseForms = getExerciseFormsArray();
+	if (exerciseForms.length === 0) return;
 
-	const exerciseForms =
-		EXERCISE_FORM_CONTAINER.querySelectorAll(".add-exercise-form");
-	const firstForm = exerciseForms[0] as HTMLElement;
-	const lastForm = exerciseForms[exerciseForms.length - 1] as HTMLElement;
-	let currentForm = null;
+	const [firstForm, lastForm] = [
+		exerciseForms[0],
+		exerciseForms[exerciseForms.length - 1],
+	];
+	const containerTop =
+		EXERCISE_FORM_CONTAINER?.getBoundingClientRect().top ?? 0;
 
-	const formContainerTopPosition =
-		EXERCISE_FORM_CONTAINER.getBoundingClientRect().top;
-	// use Infinity as the initial value to ensure first form can be selected
-	let smallestDistanceToTop = Infinity;
+	const currentForm = exerciseForms.reduce(
+		(closestForm, exerciseForm) => {
+			// calculate closestForm distance from top of container
+			const distance = Math.abs(
+				exerciseForm.getBoundingClientRect().top - containerTop,
+			);
+			// if this exerciseForm is closer to the top than the closestForm, update the closestForm
+			return distance < (closestForm.distance ?? Infinity)
+				? { form: exerciseForm, distance }
+				: closestForm;
+		},
+		// initial value
+		{ form: null as HTMLElement | null, distance: Infinity },
+		// use infinity to ensure the first form is selected
+	).form;
 
-	// loops through each form to find the one with the smallest distance from the top of the container
-	for (let formIndex = 0; formIndex < exerciseForms.length; formIndex++) {
-		const exerciseForm = exerciseForms[formIndex] as HTMLElement;
-		const formTopPosition = exerciseForm.getBoundingClientRect().top;
-		const distanceFromContainerTop = Math.abs(
-			formTopPosition - formContainerTopPosition,
-		);
-		// if theres a smaller distance, update the current form
-		if (distanceFromContainerTop < smallestDistanceToTop) {
-			smallestDistanceToTop = distanceFromContainerTop;
-			currentForm = exerciseForm;
-		}
-	}
-	if (currentForm === firstForm) {
-		PREV_EXERCISE_BUTTON?.classList.add("hidden");
-	} else {
-		PREV_EXERCISE_BUTTON?.classList.remove("hidden");
-	}
-	if (currentForm === lastForm) {
-		NEXT_EXERCISE_BUTTON?.classList.add("hidden");
-	} else {
-		NEXT_EXERCISE_BUTTON?.classList.remove("hidden");
-	}
+	if (!currentForm) return;
+
+	const isFirst = currentForm === firstForm;
+	const isLast = currentForm === lastForm;
+
+	PREV_EXERCISE_BUTTON?.classList.toggle("hidden", isFirst);
+	NEXT_EXERCISE_BUTTON?.classList.toggle("hidden", isLast);
 }
