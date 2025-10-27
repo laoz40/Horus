@@ -54,3 +54,6 @@ export const MODAL_SECONDARY_BUTTON = document.getElementById(
 export const HISTORY_CONTAINER = document.getElementById(
 	"workouts-history-container"
 ) as HTMLElement | null;
+
+// Settings page elements
+export const THEME_TOGGLE = document.getElementById("theme-toggle") as HTMLButtonElement | null;

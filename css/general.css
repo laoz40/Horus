@@ -1,99 +1,3 @@
-/* Theme variables and design tokens used across the app */
-:root {
-	/* Typography */
-	--font-family-base:
-		"Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-
-	/* Font sizes scale */
-	/* 13px */
-	--font-size-2xs: 0.8125rem;
-	/* 14px */
-	--font-size-xs: 0.875rem;
-	/* 15px */
-	--font-size-sm: 0.95rem;
-	/* 16px */
-	--font-size-md: 1rem;
-	/* 20px */
-	--font-size-lg: 1.25rem;
-
-	/* Font weights scale */
-	--font-weight-thin: 100;
-	--font-weight-extralight: 200;
-	--font-weight-light: 300;
-	--font-weight-regular: 400;
-	--font-weight-medium: 500;
-	--font-weight-semibold: 600;
-	--font-weight-bold: 700;
-	--font-weight-extrabold: 800;
-	--font-weight-black: 900;
-
-	/* Spacing scale */
-	--space-4: 0.25rem;
-	--space-8: 0.5rem;
-	--space-12: 0.75rem;
-	--space-16: 1rem;
-	--space-20: 1.25rem;
-	--space-24: 1.5rem;
-	--space-28: 1.75rem;
-	--space-32: 2rem;
-	--space-36: 2.25rem;
-	--space-40: 2.5rem;
-	--space-44: 2.75rem;
-	--space-48: 3rem;
-	/* Base font size (default is usually 16px) */
-	/* 1rem = 16px, so 4px = 0.25rem */
-
-	/* Colours */
-	/* primary colour */
-	--primary: #4887e8;
-	--primary-hover: color-mix(in srgb, var(--primary), black 15%);
-	--primary-active: color-mix(in srgb, var(--primary), black 25%);
-	/* general */
-	--bg: #f7f7f8;
-	--fg: #222222;
-	--muted: #717171;
-	/* elements */
-	--border-color: #d0d7de;
-	--shadow-color: rgba(100, 100, 100, 0.1);
-	--nav-bg: rgba(255, 255, 255, 1);
-	--input-bg: #ececec;
-	/* buttons colours: primary */
-	--btn-bg: var(--primary);
-	--btn-bg-hover: var(--primary-hover);
-	--btn-bg-active: var(--primary-active);
-	--btn-fg: #ffffff;
-	/* buttons colours: secondary */
-	--btn-secondary-bg: #e9ecef;
-	--btn-secondary-hover: color-mix(in srgb, var(--btn-secondary-bg), black 5%);
-	--btn-secondary-active: color-mix(in srgb, var(--btn-secondary-bg), black 10%);
-	/* buttons colours: danger */
-	--btn-danger-bg: #dc3545;
-	--btn-danger-hover: color-mix(in srgb, var(--btn-danger-bg), black 10%);
-	--btn-danger-active: color-mix(in srgb, var(--btn-danger-bg), black 15%);
-	/* difficulty colours */
-	--zero-effort: #bebebe;
-	--easy: #a6b6c1;
-	--challenging: #ffd293;
-	--struggled: #fd8873;
-	--impossible: #e3a7ff;
-
-	/* Border Radius */
-	--border-radius: 4px;
-	--border-radius-pill: 12px;
-
-	/* Controls (inputs/selects) */
-	--control-h: 2.5rem;
-	/* overall height of inputs/selects */
-	--control-py: 0.2rem;
-	/* vertical padding */
-	--control-px: 0.6rem;
-	/* horizontal padding */
-
-	/* Page */
-	--nav-height: 60px;
-	--header-height: 20px;
-}
-
 /* Base text, background color, and page defaults */
 body {
 	display: flex;
@@ -117,6 +21,53 @@ main {
 	max-width: 720px;
 	padding: 0 var(--space-16);
 	margin: 0 auto;
+}
+
+/* Settings */
+.settings-card {
+	padding: var(--space-16);
+	margin-bottom: var(--space-16);
+	background: var(--nav-bg);
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius);
+}
+
+.setting-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--space-8) 0;
+}
+
+.toggle-switch {
+	position: relative;
+	width: 44px;
+	height: 24px;
+	padding: 0;
+	cursor: pointer;
+	background: var(--btn-secondary-bg);
+	border: none;
+	border-radius: 12px;
+	transition: background-color 0.2s;
+}
+
+.toggle-switch[aria-checked="true"] {
+	background: var(--primary);
+}
+
+.toggle-handle {
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 20px;
+	height: 20px;
+	background: white;
+	border-radius: 50%;
+	transition: transform 0.2s;
+}
+
+.toggle-switch[aria-checked="true"] .toggle-handle {
+	transform: translateX(20px);
 }
 
 /* Page visibility control (single-page app switching) */

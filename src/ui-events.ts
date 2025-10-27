@@ -7,6 +7,7 @@ import {
 	NEXT_EXERCISE_BUTTON,
 	PREV_EXERCISE_BUTTON,
 	START_WORKOUT_BUTTON,
+	THEME_TOGGLE,
 } from "./constants.js";
 import { setupNewWorkout } from "./data-storage.js";
 import {
@@ -148,4 +149,32 @@ export function wireUiEvents() {
 	if (schemaVersionEl) {
 		schemaVersionEl.textContent = String(SCHEMA_VERSION);
 	}
+
+	function setTheme(theme: "light" | "dark"): void {
+		document.documentElement.setAttribute("data-theme", theme);
+		localStorage.setItem("APP_THEME", theme);
+
+		if (THEME_TOGGLE) {
+			THEME_TOGGLE.setAttribute("aria-checked", (theme === "dark").toString());
+		}
+	}
+
+	// Function to toggle between light and dark themes
+	function toggleTheme(): void {
+		const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+		const newTheme = currentTheme === "light" ? "dark" : "light";
+		setTheme(newTheme);
+	}
+
+	// Initialize theme from localStorage
+	function initTheme(): void {
+		const savedTheme = localStorage.getItem("APP_THEME") as "light" | "dark" | null;
+		if (savedTheme) {
+			setTheme(savedTheme);
+		}
+	}
+	if (THEME_TOGGLE) {
+		THEME_TOGGLE.addEventListener("click", toggleTheme);
+	}
+	initTheme();
 }

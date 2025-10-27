@@ -12,6 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
     />
     <!-- CSS -->
+    <link rel="stylesheet" href="css/variables.css" />
     <link rel="stylesheet" href="css/general.css" />
     <link rel="stylesheet" href="css/text+elements.css" />
     <link rel="stylesheet" href="css/nav.css" />
@@ -135,6 +136,21 @@
           <h1 class="page-header-text">Settings</h1>
         </div>
         <h2 class="section-header-text">Settings</h2>
+        <div class="settings-card">
+          <div class="setting-item">
+            <span>Dark Mode</span>
+            <button
+              id="theme-toggle"
+              class="toggle-switch"
+              type="button"
+              role="switch"
+              aria-checked="false"
+              aria-label="Toggle dark mode"
+            >
+              <span class="toggle-handle"></span>
+            </button>
+          </div>
+        </div>
         <div id="data-version-card" class="settings-card">
           <strong>App schema version:</strong>
           <span id="current-schema-version">—</span>

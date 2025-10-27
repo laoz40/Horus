@@ -111,7 +111,7 @@
 }
 
 .muscle-tag {
-	padding: var(--space-4) var(--space-12);
+	padding: var(--space-4) var(--space-8);
 	font-size: var(--font-size-2xs);
 	font-weight: var(--font-weight-medium);
 	color: var(--muted);
@@ -144,12 +144,18 @@
 }
 
 .exercise-item-header .exercise-difficulty {
-	padding: var(--space-4) var(--space-12);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--space-4) var(--space-8);
 	font-size: var(--font-size-2xs);
 	font-weight: var(--font-weight-medium);
-	color: var(--bg);
+	color: var(--btn-fg);
 	background-color: var(--muted);
 	border-radius: var(--border-radius-pill);
+	@media (prefers-color-scheme: dark) {
+		color: var(--bg);
+	}
 }
 .exercise-difficulty.zero-effort {
 	background-color: var(--zero-effort);
@@ -194,8 +200,8 @@
 	color: var(--fg);
 }
 
-.sets-table-row:nth-child(even) {
-	background-color: var(--btn-secondary-bg);
+.sets-table-row:nth-child(odd) {
+	background-color: var(--alternate-row-bg);
 }
 
 .set-number {
