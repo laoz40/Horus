@@ -28,31 +28,38 @@ import { createExerciseForm, readExercisesFromForms } from "./workout-builder.js
 
 // Build the HTML that shows workout details when expanded
 function buildExpandedDetailsHTML(exercise: Exercise) {
+	const difficultyToKebabCase = toDifficultyDisplay(exercise.difficulty)
+		.toLowerCase()
+		.replace(/\s+/g, "-");
 	return `
     <div class="history-exercise-item exercise-card">
-      <h3 class="exercise-name">${esc(exercise.name)}</h3>
+			<div class="exercise-item-header">
+				<h3 class="exercise-name">${esc(exercise.name)}</h3>
+				${
+					exercise.difficulty
+						? `<div class="exercise-difficulty ${difficultyToKebabCase}">${toDifficultyDisplay(exercise.difficulty)}</div>`
+						: ""
+				}
+			</div>
       <div class="exercise-sets">
+        <div class="sets-table-header">
+          <span>Set</span>
+          <span>Weight (kg)</span>
+          <span>Reps</span>
+        </div>
         ${exercise.sets
 					.map(
 						(set, setIndex) => `
-          <div class="exercise-set" data-set-index="${setIndex}">
-            <span class="set-number">${setIndex + 1}.</span>
-            <span class="set-details">${set.weight} kg × ${set.reps} reps</span>
+          <div class="sets-table-row" data-set-index="${setIndex}">
+            <span class="set-number">${setIndex + 1}</span>
+            <span class="set-weight">${set.weight}</span>
+            <span class="set-reps">${set.reps}</span>
           </div>
         `
 					)
 					.join("")}
       </div>
-      <div class="exercise-metadata">
-        ${
-					exercise.difficulty
-						? `
-          <div class="exercise-difficulty">
-            <span class="label muted">Difficulty:</span>
-            <span class="value">${esc(toDifficultyDisplay(exercise.difficulty))}</span>
-          </div>`
-						: ""
-				}
+      <div class="exercise-additional-info">
         ${
 					exercise.notes
 						? `
@@ -104,12 +111,9 @@ function buildSummaryCardHTML(
     <div class="workout-summary-card" ${index !== null ? `data-workout-index="${index}"` : ""}>
       <div class="workout-summary">
         <div class="workout-header">
-          <div class="workout-meta">
             <div class="workout-title-row">
               <h3 class="workout-title">${esc(workout.name)}</h3>
-              <div class="workout-details-row">
-                  <span class="workout-date">${displayHistoryDate(workout.date)}</span>
-              </div>
+							<span class="workout-date">${displayHistoryDate(workout.date)}</span>
             </div>
             <div class="workout-stats-row">
               <div class="workout-stats">
@@ -125,7 +129,6 @@ function buildSummaryCardHTML(
 									: ""
 							}
             </div>
-          </div>
           <div class="workout-muscle-groups">
             ${muscleGroups
 							.map(

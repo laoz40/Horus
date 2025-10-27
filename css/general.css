@@ -2,8 +2,7 @@
 :root {
 	/* Typography */
 	--font-family-base:
-		"Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
-		sans-serif;
+		"Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 
 	/* Font sizes scale */
 	/* 13px */
@@ -44,27 +43,39 @@
 	/* Base font size (default is usually 16px) */
 	/* 1rem = 16px, so 4px = 0.25rem */
 
-	/* Colors */
+	/* Colours */
+	/* primary colour */
 	--primary: #4887e8;
-	--primary-hover: #3b76d2;
-	--primary-active: #2e65b6;
+	--primary-hover: color-mix(in srgb, var(--primary), black 15%);
+	--primary-active: color-mix(in srgb, var(--primary), black 25%);
+	/* general */
 	--bg: #f7f7f8;
 	--fg: #222222;
 	--muted: #717171;
+	/* elements */
 	--border-color: #d0d7de;
 	--shadow-color: rgba(100, 100, 100, 0.1);
 	--nav-bg: rgba(255, 255, 255, 1);
+	--input-bg: #ececec;
+	/* buttons colours: primary */
 	--btn-bg: var(--primary);
 	--btn-bg-hover: var(--primary-hover);
 	--btn-bg-active: var(--primary-active);
 	--btn-fg: #ffffff;
+	/* buttons colours: secondary */
 	--btn-secondary-bg: #e9ecef;
-	--btn-secondary-hover: #dee2e6;
-	--btn-secondary-active: #c8c8c8;
+	--btn-secondary-hover: color-mix(in srgb, var(--btn-secondary-bg), black 5%);
+	--btn-secondary-active: color-mix(in srgb, var(--btn-secondary-bg), black 10%);
+	/* buttons colours: danger */
 	--btn-danger-bg: #dc3545;
-	--btn-danger-hover: #c82333;
-	--btn-danger-active: #b31d28;
-	--input-bg: #ececec;
+	--btn-danger-hover: color-mix(in srgb, var(--btn-danger-bg), black 10%);
+	--btn-danger-active: color-mix(in srgb, var(--btn-danger-bg), black 15%);
+	/* difficulty colours */
+	--zero-effort: #bebebe;
+	--easy: #a6b6c1;
+	--challenging: #ffd293;
+	--struggled: #fd8873;
+	--impossible: #e3a7ff;
 
 	/* Border Radius */
 	--border-radius: 4px;

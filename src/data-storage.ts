@@ -67,7 +67,7 @@ export function mapDifficultyNumberToLabel(n: number) {
 	return map[n as keyof typeof map] || null;
 }
 // Remove the number prefix from the difficulty label
-export function toDifficultyDisplay(label: string) {
+export function toDifficultyDisplay(label: string | null | undefined) {
 	// If no label, return an empty string
 	if (label == null) return "";
 	// Match the label the regex pattern

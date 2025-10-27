@@ -313,13 +313,13 @@ function setupExerciseFormObserver() {
 				// Update button text with exercise names
 				if (prevForm && PREV_EXERCISE_BUTTON) {
 					const prevExerciseInput = prevForm.querySelector(".exercise-name") as HTMLInputElement;
-					const prevExerciseName = prevExerciseInput?.value.trim() || "Previous";
-					PREV_EXERCISE_BUTTON.textContent = `← ${prevExerciseName}`;
+					const prevExerciseName = prevExerciseInput?.value.trim() || "";
+					PREV_EXERCISE_BUTTON.textContent = `↑ ${prevExerciseName}`;
 				}
 				if (nextForm && NEXT_EXERCISE_BUTTON) {
 					const nextExerciseInput = nextForm.querySelector(".exercise-name") as HTMLInputElement;
-					const nextExerciseName = nextExerciseInput?.value.trim() || "Next";
-					NEXT_EXERCISE_BUTTON.textContent = `${nextExerciseName} →`;
+					const nextExerciseName = nextExerciseInput?.value.trim() || "";
+					NEXT_EXERCISE_BUTTON.textContent = `${nextExerciseName} ↓`;
 				}
 			}
 		},
@@ -334,6 +334,7 @@ function setupExerciseFormObserver() {
 	for (const form of exerciseForms) {
 		exerciseFormObserver?.observe(form);
 	}
+	console.log("Exercise form observer set up");
 }
 
 export function updateScrollButtons() {
