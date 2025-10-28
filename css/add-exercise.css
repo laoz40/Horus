@@ -5,7 +5,7 @@
 #new-workout-page.active {
 	display: flex;
 	flex-direction: column;
-	height: 100svh;
+	height: 100dvh;
 }
 
 #new-workout-page .page-header {
@@ -35,6 +35,7 @@
 	height: var(--header-height);
 	font-size: var(--font-size-lg);
 	font-weight: var(--font-weight-semibold);
+	color: var(--fg);
 }
 
 #workout-date {
@@ -42,6 +43,7 @@
 	flex-direction: column;
 	gap: var(--space-4);
 	font-size: var(--font-size-xs);
+	color: var(--muted);
 }
 
 #exercises-container {
@@ -59,10 +61,26 @@
 	scroll-snap-type: y mandatory;
 }
 
-/* Inline exercise form as a compact card */
+:root {
+	--form-gap: var(--space-20);
+	--form-container-gap: var(--space-8);
+
+	--max-set-table-height: calc(
+		100% -
+		(2 * var(--form-gap)) -
+		var(--form-container-gap) -
+		(4 * var(--input-height))
+	);
+	/* extra input height included to give room for textarea to expand */
+}
+
 .add-exercise-form {
-	height: calc(100% - 2 * var(--space-16));
-	padding: var(--space-24) var(--space-16);
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	gap: var(--form-gap);
+	height: 100%;
+	padding: var(--space-16) var(--space-16);
 	margin-bottom: var(--space-16);
 	overflow-y: auto;
 	scroll-snap-align: center;
@@ -72,22 +90,41 @@
 	border-radius: var(--border-radius);
 }
 
-.exercise-text-container,
-.sets-container {
+.exercise-name-container {
 	display: flex;
-	flex-direction: column;
-	gap: var(--space-4);
-	margin-bottom: var(--space-16);
+	flex-direction: row;
+	gap: var(--form-container-gap);
 }
 
-.exercise-text-container:last-child {
-	margin-bottom: 0;
+input.exercise-name,
+input.exercise-name::placeholder {
+	box-sizing: border-box;
+	flex: 1;
+	margin: 0;
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-bold);
+}
+
+.history-button {
+	box-sizing: border-box;
+	height: var(--input-height);
+	padding: var(--input-padding-y) var(--input-padding-x);
+}
+
+.sets-container {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: var(--form-container-gap);
+	max-height: var(--max-set-table-height);
 }
 
 .sets-table {
 	display: flex;
+	flex: 1;
 	flex-direction: column;
-	gap: var(--space-4);
+	gap: var(--form-container-gap);
+	overflow-y: auto;
 }
 
 /* Single row of controls for a set (Set #, Weight, Reps, Difficulty, X) */
@@ -99,7 +136,6 @@
 	align-items: center;
 }
 
-/* Set number indicator */
 .set-number {
 	min-width: 1em;
 	padding: 0;
@@ -111,76 +147,29 @@
 	user-select: none;
 }
 
-/* Generic control look shared by inputs, selects and textareas */
-input[type="text"],
-select,
-textarea,
-input.exercise-name {
-	padding: var(--control-py) var(--control-px);
-	font-family: inherit;
-	font-size: var(--font-size-md);
-	background: var(--input-bg);
-	border: 0px solid var(--border-color);
-	border-radius: var(--border-radius);
-}
-
-/* Set uniform heights for inputs/selects (textarea excluded) */
-input[type="text"],
-select {
-	height: var(--control-h);
-}
-
-input.exercise-name,
-input.exercise-name::placeholder {
+input.set-reps,
+input.set-weight {
 	font-size: var(--font-size-lg);
 	font-weight: var(--font-weight-semibold);
+	color: var(--fg);
 }
 
-.set-reps,
-.set-weight {
-	font-weight: var(--font-weight-semibold);
-}
-
-.set-reps:invalid,
-.set-weight:invalid {
+input.set-reps:invalid,
+input.set-weight:invalid {
 	color: var(--btn-danger-hover);
 }
 
-/* Textarea tweaks: only vertical resize, no horizontal scroll */
-textarea {
-	max-width: 100%;
-	padding-block: var(--control-px);
-	resize: vertical;
-	field-sizing: content;
+.exercise-additional-container {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-8);
 }
 
-/* Normalize select look across browsers and keep size compact */
-select {
-	height: var(--control-h);
-	line-height: 1.2;
-	vertical-align: middle;
-	-moz-appearance: menulist;
-	-webkit-appearance: menulist;
-	appearance: menulist;
-	cursor: pointer;
+select.exercise-difficulty {
+	font-size: var(--font-size-md);
 }
-
-/* Unified placeholder style */
-input::placeholder,
-textarea::placeholder {
-	font-family: inherit;
-	font-weight: var(--font-weight-regular);
-	color: var(--muted);
-	opacity: 1;
-}
-
-/* Difficulty placeholder color */
-.exercise-difficulty:invalid {
-	color: var(--muted);
-}
-
-.exercise-difficulty:valid {
-	color: inherit;
+textarea.exercise-notes {
+	font-size: var(--font-size-md);
 }
 
 .x-delete-btn {

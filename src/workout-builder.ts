@@ -1,4 +1,3 @@
-// import all the functions and variables we need from other files
 import {
 	BACK_BUTTON_WORKOUT,
 	EXERCISE_FORM_CONTAINER,
@@ -6,6 +5,7 @@ import {
 	NEXT_EXERCISE_BUTTON,
 	PREV_EXERCISE_BUTTON,
 } from "./constants.js";
+import { loadAllExerciseNames } from "./data-storage.js";
 import { isInEditMode } from "./history.js";
 import { modalMessages, openModal } from "./modal.js";
 import type { ExerciseForm, ExerciseSetForm } from "./types.js";
@@ -15,8 +15,8 @@ import { esc } from "./utils.js";
 export function createExerciseForm(
 	initial: ExerciseForm = { name: "", notes: "", difficulty: "", sets: [] }
 ) {
-	const exerciseFormContainer = document.createElement("div");
-	exerciseFormContainer.className = "add-exercise-form";
+	const EXERCISE_FORM_CONTAINER = document.createElement("div");
+	EXERCISE_FORM_CONTAINER.className = "add-exercise-form";
 
 	// map difficulty values to labels
 	const difficultyOptions = [
@@ -28,8 +28,8 @@ export function createExerciseForm(
 	];
 
 	// build the form in HTML
-	exerciseFormContainer.innerHTML = `
-    <div class="exercise-text-container">
+	EXERCISE_FORM_CONTAINER.innerHTML = `
+    <div class="exercise-name-container">
       <input list="exercise-name-list" class="exercise-name" placeholder="Enter Exercise" autocomplete="off" required value="${esc(initial.name)}">
     </div>
 
@@ -38,7 +38,7 @@ export function createExerciseForm(
       <button type="button" class="secondary add-set">Add Set</button>
     </div>
 
-    <div class="exercise-text-container">
+    <div class="exercise-additional-container">
       <select class="exercise-difficulty" required>
         <option value="" disabled ${!initial.difficulty ? "selected" : ""} hidden>Difficulty</option>
         ${difficultyOptions
@@ -53,20 +53,20 @@ export function createExerciseForm(
     </div>
   `;
 
-	const setsTable = exerciseFormContainer.querySelector(".sets-table");
-	const addSetBtn = exerciseFormContainer.querySelector(".add-set");
+	const SETS_TABLE = EXERCISE_FORM_CONTAINER.querySelector(".sets-table");
+	const ADD_SET_BUTTON = EXERCISE_FORM_CONTAINER.querySelector(".add-set");
 
 	// add a set row to the table
 	function addSetRowTo(setsTable: HTMLDivElement, setNumber: number, defaults: ExerciseSetForm) {
-		const setRow = document.createElement("div");
-		setRow.className = "set-row";
+		const SET_ROW = document.createElement("div");
+		SET_ROW.className = "set-row";
 
 		// if no set number is provided, count the number of existing rows and add 1
 		if (!setNumber) {
 			setNumber = setsTable.querySelectorAll(".set-row").length + 1;
 		}
 
-		setRow.innerHTML = `
+		SET_ROW.innerHTML = `
       <span class="set-number" aria-label="Set ${setNumber}">${setNumber}</span>
       <input type="text" inputmode="decimal" placeholder="Weight" class="set-weight" value="${defaults.weight || ""}">
       <input type="text" inputmode="numeric" placeholder="Reps" class="set-reps" value="${defaults.reps || ""}">
@@ -92,35 +92,33 @@ export function createExerciseForm(
 				input.value = value;
 			});
 		}
-
 		// weight allows decimal
-		for (const input of setRow.querySelectorAll(".set-weight")) {
+		for (const input of SET_ROW.querySelectorAll(".set-weight")) {
 			validateNumericInput(input as HTMLInputElement, true);
 		}
-
 		// reps integer only
-		for (const input of setRow.querySelectorAll(".set-reps")) {
+		for (const input of SET_ROW.querySelectorAll(".set-reps")) {
 			validateNumericInput(input as HTMLInputElement, false);
 		}
 
 		// wire up the remove set button
-		setRow.querySelector(".remove-set")?.addEventListener("click", () => {
+		SET_ROW.querySelector(".remove-set")?.addEventListener("click", () => {
 			// exercise name value  for the modal message
 			const exerciseName =
-				exerciseFormContainer.querySelector<HTMLInputElement>(".exercise-name")?.value ||
+				EXERCISE_FORM_CONTAINER.querySelector<HTMLInputElement>(".exercise-name")?.value ||
 				"this exercise";
 			openModal({
 				...modalMessages.deleteSet(setNumber, exerciseName),
 				// primary action: remove the set
 				onPrimary: () => {
-					setRow.remove();
+					SET_ROW.remove();
 					// If no sets remain, remove the entire exercise form
-					const SET_ROW = setsTable.querySelectorAll(".set-row");
-					if (SET_ROW.length === 0) {
-						exerciseFormContainer.remove();
+					const SET_ROWS = setsTable.querySelectorAll(".set-row");
+					if (SET_ROWS.length === 0) {
+						EXERCISE_FORM_CONTAINER.remove();
 					} else {
 						// Re-number remaining sets
-						SET_ROW.forEach((setRowElement, setIndex) => {
+						SET_ROWS.forEach((setRowElement, setIndex) => {
 							const SET_NUMBER = setRowElement.querySelector(".set-number");
 							if (!SET_NUMBER) return;
 							// adds 1 to index to make the set numbers start at 1 instead of 0
@@ -141,7 +139,7 @@ export function createExerciseForm(
 		});
 
 		// add a set row to the table
-		setsTable.appendChild(setRow);
+		setsTable.appendChild(SET_ROW);
 	}
 
 	// Map existing sets to rows and add them to the table
@@ -152,23 +150,66 @@ export function createExerciseForm(
 				weight: existingSet.weight,
 				reps: existingSet.reps,
 			};
-			addSetRowTo(setsTable as HTMLDivElement, setIndex + 1, initialInputValues as ExerciseSetForm);
+			addSetRowTo(
+				SETS_TABLE as HTMLDivElement,
+				setIndex + 1,
+				initialInputValues as ExerciseSetForm
+			);
 		});
 	} else {
 		// otherwise, add a default set row
-		addSetRowTo(setsTable as HTMLDivElement, 1, { weight: "", reps: "" });
+		addSetRowTo(SETS_TABLE as HTMLDivElement, 1, { weight: "", reps: "" });
 	}
 
 	// wire up the add set button
-	addSetBtn?.addEventListener("click", () => {
-		const currentSetCount = setsTable?.querySelectorAll(".set-row").length || 0;
-		addSetRowTo(setsTable as HTMLDivElement, currentSetCount + 1, {
+	ADD_SET_BUTTON?.addEventListener("click", () => {
+		const currentSetCount = SETS_TABLE?.querySelectorAll(".set-row").length || 0;
+		addSetRowTo(SETS_TABLE as HTMLDivElement, currentSetCount + 1, {
 			weight: "",
 			reps: "",
 		});
 	});
+
+	// Function to update history button visibility
+	const addHistoryButton = (input: HTMLInputElement, container: HTMLDivElement) => {
+		const EXERCISE_NAME = input.value.trim();
+		const HISTORY_BUTTON = container.querySelector(".history-button");
+
+		if (EXERCISE_NAME && loadAllExerciseNames().includes(EXERCISE_NAME)) {
+			if (!HISTORY_BUTTON) {
+				const HISTORY_BUTTON = document.createElement("button");
+				HISTORY_BUTTON.className = "secondary history-button";
+				HISTORY_BUTTON.type = "button";
+				HISTORY_BUTTON.title = "View exercise history";
+				HISTORY_BUTTON.innerHTML = `<i class="material-icons">history</i>`;
+				container.appendChild(HISTORY_BUTTON);
+			}
+		} else if (HISTORY_BUTTON) {
+			container.removeChild(HISTORY_BUTTON);
+		}
+	};
+
+	// Add event listeners after the form is created
+	const exerciseNameInput = EXERCISE_FORM_CONTAINER.querySelector(
+		".exercise-name"
+	) as HTMLInputElement;
+	if (exerciseNameInput) {
+		exerciseNameInput.addEventListener("input", () => {
+			const container = exerciseNameInput.closest(".exercise-name-container");
+			if (container) {
+				addHistoryButton(exerciseNameInput, container as HTMLDivElement);
+			}
+		});
+
+		// Check initial value
+		const container = exerciseNameInput.closest(".exercise-name-container");
+		if (container) {
+			addHistoryButton(exerciseNameInput, container as HTMLDivElement);
+		}
+	}
+
 	// return the exercise form container
-	return exerciseFormContainer;
+	return EXERCISE_FORM_CONTAINER;
 }
 
 // Read all the exercise forms currently on the page and turn them
@@ -271,8 +312,8 @@ export function scrollToExercise(scrollDestination: "prev" | "next" | "last") {
 		// loop forwards and find the first form below the current position
 		targetForm = findFormByPosition(
 			exerciseForms,
-			(form) => form.getBoundingClientRect().top > containerTop + 16
-			// add 16px to the top position to account for top padding, otherwise current form returns as target
+			(form) => form.getBoundingClientRect().top > containerTop + 20
+			// add 20px to the top position to account for top padding, otherwise current form returns as target
 		);
 	} else if (scrollDestination === "last") {
 		targetForm = lastForm;

@@ -20,10 +20,46 @@
 	color: var(--muted);
 }
 
+input,
+textarea,
+select {
+	box-sizing: border-box;
+	height: var(--input-height);
+	padding: var(--input-padding-y) var(--input-padding-x);
+	margin: 0;
+	font-family: inherit;
+	color: var(--fg);
+	background: var(--input-bg);
+	border: 0px solid var(--border-color);
+	border-radius: var(--border-radius);
+}
+
+input::placeholder,
+textarea::placeholder,
+select::placeholder,
+select:invalid {
+	font-weight: var(--font-weight-regular);
+	color: var(--muted);
+	opacity: 0.7;
+}
+
+textarea {
+	resize: vertical;
+	field-sizing: content;
+}
+
+select {
+	vertical-align: middle;
+	-moz-appearance: menulist;
+	-webkit-appearance: menulist;
+	appearance: menulist;
+	cursor: pointer;
+}
+
 /* Primary button styling (height matches inputs) */
 button {
-	height: var(--control-h);
-	padding: var(--control-py) var(--control-px);
+	height: var(--input-height);
+	padding: var(--input-padding-y) var(--input-padding-x);
 	font-family: var(--font-family-base);
 	font-size: var(--font-size-sm);
 	line-height: 1.2;
@@ -145,5 +181,36 @@ button.danger-secondary:active {
 #modal-primary-btn,
 #modal-secondary-btn {
 	min-width: 110px;
-	height: var(--control-h);
+	height: var(--input-height);
+}
+
+.toggle-switch {
+	position: relative;
+	width: 44px;
+	height: 24px;
+	padding: 0;
+	cursor: pointer;
+	background: var(--btn-secondary-bg);
+	border: none;
+	border-radius: 12px;
+	transition: background-color 0.2s;
+}
+
+.toggle-switch[aria-checked="true"] {
+	background: var(--primary);
+}
+
+.toggle-handle {
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 20px;
+	height: 20px;
+	background: white;
+	border-radius: 50%;
+	transition: transform 0.2s;
+}
+
+.toggle-switch[aria-checked="true"] .toggle-handle {
+	transform: translateX(20px);
 }

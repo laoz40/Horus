@@ -3,7 +3,7 @@ import { EXERCISE_FORM_CONTAINER, WORKOUT_DATE_TEXT, WORKOUT_NAME_INPUT } from "
 import { getCurrentWorkout, WORKOUT_DRAFT_KEY } from "./data-storage.js";
 import { isInEditMode } from "./history.js";
 import type { WorkoutDraft } from "./types.js";
-import { displayHistoryDate } from "./utils.js";
+import { displayFullDate } from "./utils.js";
 import { createExerciseForm } from "./workout-builder.js";
 
 // read the current draft from the form and return it as a JSON object
@@ -71,7 +71,7 @@ export function applyWorkoutDraft(draft: WorkoutDraft) {
 		}
 	}
 	if (WORKOUT_DATE_TEXT) {
-		WORKOUT_DATE_TEXT.textContent = displayHistoryDate(today);
+		WORKOUT_DATE_TEXT.textContent = displayFullDate(today);
 	}
 
 	// if no container, return

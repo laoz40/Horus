@@ -3,13 +3,16 @@
 	--font-family-base:
 		"Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 
+	/* Base font size (default is usually 16px) */
+	/* 1rem = 16px, so 4px = 0.25rem */
+
 	/* Font sizes scale */
 	/* 12px */
 	--font-size-2xs: 0.75rem;
 	/* 14px */
 	--font-size-xs: 0.875rem;
 	/* 15px */
-	--font-size-sm: 0.95rem;
+	--font-size-sm: 0.9375rem;
 	/* 16px */
 	--font-size-md: 1rem;
 	/* 20px */
@@ -17,7 +20,7 @@
 
 	/* Font weights scale */
 	--font-weight-thin: 100;
-	--font-weight-extralight: 200;
+	--font-weight-extra-light: 200;
 	--font-weight-light: 300;
 	--font-weight-regular: 400;
 	--font-weight-medium: 500;
@@ -45,18 +48,16 @@
 	--border-radius-pill: 12px;
 
 	/* Controls (inputs/selects) */
-	--control-h: 2.5rem;
+	--input-height: 2.5rem;
 	/* overall height of inputs/selects */
-	--control-py: 0.2rem;
+	--input-padding-y: 0.25rem;
 	/* vertical padding */
-	--control-px: 0.6rem;
+	--input-padding-x: 0.5rem;
 	/* horizontal padding */
 
 	/* Page */
 	--nav-height: 60px;
 	--header-height: 20px;
-	/* Base font size (default is usually 16px) */
-	/* 1rem = 16px, so 4px = 0.25rem */
 
 	/* Light theme (default) */
 	/* primary colour */
