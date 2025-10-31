@@ -30,27 +30,57 @@ export function createExerciseForm(
 	// build the form in HTML
 	EXERCISE_FORM_CONTAINER.innerHTML = `
     <div class="exercise-name-container">
-      <input list="exercise-name-list" class="exercise-name" placeholder="Enter Exercise" autocomplete="off" required value="${esc(initial.name)}">
+      <input 
+				list="exercise-name-list" 
+				class="exercise-name" 
+				placeholder="Enter Exercise" 
+				autocomplete="off" 
+				required value="${esc(initial.name)}"
+			>
     </div>
 
     <div class="sets-container">
       <div class="sets-table"></div>
-      <button type="button" class="secondary add-set">Add Set</button>
+      <button 
+				type="button" 
+				class="secondary 
+				add-set"
+			>
+				Add Set
+			</button>
     </div>
 
     <div class="exercise-additional-container">
       <select class="exercise-difficulty" required>
-        <option value="" disabled ${!initial.difficulty ? "selected" : ""} hidden>Difficulty</option>
-        ${difficultyOptions
+        <option 
+					value="" 
+					disabled 
+					${!initial.difficulty ? "selected" : ""} 
+					hidden
+				>
+					Difficulty
+				</option>
+				${difficultyOptions
 					.map(
 						(opt) => `
-          <option value="${opt.value}" ${initial.difficulty === opt.text ? "selected" : ""}>${opt.text}</option>
-        `
+				<option 
+					value="${opt.value}" 
+					${initial.difficulty === opt.text ? "selected" : ""}
+				>
+					${opt.text}
+				</option>
+				`
 					)
 					.join("")}
-      </select>
-      <textarea class="exercise-notes" rows="1" placeholder="Add a note">${initial.notes ? esc(initial.notes) : ""}</textarea>
-    </div>
+			</select>
+			<textarea 
+				class="exercise-notes" 
+				rows="1" 
+				placeholder="Add a note"
+			>
+				${initial.notes ? esc(initial.notes) : ""}
+			</textarea>
+		</div>
   `;
 
 	const SETS_TABLE = EXERCISE_FORM_CONTAINER.querySelector(".sets-table");
@@ -375,7 +405,6 @@ function setupExerciseFormObserver() {
 	for (const form of exerciseForms) {
 		exerciseFormObserver?.observe(form);
 	}
-	console.log("Exercise form observer set up");
 }
 
 export function updateScrollButtons() {
