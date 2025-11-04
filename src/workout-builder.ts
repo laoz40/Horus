@@ -35,8 +35,7 @@ export function createExerciseForm(
 				class="exercise-name" 
 				placeholder="Enter Exercise" 
 				autocomplete="off" 
-				required value="${esc(initial.name)}"
-			>
+				required value="${esc(initial.name)}">
     </div>
 
     <div class="sets-container">
@@ -44,8 +43,7 @@ export function createExerciseForm(
       <button 
 				type="button" 
 				class="secondary 
-				add-set"
-			>
+				add-set">
 				Add Set
 			</button>
     </div>
@@ -56,28 +54,25 @@ export function createExerciseForm(
 					value="" 
 					disabled 
 					${!initial.difficulty ? "selected" : ""} 
-					hidden
-				>
+					hidden>
 					Difficulty
 				</option>
 				${difficultyOptions
-					.map(
-						(opt) => `
+			.map(
+				(opt) => `
 				<option 
 					value="${opt.value}" 
-					${initial.difficulty === opt.text ? "selected" : ""}
-				>
+					${initial.difficulty === opt.text ? "selected" : ""}>
 					${opt.text}
 				</option>
 				`
-					)
-					.join("")}
+			)
+			.join("")}
 			</select>
 			<textarea 
 				class="exercise-notes" 
 				rows="1" 
-				placeholder="Add a note"
-			>
+				placeholder="Add a note">
 				${initial.notes ? esc(initial.notes) : ""}
 			</textarea>
 		</div>
@@ -97,10 +92,27 @@ export function createExerciseForm(
 		}
 
 		SET_ROW.innerHTML = `
-      <span class="set-number" aria-label="Set ${setNumber}">${setNumber}</span>
-      <input type="text" inputmode="decimal" placeholder="Weight" class="set-weight" value="${defaults.weight || ""}">
-      <input type="text" inputmode="numeric" placeholder="Reps" class="set-reps" value="${defaults.reps || ""}">
-      <button type="button" class="x-delete-btn remove-set" aria-label="Remove set">✕</button>
+      <span 
+				class="set-number" 
+				aria-label="Set ${setNumber}">${setNumber}</span>
+      <input 
+				type="text" 
+				inputmode="decimal" 
+				placeholder="Weight" 
+				class="set-weight" 
+				value="${defaults.weight || ""}">
+      <input 
+				type="text" 
+				inputmode="numeric" 
+				placeholder="Reps" 
+				class="set-reps" 
+				value="${defaults.reps || ""}">
+      <button 
+				type="button" 
+				class="x-delete-btn remove-set" 
+				aria-label="Remove set">
+				✕
+			</button>
     `;
 
 		// Add numeric input validation, to only allow digits and decimals

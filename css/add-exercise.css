@@ -65,12 +65,7 @@
 	--form-gap: var(--space-20);
 	--form-container-gap: var(--space-8);
 
-	--max-set-table-height: calc(
-		100% -
-		(2 * var(--form-gap)) -
-		var(--form-container-gap) -
-		(4 * var(--input-height))
-	);
+	--max-set-table-height: calc(100% - (2 * var(--form-gap)) - var(--form-container-gap) - (4 * var(--input-height)));
 	/* extra input height included to give room for textarea to expand */
 }
 
@@ -168,6 +163,7 @@ input.set-weight:invalid {
 select.exercise-difficulty {
 	font-size: var(--font-size-md);
 }
+
 textarea.exercise-notes {
 	font-size: var(--font-size-md);
 }
