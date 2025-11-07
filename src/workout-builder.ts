@@ -72,9 +72,7 @@ export function createExerciseForm(
 			<textarea 
 				class="exercise-notes" 
 				rows="1" 
-				placeholder="Add a note">
-				${initial.notes ? esc(initial.notes) : ""}
-			</textarea>
+				placeholder="Add a note">${initial.notes ? esc(initial.notes) : ""}</textarea>
 		</div>
   `;
 

@@ -102,6 +102,9 @@ input.exercise-name::placeholder {
 
 .history-button {
 	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	height: var(--input-height);
 	padding: var(--input-padding-y) var(--input-padding-x);
 }

@@ -1,5 +1,3 @@
-// import all the functions and variables we need from other files
-
 import { NAV_BUTTONS } from "./constants.js";
 import { saveWorkoutDraft } from "./draft.js";
 import { renderHistory, updateLastWorkoutSummary } from "./history.js";

@@ -1,7 +1,8 @@
 :root {
 	/* Typography */
 	--font-family-base:
-		"Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+		"Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+		sans-serif;
 
 	/* Base font size (default is usually 16px) */
 	/* 1rem = 16px, so 4px = 0.25rem */
@@ -82,17 +83,26 @@
 	/* buttons colours: secondary */
 	--btn-secondary-bg: #e9ecef;
 	--btn-secondary-hover: color-mix(in srgb, var(--btn-secondary-bg), black 5%);
-	--btn-secondary-active: color-mix(in srgb, var(--btn-secondary-bg), black 10%);
+	--btn-secondary-active: color-mix(
+		in srgb,
+		var(--btn-secondary-bg),
+		black 10%
+	);
 	/* buttons colours: danger */
 	--btn-danger-bg: #dc3545;
 	--btn-danger-hover: color-mix(in srgb, var(--btn-danger-bg), black 10%);
 	--btn-danger-active: color-mix(in srgb, var(--btn-danger-bg), black 15%);
 	/* difficulty colours - pastel theme */
-	--zero-effort: #a0a0a0; /* Soft gray */
-	--easy: #7fa8d1; /* Soft blue */
-	--challenging: #ffc46b; /* Soft orange */
-	--struggled: #ff9b8a; /* Soft red */
-	--impossible: #b8a1ff; /* Soft purple */
+	--zero-effort: #a0a0a0;
+	/* Soft gray */
+	--easy: #7fa8d1;
+	/* Soft blue */
+	--challenging: #ffc46b;
+	/* Soft orange */
+	--struggled: #ff9b8a;
+	/* Soft red */
+	--impossible: #b8a1ff;
+	/* Soft purple */
 }
 
 /* Dark theme */
@@ -119,15 +129,24 @@
 	/* buttons colours: secondary */
 	--btn-secondary-bg: #333333;
 	--btn-secondary-hover: color-mix(in srgb, var(--btn-secondary-bg), white 5%);
-	--btn-secondary-active: color-mix(in srgb, var(--btn-secondary-bg), white 10%);
+	--btn-secondary-active: color-mix(
+		in srgb,
+		var(--btn-secondary-bg),
+		white 10%
+	);
 	/* buttons colours: danger */
 	--btn-danger-bg: #e74c3c;
 	--btn-danger-hover: color-mix(in srgb, var(--btn-danger-bg), white 10%);
 	--btn-danger-active: color-mix(in srgb, var(--btn-danger-bg), white 20%);
 	/* difficulty colours - pastel theme for dark mode */
-	--zero-effort: #a0a0a0; /* Slightly brighter gray for dark mode */
-	--easy: #8fb8e0; /* Brighter pastel blue */
-	--challenging: #ffd18f; /* Brighter pastel orange */
-	--struggled: #ffb0a0; /* Brighter pastel red */
-	--impossible: #c9b8ff; /* Brighter pastel purple */
+	--zero-effort: #a0a0a0;
+	/* Slightly brighter gray for dark mode */
+	--easy: #8fb8e0;
+	/* Brighter pastel blue */
+	--challenging: #ffd18f;
+	/* Brighter pastel orange */
+	--struggled: #ffb0a0;
+	/* Brighter pastel red */
+	--impossible: #c9b8ff;
+	/* Brighter pastel purple */
 }

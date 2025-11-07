@@ -9,7 +9,11 @@ import type { Workout } from "./types.js";
 import { displayFullDate } from "./utils.js";
 
 export const modalMessages = {
-	continueWorkout: (workoutName: string, onContinue: () => void, onStartNew: () => void) => ({
+	continueWorkout: (
+		workoutName: string,
+		onContinue: () => void,
+		onStartNew: () => void
+	) => ({
 		title: `Continue ${workoutName}?`,
 		message: `You have an unsaved workout. Would you like to continue where you left off?`,
 		primaryText: "Continue",

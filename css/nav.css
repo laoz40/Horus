@@ -12,7 +12,7 @@ nav {
 	align-items: start;
 	justify-content: center;
 	height: auto;
-	padding: 0 0;
+	padding: 0;
 	overflow: auto;
 	color: var(--btn-fg);
 	background-color: var(--nav-bg);
@@ -62,7 +62,7 @@ nav {
 }
 
 /* Small-screen adjustments for paddings and grids */
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	nav {
 		right: 0;
 		bottom: 0;
