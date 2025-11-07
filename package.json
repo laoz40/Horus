@@ -13,12 +13,16 @@
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.2.6",
     "@types/node": "^24.6.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
     "babel-plugin-react-compiler": "^19.1.0-rc.3",
     "globals": "^16.4.0",
+    "prettier": "3.6.2",
+    "stylelint": "^16.25.0",
+    "stylelint-config-standard": "^39.0.1",
     "typescript": "~5.9.3",
     "vite": "^7.1.7"
   }
