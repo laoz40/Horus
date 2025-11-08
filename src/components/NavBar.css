@@ -30,6 +30,7 @@ nav {
 	color: var(--muted);
 	cursor: pointer;
 	background: var(--nav-bg);
+	text-decoration: none;
 	border: none;
 	border-radius: 0;
 	transition: background-color 0.2s ease;
@@ -37,11 +38,6 @@ nav {
 
 .nav-button:hover {
 	background: var(--nav-bg);
-}
-
-.nav-active {
-	font-weight: var(--font-weight-semibold);
-	color: var(--primary);
 }
 
 .nav-icon {
@@ -55,6 +51,12 @@ nav {
 	font-size: var(--font-size-2xs);
 	line-height: 1.2;
 }
+
+.nav-button.active .nav-text, .nav-button.active .nav-icon {
+	font-weight: var(--font-weight-semibold);
+	color: var(--primary);
+}
+
 
 .nav-button:hover .nav-text,
 .nav-button:hover .nav-icon {
@@ -76,9 +78,5 @@ nav {
 		flex: 1;
 		flex-direction: column;
 		min-width: 70px;
-	}
-
-	body:has(#new-workout-page.active) nav {
-		display: none;
 	}
 }

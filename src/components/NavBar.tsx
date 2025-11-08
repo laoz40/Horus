@@ -1,35 +1,30 @@
-function Nav() {
+import { NavLink } from "react-router-dom";
+import "./NavBar.css";
+
+function NavBar() {
 	return (
 		<nav>
-			<a
-				className="nav-button nav-active"
-				data-page="workout-dashboard-page">
+			<NavLink to="/" className="nav-button">
 				<i className="nav-icon material-icons">fitness_center</i>
 				<span className="nav-text">Workout</span>
-			</a>
+			</NavLink>
 
-			<a
-				className="nav-button"
-				data-page="history-page">
+			<NavLink to="/history" className="nav-button">
 				<i className="nav-icon material-icons">history</i>
 				<span className="nav-text">History</span>
-			</a>
+			</NavLink>
 
-			<a
-				className="nav-button"
-				data-page="progress-page">
+			<NavLink to="/progress" className="nav-button">
 				<i className="nav-icon material-icons">trending_up</i>
 				<span className="nav-text">Progress</span>
-			</a>
+			</NavLink>
 
-			<a
-				className="nav-button"
-				data-page="settings-page">
+			<NavLink to="/settings" className="nav-button">
 				<i className="material-icons nav-icon">settings</i>
 				<span className="nav-text">Settings</span>
-			</a>
+			</NavLink>
 		</nav>
 	);
 }
 
-export default Nav;
+export default NavBar;

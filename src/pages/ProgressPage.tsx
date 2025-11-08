@@ -1,0 +1,12 @@
+import Navbar from '../components/NavBar';
+
+function ProgressPage() {
+	return (
+		<>
+			<h1>ProgressPage</h1>
+			<Navbar />
+		</>
+	);
+}
+
+export default ProgressPage;

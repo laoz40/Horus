@@ -1,6 +1,6 @@
 import NavBar from '../components/NavBar';
 
-function Dashboard() {
+function DashboardPage() {
 	return (
 		<>
 			<h1>Workout Dashboard</h1>
@@ -9,4 +9,4 @@ function Dashboard() {
 	);
 }
 
-export default Dashboard;
+export default DashboardPage;
