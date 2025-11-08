@@ -1,39 +1,57 @@
-/* Nav bar and its look */
-.nav-hidden {
-	display: none;
+:root {
+	--nav-height: 60px;
 }
 
 nav {
+	display: flex;
 	position: fixed;
 	left: 0;
-	z-index: 100;
-	display: flex;
 	flex-direction: column;
-	align-items: start;
 	justify-content: center;
-	height: auto;
+	align-items: center;
+	z-index: 100;
+	border-top: 1px solid var(--border-color);
+	background-color: var(--nav-bg);
 	padding: 0;
+	height: auto;
 	overflow: auto;
 	color: var(--btn-fg);
-	background-color: var(--nav-bg);
-	border-top: 1px solid var(--border-color);
+}
+
+@media (width <= 768px) {
+	nav {
+		right: 0;
+		bottom: 0;
+		flex-direction: row;
+		padding: var(--space-4) 0;
+		width: 100%;
+		height: var(--nav-height);
+	}
 }
 
 /* Nav buttons */
 .nav-button {
 	display: flex;
 	flex-direction: row;
-	gap: var(--space-4);
-	align-items: center;
 	justify-content: start;
-	height: auto;
-	color: var(--muted);
+	align-items: center;
+	gap: var(--space-4);
+	transition: background-color 0.2s ease;
 	cursor: pointer;
-	background: var(--nav-bg);
-	text-decoration: none;
 	border: none;
 	border-radius: 0;
-	transition: background-color 0.2s ease;
+	background: var(--nav-bg);
+	height: auto;
+	color: var(--muted);
+	text-decoration: none;
+}
+
+@media (width <= 768px) {
+	.nav-button {
+		flex: 1;
+		flex-direction: column;
+		min-width: 70px;
+	}
 }
 
 .nav-button:hover {
@@ -52,31 +70,13 @@ nav {
 	line-height: 1.2;
 }
 
-.nav-button.active .nav-text, .nav-button.active .nav-icon {
-	font-weight: var(--font-weight-semibold);
+.nav-button.active .nav-text,
+.nav-button.active .nav-icon {
 	color: var(--primary);
+	font-weight: var(--font-weight-semibold);
 }
-
 
 .nav-button:hover .nav-text,
 .nav-button:hover .nav-icon {
 	color: var(--primary);
-}
-
-/* Small-screen adjustments for paddings and grids */
-@media (width <= 768px) {
-	nav {
-		right: 0;
-		bottom: 0;
-		flex-direction: row;
-		width: 100%;
-		height: var(--nav-height);
-		padding: var(--space-4) 0;
-	}
-
-	.nav-button {
-		flex: 1;
-		flex-direction: column;
-		min-width: 70px;
-	}
 }

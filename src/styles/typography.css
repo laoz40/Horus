@@ -20,7 +20,10 @@
 	--font-size-md: 1rem;
 
 	/* 20px */
-	--font-size-lg: 1.125rem;
+	--font-size-lg: 1.25rem;
+
+	/* 24px */
+	--font-size-xl: 1.5rem;
 
 	/* Font weights scale */
 	--font-weight-thin: 100;

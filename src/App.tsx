@@ -7,15 +7,32 @@ import SettingsPage from "./pages/SettingsPage";
 import "./App.css";
 
 function App() {
-	return <>
-		<Routes>
-			<Route path="/" element={<DashboardPage />} />
-			<Route path="/workout" element={<CreateWorkoutPage />} />
-			<Route path="/history" element={<HistoryPage />} />
-			<Route path="/progress" element={<ProgressPage />} />
-			<Route path="/settings" element={<SettingsPage />} />
-		</Routes>
-	</>;
+	return (
+		<>
+			<Routes>
+				<Route
+					path="/"
+					element={<DashboardPage />}
+				/>
+				<Route
+					path="/workout"
+					element={<CreateWorkoutPage />}
+				/>
+				<Route
+					path="/history"
+					element={<HistoryPage />}
+				/>
+				<Route
+					path="/progress"
+					element={<ProgressPage />}
+				/>
+				<Route
+					path="/settings"
+					element={<SettingsPage />}
+				/>
+			</Routes>
+		</>
+	);
 }
 
 export default App;

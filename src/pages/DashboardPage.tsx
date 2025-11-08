@@ -1,9 +1,10 @@
-import NavBar from '../components/NavBar';
+import NavBar from "../components/NavBar";
+import HeaderGeneric from "../components/HeaderGeneric";
 
 function DashboardPage() {
 	return (
 		<>
-			<h1>Workout Dashboard</h1>
+			<HeaderGeneric />
 			<NavBar />
 		</>
 	);

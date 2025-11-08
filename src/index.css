@@ -11,7 +11,13 @@ html {
 
 /* min body height */
 body {
-	min-height: 100svh;
+	background-color: var(--bg);
+	min-height: 100dvh;
+	overflow-y: hidden;
+}
+
+#root {
+	overflow: hidden;
 }
 
 /* responsive images/videos */
