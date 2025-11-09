@@ -1,3 +1,12 @@
+@import url("./styles/colors.css");
+@import url("./styles/typography.css");
+@import url("./styles/spacing.css");
+@import url("./styles/elements.css");
+
+:root {
+	font-family: var(--font-family);
+}
+
 .hidden {
 	display: none;
 }

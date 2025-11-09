@@ -1,0 +1,11 @@
+.create-workout-actions {
+	display: flex;
+	flex-direction: row;
+	gap: var(--space-12);
+	align-items: center;
+	justify-content: center;
+}
+
+.create-workout-actions button {
+	flex: 1;
+}

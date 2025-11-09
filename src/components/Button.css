@@ -1,0 +1,77 @@
+button {
+	/* Button border radius */
+	--border-radius: 4px;
+
+	/* Button text */
+	--font-size: var(--font-size-md);
+	--font-weight: var(--font-weight-medium);
+
+	cursor: pointer;
+	border: 1px solid transparent;
+	border-radius: var(--border-radius);
+	padding: var(--input-padding-y) var(--input-padding-x);
+	height: var(--input-height);
+	font-size: var(--font-size);
+	font-family: var(--font-family-base);
+	font-weight: var(--font-weight);
+}
+
+button.primary {
+	background-color: var(--btn-bg);
+	color: var(--btn-fg);
+}
+
+button.primary:hover {
+	background: var(--btn-bg-hover);
+}
+
+button.primary:active {
+	background: var(--btn-bg-active);
+}
+
+/* Secondary button look (neutral background) */
+button.secondary {
+	border: 1px solid var(--border-color);
+	background: var(--btn-secondary-bg);
+	color: var(--fg);
+}
+
+button.secondary:hover {
+	background: var(--btn-secondary-hover);
+}
+
+button.secondary:active {
+	background: var(--btn-secondary-active);
+}
+
+button.danger {
+	background-color: var(--btn-danger-bg);
+	color: var(--btn-fg);
+}
+
+button.danger:hover {
+	background-color: var(--btn-danger-hover);
+}
+
+button.danger:active {
+	background-color: var(--btn-danger-active);
+}
+
+button.danger-secondary {
+	border: 1px solid var(--border-color);
+	background: var(--btn-secondary-bg);
+	color: var(--btn-danger-bg);
+}
+
+button.danger-secondary:hover {
+	background: var(--btn-secondary-hover);
+}
+
+button.danger-secondary:active {
+	background: var(--btn-secondary-active);
+}
+
+button.square {
+	height: auto;
+	padding: var(--space-16);
+}

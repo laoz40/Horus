@@ -1,7 +1,4 @@
 @import url("node_modules/modern-normalize/modern-normalize.css");
-@import url("./styles/colors.css");
-@import url("./styles/typography.css");
-@import url("./styles/spacing.css");
 
 /* dark mode user-agent-styles
 improves punctuation in supported browsers */
@@ -37,6 +34,7 @@ h4,
 h5,
 h6 {
 	text-wrap: balance;
+	margin: 0;
 }
 
 /* improve readability with max-width on paragraphs and lists
@@ -48,7 +46,6 @@ li {
 }
 
 :root {
-	font-family: var(--font-family);
 	font-synthesis: none;
 	text-rendering: optimizelegibility;
 	-webkit-font-smoothing: antialiased;

@@ -1,6 +1,6 @@
 import Navbar from '../components/NavBar';
 
-function ProgressPage() {
+const ProgressPage = () => {
 	return (
 		<>
 			<h1>ProgressPage</h1>

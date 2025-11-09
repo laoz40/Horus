@@ -1,4 +1,4 @@
-function CreateWorkoutPage() {
+const CreateWorkoutPage = () => {
 	return (
 		<>
 			<h1>Create Workout Page</h1>

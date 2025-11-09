@@ -57,58 +57,64 @@
 }
 
 /* Dark theme */
-:root[data-theme="dark"] {
-	/* primary colour - slightly desaturated for better dark mode */
-	--primary: #3973cb;
-	--primary-hover: color-mix(in srgb, var(--primary), white 10%);
-	--primary-active: color-mix(in srgb, var(--primary), white 20%);
+@media (prefers-color-scheme: dark) {
+	:root {
+		/* primary colour - slightly desaturated for better dark mode */
+		--primary: #1af2ee;
+		--primary-hover: color-mix(in srgb, var(--primary), black 10%);
+		--primary-active: color-mix(in srgb, var(--primary), black 20%);
 
-	/* general */
-	--bg: #121212;
-	--fg: #e0e0e0;
-	--muted: #a0a0a0;
+		/* general */
+		--bg: #121212;
+		--bright-bg: #1e1e1e;
+		--brighter-bg: #2d2d2d;
+		--fg: #e0e0e0;
+		--muted: #a0a0a0;
 
-	/* elements */
-	--border-color: #3a3a3a;
-	--shadow-color: rgb(0 0 0 / 30%);
-	--nav-bg: #1e1e1e;
-	--input-bg: #2d2d2d;
-	--alternate-row-bg: #1e1e1e;
+		/* elements */
+		--border-color: #3a3a3a;
+		--shadow-color: rgb(0 0 0 / 30%);
+		--nav-bg: var(--lighter-bg);
+		--input-bg: #brighter-bg;
+		--alternate-row-bg: var(--bright-bg);
 
-	/* buttons colours: primary */
-	--btn-bg: var(--primary);
-	--btn-bg-hover: color-mix(in srgb, var(--primary), white 15%);
-	--btn-bg-active: color-mix(in srgb, var(--primary), white 25%);
-	--btn-fg: #fff;
+		/* buttons colours: primary */
+		--btn-bg: var(--primary);
+		--btn-bg-hover: var(--primary-hover);
+		--btn-bg-active: var(--primary-active);
+		--btn-fg: var(--bg);
 
-	/* buttons colours: secondary */
-	--btn-secondary-bg: #333;
-	--btn-secondary-hover: color-mix(in srgb, var(--btn-secondary-bg), white 5%);
-	--btn-secondary-active: color-mix(
-		in srgb,
-		var(--btn-secondary-bg),
-		white 10%
-	);
+		/* buttons colours: secondary */
+		--btn-secondary-bg: var(--brighter-bg);
+		--btn-secondary-hover: color-mix(
+			in srgb,
+			var(--btn-secondary-bg),
+			white 5%
+		);
+		--btn-secondary-active: color-mix(
+			in srgb,
+			var(--btn-secondary-bg),
+			white 10%
+		);
 
-	/* buttons colours: danger */
-	--btn-danger-bg: #e74c3c;
-	--btn-danger-hover: color-mix(in srgb, var(--btn-danger-bg), white 10%);
-	--btn-danger-active: color-mix(in srgb, var(--btn-danger-bg), white 20%);
+		/* buttons colours: danger */
+		--btn-danger-bg: #e74c3c;
+		--btn-danger-hover: color-mix(in srgb, var(--btn-danger-bg), white 10%);
+		--btn-danger-active: color-mix(in srgb, var(--btn-danger-bg), white 20%);
 
-	/* difficulty colours - pastel theme for dark mode */
-	--zero-effort: #a0a0a0;
+		/* Slightly brighter gray for dark mode */
+		--zero-effort: #a0a0a0;
 
-	/* Slightly brighter gray for dark mode */
-	--easy: #8fb8e0;
+		/* Brighter pastel blue */
+		--easy: #8fb8e0;
 
-	/* Brighter pastel blue */
-	--challenging: #ffd18f;
+		/* Brighter pastel orange */
+		--challenging: #ffd18f;
 
-	/* Brighter pastel orange */
-	--struggled: #ffb0a0;
+		/* Brighter pastel red */
+		--struggled: #ffb0a0;
 
-	/* Brighter pastel red */
-	--impossible: #c9b8ff;
-
-	/* Brighter pastel purple */
+		/* Brighter pastel purple */
+		--impossible: #c9b8ff;
+	}
 }

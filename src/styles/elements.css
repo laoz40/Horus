@@ -1,0 +1,13 @@
+:root {
+	/* Border Radius */
+	--border-radius: 4px;
+
+	/* Controls (inputs/selects) */
+	--input-height: 2.5rem;
+
+	/* overall height of inputs/selects */
+	--input-padding-y: 0.25rem;
+
+	/* vertical padding */
+	--input-padding-x: 0.5rem;
+}

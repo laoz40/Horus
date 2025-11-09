@@ -1,8 +1,8 @@
 :root {
 	--font-family:
-		"Inter", system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", roboto,
-		"Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-		"Segoe UI Symbol";
+		"Oxanium", system-ui, -apple-system, blinkmacsystemfont, "Segoe UI",
+		roboto, "Helvetica Neue", arial, sans-serif, "Apple Color Emoji",
+		"Segoe UI Emoji", "Segoe UI Symbol";
 
 	/* Base font size (default is usually 16px)
 	1rem = 16px, so 4px = 0.25rem */
@@ -26,13 +26,11 @@
 	--font-size-xl: 1.5rem;
 
 	/* Font weights scale */
-	--font-weight-thin: 100;
-	--font-weight-extra-light: 200;
+	--font-weight-lighter: 200;
 	--font-weight-light: 300;
 	--font-weight-regular: 400;
 	--font-weight-medium: 500;
 	--font-weight-semibold: 600;
 	--font-weight-bold: 700;
 	--font-weight-extrabold: 800;
-	--font-weight-black: 900;
 }

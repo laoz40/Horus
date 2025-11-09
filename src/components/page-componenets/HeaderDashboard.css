@@ -1,0 +1,28 @@
+.dashboard-header {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding: var(--space-12) var(--space-16);
+	height: var(--header-height);
+}
+
+h2.welcome-message {
+	color: var(--muted);
+	font-weight: var(--font-weight-light);
+	font-size: var(--font-size-md);
+	margin: 0 0 var(--space-4) 0;
+}
+
+h1.user-name {
+	color: var(--fg);
+	font-weight: var(--font-weight-bold);
+	font-size: var(--font-size-lg);
+}
+
+.profile-image {
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	object-fit: cover;
+}

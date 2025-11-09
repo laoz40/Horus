@@ -1,12 +1,12 @@
 import Navbar from '../components/NavBar';
 
-function SettingsPage() {
+const SettingsPage = () => {
 	return (
 		<>
 			<h1>Settings</h1>
 			<Navbar />
 		</>
-	);
+	)
 }
 
 export default SettingsPage;

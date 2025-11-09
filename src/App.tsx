@@ -6,7 +6,7 @@ import ProgressPage from "./pages/ProgressPage";
 import SettingsPage from "./pages/SettingsPage";
 import "./App.css";
 
-function App() {
+const App = () => {
 	return (
 		<>
 			<Routes>
@@ -33,6 +33,6 @@ function App() {
 			</Routes>
 		</>
 	);
-}
+};
 
 export default App;

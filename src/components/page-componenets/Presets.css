@@ -1,0 +1,19 @@
+.presets-container {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	align-items: start; /* prevent stretching */
+	gap: var(--space-12);
+}
+
+.presets-container button {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
+	aspect-ratio: 1 / 1;
+	width: 100%;
+}
+
+.presets-container button i {
+font-size: 60px;
+}

@@ -1,6 +1,6 @@
 import Navbar from '../components/NavBar';
 
-function HistoryPage() {
+const HistoryPage = () => {
 	return (
 		<>
 			<h1>History</h1>
