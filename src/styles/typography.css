@@ -34,3 +34,15 @@
 	--font-weight-bold: 700;
 	--font-weight-extrabold: 800;
 }
+
+h1 {
+	color: var(--fg);
+	font-weight: var(--font-weight-bold);
+	font-size: var(--font-size-lg);
+}
+
+h2 { 
+	color: var(--muted);
+	font-weight: var(--font-weight-light);
+	font-size: var(--font-size-md);
+}

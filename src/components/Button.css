@@ -1,6 +1,13 @@
 button {
-	/* Button border radius */
-	--border-radius: 4px;
+	/* Button size and padding */
+	--button-height: 2.5rem;
+	--button-padding-x: 0.25rem;
+	--button-padding-y: 0.5rem;
+
+	/* Button small size and padding */
+	--button-small-height: 2rem;
+	--button-small-padding-x: 0.25rem;
+	--button-small-padding-y: 0.25rem;
 
 	/* Button text */
 	--font-size: var(--font-size-md);
@@ -9,11 +16,12 @@ button {
 	cursor: pointer;
 	border: 1px solid transparent;
 	border-radius: var(--border-radius);
-	padding: var(--input-padding-y) var(--input-padding-x);
-	height: var(--input-height);
+	padding: var(--button-padding-y) var(--button-padding-x);
+	height: var(--button-height);
+	font-weight: var(--font-weight);
 	font-size: var(--font-size);
 	font-family: var(--font-family-base);
-	font-weight: var(--font-weight);
+	text-box: trim-both cap alphabetic;
 }
 
 button.primary {
@@ -72,6 +80,11 @@ button.danger-secondary:active {
 }
 
 button.square {
-	height: auto;
 	padding: var(--space-16);
+	height: auto;
+}
+
+button.small {
+	padding: var(--button-small-padding-y) var(--button-small-padding-x);
+	height: var(--button-small-height);
 }

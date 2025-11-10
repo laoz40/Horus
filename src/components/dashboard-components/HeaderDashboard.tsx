@@ -1,13 +1,13 @@
 import "./HeaderDashboard.css";
 
 const HeaderDashboard = () => {
-	const name = "Leo Zhou";
+	const user_name = "Leo Carreras";
 
 	return (
 		<section className="dashboard-header">
 			<div>
 				<h2 className="welcome-message">Welcome back,</h2>
-				<h1 className="user-name">{name}</h1>
+				<h1 className="user-name">{user_name}</h1>
 			</div>
 			<img
 				className="profile-image"

@@ -9,6 +9,7 @@ const CreateWorkoutButtons = () => {
 			id="create-workout-section">
 			<div className="create-workout-actions">
 				<Button
+					to="/workout"
 					variant="primary"
 					id="new-workout-button">
 					New Workout

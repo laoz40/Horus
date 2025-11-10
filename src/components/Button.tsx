@@ -1,9 +1,11 @@
 import "./Button.css";
+import { useNavigate } from "react-router-dom";
 
 interface ButtonProps {
 	children: React.ReactNode;
 	onClick?: () => void;
-	variant?: "primary" | "secondary" | "danger";
+	to?: string;
+	variant?: "primary" | "secondary" | "danger" | "danger-secondary";
 	shape?: "square" | "small";
 	icon?: string;
 	id: string;
@@ -12,11 +14,22 @@ interface ButtonProps {
 const Button = ({
 	children,
 	onClick,
+	to,
 	variant,
 	shape,
 	icon,
 	id,
 }: ButtonProps) => {
+	const navigate = useNavigate();
+
+	const handleClick = () => {
+		if (to) {
+			navigate(to);
+		} else if (onClick) {
+      onClick();
+		}
+	};
+
 	const className = `
 		button
 		${variant ? `${variant}` : ""}
@@ -26,7 +39,7 @@ const Button = ({
 	return (
 		<button
 			className={className}
-			onClick={onClick}
+			onClick={handleClick}
 			id={id}>
 			{icon && <i className="material-icons">{icon}</i>}
 			{children}

@@ -1,7 +1,7 @@
 import NavBar from "../components/NavBar";
-import HeaderDashboard from "../components/page-componenets/HeaderDashboard";
-import CreateWorkoutButtons from "../components/page-componenets/CreateWorkoutButtons";
-import Presets from "../components/page-componenets/Presets";
+import HeaderDashboard from "../components/dashboard-components/HeaderDashboard";
+import CreateWorkoutButtons from "../components/dashboard-components/CreateWorkoutButtons";
+import Presets from "../components/dashboard-components/Presets";
 import "./page.css"
 
 const DashboardPage = () => {

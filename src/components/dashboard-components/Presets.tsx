@@ -13,28 +13,28 @@ const Presets = () => {
 					shape="square"
 					icon="fitness_center"
 					id="test-button">
-					Test
+					Upper Body 1
+				</Button>
+				<Button
+					variant="secondary"
+					icon="sports_gymnastics"
+					shape="square"
+					id="test-button">
+					Lower Body 1
 				</Button>
 				<Button
 					variant="secondary"
 					icon="fitness_center"
 					shape="square"
 					id="test-button">
-					Test
+          Upper Body 2
 				</Button>
 				<Button
 					variant="secondary"
-					icon="fitness_center"
+					icon="sports_gymnastics"
 					shape="square"
 					id="test-button">
-					Test
-				</Button>
-				<Button
-					variant="secondary"
-					icon="fitness_center"
-					shape="square"
-					id="test-button">
-					Test
+          Lower Body 2
 				</Button>
 			</div>
 		</Section>

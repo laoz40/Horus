@@ -8,19 +8,11 @@
 }
 
 h2.welcome-message {
-	color: var(--muted);
-	font-weight: var(--font-weight-light);
-	font-size: var(--font-size-md);
 	margin: 0 0 var(--space-4) 0;
 }
 
-h1.user-name {
-	color: var(--fg);
-	font-weight: var(--font-weight-bold);
-	font-size: var(--font-size-lg);
-}
-
 .profile-image {
+	cursor: pointer;
 	border-radius: 50%;
 	width: 40px;
 	height: 40px;

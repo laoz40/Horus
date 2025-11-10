@@ -1,8 +1,5 @@
 h2.section-header-text {
 	margin-bottom: var(--space-4);
-	color: var(--muted);
-	font-weight: var(--font-weight-light);
-	font-size: var(--font-size-md);
 }
 
 .section-container {
