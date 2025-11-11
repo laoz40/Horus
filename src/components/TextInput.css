@@ -102,3 +102,7 @@ input:not(:placeholder-shown).animated-input ~ label {
 	color: var(--muted);
 	font-size: var(--font-size-2xs);
 }
+
+input:not(:placeholder-shown).animated-input:not(:focus) ~ label {
+	color: transparent;
+}
