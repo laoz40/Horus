@@ -1,0 +1,104 @@
+/* https://codepen.io/Takumari85/pen/RaYwpJ */
+
+.input-container {
+	--input-bg: var(--bright-bg);
+
+	/* Input size and padding */
+	--input-height: 2.5rem;
+	--input-padding-y: 0.5rem;
+	--input-padding-x: 0.75rem;
+
+	/* Border */
+	--input-border-thickness: 1px;
+	--input-border-highlight-thickness: 2px;
+
+	/* Animation */
+	--input-animation-time: 0.2s;
+
+	position: relative;
+	float: left;
+	margin: var(--space-16);
+} /* necessary to give position: relative to parent. */
+
+.animated-input {
+	transition: var(--input-animation-time);
+	border: var(--input-border-thickness) solid var(--border-color);
+	background-color: var(--input-bg);
+	padding: var(--input-padding-y) var(--input-padding-x);
+	width: 100%;
+	color: var(--fg);
+}
+
+.animated-input:focus {
+	outline: none;
+}
+
+/* focus-border::before = top border, focus-border::after = bottom border */
+.animated-input ~ .focus-border::before,
+.animated-input ~ .focus-border::after {
+	position: absolute;
+	top: -1px;
+	left: 50%;
+	transition: var(--input-animation-time);
+	background-color: var(--primary);
+	width: 0;
+	height: var(--input-border-highlight-thickness);
+	content: "";
+}
+
+.animated-input ~ .focus-border::after {
+	top: auto;
+	bottom: 0;
+}
+
+/* focus-border::before = left border, focus-border::after = right border */
+.animated-input ~ .focus-border i::before,
+.animated-input ~ .focus-border i::after {
+	position: absolute;
+	top: 50%;
+	left: 0;
+	transition: var(--input-animation-time);
+	background-color: var(--primary);
+	width: var(--input-border-highlight-thickness);
+	height: 0;
+	content: "";
+}
+
+.animated-input ~ .focus-border i::after {
+	right: 0;
+	left: auto;
+}
+
+.animated-input:focus ~ .focus-border::before,
+.animated-input:focus ~ .focus-border::after {
+	left: 0;
+	transition: var(--input-animation-time);
+	width: 100%;
+}
+
+.animated-input:focus ~ .focus-border i::before,
+.animated-input:focus ~ .focus-border i::after {
+	top: -1px;
+	transition: var(--input-animation-time);
+	height: 100%;
+}
+
+.animated-input ~ label {
+	position: absolute;
+	top: 10px;
+	left: 14px;
+	transition: var(--input-animation-time);
+	pointer-events: none;
+	color: var(--muted);
+	font-size: var(--font-size-md);
+	text-box: trim-both cap alphabetic;
+}
+
+.animated-input:focus ~ label,
+input:not(:placeholder-shown).animated-input ~ label {
+	top: -18px;
+	left: 0;
+	transition: var(--input-animation-time);
+	color: var(--muted);
+	font-size: var(--font-size-2xs);
+}

@@ -3,7 +3,7 @@ import "./HeaderActions.css";
 
 const HeaderActions = () => {
 	return (
-		<div className="header-actions-container">
+		<header className="header-actions-container">
 			<Button
 				to="/"
 				variant="secondary"
@@ -17,7 +17,7 @@ const HeaderActions = () => {
 				id="finish-button">
 				Finish
 			</Button>
-		</div>
+		</header>
 	);
 };
 

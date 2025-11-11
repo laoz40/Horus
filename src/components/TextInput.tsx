@@ -1,20 +1,25 @@
-import "./Input.css";
+import "./TextInput.css";
 
-interface InputProps {
-	type?: string;
-	placeholder?: string;
+interface TextInputProps {
 	id?: string;
+	label: React.ReactNode;
 }
 
-const Input = ({type, placeholder, id}: InputProps) => {
+const TextInput = ({ id, label }: TextInputProps) => {
+
 	return (
-		<input
-			type={type}
-			placeholder={placeholder}
-			className="input"
-			id={id}
-		/>
+		<div className="input-container">
+			<input
+				id={id}
+				className="animated-input"
+				placeholder=" "
+				type="text"></input>
+			<label htmlFor={id}>{label}</label>
+			<span className="focus-border">
+				<i></i>
+			</span>
+		</div>
 	);
 };
 
-export default Input;
+export default TextInput;

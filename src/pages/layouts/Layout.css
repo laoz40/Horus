@@ -1,5 +1,12 @@
-#root {
+main {
 	display: flex;
 	flex-direction: column;
+}
+
+.gap-default {
 	gap: var(--space-20);
+}
+
+.gap-small {
+	gap: var(--space-8);
 }

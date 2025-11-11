@@ -4,7 +4,7 @@ const HeaderDashboard = () => {
 	const user_name = "Leo Carreras";
 
 	return (
-		<section className="dashboard-header">
+		<header className="dashboard-header">
 			<div>
 				<h2 className="welcome-message">Welcome back,</h2>
 				<h1 className="user-name">{user_name}</h1>
@@ -14,7 +14,7 @@ const HeaderDashboard = () => {
 				src="https://images.unsplash.com/photo-1761872936081-344b9b67cedc"
 				alt="User Profile"
 			/>
-		</section>
+		</header>
 	);
 }
 

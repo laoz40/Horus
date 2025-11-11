@@ -5,6 +5,8 @@ import HistoryPage from "./pages/HistoryPage";
 import ProgressPage from "./pages/ProgressPage";
 import SettingsPage from "./pages/SettingsPage";
 import "./App.css";
+import LayoutNav from "./pages/layouts/LayoutNav";
+import LayoutNoNav from "./pages/layouts/LayoutNoNav";
 
 const App = () => {
 	return (
@@ -12,24 +14,30 @@ const App = () => {
 			<Routes>
 				<Route
 					path="/"
-					element={<DashboardPage />}
-				/>
-				<Route
-					path="/workout"
-					element={<CreateWorkoutPage />}
-				/>
-				<Route
-					path="/history"
-					element={<HistoryPage />}
-				/>
-				<Route
-					path="/progress"
-					element={<ProgressPage />}
-				/>
-				<Route
-					path="/settings"
-					element={<SettingsPage />}
-				/>
+					element={<LayoutNav />}>
+					<Route
+						index
+						element={<DashboardPage />}
+					/>
+					<Route
+						path="/history"
+						element={<HistoryPage />}
+					/>
+					<Route
+						path="/progress"
+						element={<ProgressPage />}
+					/>
+					<Route
+						path="/settings"
+						element={<SettingsPage />}
+					/>
+				</Route>
+				<Route element={<LayoutNoNav />}>
+					<Route
+						path="/workout"
+						element={<CreateWorkoutPage />}
+					/>
+				</Route>
 			</Routes>
 		</>
 	);
