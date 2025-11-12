@@ -1,0 +1,17 @@
+{
+	"printWidth": 80,
+	"tabWidth": 2,
+	"useTabs": true,
+	"semi": true,
+	"trailingComma": "all",
+	"singleQuote": false,
+	"jsxSingleQuote": false,
+	"arrowParens": "always",
+	"bracketSpacing": true,
+	"objectWrap": "preserve",
+	"bracketSameLine": true,
+	"singleAttributePerLine": true,
+	"plugins": ["prettier-plugin-css-order"],
+	"cssDeclarationSorterOrder": "concentric-css",
+	"cssDeclarationSorterKeepOverrides": false
+}
