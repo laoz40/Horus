@@ -11,7 +11,4 @@
 	"objectWrap": "preserve",
 	"bracketSameLine": true,
 	"singleAttributePerLine": true,
-	"plugins": ["prettier-plugin-css-order"],
-	"cssDeclarationSorterOrder": "concentric-css",
-	"cssDeclarationSorterKeepOverrides": false
 }
