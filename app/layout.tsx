@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import NavigationMenuMobile from "@/components/navbar";
 import { ThemeProvider } from "next-themes";
-import { Oxanium } from "next/font/google"
+import { Oxanium } from "next/font/google";
+import NavBarWrapper from "./NavBarWrapper";
 
 export const metadata: Metadata = {
 	title: "V3 Workout Tracker",
@@ -10,14 +10,15 @@ export const metadata: Metadata = {
 };
 
 const oxanium = Oxanium({
-  subsets: ['latin'],
-})
+	subsets: ["latin"],
+});
 
 export default function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+
 	return (
 		<html
 			lang="en"
@@ -32,7 +33,7 @@ export default function RootLayout({
 					<main className="flex flex-col w-full justify-center">
 						{children}
 					</main>
-					<NavigationMenuMobile />
+					<NavBarWrapper />
 				</ThemeProvider>
 			</body>
 		</html>
