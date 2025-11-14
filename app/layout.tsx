@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Oxanium } from "next/font/google";
-import NavBarWrapper from "./NavBarWrapper";
 
 export const metadata: Metadata = {
 	title: "V3 Workout Tracker",
@@ -18,7 +17,6 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-
 	return (
 		<html
 			lang="en"
@@ -33,7 +31,6 @@ export default function RootLayout({
 					<main className="flex flex-col w-full justify-center">
 						{children}
 					</main>
-					<NavBarWrapper />
 				</ThemeProvider>
 			</body>
 		</html>
