@@ -28,7 +28,7 @@ export default function RootLayout({
 					defaultTheme="system"
 					enableSystem
 					disableTransitionOnChange>
-					<main className="flex flex-col w-full justify-center">
+					<main className="flex flex-col w-full h-dvh align-center">
 						{children}
 					</main>
 				</ThemeProvider>
