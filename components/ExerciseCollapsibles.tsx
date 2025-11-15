@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Slider } from "@/components/ui/slider";
 import { BicepsFlexed, ChevronDown, LucideIcon, Notebook } from "lucide-react";
-import { ReactNode } from "react";
+import { Activity, ReactNode, useState } from "react";
 import { Textarea } from "./ui/textarea";
 
 const ExerciseCollapsibles = () => {
@@ -43,7 +43,6 @@ export function DifficultySlider() {
 }
 
 function ExerciseNotes() {
-
 	return (
 		<CollapsibleFilter
 			title="Notes"
@@ -61,16 +60,27 @@ const CollapsibleFilter = ({
 	title: string;
 	icon?: LucideIcon;
 	children: ReactNode;
-}) => (
-	<Collapsible>
-		<CollapsibleTrigger className="group flex w-full items-center justify-between py-3">
-			<h3 className="flex items-center gap-2 text-sm leading-none font-semibold text-muted-foreground">
-				{!!Icon && <Icon className="h-5 w-5 text-muted-foreground" />} {title}
-			</h3>
-			<ChevronDown className="h-4 w-4 group-data-[state=open]:rotate-180 transition-transform text-muted-foreground" />
-		</CollapsibleTrigger>
-		<CollapsibleContent className="pt-1 pb-3">{children}</CollapsibleContent>
-	</Collapsible>
-);
+}) => {
+	const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false);
+
+	return (
+		<Collapsible
+			open={isCollapsibleOpen}
+			onOpenChange={setIsCollapsibleOpen}>
+			<CollapsibleTrigger className="group flex w-full items-center justify-between py-3">
+				<h3 className="flex items-center gap-2 text-sm leading-none font-semibold text-muted-foreground">
+					{!!Icon && <Icon className="h-5 w-5 text-muted-foreground" />} {title}
+				</h3>
+				<ChevronDown className="h-4 w-4 group-data-[state=open]:rotate-180 transition-transform text-muted-foreground" />
+			</CollapsibleTrigger>
+
+			<Activity mode={isCollapsibleOpen ? "visible" : "hidden"}>
+				<CollapsibleContent className="pt-1 pb-3">
+					{children}
+				</CollapsibleContent>
+			</Activity>
+		</Collapsible>
+	);
+};
 
 export default ExerciseCollapsibles;

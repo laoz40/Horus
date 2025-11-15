@@ -33,7 +33,7 @@ export default function CreateWorkoutPage() {
 			</div>
 
 			{/* Exercise Form */}
-			<div className="flex flex-col flex-grow h-full gap-4 p-4">
+			<div className="flex flex-col grow h-full gap-4 p-4">
 				{/* Exercise Name */}
 				<div className="flex flex-row gap-2">
 					<Input placeholder="Add an exercise" />
@@ -47,7 +47,7 @@ export default function CreateWorkoutPage() {
 				{/* TODO: Make component for number input, also make it only accept numbers and one decimal */}
 
 				{/* Set Rows */}
-				<div className="flex flex-col flex-grow gap-3">
+				<div className="flex flex-col grow gap-3">
 					<div className="flex flex-col pl-3 gap-3">
 						<div className="grid grid-cols-[min-content_0.3fr_1fr_0.3fr_1fr] place-items-center gap-4">
 							<span className="text-muted-foreground text-xs">1</span>
