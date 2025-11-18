@@ -2,6 +2,7 @@ import ExerciseCollapsibles from "@/components/ExerciseCollapsibles";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import NumberInput from "@/components/number-input";
 import { History } from "lucide-react";
 import Link from "next/link";
 
@@ -54,27 +55,27 @@ export default function CreateWorkoutPage() {
 							<Checkbox
 								className="h-6 w-6"
 								aria-label="Color success" />
-							<Input placeholder="kg" className="text-xl h-10" />
+							<NumberInput variant="decimal" placeholder="kg" className="text-xl h-10" />
 								<span className="text-muted-foreground">×</span>
-							<Input placeholder="reps" className="text-xl h-10"/>
+							<NumberInput variant="integer" placeholder="reps" className="text-xl h-10"/>
 						</div>
 						<div className="grid grid-cols-[min-content_0.3fr_1fr_0.3fr_1fr] place-items-center gap-4">
 							<span className="text-muted-foreground text-xs">2</span>
 							<Checkbox
 								className="h-6 w-6"
 								aria-label="Color success" />
-							<Input placeholder="kg" className="text-xl h-10" />
+							<NumberInput variant="decimal" placeholder="kg" className="text-xl h-10" />
 								<span className="text-muted-foreground">×</span>
-							<Input placeholder="reps" className="text-xl h-10"/>
+							<NumberInput variant="integer" placeholder="reps" className="text-xl h-10"/>
 						</div>
 						<div className="grid grid-cols-[min-content_0.3fr_1fr_0.3fr_1fr] place-items-center gap-4">
 							<span className="text-muted-foreground text-xs">3</span>
 							<Checkbox
 								className="h-6 w-6"
 								aria-label="Color success" />
-							<Input placeholder="kg" className="text-xl h-10" />
+							<NumberInput variant="decimal" placeholder="kg" className="text-xl h-10" />
 								<span className="text-muted-foreground">×</span>
-							<Input placeholder="reps" className="text-xl h-10"/>
+							<NumberInput variant="integer" placeholder="reps" className="text-xl h-10"/>
 						</div>
 					</div>
 					<Button 
