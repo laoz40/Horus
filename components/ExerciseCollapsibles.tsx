@@ -12,7 +12,7 @@ import { Textarea } from "./ui/textarea";
 
 const ExerciseCollapsibles = () => {
 	return (
-		<div className="w-full max-w-full divide-y-2">
+		<div className="w-full max-w-full">
 			<DifficultySlider />
 			<ExerciseNotes />
 		</div>

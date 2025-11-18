@@ -9,7 +9,7 @@ export default function DashboardPage() {
 			<div className="flex flex-row justify-between align-bottom p-4">
 				<div>
 					<h2 className="justify-center font-light">Welcome back,</h2>
-					<h1 className="justify-center font-bold">Leo Zhou</h1>
+					<h1 className="justify-center font-semibold">Leo Zhou</h1>
 				</div>
 				<ModeToggle></ModeToggle>
 			</div>
@@ -34,22 +34,22 @@ export default function DashboardPage() {
 			<Section header="Presets">
 				<div className="flex flex-col gap-2">
 					<Button
-						variant="outline"
+						variant="secondary"
 						size="lg">
 						Upper 1
 					</Button>
 					<Button
-						variant="outline"
+						variant="secondary"
 						size="lg">
 						Lower 1
 					</Button>
 					<Button
-						variant="outline"
+						variant="secondary"
 						size="lg">
 						Upper 2
 					</Button>
 					<Button
-						variant="outline"
+						variant="secondary"
 						size="lg">
 						Lower 2
 					</Button>

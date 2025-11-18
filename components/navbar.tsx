@@ -18,19 +18,19 @@ const navigationMenuItems = [
 
 export default function NavigationMenuMobile() {
 	return (
-		<NavigationMenu className={cn("fixed bottom-0 w-full max-w-full border-t")}>
+		<NavigationMenu className={cn("fixed bottom-0 w-full max-w-full border-t bg-input/30")}>
 			<NavigationMenuList>
 				{navigationMenuItems.map((item) => (
 					<NavigationMenuItem key={item.title}>
 						<NavigationMenuLink
 							className={cn(
 								navigationMenuTriggerStyle(),
-								"flex flex-col h-auto items-center px-3 py-2.5",
+								"flex flex-col h-auto items-center px-3 py-2.5 bg-transparent",
 							)}
 							active={item.isActive}
 							asChild>
 							<Link href={item.href}>
-								<item.icon className="mb-1.5 !h-5 !w-5" />
+								<item.icon className="mb-1.5 !h-6 !w-6" />
 								{item.title}
 							</Link>
 						</NavigationMenuLink>
