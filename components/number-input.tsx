@@ -20,7 +20,12 @@ const variantConfig = {
 	},
 } as const;
 
-export default function NumberInput({ variant = "integer", placeholder, className }: InputProps) {
+export default function NumberInput({
+	variant = "integer",
+	placeholder,
+	className,
+	onChange,
+}: InputProps) {
 	const config = variantConfig[variant];
 
 	const [value, setValue] = useState("");
@@ -31,6 +36,7 @@ export default function NumberInput({ variant = "integer", placeholder, classNam
 			return;
 		}
 		setValue(inputValue.value);
+		if (onChange) onChange(input);
 	};
 
 	return (
