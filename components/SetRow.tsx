@@ -1,33 +1,35 @@
-import { type ReactElement } from "react";
+import { ChangeEvent, type ReactElement } from "react";
 import { Checkbox } from "./ui/checkbox";
 import NumberInput from "./number-input";
-import { Exercise } from "./exercise-form";
+import { Exercise } from "./ExerciseForm";
 
 interface SetRowProps {
-	key: number;
+	key: string;
 	index: number;
 	set: { weight: string; reps: string };
-	exerciseData: Exercise;
-	setExerciseData: React.Dispatch<React.SetStateAction<Exercise>>;
+	setExerciseData: (updaterFn: (prev: Exercise) => Exercise) => void;
 }
+
+// TODO: form validation
 
 export default function SetRow({
 	index,
 	set,
 	setExerciseData,
 }: SetRowProps): ReactElement {
-	const updateWeight = (value: string) => {
+
+	const handleWeightUpdate = (input: ChangeEvent<HTMLInputElement>) => {
 		setExerciseData((prev) => {
 			const setsData = [...prev.sets];
-			setsData[index] = { ...setsData[index], weight: value };
+			setsData[index] = { ...setsData[index], weight: input.target.value };
 			return { ...prev, sets: setsData };
 		});
 	};
 
-	const updateReps = (value: string) => {
+	const handleRepsUpdate = (input: ChangeEvent<HTMLInputElement>) => {
 		setExerciseData((prev) => {
 			const setsData = [...prev.sets];
-			setsData[index] = { ...setsData[index], reps: value };
+			setsData[index] = { ...setsData[index], reps: input.target.value };
 			return { ...prev, sets: setsData };
 		});
 	};
@@ -35,7 +37,7 @@ export default function SetRow({
 	return (
 		<>
 			<div className="grid grid-cols-[min-content_0.3fr_1fr_0.3fr_1fr] place-items-center gap-4">
-				<span className="text-muted-foreground text-xs">1</span>
+				<span className="text-muted-foreground text-xs">{index + 1}</span>
 				<Checkbox
 					className="h-6 w-6"
 					aria-label="Color success"
@@ -45,7 +47,7 @@ export default function SetRow({
 					placeholder="kg"
 					className="text-xl h-12"
 					value={set.weight}
-					onChange={(input) => updateWeight(input.target.value)}
+					onChange={handleWeightUpdate}
 				/>
 				<span className="text-muted-foreground">×</span>
 				<NumberInput
@@ -53,7 +55,7 @@ export default function SetRow({
 					placeholder="reps"
 					className="text-xl h-12"
 					value={set.reps}
-					onChange={(input) => updateReps(input.target.value)}
+					onChange={handleRepsUpdate}
 				/>
 			</div>
 		</>

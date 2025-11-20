@@ -1,4 +1,4 @@
-import WorkoutForm from "@/components/workout-form";
+import WorkoutForm from "@/components/WorkoutForm";
 
 export default function CreateWorkoutPage() {
 	return (

@@ -1,5 +1,5 @@
 "use client";
-import { Dispatch, SetStateAction, type ReactElement } from "react";
+import { ChangeEvent, type ReactElement } from "react";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -11,20 +11,34 @@ export interface Exercise {
 	sets: {
 		weight: string;
 		reps: string;
+		id: string;
 	}[];
-	//	difficulty: number;
-	//	notes: string;
+	difficulty?: number;
+	notes?: string;
+	id: string;
 }
 
 export interface ExerciseFormProps {
 	exerciseData: Exercise;
-	setExerciseData: Dispatch<SetStateAction<Exercise>>;
+	setExerciseData: (updaterFn: (prev: Exercise) => Exercise) => void;
 }
 
 export default function ExerciseForm({
-	exerciseData: exerciseData,
-	setExerciseData: setExerciseData,
+	exerciseData,
+	setExerciseData,
 }: ExerciseFormProps): ReactElement {
+	const handleNameUpdate = (input: ChangeEvent<HTMLInputElement>) => {
+		setExerciseData((prev) => ({ ...prev, name: input.target.value }));
+	};
+
+	const handleAddSet = () => {
+		setExerciseData((prev) => ({
+			...prev,
+			sets: [...prev.sets, { weight: "", reps: "", id: crypto.randomUUID() }],
+		}));
+		console.log("set added");
+	};
+
 	return (
 		<>
 			<div className="flex flex-col gap-4 p-4">
@@ -33,9 +47,7 @@ export default function ExerciseForm({
 					<Input
 						placeholder="Add an exercise"
 						value={exerciseData.name}
-						onChange={(input) =>
-							setExerciseData((prev) => ({ ...prev, name: input.target.value }))
-						}
+						onChange={handleNameUpdate}
 					/>
 					<Button
 						variant="secondary"
@@ -49,19 +61,18 @@ export default function ExerciseForm({
 					<div className="flex flex-col pl-3 gap-3">
 						{exerciseData.sets.map((set, index) => (
 							<SetRow
-								key={index}
+								key={set.id}
 								index={index}
 								set={set}
-								exerciseData={exerciseData}
 								setExerciseData={setExerciseData}
 							/>
 						))}
 					</div>
-					{/* TODO: Make this button add a new setrow element */}
-					{/* TODO: Refactor stuff */}
 					<Button
 						variant="secondary"
-						className="w-full">
+						className="w-full"
+						type="button"
+						onClick={handleAddSet}>
 						+ Set
 					</Button>
 				</div>
