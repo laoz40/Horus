@@ -12,15 +12,15 @@ export default function WorkoutForm(): ReactElement {
 		// TODO: date, duration
 		exercises: [
 			{
+				id: crypto.randomUUID(),
 				name: "",
 				sets: [
 					{
+						id: crypto.randomUUID(),
 						weight: "",
 						reps: "",
-						id: crypto.randomUUID(),
 					},
 				],
-				id: crypto.randomUUID(),
 			},
 		],
 	});
@@ -30,25 +30,45 @@ export default function WorkoutForm(): ReactElement {
 			const newExercise = [
 				...prev.exercises,
 				{
+					id: crypto.randomUUID(),
 					name: "",
 					sets: [
 						{
+							id: crypto.randomUUID(),
 							weight: "",
 							reps: "",
-							id: crypto.randomUUID(),
 						},
 					],
-					id: crypto.randomUUID(),
 				},
 			];
 			return { ...prev, exercises: newExercise };
 		});
-		console.log("exercise added");
 	};
 
-	const handleSubmit = (form: FormEvent) => {
+	const [submitting, setSubmitting] = useState(false);
+
+	const handleSubmit = async (form: FormEvent) => {
 		form.preventDefault();
-		console.log("Workout submitted", workoutData);
+		setSubmitting(true);
+
+		try {
+		const postWorkout = await fetch("/api/workouts", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(workoutData),
+		});
+
+		const result = await postWorkout.json();
+		if (result.success) {
+			console.log("Workout submitted", workoutData);
+		} else {
+			console.error("Unsuccessful", result)
+		}
+		} catch (err) {
+			console.error("Failed to submit workout", err)
+		}
+
+		setSubmitting(false);
 	};
 
 	return (
@@ -64,6 +84,7 @@ export default function WorkoutForm(): ReactElement {
 				<Button
 					type="submit"
 					form="workout-form"
+					disabled={submitting}
 					size="sm">
 					Done
 				</Button>

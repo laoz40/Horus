@@ -10,14 +10,11 @@ interface SetRowProps {
 	setExerciseData: (updaterFn: (prev: Exercise) => Exercise) => void;
 }
 
-// TODO: form validation
-
 export default function SetRow({
 	index,
 	set,
 	setExerciseData,
 }: SetRowProps): ReactElement {
-
 	const handleWeightUpdate = (input: ChangeEvent<HTMLInputElement>) => {
 		setExerciseData((prev) => {
 			const setsData = [...prev.sets];

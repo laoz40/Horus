@@ -34,10 +34,11 @@ export default function ExerciseForm({
 	const handleAddSet = () => {
 		setExerciseData((prev) => ({
 			...prev,
-			sets: [...prev.sets, { weight: "", reps: "", id: crypto.randomUUID() }],
+			sets: [...prev.sets, { id: crypto.randomUUID(), weight: "", reps: "" }],
 		}));
-		console.log("set added");
 	};
+
+// TODO: form validation
 
 	return (
 		<>
