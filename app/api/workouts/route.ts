@@ -1,20 +1,29 @@
-import path from "path";
-import fs from "fs/promises";
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { WorkoutInput } from "@/lib/types";
 
-const filePath = path.join(process.cwd(), "data", "workouts.json");
 const prisma = new PrismaClient();
 
 export async function GET() {
-	const textData = await fs.readFile(filePath, "utf8");
-	const workouts = JSON.parse(textData);
+	try {
+		const getWorkouts = await prisma.workout.findMany({
+			include: {
+				exercises: {
+					include: {
+						sets: true,
+					},
+				},
+			},
+		});
 
-	return NextResponse.json(workouts);
+		return NextResponse.json({ success: true, getWorkouts });
+	} catch (err) {
+		return NextResponse.json({ success: false, error: (err as Error).message });
+	}
 }
 
 export async function POST(request: Request) {
-	const newWorkout = await request.json();
+	const newWorkout: WorkoutInput = await request.json();
 
 	const postWorkout = await prisma.workout.create({
 		data: {

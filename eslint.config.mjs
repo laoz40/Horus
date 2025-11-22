@@ -4,17 +4,22 @@ import nextTs from "eslint-config-next/typescript";
 import eslintConfigPrettier from "eslint-config-prettier";
 
 const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
+	...nextVitals,
+	...nextTs,
 	eslintConfigPrettier,
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
+	// Override default ignores of eslint-config-next.
+	globalIgnores([
+		// Default ignores of eslint-config-next:
+		".next/**",
+		"out/**",
+		"build/**",
+		"next-env.d.ts",
+	]),
+	{
+		rules: {
+			"@typescript-eslint/no-explicit-any": "off",
+		},
+	},
 ]);
 
 export default eslintConfig;
