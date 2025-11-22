@@ -9,7 +9,6 @@ import { Input } from "./ui/input";
 export default function WorkoutForm(): ReactElement {
 	const [workoutData, setWorkoutData] = useState({
 		name: "",
-		// TODO: date, duration
 		exercises: [
 			{
 				id: crypto.randomUUID(),
@@ -52,20 +51,22 @@ export default function WorkoutForm(): ReactElement {
 		setSubmitting(true);
 
 		try {
-		const postWorkout = await fetch("/api/workouts", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(workoutData),
-		});
+			const postWorkout = await fetch("/api/workouts", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(workoutData),
+			});
 
-		const result = await postWorkout.json();
-		if (result.success) {
-			console.log("Workout submitted", workoutData);
-		} else {
-			console.error("Unsuccessful", result)
-		}
+			const result = await postWorkout.json();
+			if (result.success) {
+				// Replace local state with the saved workout (real DB IDs)
+				setWorkoutData(result.workout);
+				console.log("Workout saved", result.workout);
+			} else {
+				console.error("Unsuccessful", result);
+			}
 		} catch (err) {
-			console.error("Failed to submit workout", err)
+			console.error("Failed to submit workout", err);
 		}
 
 		setSubmitting(false);
