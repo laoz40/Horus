@@ -1,6 +1,7 @@
-import { ModeToggle } from "@/components/mode-toggle";
+import { ModeToggle } from "@/components/ModeToggle";
 
 export default function SettingsPage() {
+	// TODO: Delete all workouts buttons
 	return (
 		<>
 			<h1>Settings</h1>

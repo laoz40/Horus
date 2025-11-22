@@ -1,5 +1,5 @@
-import { ModeToggle } from "@/components/mode-toggle";
-import Section from "@/components/section";
+import { ModeToggle } from "@/components/ModeToggle";
+import Section from "@/components/Section";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 

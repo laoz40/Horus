@@ -22,7 +22,7 @@ export default function RootLayout({
 			lang="en"
 			className={oxanium.className}
 			suppressHydrationWarning>
-			<body className="min-h-screen w-full dark:bg-black relative">
+			<body className="flex flex-col h-dvh w-full dark:bg-black relative">
 				{/* Cosmic Nebula */}
 				<div
 					className="absolute inset-0 z-0 hidden dark:block"
@@ -36,15 +36,12 @@ export default function RootLayout({
      `,
 					}}
 				/>
-				{/* Your Content/Components */}
 				<ThemeProvider
 					attribute="class"
 					defaultTheme="system"
 					enableSystem
 					disableTransitionOnChange>
-					<main className="flex flex-col w-full h-dvh align-center relative z-10">
 						{children}
-					</main>
 				</ThemeProvider>
 			</body>
 		</html>

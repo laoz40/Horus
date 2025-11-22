@@ -42,7 +42,7 @@ export default function ExerciseForm({
 
 	return (
 		<>
-			<div className="flex flex-col gap-4 p-4">
+			<div className="flex flex-col grow gap-4 p-4">
 				{/* Exercise Name */}
 				<div className="flex flex-row gap-2">
 					<Input

@@ -1,6 +1,6 @@
 import { ChangeEvent, type ReactElement } from "react";
 import { Checkbox } from "./ui/checkbox";
-import NumberInput from "./number-input";
+import NumberInput from "./NumberInput";
 import { Exercise } from "./ExerciseForm";
 
 interface SetRowProps {

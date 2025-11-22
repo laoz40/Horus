@@ -18,7 +18,7 @@ const navigationMenuItems = [
 
 export default function NavigationMenuMobile() {
 	return (
-		<NavigationMenu className={cn("fixed bottom-0 w-full max-w-full border-t bg-input/30")}>
+		<NavigationMenu className={cn("w-full max-w-full border-t bg-input/30")}>
 			<NavigationMenuList>
 				{navigationMenuItems.map((item) => (
 					<NavigationMenuItem key={item.title}>
@@ -30,7 +30,7 @@ export default function NavigationMenuMobile() {
 							active={item.isActive}
 							asChild>
 							<Link href={item.href}>
-								<item.icon className="mb-1.5 !h-6 !w-6" />
+								<item.icon className="mb-1.5 h-6! w-6!" />
 								{item.title}
 							</Link>
 						</NavigationMenuLink>
