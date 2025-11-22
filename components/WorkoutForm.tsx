@@ -6,8 +6,7 @@ import ExerciseForm, { Exercise } from "./ExerciseForm";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
-export default function WorkoutForm(): ReactElement {
-	const [workoutData, setWorkoutData] = useState({
+const workoutObject = {
 		name: "",
 		exercises: [
 			{
@@ -22,7 +21,10 @@ export default function WorkoutForm(): ReactElement {
 				],
 			},
 		],
-	});
+	}
+
+export default function WorkoutForm(): ReactElement {
+	const [workoutData, setWorkoutData] = useState(workoutObject);
 
 	const handleAddExercise = () => {
 		setWorkoutData((prev) => {
@@ -59,9 +61,10 @@ export default function WorkoutForm(): ReactElement {
 
 			const result = await postWorkout.json();
 			if (result.success) {
-				// Replace local state with the saved workout (real DB IDs)
-				setWorkoutData(result.workout);
+				// reset form
+				setWorkoutData(workoutObject);
 				console.log("Workout saved", result.workout);
+				console.log(workoutObject)
 			} else {
 				console.error("Unsuccessful", result);
 			}
@@ -96,6 +99,7 @@ export default function WorkoutForm(): ReactElement {
 				<Input
 					autoFocus
 					placeholder="Workout Name"
+					value={workoutData.name}
 					onChange={(input) =>
 						setWorkoutData((prev) => ({ ...prev, name: input.target.value }))
 					}

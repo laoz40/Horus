@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "./ui/input";
 
 type InputVariant = "decimal" | "integer";
@@ -24,18 +23,15 @@ export default function NumberInput({
 	variant = "integer",
 	placeholder,
 	className,
+	value,
 	onChange,
 }: InputProps) {
 	const config = variantConfig[variant];
 
-	const [value, setValue] = useState("");
-
 	const handleChange = (input: React.ChangeEvent<HTMLInputElement>) => {
-		const inputValue = input.target;
-		if (inputValue.validity.patternMismatch) {
+		if (input.target.validity.patternMismatch) {
 			return;
 		}
-		setValue(inputValue.value);
 		if (onChange) onChange(input);
 	};
 
