@@ -5,6 +5,10 @@ import { FormEvent, useState, type ReactElement } from "react";
 import ExerciseForm, { Exercise } from "./ExerciseForm";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { currentDateFull } from "@/lib/date";
+
+// TODO: add date and time, use dayjs or some library
+// TODO: add duration timer
 
 const workoutObject = {
 		name: "",
@@ -105,7 +109,7 @@ export default function WorkoutForm(): ReactElement {
 					}
 				/>
 				<div className="flex flex-row justify-between pl-3 pr-3">
-					<span className="text-muted-foreground text-sm">14. Nov 2025</span>
+					<span className="text-muted-foreground text-sm">{currentDateFull}</span>
 					<span className="text-sm">0:42</span>
 				</div>
 			</div>
