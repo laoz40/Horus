@@ -22,7 +22,7 @@ export default function HistoryPage() {
 	// TODO: make components for stats and muscle group tags
 	return (
 		<>
-			<div className="mt-4 ml-4 mr-4">
+			<div className="p-4">
 				<h1>Workout History</h1>
 			</div>
 
