@@ -4,6 +4,7 @@ import { getRelativeTime } from "@/lib/date";
 import { Workout } from "@prisma/client";
 import PrIndicator from "./PrIndicator";
 import { ShineBorder } from "./ui/shine-border";
+import WorkoutCardStats from "./WorkoutCardStats";
 
 // TODO: calculate pr
 const pr = "2";
@@ -30,11 +31,7 @@ export default function WorkoutCard(workout: Workout): ReactElement {
 					<PrIndicator pr={pr} />
 				</div>
 
-				<div className="grid grid-cols-3 mt-4">
-					<span>stat</span>
-					<span>stat</span>
-					<span>stat</span>
-				</div>
+				<WorkoutCardStats />
 			</Card>
 		</>
 	);
