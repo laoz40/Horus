@@ -43,3 +43,5 @@ next-env.d.ts
 
 # Prisma dev DB
 dev.db
+
+agent.md
