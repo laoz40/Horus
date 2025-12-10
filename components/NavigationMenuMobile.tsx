@@ -11,7 +11,7 @@ import Link from "next/link";
 
 const navigationMenuItems = [
 	{ title: "Workout", href: "/", icon: Dumbbell, isActive: true },
-	{ title: "History", href: "/history", icon: History },
+	{ title: "History", href: "/workouts", icon: History },
 	{ title: "Progress", href: "/progress", icon: TrendingUp },
 	{ title: "Settings", href: "/settings", icon: Settings },
 ];

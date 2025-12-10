@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { WorkoutInput } from "@/lib/types";
 
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient();
 
 export async function GET() {
 	try {

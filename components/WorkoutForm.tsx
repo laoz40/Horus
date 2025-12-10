@@ -6,29 +6,38 @@ import ExerciseForm, { Exercise } from "./ExerciseForm";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { currentDateFull } from "@/lib/date";
+import { WorkoutFormData } from "@/lib/types";
 
 // TODO: add date and time, use dayjs or some library
 // TODO: add duration timer
 
-const workoutObject = {
-		name: "",
-		exercises: [
-			{
-				id: crypto.randomUUID(),
-				name: "",
-				sets: [
-					{
-						id: crypto.randomUUID(),
-						weight: "",
-						reps: "",
-					},
-				],
-			},
-		],
-	}
+const newWorkoutObject = {
+	name: "",
+	exercises: [
+		{
+			id: crypto.randomUUID(),
+			name: "",
+			sets: [
+				{
+					id: crypto.randomUUID(),
+					weight: "",
+					reps: "",
+				},
+			],
+		},
+	],
+};
 
-export default function WorkoutForm(): ReactElement {
-	const [workoutData, setWorkoutData] = useState(workoutObject);
+interface WorkoutFormProps {
+	initialData?: WorkoutFormData;
+}
+
+export default function WorkoutForm({
+	initialData,
+}: WorkoutFormProps): ReactElement {
+	const [workoutData, setWorkoutData] = useState<WorkoutFormData>(
+		initialData ? initialData : newWorkoutObject,
+	);
 
 	const handleAddExercise = () => {
 		setWorkoutData((prev) => {
@@ -46,6 +55,7 @@ export default function WorkoutForm(): ReactElement {
 					],
 				},
 			];
+
 			return { ...prev, exercises: newExercise };
 		});
 	};
@@ -66,9 +76,9 @@ export default function WorkoutForm(): ReactElement {
 			const result = await postWorkout.json();
 			if (result.success) {
 				// reset form
-				setWorkoutData(workoutObject);
+				setWorkoutData(newWorkoutObject);
 				console.log("Workout saved", result.workout);
-				console.log(workoutObject)
+				console.log(newWorkoutObject);
 			} else {
 				console.error("Unsuccessful", result);
 			}
@@ -109,7 +119,9 @@ export default function WorkoutForm(): ReactElement {
 					}
 				/>
 				<div className="flex flex-row justify-between pl-3 pr-3">
-					<span className="text-muted-foreground text-sm">{currentDateFull}</span>
+					<span className="text-muted-foreground text-sm">
+						{currentDateFull}
+					</span>
 					<span className="text-sm">0:42</span>
 				</div>
 			</div>

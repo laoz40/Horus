@@ -20,3 +20,16 @@ export type WorkoutInput = {
   name: string;
   exercises: ExerciseInput[];
 };
+
+export type WorkoutFormData = {
+  name: string;
+  exercises: {
+    id: string;
+    name: string;
+    sets: {
+      id: string;
+      weight: string;
+      reps: string;
+    }[];
+  }[];
+};

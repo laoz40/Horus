@@ -19,7 +19,7 @@ export default function DashboardPage() {
 					<Button
 						asChild
 						className="w-full flex-1">
-						<Link href="/workout">Create Workout</Link>
+						<Link href="/workouts/new">Create Workout</Link>
 					</Button>
 
 					<Button
