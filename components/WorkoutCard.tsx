@@ -32,7 +32,7 @@ export default function WorkoutCard(workout: Workout): ReactElement {
 						<span>back</span>
 						<span>shoulders</span>
 						<Link href={`/workouts/${workout.id}/edit`}>
-							<button>Edit {workout.name}</button>
+							<button>Edit</button>
 						</Link>
 					</div>
 					<PrIndicator pr={pr} />

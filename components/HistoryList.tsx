@@ -1,0 +1,23 @@
+"use client"
+
+import { type ReactElement } from "react";
+import WorkoutCard from "@/components/WorkoutCard";
+import { WorkoutWithRelations } from "@/lib/types";
+
+export default function HistoryList({ workouts: workouts }: { workouts: WorkoutWithRelations[] }): ReactElement {
+
+	const sortNewest = [...workouts].sort((a, b) =>
+		new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+	);
+
+	return (
+		<>
+			{sortNewest.map((workout) => (
+				<WorkoutCard
+					key={workout.id}
+					{...workout}
+				/>
+			))}
+		</>
+	);
+}

@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { WorkoutInput } from "@/lib/types";
-
-export const prisma = new PrismaClient();
+import { db } from "@/lib/prisma";
 
 export async function GET() {
 	try {
-		const getWorkouts = await prisma.workout.findMany({
+		const getWorkouts = await db.workout.findMany({
 			include: {
 				exercises: {
 					include: {
@@ -25,7 +23,7 @@ export async function GET() {
 export async function POST(request: Request) {
 	const newWorkout: WorkoutInput = await request.json();
 
-	const postWorkout = await prisma.workout.create({
+	const postWorkout = await db.workout.create({
 		data: {
 			name: newWorkout.name,
 			exercises: {

@@ -1,15 +1,13 @@
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/prisma";
 import WorkoutForm from "@/components/WorkoutForm";
 import { WorkoutFormData, WorkoutWithRelations } from "@/lib/types";
 
-export default async function EditWorkoutPage(props: { params: { id: string }}) {
-    // This awaits the Promise-like object, ensuring the ID is populated.
-    const resolvedParams = await props.params; 
-    const workoutId = resolvedParams.id;
+export default async function EditWorkoutPage({ params }: { params: Promise<{ id: string }>}) {
+	const { id } = await params; 
 
-	const getUniqueWorkout = await prisma.workout.findUnique({
+	const getUniqueWorkout = await db.workout.findUnique({
 		where: {
-			id: workoutId
+			id: id
 		},
 		include: {
 			exercises: {
