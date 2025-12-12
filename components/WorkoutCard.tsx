@@ -1,4 +1,3 @@
-import { type ReactElement } from "react";
 import Card from "./Card";
 import { getRelativeTime } from "@/lib/date";
 import { Workout } from "@prisma/client";
@@ -6,12 +5,38 @@ import PrIndicator from "./PrIndicator";
 import { ShineBorder } from "./ui/shine-border";
 import WorkoutCardStats from "./WorkoutCardStats";
 import Link from "next/link";
+import { Button } from "./ui/button";
 
 // TODO: calculate pr
 const pr = "2";
 
+interface WorkoutCardProps {
+	workout: Workout;
+	deleteLocalWorkout: (deleteId: string) => void;
+}
+
 // TODO: make the shine border conditional, and hide grey border if shine border
-export default function WorkoutCard(workout: Workout): ReactElement {
+export default function WorkoutCard({
+	workout,
+	deleteLocalWorkout,
+}: WorkoutCardProps) {
+	const handleDelete = async () => {
+		deleteLocalWorkout(workout.id);
+
+		try {
+			const response = await fetch(`/api/workouts/${workout.id}`, {
+				method: "DELETE",
+			});
+			const workoutData = await response.json();
+
+			if (!workoutData.success) {
+				console.error("Failed to delete workout:", workoutData.error);
+			}
+		} catch (err) {
+			console.error("Delete failed", err);
+		}
+	};
+
 	return (
 		<>
 			<Card>
@@ -34,6 +59,7 @@ export default function WorkoutCard(workout: Workout): ReactElement {
 						<Link href={`/workouts/${workout.id}/edit`}>
 							<button>Edit</button>
 						</Link>
+						<Button onClick={handleDelete}>Delete</Button>
 					</div>
 					<PrIndicator pr={pr} />
 				</div>

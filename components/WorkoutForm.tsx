@@ -67,9 +67,11 @@ export default function WorkoutForm({
 		form.preventDefault();
 		setSubmitting(true);
 
+		// TODO: submitting state not implemented fully
+
 		try {
 			const saveMethod = workoutId ? "PATCH" : "POST";
-			const apiUrl = workoutId ? "/api/workouts/" + workoutId : "api/workouts";
+			const apiUrl = workoutId ? `/api/workouts/${workoutId}` : "/api/workouts";
 
 			const saveWorkout = await fetch(apiUrl, {
 				method: saveMethod,

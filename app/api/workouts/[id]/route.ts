@@ -33,3 +33,16 @@ export async function PATCH(
 
 	return NextResponse.json({ success: true, workout: updatedWorkout });
 }
+
+export async function DELETE(
+	_request: Request,
+	{ params }: { params: Promise<{ id: string }> },
+) {
+	const { id } = await params;
+
+	await db.workout.delete({
+		where: { id: id },
+	});
+
+	return NextResponse.json({ success: true });
+}
