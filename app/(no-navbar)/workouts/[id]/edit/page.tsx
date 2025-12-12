@@ -2,47 +2,54 @@ import { db } from "@/lib/prisma";
 import WorkoutForm from "@/components/WorkoutForm";
 import { WorkoutFormData, WorkoutWithRelations } from "@/lib/types";
 
-export default async function EditWorkoutPage({ params }: { params: Promise<{ id: string }>}) {
-	const { id } = await params; 
+export default async function EditWorkoutPage({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
+	const { id } = await params;
 
 	const getUniqueWorkout = await db.workout.findUnique({
 		where: {
-			id: id
+			id: id,
 		},
 		include: {
 			exercises: {
 				include: {
 					sets: true,
-				}
-			}
-		}
-	})
+				},
+			},
+		},
+	});
 
 	if (!getUniqueWorkout) {
-      // TODO: should render a 404 page or error message here
-      return <h1>Workout Not Found</h1>;
-  }
+		// TODO: should render a 404 page or error message here
+		return <h1>Workout Not Found</h1>;
+	}
 
-function convertDbToFormData(workout: WorkoutWithRelations): WorkoutFormData {
-  return {
-    name: workout.name,
-    exercises: workout.exercises.map(ex => ({
-      id: ex.id,
-      name: ex.name,
-      sets: ex.sets.map(set => ({
-        id: set.id,
-        weight: String(set.weight),
-        reps: String(set.reps),
-      }))
-    }))
-  };
-}
+	function convertDbToFormData(workout: WorkoutWithRelations): WorkoutFormData {
+		return {
+			name: workout.name,
+			exercises: workout.exercises.map((ex) => ({
+				id: ex.id,
+				name: ex.name,
+				sets: ex.sets.map((set) => ({
+					id: set.id,
+					weight: String(set.weight),
+					reps: String(set.reps),
+				})),
+			})),
+		};
+	}
 
-const formData = convertDbToFormData(getUniqueWorkout);
+	const formData = convertDbToFormData(getUniqueWorkout);
 
 	return (
 		<>
-			<WorkoutForm initialData={formData}/>
+			<WorkoutForm
+				initialData={formData}
+				workoutId={id}
+			/>
 		</>
 	);
 }

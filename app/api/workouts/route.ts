@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { WorkoutInput } from "@/lib/types";
 import { db } from "@/lib/prisma";
 
+// NOTE: currently unused, will be used later when i implement sorting/filtering?
 export async function GET() {
 	try {
 		const getWorkouts = await db.workout.findMany({

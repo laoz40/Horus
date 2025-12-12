@@ -2,7 +2,6 @@ import HistoryList from "@/components/HistoryList";
 import { db } from "@/lib/prisma";
 
 export default async function HistoryPage() {
-
 	const getWorkouts = await db.workout.findMany({
 		include: {
 			exercises: {
@@ -19,8 +18,7 @@ export default async function HistoryPage() {
 				<h1>Workout History</h1>
 			</div>
 
-			<HistoryList workouts={getWorkouts}/>
+			<HistoryList workouts={getWorkouts} />
 		</>
-	)
-
+	);
 }

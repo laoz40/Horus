@@ -8,7 +8,6 @@ import { Input } from "./ui/input";
 import { currentDateFull } from "@/lib/date";
 import { WorkoutFormData } from "@/lib/types";
 
-// TODO: add date and time, use dayjs or some library
 // TODO: add duration timer
 
 const newWorkoutObject = {
@@ -30,10 +29,12 @@ const newWorkoutObject = {
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
+	workoutId?: string;
 }
 
 export default function WorkoutForm({
 	initialData,
+	workoutId,
 }: WorkoutFormProps): ReactElement {
 	const [workoutData, setWorkoutData] = useState<WorkoutFormData>(
 		initialData ? initialData : newWorkoutObject,
@@ -67,18 +68,20 @@ export default function WorkoutForm({
 		setSubmitting(true);
 
 		try {
-			const postWorkout = await fetch("/api/workouts", {
-				method: "POST",
+			const saveMethod = workoutId ? "PATCH" : "POST";
+			const apiUrl = workoutId ? "/api/workouts/" + workoutId : "api/workouts";
+
+			const saveWorkout = await fetch(apiUrl, {
+				method: saveMethod,
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(workoutData),
 			});
 
-			const result = await postWorkout.json();
+			const result = await saveWorkout.json();
 			if (result.success) {
 				// reset form
 				setWorkoutData(newWorkoutObject);
 				console.log("Workout saved", result.workout);
-				console.log(newWorkoutObject);
 			} else {
 				console.error("Unsuccessful", result);
 			}

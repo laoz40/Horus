@@ -15,17 +15,17 @@ model Workout {
 }
 
 model Exercise {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   name      String
   workoutId String
-  workout   Workout  @relation(fields: [workoutId], references: [id])
+  workout   Workout   @relation(fields: [workoutId], references: [id], onDelete: Cascade)
   sets      Set[]
 }
 
 model Set {
-  id        String   @id @default(cuid())
-  weight    Float
-  reps      Int
+  id         String    @id @default(cuid())
+  weight     Float
+  reps       Int
   exerciseId String
-  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
 }
