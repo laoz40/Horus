@@ -39,10 +39,12 @@ export default function WorkoutCard({
 	return (
 		<>
 			<Card>
-				<ShineBorder
-					shineColor="#34e1c9"
-					duration={8}
-				/>
+				{pr > 0 && (
+					<ShineBorder
+						shineColor="#34e1c9"
+						duration={8}
+					/>
+				)}
 				<div className="grid grid-cols-[1fr_min-content] items-center">
 					<div className="flex flex-col">
 						<span className="w-fit whitespace-nowrap text-muted-foreground text-sm font-light">
@@ -58,13 +60,13 @@ export default function WorkoutCard({
 
 				<div className="grid grid-cols-[1fr_min-content] mt-1">
 					<div className="flex flex-row justify-start gap-4">
-						<Badge variant="outline">Chest</Badge>
-						<Badge variant="outline">Back</Badge>
-						<Badge variant="outline">Shoulders</Badge>
+						<Badge variant="secondary">Chest</Badge>
+						<Badge variant="secondary">Back</Badge>
+						<Badge variant="secondary">Shoulders</Badge>
 					</div>
 				</div>
 
-				<WorkoutCardStats pr={pr}/>
+				<WorkoutCardStats pr={pr} />
 			</Card>
 		</>
 	);
