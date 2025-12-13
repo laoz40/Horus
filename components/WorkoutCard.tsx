@@ -4,6 +4,7 @@ import { Workout } from "@prisma/client";
 import { ShineBorder } from "./ui/shine-border";
 import WorkoutCardStats from "./WorkoutCardStats";
 import WorkoutCardOptions from "./WorkoutCardOptions";
+import { Badge } from "./ui/badge";
 
 // TODO: calculate pr
 const pr = 2;
@@ -57,9 +58,9 @@ export default function WorkoutCard({
 
 				<div className="grid grid-cols-[1fr_min-content] mt-1">
 					<div className="flex flex-row justify-start gap-4">
-						<span>chest</span>
-						<span>back</span>
-						<span>shoulders</span>
+						<Badge variant="outline">Chest</Badge>
+						<Badge variant="outline">Back</Badge>
+						<Badge variant="outline">Shoulders</Badge>
 					</div>
 				</div>
 

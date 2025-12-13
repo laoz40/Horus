@@ -1,6 +1,6 @@
 import { Clock, Dumbbell, Weight } from "lucide-react";
 import { type ReactElement } from "react";
-import PrIndicator from "./PrIndicator";
+import { Badge } from "./ui/badge";
 
 interface WorkoutCardStatsProps {
 	pr: number;
@@ -31,7 +31,11 @@ export default function WorkoutCardStats({
 
 			{/* PR Indicator */}
 			<div className="flex items-center justify-center space-x-1.5 py-1">
-				{pr > 0 && <PrIndicator pr={pr} />}
+				{pr > 0 && (
+					<Badge className="text-primary-foreground text-sm font-semibold">
+						{pr} PRs
+					</Badge>
+				)}
 			</div>
 		</div>
 	);
