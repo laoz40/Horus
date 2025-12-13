@@ -1,14 +1,12 @@
 import Card from "./Card";
 import { getRelativeTime } from "@/lib/date";
 import { Workout } from "@prisma/client";
-import PrIndicator from "./PrIndicator";
 import { ShineBorder } from "./ui/shine-border";
 import WorkoutCardStats from "./WorkoutCardStats";
-import Link from "next/link";
-import { Button } from "./ui/button";
+import WorkoutCardOptions from "./WorkoutCardOptions";
 
 // TODO: calculate pr
-const pr = "2";
+const pr = 2;
 
 interface WorkoutCardProps {
 	workout: Workout;
@@ -44,11 +42,17 @@ export default function WorkoutCard({
 					shineColor="#34e1c9"
 					duration={8}
 				/>
-				<div className="grid grid-cols-[1fr_min-content]">
-					<h2 className="text-base font-bold">{workout.name}</h2>
-					<span className="w-fit whitespace-nowrap text-muted-foreground font-light">
-						{getRelativeTime(workout.createdAt)}
-					</span>
+				<div className="grid grid-cols-[1fr_min-content] items-center">
+					<div className="flex flex-col">
+						<span className="w-fit whitespace-nowrap text-muted-foreground text-sm font-light">
+							{getRelativeTime(workout.createdAt)}
+						</span>
+						<h2 className="text-base font-bold">{workout.name}</h2>
+					</div>
+					<WorkoutCardOptions
+						handleDelete={handleDelete}
+						workoutId={workout.id}
+					/>
 				</div>
 
 				<div className="grid grid-cols-[1fr_min-content] mt-1">
@@ -56,15 +60,10 @@ export default function WorkoutCard({
 						<span>chest</span>
 						<span>back</span>
 						<span>shoulders</span>
-						<Link href={`/workouts/${workout.id}/edit`}>
-							<button>Edit</button>
-						</Link>
-						<Button onClick={handleDelete}>Delete</Button>
 					</div>
-					<PrIndicator pr={pr} />
 				</div>
 
-				<WorkoutCardStats />
+				<WorkoutCardStats pr={pr}/>
 			</Card>
 		</>
 	);
