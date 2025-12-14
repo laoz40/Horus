@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { History } from "lucide-react";
 import SetRow from "./SetRow";
+import { cn } from "@/lib/utils";
 
 export interface Exercise {
 	name: string;
@@ -18,7 +19,8 @@ export interface Exercise {
 	id: string;
 }
 
-export interface ExerciseFormProps {
+export interface ExerciseFormProps
+	extends React.HTMLAttributes<HTMLDivElement> {
 	exerciseData: Exercise;
 	setExerciseData: (updaterFn: (prev: Exercise) => Exercise) => void;
 }
@@ -26,6 +28,7 @@ export interface ExerciseFormProps {
 export default function ExerciseForm({
 	exerciseData,
 	setExerciseData,
+	className,
 }: ExerciseFormProps): ReactElement {
 	const handleNameUpdate = (input: ChangeEvent<HTMLInputElement>) => {
 		setExerciseData((prev) => ({ ...prev, name: input.target.value }));
@@ -42,7 +45,7 @@ export default function ExerciseForm({
 
 	return (
 		<>
-			<div className="flex flex-col grow gap-4 p-4">
+			<div className={cn("h-full flex flex-col gap-4 p-4", className)}>
 				{/* Exercise Name */}
 				<div className="flex flex-row gap-2">
 					<Input

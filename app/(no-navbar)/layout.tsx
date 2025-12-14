@@ -7,7 +7,7 @@ export default function NoNavLayout({
 }): ReactElement {
 	return (
 		<>
-			<main className="flex-1 overflow-y-auto no-scrollbar flex flex-col w-full align-center relative">
+			<main className="flex-1 overflow-hidden no-scrollbar flex flex-col w-full align-center relative">
 				{children}
 			</main>
 		</>

@@ -95,7 +95,7 @@ export default function WorkoutForm({
 	};
 
 	return (
-		<>
+		<div className="flex flex-col h-svh">
 			{/* Top Actions */}
 			<div className="flex flex-row justify-between p-4 bg-input/50 dark:backdrop-blur-xs">
 				<Button
@@ -135,10 +135,11 @@ export default function WorkoutForm({
 			<form
 				id="workout-form"
 				onSubmit={handleSubmit}
-				className="flex flex-col grow h-full">
+				className="flex flex-col flex-1 overflow-y-auto snap-y snap-mandatory">
 				{workoutData.exercises.map((exerciseData, index) => (
 					<ExerciseForm
 						key={exerciseData.id}
+						className="snap-start min-h-full h-full"
 						exerciseData={exerciseData}
 						setExerciseData={(updaterFn: (prev: Exercise) => Exercise) => {
 							setWorkoutData((prev) => {
@@ -159,6 +160,6 @@ export default function WorkoutForm({
 					+ Exercise
 				</Button>
 			</div>
-		</>
+		</div>
 	);
 }
