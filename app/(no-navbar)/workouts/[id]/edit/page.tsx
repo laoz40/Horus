@@ -23,7 +23,6 @@ export default async function EditWorkoutPage({
 	});
 
 	if (!getUniqueWorkout) {
-		// TODO: should render a 404 page or error message here
 		return <h1>Workout Not Found</h1>;
 	}
 

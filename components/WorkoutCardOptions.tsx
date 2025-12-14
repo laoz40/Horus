@@ -23,7 +23,7 @@ export default function WorkoutCardOptions({
 		<>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-						<EllipsisVertical className="pl-1 pr-0"/>
+					<EllipsisVertical className="pl-1 pr-0" />
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
 					align="start"
