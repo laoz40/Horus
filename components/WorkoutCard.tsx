@@ -14,25 +14,30 @@ interface WorkoutCardProps {
 	deleteLocalWorkout: (deleteId: string) => void;
 }
 
-// TODO: make the shine border conditional, and hide grey border if shine border
 export default function WorkoutCard({
 	workout,
 	deleteLocalWorkout,
 }: WorkoutCardProps) {
 	const handleDelete = async () => {
-		deleteLocalWorkout(workout.id);
+		const confirmDeleted = confirm(
+			"This will permanently delete all workouts. Continue?",
+		);
 
-		try {
-			const response = await fetch(`/api/workouts/${workout.id}`, {
-				method: "DELETE",
-			});
-			const workoutData = await response.json();
+		if (confirmDeleted) {
+			deleteLocalWorkout(workout.id);
 
-			if (!workoutData.success) {
-				console.error("Failed to delete workout:", workoutData.error);
+			try {
+				const response = await fetch(`/api/workouts/${workout.id}`, {
+					method: "DELETE",
+				});
+				const workoutData = await response.json();
+
+				if (!workoutData.success) {
+					console.error("Failed to delete workout:", workoutData.error);
+				}
+			} catch (err) {
+				console.error("Delete failed", err);
 			}
-		} catch (err) {
-			console.error("Delete failed", err);
 		}
 	};
 
