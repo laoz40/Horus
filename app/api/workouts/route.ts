@@ -48,3 +48,9 @@ export async function POST(request: Request) {
 
 	return NextResponse.json({ success: true, workout: postWorkout });
 }
+
+export async function DELETE(_request: Request) {
+	await db.workout.deleteMany();
+
+	return NextResponse.json({ success: true });
+}
