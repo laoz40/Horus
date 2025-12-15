@@ -1,5 +1,5 @@
 "use client";
-import { ChangeEvent, type ReactElement } from "react";
+import { ChangeEvent, forwardRef } from "react";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -25,27 +25,25 @@ export interface ExerciseFormProps
 	setExerciseData: (updaterFn: (prev: Exercise) => Exercise) => void;
 }
 
-export default function ExerciseForm({
-	exerciseData,
-	setExerciseData,
-	className,
-}: ExerciseFormProps): ReactElement {
-	const handleNameUpdate = (input: ChangeEvent<HTMLInputElement>) => {
-		setExerciseData((prev) => ({ ...prev, name: input.target.value }));
-	};
+const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
+	({ exerciseData, setExerciseData, className }, ref) => {
+		const handleNameUpdate = (input: ChangeEvent<HTMLInputElement>) => {
+			setExerciseData((prev) => ({ ...prev, name: input.target.value }));
+		};
 
-	const handleAddSet = () => {
-		setExerciseData((prev) => ({
-			...prev,
-			sets: [...prev.sets, { id: crypto.randomUUID(), weight: "", reps: "" }],
-		}));
-	};
+		const handleAddSet = () => {
+			setExerciseData((prev) => ({
+				...prev,
+				sets: [...prev.sets, { id: crypto.randomUUID(), weight: "", reps: "" }],
+			}));
+		};
 
-	// TODO: form validation
+		// TODO: form validation
 
-	return (
-		<>
-			<div className={cn("h-full flex flex-col gap-4 p-4", className)}>
+		return (
+			<section
+				ref={ref}
+				className={cn("h-full flex flex-col gap-4 p-4", className)}>
 				{/* Exercise Name */}
 				<div className="flex flex-row gap-2">
 					<Input
@@ -61,7 +59,8 @@ export default function ExerciseForm({
 				</div>
 
 				{/* Set Rows */}
-				<div className="flex flex-col grow gap-3">
+				{/* TODO: make adding set or exercise scroll down to show newest */}
+				<div className="flex flex-col overflow-y-auto no-scrollbar grow gap-3">
 					<div className="flex flex-col pl-3 gap-3">
 						{exerciseData.sets.map((set, index) => (
 							<SetRow
@@ -83,7 +82,11 @@ export default function ExerciseForm({
 
 				{/* Difficulty and Notes */}
 				<ExerciseCollapsibles />
-			</div>
-		</>
-	);
-}
+			</section>
+		);
+	},
+);
+
+ExerciseForm.displayName = "ExerciseForm";
+
+export default ExerciseForm;

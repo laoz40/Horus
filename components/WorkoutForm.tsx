@@ -1,12 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState, type ReactElement } from "react";
+import {
+	FormEvent,
+	useEffect,
+	useRef,
+	useState,
+	type ReactElement,
+} from "react";
 import ExerciseForm, { Exercise } from "./ExerciseForm";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { currentDateFull } from "@/lib/date";
 import { WorkoutFormData } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 // TODO: add duration timer
 
@@ -41,33 +48,44 @@ export default function WorkoutForm({
 	);
 
 	const handleAddExercise = () => {
-		setWorkoutData((prev) => {
-			const newExercise = [
-				...prev.exercises,
+		const newExercise = {
+			id: crypto.randomUUID(),
+			name: "",
+			sets: [
 				{
 					id: crypto.randomUUID(),
-					name: "",
-					sets: [
-						{
-							id: crypto.randomUUID(),
-							weight: "",
-							reps: "",
-						},
-					],
+					weight: "",
+					reps: "",
 				},
-			];
+			],
+		};
 
-			return { ...prev, exercises: newExercise };
-		});
+		setWorkoutData((prev) => ({
+			...prev,
+			exercises: [...prev.exercises, newExercise],
+		}));
+
+		setScrollTargetId(newExercise.id);
 	};
 
-	const [submitting, setSubmitting] = useState(false);
+	const [scrollTargetId, setScrollTargetId] = useState<string | null>(null);
+	// attach each exercise form div to the exercise id
+	const exerciseRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+	useEffect(() => {
+		if (scrollTargetId == null) return;
+
+		const scrollTargetElement = exerciseRefs.current[scrollTargetId];
+		scrollTargetElement?.scrollIntoView({ behavior: "smooth", block: "end" });
+
+		setScrollTargetId(null);
+	}, [scrollTargetId]);
+
+	const [submitting, setSubmitting] = useState(false);
+	const router = useRouter();
 	const handleSubmit = async (form: FormEvent) => {
 		form.preventDefault();
 		setSubmitting(true);
-
-		// TODO: submitting state not implemented fully
 
 		try {
 			const saveMethod = workoutId ? "PATCH" : "POST";
@@ -89,9 +107,10 @@ export default function WorkoutForm({
 			}
 		} catch (err) {
 			console.error("Failed to submit workout", err);
+		} finally {
+			setSubmitting(false);
+			router.push("/workouts");
 		}
-
-		setSubmitting(false);
 	};
 
 	return (
@@ -109,12 +128,12 @@ export default function WorkoutForm({
 					form="workout-form"
 					disabled={submitting}
 					size="sm">
-					Done
+					{submitting ? "Saving" : "Done"}
 				</Button>
 			</div>
 
 			{/* Workout Name */}
-			<div className="flex flex-col gap-1 pl-4 pr-4 pb-4 border-b bg-input/50 dark:backdrop-blur-xs">
+			<section className="flex flex-col gap-1 pl-4 pr-4 pb-4 border-b bg-input/50 dark:backdrop-blur-xs">
 				<Input
 					autoFocus
 					placeholder="Workout Name"
@@ -129,7 +148,7 @@ export default function WorkoutForm({
 					</span>
 					<span className="text-sm">0:42</span>
 				</div>
-			</div>
+			</section>
 
 			{/* Exercise Form */}
 			<form
@@ -139,6 +158,9 @@ export default function WorkoutForm({
 				{workoutData.exercises.map((exerciseData, index) => (
 					<ExerciseForm
 						key={exerciseData.id}
+						ref={(ExerciseForm) => {
+							exerciseRefs.current[exerciseData.id] = ExerciseForm;
+						}}
 						className="snap-start min-h-full h-full"
 						exerciseData={exerciseData}
 						setExerciseData={(updaterFn: (prev: Exercise) => Exercise) => {
