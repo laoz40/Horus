@@ -121,7 +121,7 @@ export default function WorkoutForm({
 					variant="secondary"
 					asChild
 					size="sm">
-					<Link href="/">Back</Link>
+					<Link href={workoutId ? "/workouts" : "/"}>Back</Link>
 				</Button>
 				<Button
 					type="submit"
