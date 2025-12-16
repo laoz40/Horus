@@ -24,7 +24,10 @@ const ExerciseCollapsibles = ({
 }: ExerciseCollapsiblesProps) => {
 	return (
 		<div className="w-full max-w-full">
-			<DifficultySlider />
+			<DifficultySlider
+				exerciseData={exerciseData}
+				setExerciseData={setExerciseData}
+			/>
 			<ExerciseNotes
 				exerciseData={exerciseData}
 				setExerciseData={setExerciseData}
@@ -33,8 +36,15 @@ const ExerciseCollapsibles = ({
 	);
 };
 
-export function DifficultySlider() {
+function DifficultySlider({
+	exerciseData,
+	setExerciseData,
+}: ExerciseCollapsiblesProps) {
 	const difficultyOptions = ["Too Easy", " ", "Standard", " ", "Nightmare"];
+
+	const handleDifficultyUpdate = (value: number[]) => {
+		setExerciseData((prev) => ({ ...prev, difficulty: Number(value) }));
+	};
 
 	return (
 		<CollapsibleFilter
@@ -45,6 +55,12 @@ export function DifficultySlider() {
 					defaultValue={[2]}
 					max={4}
 					step={1}
+					value={
+						exerciseData.difficulty !== null
+							? [exerciseData.difficulty]
+							: undefined
+					}
+					onValueChange={handleDifficultyUpdate}
 				/>
 				<div className="flex flex-row items-center justify-between text-muted-foreground text-xs">
 					{difficultyOptions.map((difficulty, index) => (
