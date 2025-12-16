@@ -7,20 +7,34 @@ import {
 } from "@/components/ui/collapsible";
 import { Slider } from "@/components/ui/slider";
 import { BicepsFlexed, ChevronDown, LucideIcon, Notebook } from "lucide-react";
-import { Activity, ReactNode, useState } from "react";
+import { Activity, ChangeEvent, ReactNode, useState } from "react";
 import { Textarea } from "./ui/textarea";
+import { ExerciseFormData } from "@/lib/types";
 
-const ExerciseCollapsibles = () => {
+interface ExerciseCollapsiblesProps {
+	exerciseData: ExerciseFormData;
+	setExerciseData: (
+		updaterFn: (prev: ExerciseFormData) => ExerciseFormData,
+	) => void;
+}
+
+const ExerciseCollapsibles = ({
+	exerciseData,
+	setExerciseData,
+}: ExerciseCollapsiblesProps) => {
 	return (
 		<div className="w-full max-w-full">
 			<DifficultySlider />
-			<ExerciseNotes />
+			<ExerciseNotes
+				exerciseData={exerciseData}
+				setExerciseData={setExerciseData}
+			/>
 		</div>
 	);
 };
 
 export function DifficultySlider() {
-	const difficultyOptions = ["Too Easy", "", "Challenging", "", "Nightmare"];
+	const difficultyOptions = ["Too Easy", " ", "Standard", " ", "Nightmare"];
 
 	return (
 		<CollapsibleFilter
@@ -28,11 +42,11 @@ export function DifficultySlider() {
 			icon={BicepsFlexed}>
 			<div className="flex flex-col w-full max-w-sm gap-3">
 				<Slider
-					defaultValue={[0]}
+					defaultValue={[2]}
 					max={4}
 					step={1}
 				/>
-				<div className="grid grid-cols-5 items-center justify-between text-muted-foreground text-xs">
+				<div className="flex flex-row items-center justify-between text-muted-foreground text-xs">
 					{difficultyOptions.map((difficulty, index) => (
 						<span key={index}>{difficulty}</span>
 					))}
@@ -42,12 +56,23 @@ export function DifficultySlider() {
 	);
 }
 
-function ExerciseNotes() {
+function ExerciseNotes({
+	exerciseData,
+	setExerciseData,
+}: ExerciseCollapsiblesProps) {
+	const handleNotesUpdate = (input: ChangeEvent<HTMLTextAreaElement>) => {
+		setExerciseData((prev) => ({ ...prev, notes: input.target.value }));
+	};
+
 	return (
 		<CollapsibleFilter
 			title="Notes"
 			icon={Notebook}>
-			<Textarea placeholder="Write a note..." />
+			<Textarea
+				placeholder="Write a note..."
+				value={exerciseData.notes ?? ""}
+				onChange={handleNotesUpdate}
+			/>
 		</CollapsibleFilter>
 	);
 }

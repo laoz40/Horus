@@ -29,10 +29,12 @@ export default async function EditWorkoutPage({
 	function convertDbToFormData(workout: WorkoutWithRelations): WorkoutFormData {
 		return {
 			name: workout.name,
-			exercises: workout.exercises.map((ex) => ({
-				id: ex.id,
-				name: ex.name,
-				sets: ex.sets.map((set) => ({
+			exercises: workout.exercises.map((exercise) => ({
+				id: exercise.id,
+				name: exercise.name,
+				difficulty: exercise.difficulty,
+				notes: exercise.notes,
+				sets: exercise.sets.map((set) => ({
 					id: set.id,
 					weight: String(set.weight),
 					reps: String(set.reps),
@@ -42,6 +44,7 @@ export default async function EditWorkoutPage({
 	}
 
 	const formData = convertDbToFormData(getUniqueWorkout);
+	console.log(formData)
 
 	return (
 		<>

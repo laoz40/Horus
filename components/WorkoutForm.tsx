@@ -8,21 +8,23 @@ import {
 	useState,
 	type ReactElement,
 } from "react";
-import ExerciseForm, { Exercise } from "./ExerciseForm";
+import ExerciseForm from "./ExerciseForm";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { currentDateFull } from "@/lib/date";
-import { WorkoutFormData } from "@/lib/types";
+import { ExerciseFormData, WorkoutFormData } from "@/lib/types";
 import { useRouter } from "next/navigation";
 
 // TODO: add duration timer
 
-const newWorkoutObject = {
+const newWorkoutObject: WorkoutFormData = {
 	name: "",
 	exercises: [
 		{
 			id: crypto.randomUUID(),
 			name: "",
+			difficulty: null,
+			notes: "",
 			sets: [
 				{
 					id: crypto.randomUUID(),
@@ -51,6 +53,8 @@ export default function WorkoutForm({
 		const newExercise = {
 			id: crypto.randomUUID(),
 			name: "",
+			difficulty: null,
+			notes: "",
 			sets: [
 				{
 					id: crypto.randomUUID(),
@@ -163,7 +167,7 @@ export default function WorkoutForm({
 						}}
 						className="snap-start min-h-full h-full"
 						exerciseData={exerciseData}
-						setExerciseData={(updaterFn: (prev: Exercise) => Exercise) => {
+						setExerciseData={(updaterFn: (prev: ExerciseFormData) => ExerciseFormData) => {
 							setWorkoutData((prev) => {
 								const exercises = [...prev.exercises];
 								exercises[index] = updaterFn(exercises[index]);
