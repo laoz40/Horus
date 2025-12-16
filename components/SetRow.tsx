@@ -1,13 +1,13 @@
 import { ChangeEvent, type ReactElement } from "react";
 import { Checkbox } from "./ui/checkbox";
 import NumberInput from "./NumberInput";
-import { Exercise } from "./ExerciseForm";
+import { ExerciseFormData } from "@/lib/types";
 
 interface SetRowProps {
 	key: string;
 	index: number;
 	set: { weight: string; reps: string };
-	setExerciseData: (updaterFn: (prev: Exercise) => Exercise) => void;
+	setExerciseData: (updaterFn: (prev: ExerciseFormData) => ExerciseFormData) => void;
 }
 
 export default function SetRow({

@@ -4,26 +4,13 @@ export type WorkoutWithRelations = PrismaWorkout & {
 	exercises: (Exercise & { sets: Set[] })[];
 };
 
-export type SetInput = {
-	weight: number;
-	reps: number;
-};
-
-export type ExerciseInput = {
-	name: string;
-	sets: SetInput[];
-};
-
-export type WorkoutInput = {
-	name: string;
-	exercises: ExerciseInput[];
-};
-
 export type WorkoutFormData = {
 	name: string;
 	exercises: {
 		id: string;
 		name: string;
+		difficulty: number | null;
+		notes: string | null;
 		sets: {
 			id: string;
 			weight: string;
@@ -31,3 +18,15 @@ export type WorkoutFormData = {
 		}[];
 	}[];
 };
+
+export interface ExerciseFormData {
+	name: string;
+	sets: {
+		weight: string;
+		reps: string;
+		id: string;
+	}[];
+	difficulty: number | null;
+	notes: string | null;
+	id: string;
+}

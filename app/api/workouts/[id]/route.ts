@@ -1,5 +1,5 @@
 import { db } from "@/lib/prisma";
-import { WorkoutInput } from "@/lib/types";
+import { WorkoutFormData } from "@/lib/types";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
@@ -7,7 +7,7 @@ export async function PATCH(
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
-	const editedWorkout: WorkoutInput = await request.json();
+	const editedWorkout: WorkoutFormData = await request.json();
 
 	const updatedWorkout = await db.workout.update({
 		where: { id: id },
@@ -19,6 +19,8 @@ export async function PATCH(
 				// recreate workout with updated exercises
 				create: editedWorkout.exercises.map((exercise) => ({
 					name: exercise.name,
+					difficulty: exercise.difficulty ?? null,
+					notes: exercise.notes ?? null,
 					sets: {
 						create: exercise.sets.map((set) => ({
 							weight: Number(set.weight),

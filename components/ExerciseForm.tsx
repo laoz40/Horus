@@ -6,23 +6,12 @@ import { Input } from "./ui/input";
 import { History } from "lucide-react";
 import SetRow from "./SetRow";
 import { cn } from "@/lib/utils";
-
-export interface Exercise {
-	name: string;
-	sets: {
-		weight: string;
-		reps: string;
-		id: string;
-	}[];
-	difficulty?: number;
-	notes?: string;
-	id: string;
-}
+import { ExerciseFormData } from "@/lib/types";
 
 export interface ExerciseFormProps
 	extends React.HTMLAttributes<HTMLDivElement> {
-	exerciseData: Exercise;
-	setExerciseData: (updaterFn: (prev: Exercise) => Exercise) => void;
+	exerciseData: ExerciseFormData;
+	setExerciseData: (updaterFn: (prev: ExerciseFormData) => ExerciseFormData) => void;
 }
 
 const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
@@ -59,7 +48,6 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				</div>
 
 				{/* Set Rows */}
-				{/* TODO: make adding set or exercise scroll down to show newest */}
 				<div className="flex flex-col overflow-y-auto no-scrollbar grow gap-3">
 					<div className="flex flex-col pl-3 gap-3">
 						{exerciseData.sets.map((set, index) => (
@@ -81,7 +69,9 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				</div>
 
 				{/* Difficulty and Notes */}
-				<ExerciseCollapsibles />
+				<ExerciseCollapsibles 
+					exerciseData={exerciseData}
+					setExerciseData={setExerciseData} />
 			</section>
 		);
 	},
