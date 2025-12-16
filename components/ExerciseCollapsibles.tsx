@@ -42,6 +42,12 @@ function DifficultySlider({
 }: ExerciseCollapsiblesProps) {
 	const difficultyOptions = ["Too Easy", " ", "Standard", " ", "Nightmare"];
 
+	const initialiseDifficultyValue = (openState: boolean) => {
+		if (openState && exerciseData.difficulty === null) {
+			setExerciseData((prev) => ({ ...prev, difficulty: 2 }));
+		}
+	};
+
 	const handleDifficultyUpdate = (value: number[]) => {
 		setExerciseData((prev) => ({ ...prev, difficulty: Number(value) }));
 	};
@@ -49,10 +55,10 @@ function DifficultySlider({
 	return (
 		<CollapsibleFilter
 			title="Difficulty"
-			icon={BicepsFlexed}>
+			icon={BicepsFlexed}
+			onOpenChange={initialiseDifficultyValue}>
 			<div className="flex flex-col w-full max-w-sm gap-3">
 				<Slider
-					defaultValue={[2]}
 					max={4}
 					step={1}
 					value={
@@ -97,17 +103,24 @@ const CollapsibleFilter = ({
 	title,
 	icon: Icon,
 	children,
+	onOpenChange,
 }: {
 	title: string;
 	icon?: LucideIcon;
 	children: ReactNode;
+	onOpenChange?: (open: boolean) => void;
 }) => {
 	const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false);
 
+	const handleOpenChange = (openState: boolean) => {
+		setIsCollapsibleOpen(openState);
+		// if onOpenChange is passed down, call the function: initialiseDifficultyValue
+		onOpenChange?.(openState);
+	};
 	return (
 		<Collapsible
 			open={isCollapsibleOpen}
-			onOpenChange={setIsCollapsibleOpen}>
+			onOpenChange={handleOpenChange}>
 			<CollapsibleTrigger className="group flex w-full items-center justify-between py-3">
 				<h3 className="flex items-center gap-2 text-sm leading-none font-semibold text-muted-foreground">
 					{!!Icon && <Icon className="h-5 w-5 text-muted-foreground" />} {title}
