@@ -6,6 +6,7 @@ export type WorkoutWithRelations = PrismaWorkout & {
 
 export type WorkoutFormData = {
 	name: string;
+	durationSeconds: number | null;
 	exercises: {
 		id: string;
 		name: string;

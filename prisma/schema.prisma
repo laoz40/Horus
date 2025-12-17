@@ -8,10 +8,11 @@ datasource db {
 }
 
 model Workout {
-  id         String     @id @default(cuid())
-  name       String
-  createdAt  DateTime   @default(now())
-  exercises  Exercise[]
+  id							String     @id @default(cuid())
+  name						String
+  createdAt				DateTime   @default(now())
+	durationSeconds Int?
+  exercises				Exercise[]
 }
 
 model Exercise {

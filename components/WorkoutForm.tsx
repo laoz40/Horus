@@ -11,19 +11,18 @@ import {
 import ExerciseForm from "./ExerciseForm";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { currentDateFull } from "@/lib/date";
 import { ExerciseFormData, WorkoutFormData } from "@/lib/types";
 import { useRouter } from "next/navigation";
-
-// TODO: add duration timer
+import { formatDurationFull } from "@/lib/time";
 
 const newWorkoutObject: WorkoutFormData = {
 	name: "",
+	durationSeconds: 0,
 	exercises: [
 		{
 			id: crypto.randomUUID(),
 			name: "",
-			difficulty: null,
+			difficulty: 0,
 			notes: "",
 			sets: [
 				{
@@ -49,6 +48,23 @@ export default function WorkoutForm({
 		initialData ? initialData : newWorkoutObject,
 	);
 
+	// -----
+
+	const [durationSeconds, setDurationSeconds] = useState(0);
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setDurationSeconds((prev) => prev + 1);
+		}, 1000);
+
+		return () => {
+			clearInterval(interval);
+		};
+	}, []);
+
+
+	// -----
+
 	const handleAddExercise = () => {
 		const newExercise = {
 			id: crypto.randomUUID(),
@@ -72,6 +88,8 @@ export default function WorkoutForm({
 		setScrollTargetId(newExercise.id);
 	};
 
+	// -----
+
 	const [scrollTargetId, setScrollTargetId] = useState<string | null>(null);
 	// attach each exercise form div to the exercise id
 	const exerciseRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -85,11 +103,19 @@ export default function WorkoutForm({
 		setScrollTargetId(null);
 	}, [scrollTargetId]);
 
+	// -----
+
 	const [submitting, setSubmitting] = useState(false);
 	const router = useRouter();
+
 	const handleSubmit = async (form: FormEvent) => {
 		form.preventDefault();
 		setSubmitting(true);
+
+	const payload= {
+		...workoutData,
+		durationSeconds,
+	};
 
 		try {
 			const saveMethod = workoutId ? "PATCH" : "POST";
@@ -98,7 +124,7 @@ export default function WorkoutForm({
 			const saveWorkout = await fetch(apiUrl, {
 				method: saveMethod,
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(workoutData),
+				body: JSON.stringify(payload),
 			});
 
 			const result = await saveWorkout.json();
@@ -120,13 +146,14 @@ export default function WorkoutForm({
 	return (
 		<div className="flex flex-col h-svh">
 			{/* Top Actions */}
-			<div className="flex flex-row justify-between p-4 bg-input/50 dark:backdrop-blur-xs">
+			<div className="flex flex-row justify-between items-center p-4 bg-input/50 dark:backdrop-blur-xs">
 				<Button
 					variant="secondary"
 					asChild
 					size="sm">
 					<Link href={workoutId ? "/workouts" : "/"}>Back</Link>
 				</Button>
+				<span>{formatDurationFull(durationSeconds)}</span>
 				<Button
 					type="submit"
 					form="workout-form"
@@ -146,12 +173,6 @@ export default function WorkoutForm({
 						setWorkoutData((prev) => ({ ...prev, name: input.target.value }))
 					}
 				/>
-				<div className="flex flex-row justify-between pl-3 pr-3">
-					<span className="text-muted-foreground text-sm">
-						{currentDateFull}
-					</span>
-					<span className="text-sm">0:42</span>
-				</div>
 			</section>
 
 			{/* Exercise Form */}
@@ -167,7 +188,9 @@ export default function WorkoutForm({
 						}}
 						className="snap-start min-h-full h-full"
 						exerciseData={exerciseData}
-						setExerciseData={(updaterFn: (prev: ExerciseFormData) => ExerciseFormData) => {
+						setExerciseData={(
+							updaterFn: (prev: ExerciseFormData) => ExerciseFormData,
+						) => {
 							setWorkoutData((prev) => {
 								const exercises = [...prev.exercises];
 								exercises[index] = updaterFn(exercises[index]);

@@ -29,6 +29,7 @@ export default async function EditWorkoutPage({
 	function convertDbToFormData(workout: WorkoutWithRelations): WorkoutFormData {
 		return {
 			name: workout.name,
+			durationSeconds: workout.durationSeconds,
 			exercises: workout.exercises.map((exercise) => ({
 				id: exercise.id,
 				name: exercise.name,

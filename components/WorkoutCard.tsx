@@ -71,7 +71,7 @@ export default function WorkoutCard({
 					</div>
 				</div>
 
-				<WorkoutCardStats pr={pr} />
+				<WorkoutCardStats pr={pr} duration={workout.durationSeconds ?? 0} />
 			</Card>
 		</>
 	);

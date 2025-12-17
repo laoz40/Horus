@@ -27,6 +27,7 @@ export async function POST(request: Request) {
 	const postWorkout = await db.workout.create({
 		data: {
 			name: newWorkout.name,
+			durationSeconds: newWorkout.durationSeconds,
 			exercises: {
 				create: newWorkout.exercises.map((exercise) => ({
 					name: exercise.name,
