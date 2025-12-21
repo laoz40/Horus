@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { WorkoutFormData } from "@/lib/types";
 import { db } from "@/lib/prisma";
+import { parseWorkout } from "@/lib/parseWorkout";
+import { currentDay } from "@/lib/date";
 
 // NOTE: currently unused, will be used later when i implement sorting/filtering?
 export async function GET() {
@@ -22,21 +24,23 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-	const newWorkout: WorkoutFormData = await request.json();
+	const rawWorkout: WorkoutFormData = await request.json();
+
+	const parsedWorkout = parseWorkout(rawWorkout)
 
 	const postWorkout = await db.workout.create({
 		data: {
-			name: newWorkout.name,
-			durationSeconds: newWorkout.durationSeconds,
+			name: parsedWorkout.name || `${currentDay} Workout`,
+			durationSeconds: parsedWorkout.durationSeconds,
 			exercises: {
-				create: newWorkout.exercises.map((exercise) => ({
+				create: parsedWorkout.exercises.map((exercise) => ({
 					name: exercise.name,
 					difficulty: exercise.difficulty ?? null,
 					notes: exercise.notes ?? null,
 					sets: {
 						create: exercise.sets.map((set) => ({
-							weight: Number(set.weight),
-							reps: Number(set.reps),
+							weight: set.weight,
+							reps: set.reps,
 						})),
 					},
 				})),

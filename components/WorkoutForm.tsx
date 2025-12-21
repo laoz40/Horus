@@ -14,6 +14,7 @@ import { Input } from "./ui/input";
 import { ExerciseFormData, WorkoutFormData } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { formatDurationFull } from "@/lib/time";
+import { currentDay } from "@/lib/date";
 
 const newWorkoutObject: WorkoutFormData = {
 	name: "",
@@ -164,10 +165,11 @@ export default function WorkoutForm({
 			</div>
 
 			{/* Workout Name */}
+			{/* NOTE: maybe only ask for name in a modal done button is clicked */}
 			<section className="flex flex-col gap-1 pl-4 pr-4 pb-4 border-b bg-input/50 dark:backdrop-blur-xs">
 				<Input
 					autoFocus
-					placeholder="Workout Name"
+					placeholder={`${currentDay} Workout`}
 					value={workoutData.name}
 					onChange={(input) =>
 						setWorkoutData((prev) => ({ ...prev, name: input.target.value }))
