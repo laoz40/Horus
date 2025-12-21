@@ -1,8 +1,10 @@
-import { ParsedWorkout, WorkoutFormData } from "./types";
+import { currentDay } from "./date";
+import { WorkoutFormData } from "./types";
+import { Workout } from "./validateWorkout";
 
-export const parseWorkout = (workout: WorkoutFormData): ParsedWorkout => {
+export const parseWorkout = (workout: WorkoutFormData): Workout => {
 	return {
-		name: workout.name.trim(),
+		name: workout.name.trim() || `${currentDay} Workout`,
 		durationSeconds: workout.durationSeconds,
 		exercises: workout.exercises.map((exercise) => ({
 			id: exercise.id,

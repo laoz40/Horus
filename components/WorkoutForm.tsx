@@ -63,7 +63,6 @@ export default function WorkoutForm({
 		};
 	}, []);
 
-
 	// -----
 
 	const handleAddExercise = () => {
@@ -113,10 +112,10 @@ export default function WorkoutForm({
 		form.preventDefault();
 		setSubmitting(true);
 
-	const payload= {
-		...workoutData,
-		durationSeconds,
-	};
+		const payload = {
+			...workoutData,
+			durationSeconds,
+		};
 
 		try {
 			const saveMethod = workoutId ? "PATCH" : "POST";
@@ -130,17 +129,17 @@ export default function WorkoutForm({
 
 			const result = await saveWorkout.json();
 			if (result.success) {
+				router.push("/workouts");
 				// reset form
 				setWorkoutData(newWorkoutObject);
-				console.log("Workout saved", result.workout);
+				console.log("Success", result);
 			} else {
 				console.error("Unsuccessful", result);
 			}
-		} catch (err) {
-			console.error("Failed to submit workout", err);
+		} catch (error) {
+			console.error("Failed to submit workout", error);
 		} finally {
 			setSubmitting(false);
-			router.push("/workouts");
 		}
 	};
 

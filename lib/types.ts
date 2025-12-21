@@ -23,23 +23,3 @@ export interface WorkoutFormData {
     durationSeconds: number | null;
     exercises: ExerciseFormData[];
 }
-
-export interface ParsedSet {
-    id: string;
-    weight: number;
-    reps: number;
-}
-
-export interface ParsedExercise {
-    id: string;
-    name: string;
-    difficulty: number | null;
-    notes: string | null;
-    sets: ParsedSet[];
-}
-
-export interface ParsedWorkout {
-    name: string;
-    durationSeconds: number | null;
-    exercises: ParsedExercise[];
-}

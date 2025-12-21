@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { WorkoutFormData } from "@/lib/types";
 import { db } from "@/lib/prisma";
 import { parseWorkout } from "@/lib/parseWorkout";
-import { currentDay } from "@/lib/date";
+import { validateWorkout } from "@/lib/validateWorkout";
 
 // NOTE: currently unused, will be used later when i implement sorting/filtering?
 export async function GET() {
@@ -25,15 +25,24 @@ export async function GET() {
 
 export async function POST(request: Request) {
 	const rawWorkout: WorkoutFormData = await request.json();
+	const parsedWorkout = parseWorkout(rawWorkout);
+	const validationResult = validateWorkout(parsedWorkout);
 
-	const parsedWorkout = parseWorkout(rawWorkout)
+	if (!validationResult.success) {
+		return NextResponse.json({
+			success: false,
+			errors: validationResult.error,
+		});
+	}
 
-	const postWorkout = await db.workout.create({
+	const validWorkout = validationResult.data
+
+	await db.workout.create({
 		data: {
-			name: parsedWorkout.name || `${currentDay} Workout`,
-			durationSeconds: parsedWorkout.durationSeconds,
+			name: validWorkout.name,
+			durationSeconds: validWorkout.durationSeconds,
 			exercises: {
-				create: parsedWorkout.exercises.map((exercise) => ({
+				create: validWorkout.exercises.map((exercise) => ({
 					name: exercise.name,
 					difficulty: exercise.difficulty ?? null,
 					notes: exercise.notes ?? null,
@@ -53,7 +62,10 @@ export async function POST(request: Request) {
 		},
 	});
 
-	return NextResponse.json({ success: true, workout: postWorkout });
+	return NextResponse.json({
+		success: true,
+		workout: validWorkout,
+	});
 }
 
 export async function DELETE() {
