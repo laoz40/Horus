@@ -1,5 +1,7 @@
+import { parseWorkout } from "@/lib/parseWorkout";
 import { db } from "@/lib/prisma";
 import { WorkoutFormData } from "@/lib/types";
+import { validateWorkout } from "@/lib/validateWorkout";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
@@ -7,17 +9,29 @@ export async function PATCH(
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
-	const editedWorkout: WorkoutFormData = await request.json();
+	const rawWorkout: WorkoutFormData = await request.json();
+	const parsedWorkout = parseWorkout(rawWorkout);
+	const validationResult = validateWorkout(parsedWorkout);
 
-	const updatedWorkout = await db.workout.update({
+	if (!validationResult.success) {
+		return NextResponse.json({
+			success: false,
+			errors: validationResult.error,
+		});
+	}
+
+	const validWorkout = validationResult.data;
+
+	// NOTE: this might be incorrect/inefficient
+	await db.workout.update({
 		where: { id: id },
 		data: {
-			name: editedWorkout.name,
+			name: validWorkout.name,
 			exercises: {
 				// delete existing exercises
 				deleteMany: {},
 				// recreate workout with updated exercises
-				create: editedWorkout.exercises.map((exercise) => ({
+				create: validWorkout.exercises.map((exercise) => ({
 					name: exercise.name,
 					difficulty: exercise.difficulty ?? null,
 					notes: exercise.notes ?? null,
@@ -33,7 +47,10 @@ export async function PATCH(
 		include: { exercises: { include: { sets: true } } },
 	});
 
-	return NextResponse.json({ success: true, workout: updatedWorkout });
+	return NextResponse.json({
+		success: true,
+		workout: validWorkout,
+	});
 }
 
 export async function DELETE(
