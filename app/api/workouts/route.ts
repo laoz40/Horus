@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { WorkoutFormData } from "@/lib/types";
 import { db } from "@/lib/prisma";
-import { normalizeExerciseName, parseCreatedWorkout } from "@/lib/parseWorkout";
+import { normalizeExerciseName, parseWorkout } from "@/lib/parseWorkout";
 import { Exercise, validateWorkout } from "@/lib/validateWorkout";
 
 // NOTE: currently unused, will be used later when i implement sorting/filtering?
@@ -25,7 +25,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
 	const rawWorkout: WorkoutFormData = await request.json();
-	const parsedWorkout = parseCreatedWorkout(rawWorkout);
+	const parsedWorkout = parseWorkout(rawWorkout);
 	const validationResult = validateWorkout(parsedWorkout);
 
 	if (!validationResult.success) {

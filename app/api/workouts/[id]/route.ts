@@ -1,17 +1,16 @@
-import { parseUpdatedWorkout } from "@/lib/parseWorkout";
+import { normalizeExerciseName, parseWorkout } from "@/lib/parseWorkout";
 import { db } from "@/lib/prisma";
 import { WorkoutFormData } from "@/lib/types";
 import { Exercise, validateWorkout } from "@/lib/validateWorkout";
 import { NextResponse } from "next/server";
 
-// FIX: doesn't work for created exercises
 export async function PATCH(
 	request: Request,
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
 	const rawWorkout: WorkoutFormData = await request.json();
-	const parsedWorkout = parseUpdatedWorkout(rawWorkout);
+	const parsedWorkout = parseWorkout(rawWorkout);
 
 	const validationResult = validateWorkout(parsedWorkout);
 
@@ -24,17 +23,39 @@ export async function PATCH(
 
 	const validWorkout = validationResult.data;
 
-	const getGlobalExerciseId = async (
-		exercise: Exercise,
-	): Promise<string> => {
+	const getGlobalExerciseId = async (exercise: Exercise): Promise<string> => {
+		// if existing exercise selected, return id
 		if (exercise.exercise.exerciseId) {
 			return exercise.exercise.exerciseId;
 		}
 
-		throw new Error("exerciseId missing");
+		// if custom input
+		if (exercise.exercise.newExerciseName) {
+			const normalizedName = normalizeExerciseName(
+				exercise.exercise.newExerciseName,
+			);
+			const existingExercise = await db.globalExercise.findUnique({
+				where: { normalizedName },
+			});
+
+			// check if it already exists, return id
+			if (existingExercise) {
+				return existingExercise.id;
+			}
+
+			// else create new global exercise
+			const createNew = await db.globalExercise.create({
+				data: {
+					name: exercise.exercise.newExerciseName,
+					normalizedName,
+				},
+			});
+			return createNew.id;
+		}
+		throw new Error("exerciseId or newExerciseName missing");
 	};
 
-	const mapExercises = await Promise.all(
+	const exercisesToUpdate = await Promise.all(
 		validWorkout.exercises.map(async (exercise) => {
 			const globalExerciseId = await getGlobalExerciseId(exercise);
 
@@ -48,19 +69,16 @@ export async function PATCH(
 		}),
 	);
 
-	const exercisesToUpdate = mapExercises.filter((exercise) => exercise.id);
-	const exercisesToCreate = mapExercises.filter((exercise) => !exercise.id);
-
+	// NOTE: need to make it remove deleted exercises once that feature is in
 	await db.workout.update({
 		where: { id: id },
 		data: {
 			name: validWorkout.name,
 			exercises: {
-				// update only existing exercises (have ids)
-				update: exercisesToUpdate
-					.map((exercise) => ({
-						where: { id: exercise.id },
-						data: {
+				upsert: exercisesToUpdate.map((exercise) => ({
+					where: { id: exercise.id },
+					// update only existing exercises (have ids)
+					update: {
 							globalExercise: { connect: { id: exercise.globalExerciseId } },
 							difficulty: exercise.difficulty ?? null,
 							notes: exercise.notes ?? null,
@@ -70,12 +88,10 @@ export async function PATCH(
 									weight: Number(set.weight),
 									reps: Number(set.reps),
 								})),
-							},
 						},
-					})),
-				// create the new exercises that don't have ids
-				create: exercisesToCreate
-					.map((exercise) => ({
+					},
+					// create the new exercises that don't have ids
+					create: {
 						globalExercise: { connect: { id: exercise.globalExerciseId } },
 						difficulty: exercise.difficulty ?? null,
 						notes: exercise.notes ?? null,
@@ -85,7 +101,8 @@ export async function PATCH(
 								reps: Number(set.reps),
 							})),
 						},
-					})),
+					},
+				})),
 			},
 		},
 		include: { exercises: { include: { sets: true } } },

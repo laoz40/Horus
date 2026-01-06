@@ -1,6 +1,6 @@
 import { db } from "@/lib/prisma";
 import WorkoutForm from "@/components/WorkoutForm";
-import { WorkoutFormData, WorkoutDbData } from "@/lib/types";
+import { convertDbToFormData } from "@/lib/parseWorkout";
 
 export default async function EditWorkoutPage({
 	params,
@@ -25,28 +25,6 @@ export default async function EditWorkoutPage({
 
 	if (!getUniqueWorkout) {
 		return <h1>Workout Not Found</h1>;
-	}
-
-	// TODO: move this function somewhere
-	function convertDbToFormData(workout: WorkoutDbData): WorkoutFormData {
-		return {
-			name: workout.name,
-			durationSeconds: workout.durationSeconds,
-			exercises: workout.exercises.map((exercise) => ({
-				id: exercise.id,
-				name: exercise.globalExercise.name,
-				exercise: {
-					exerciseId: exercise.globalExerciseId,
-				},
-				difficulty: exercise.difficulty,
-				notes: exercise.notes,
-				sets: exercise.sets.map((set) => ({
-					id: set.id,
-					weight: String(set.weight),
-					reps: String(set.reps),
-				})),
-			})),
-		};
 	}
 
 	const formData = convertDbToFormData(getUniqueWorkout);

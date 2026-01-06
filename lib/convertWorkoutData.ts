@@ -1,9 +1,8 @@
 import { currentDay } from "./date";
-import { WorkoutFormData } from "./types";
+import { WorkoutDbData, WorkoutFormData } from "./types";
 import { Workout } from "./validateWorkout";
 
-// TODO: refactor to reduce repeated code
-export const parseCreatedWorkout = (workout: WorkoutFormData): Workout=> {
+export const parseWorkout = (workout: WorkoutFormData): Workout => {
 	return {
 		name: workout.name.trim() || `${currentDay} Workout`,
 		durationSeconds: workout.durationSeconds,
@@ -24,26 +23,29 @@ export const parseCreatedWorkout = (workout: WorkoutFormData): Workout=> {
 	};
 };
 
-export const parseUpdatedWorkout = (workout: WorkoutFormData): Workout=> {
+export const normalizeExerciseName = (name: string) => {
+	return name.trim().replace(/\s+/g, " ").toLowerCase();
+};
+
+export const convertDbToFormData = (
+	workout: WorkoutDbData,
+): WorkoutFormData => {
 	return {
-		name: workout.name.trim() || `${currentDay} Workout`,
+		name: workout.name,
 		durationSeconds: workout.durationSeconds,
 		exercises: workout.exercises.map((exercise) => ({
 			id: exercise.id,
+			name: exercise.globalExercise.name,
 			exercise: {
-				exerciseId: exercise.exercise.exerciseId,
+				exerciseId: exercise.globalExerciseId,
 			},
 			difficulty: exercise.difficulty,
-			notes: (exercise.notes ?? "").trim(),
+			notes: exercise.notes,
 			sets: exercise.sets.map((set) => ({
-				id: set.id ?? crypto.randomUUID(),
-				weight: Number(set.weight),
-				reps: Number(set.reps),
+				id: set.id,
+				weight: String(set.weight),
+				reps: String(set.reps),
 			})),
 		})),
 	};
-};
-
-export const normalizeExerciseName = (name: string) => {
-	return name.trim().replace(/\s+/g, " ").toLowerCase();
 };
