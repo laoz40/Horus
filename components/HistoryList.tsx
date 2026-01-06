@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import WorkoutCard from "@/components/WorkoutCard";
-import { WorkoutWithRelations } from "@/lib/types";
+import { WorkoutDbData } from "@/lib/types";
 
 export default function HistoryList({
 	workouts: workouts,
 }: {
-	workouts: WorkoutWithRelations[];
+	workouts: WorkoutDbData[];
 }) {
 	const [localWorkouts, setLocalWorkouts] = useState(workouts);
 

@@ -23,6 +23,10 @@ const newWorkoutObject: WorkoutFormData = {
 		{
 			id: crypto.randomUUID(),
 			name: "",
+			exercise: {
+				exerciseId: undefined,
+				newExerciseName: "",
+			},
 			difficulty: 0,
 			notes: "",
 			sets: [
@@ -69,6 +73,10 @@ export default function WorkoutForm({
 		const newExercise = {
 			id: crypto.randomUUID(),
 			name: "",
+			exercise: {
+				exerciseId: undefined,
+				newExerciseName: "",
+			},
 			difficulty: null,
 			notes: "",
 			sets: [

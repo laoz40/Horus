@@ -7,6 +7,7 @@ export default async function HistoryPage() {
 			exercises: {
 				include: {
 					sets: true,
+					globalExercise: true,
 				},
 			},
 		},

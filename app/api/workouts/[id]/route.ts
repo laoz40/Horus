@@ -1,16 +1,18 @@
-import { parseWorkout } from "@/lib/parseWorkout";
+import { parseUpdatedWorkout } from "@/lib/parseWorkout";
 import { db } from "@/lib/prisma";
 import { WorkoutFormData } from "@/lib/types";
-import { validateWorkout } from "@/lib/validateWorkout";
+import { Exercise, validateWorkout } from "@/lib/validateWorkout";
 import { NextResponse } from "next/server";
 
+// FIX: doesn't work for created exercises
 export async function PATCH(
 	request: Request,
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
 	const rawWorkout: WorkoutFormData = await request.json();
-	const parsedWorkout = parseWorkout(rawWorkout);
+	const parsedWorkout = parseUpdatedWorkout(rawWorkout);
+
 	const validationResult = validateWorkout(parsedWorkout);
 
 	if (!validationResult.success) {
@@ -22,26 +24,68 @@ export async function PATCH(
 
 	const validWorkout = validationResult.data;
 
-	// NOTE: this might be incorrect/inefficient
+	const getGlobalExerciseId = async (
+		exercise: Exercise,
+	): Promise<string> => {
+		if (exercise.exercise.exerciseId) {
+			return exercise.exercise.exerciseId;
+		}
+
+		throw new Error("exerciseId missing");
+	};
+
+	const mapExercises = await Promise.all(
+		validWorkout.exercises.map(async (exercise) => {
+			const globalExerciseId = await getGlobalExerciseId(exercise);
+
+			return {
+				id: exercise.id,
+				globalExerciseId,
+				difficulty: exercise.difficulty ?? null,
+				notes: exercise.notes ?? null,
+				sets: exercise.sets,
+			};
+		}),
+	);
+
+	const exercisesToUpdate = mapExercises.filter((exercise) => exercise.id);
+	const exercisesToCreate = mapExercises.filter((exercise) => !exercise.id);
+
 	await db.workout.update({
 		where: { id: id },
 		data: {
 			name: validWorkout.name,
 			exercises: {
-				// delete existing exercises
-				deleteMany: {},
-				// recreate workout with updated exercises
-				create: validWorkout.exercises.map((exercise) => ({
-					name: exercise.name,
-					difficulty: exercise.difficulty ?? null,
-					notes: exercise.notes ?? null,
-					sets: {
-						create: exercise.sets.map((set) => ({
-							weight: Number(set.weight),
-							reps: Number(set.reps),
-						})),
-					},
-				})),
+				// update only existing exercises (have ids)
+				update: exercisesToUpdate
+					.map((exercise) => ({
+						where: { id: exercise.id },
+						data: {
+							globalExercise: { connect: { id: exercise.globalExerciseId } },
+							difficulty: exercise.difficulty ?? null,
+							notes: exercise.notes ?? null,
+							sets: {
+								deleteMany: {},
+								create: exercise.sets.map((set) => ({
+									weight: Number(set.weight),
+									reps: Number(set.reps),
+								})),
+							},
+						},
+					})),
+				// create the new exercises that don't have ids
+				create: exercisesToCreate
+					.map((exercise) => ({
+						globalExercise: { connect: { id: exercise.globalExerciseId } },
+						difficulty: exercise.difficulty ?? null,
+						notes: exercise.notes ?? null,
+						sets: {
+							create: exercise.sets.map((set) => ({
+								weight: Number(set.weight),
+								reps: Number(set.reps),
+							})),
+						},
+					})),
 			},
 		},
 		include: { exercises: { include: { sets: true } } },

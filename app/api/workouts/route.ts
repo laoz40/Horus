@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { WorkoutFormData } from "@/lib/types";
 import { db } from "@/lib/prisma";
-import { parseWorkout } from "@/lib/parseWorkout";
-import { validateWorkout } from "@/lib/validateWorkout";
+import { normalizeExerciseName, parseCreatedWorkout } from "@/lib/parseWorkout";
+import { Exercise, validateWorkout } from "@/lib/validateWorkout";
 
 // NOTE: currently unused, will be used later when i implement sorting/filtering?
 export async function GET() {
@@ -25,7 +25,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
 	const rawWorkout: WorkoutFormData = await request.json();
-	const parsedWorkout = parseWorkout(rawWorkout);
+	const parsedWorkout = parseCreatedWorkout(rawWorkout);
 	const validationResult = validateWorkout(parsedWorkout);
 
 	if (!validationResult.success) {
@@ -35,15 +35,60 @@ export async function POST(request: Request) {
 		});
 	}
 
-	const validWorkout = validationResult.data
+	const validWorkout = validationResult.data;
+
+	const getGlobalExerciseId = async (exercise: Exercise): Promise<string> => {
+		// if existing exercise selected, return id
+		if (exercise.exercise.exerciseId) {
+			return exercise.exercise.exerciseId;
+		}
+
+		// if custom input
+		if (exercise.exercise.newExerciseName) {
+			const normalizedName = normalizeExerciseName(
+				exercise.exercise.newExerciseName,
+			);
+			const existingExercise = await db.globalExercise.findUnique({
+				where: { normalizedName },
+			});
+
+			// check if it already exists, return id
+			if (existingExercise) {
+				return existingExercise.id;
+			}
+
+			// else create new global exercise
+			const createNew = await db.globalExercise.create({
+				data: {
+					name: exercise.exercise.newExerciseName,
+					normalizedName,
+				},
+			});
+			return createNew.id;
+		}
+		throw new Error("exerciseId or newExerciseName missing");
+	};
+
+	const exercisesToCreate = await Promise.all(
+		validWorkout.exercises.map(async (exercise) => {
+			const globalExerciseId = await getGlobalExerciseId(exercise);
+
+			return {
+				globalExerciseId: globalExerciseId,
+				difficulty: exercise.difficulty ?? null,
+				notes: exercise.notes ?? null,
+				sets: exercise.sets,
+			};
+		}),
+	);
 
 	await db.workout.create({
 		data: {
 			name: validWorkout.name,
 			durationSeconds: validWorkout.durationSeconds,
 			exercises: {
-				create: validWorkout.exercises.map((exercise) => ({
-					name: exercise.name,
+				create: exercisesToCreate.map((exercise) => ({
+					globalExercise: { connect: { id: exercise.globalExerciseId } },
 					difficulty: exercise.difficulty ?? null,
 					notes: exercise.notes ?? null,
 					sets: {

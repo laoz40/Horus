@@ -11,13 +11,23 @@ import { ExerciseFormData } from "@/lib/types";
 export interface ExerciseFormProps
 	extends React.HTMLAttributes<HTMLDivElement> {
 	exerciseData: ExerciseFormData;
-	setExerciseData: (updaterFn: (prev: ExerciseFormData) => ExerciseFormData) => void;
+	setExerciseData: (
+		updaterFn: (prev: ExerciseFormData) => ExerciseFormData,
+	) => void;
 }
 
 const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 	({ exerciseData, setExerciseData, className }, ref) => {
 		const handleNameUpdate = (input: ChangeEvent<HTMLInputElement>) => {
-			setExerciseData((prev) => ({ ...prev, name: input.target.value }));
+			setExerciseData((prev) => ({
+				...prev,
+				name: input.target.value,
+				exercise: {
+					...prev,
+					exerciseId: undefined,
+					newExerciseName: input.target.value,
+				},
+			}));
 		};
 
 		const handleAddSet = () => {
@@ -69,9 +79,10 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				</div>
 
 				{/* Difficulty and Notes */}
-				<ExerciseCollapsibles 
+				<ExerciseCollapsibles
 					exerciseData={exerciseData}
-					setExerciseData={setExerciseData} />
+					setExerciseData={setExerciseData}
+				/>
 			</section>
 		);
 	},
