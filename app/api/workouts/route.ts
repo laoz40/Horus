@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { WorkoutFormData } from "@/lib/types";
 import { db } from "@/lib/prisma";
-import { normalizeExerciseName, parseWorkout } from "@/lib/parseWorkout";
+import { normalizeExerciseName, parseWorkout } from "@/lib/convertWorkoutData";
 import { Exercise, validateWorkout } from "@/lib/validateWorkout";
 
 // NOTE: currently unused, will be used later when i implement sorting/filtering?

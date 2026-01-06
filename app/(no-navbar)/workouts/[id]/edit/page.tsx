@@ -1,6 +1,6 @@
 import { db } from "@/lib/prisma";
 import WorkoutForm from "@/components/WorkoutForm";
-import { convertDbToFormData } from "@/lib/parseWorkout";
+import { convertDbToFormData } from "@/lib/convertWorkoutData";
 
 export default async function EditWorkoutPage({
 	params,

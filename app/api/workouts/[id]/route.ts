@@ -1,4 +1,4 @@
-import { normalizeExerciseName, parseWorkout } from "@/lib/parseWorkout";
+import { normalizeExerciseName, parseWorkout } from "@/lib/convertWorkoutData";
 import { db } from "@/lib/prisma";
 import { WorkoutFormData } from "@/lib/types";
 import { Exercise, validateWorkout } from "@/lib/validateWorkout";
