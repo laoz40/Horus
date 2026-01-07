@@ -22,6 +22,7 @@ Built using:
 - Typescript
 - Tailwindcss
 - shadcn/ui
+- SQLite
 - Prisma
 - Zod
 
