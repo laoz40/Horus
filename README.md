@@ -1,6 +1,7 @@
 # Gym Workout Tracker
 
 > Project WIP
+> 
 > Name WIP (i want it to be really good)
 
 A web app to track my gym workouts. Created my own because I don't want to use
