@@ -10,8 +10,9 @@ and has no aura.
 
 This is a learning project, meaning I try to write all the code myself 
 so I can actually learn and have fun. I don't see the enjoyment in having AI 
-generate all the code, because it takes zero skill and you don't learn how to make 
-anything. Also they love to get everything wrong and spit nonsense.
+generate all the code. It is a lifeless activity that takes zero skill and you 
+don't learn how to actually make anything. Also it loves to get everything wrong 
+and spit nonsense.
 
 ## Stack
 
