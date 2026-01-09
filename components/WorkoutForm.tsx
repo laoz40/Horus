@@ -55,7 +55,10 @@ export default function WorkoutForm({
 
 	// -----
 
-	const [durationSeconds, setDurationSeconds] = useState(0);
+	// TODO: this should probably save when clicking back button, but idk
+	const [durationSeconds, setDurationSeconds] = useState(
+		workoutData.durationSeconds || 0,
+	);
 
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -172,7 +175,6 @@ export default function WorkoutForm({
 			</div>
 
 			{/* Workout Name */}
-			{/* NOTE: maybe only ask for name in a modal done button is clicked */}
 			<section className="flex flex-col gap-1 pl-4 pr-4 pb-4 border-b bg-input/50 dark:backdrop-blur-xs">
 				<Input
 					autoFocus

@@ -69,11 +69,12 @@ export async function PATCH(
 		}),
 	);
 
-	// NOTE: need to make it remove deleted exercises once that feature is in
+	// TODO: need to make it remove deleted exercises once that feature is in
 	await db.workout.update({
 		where: { id: id },
 		data: {
 			name: validWorkout.name,
+			durationSeconds: validWorkout.durationSeconds,
 			exercises: {
 				upsert: exercisesToUpdate.map((exercise) => ({
 					where: { id: exercise.id },
