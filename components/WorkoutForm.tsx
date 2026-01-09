@@ -56,9 +56,11 @@ export default function WorkoutForm({
 	// -----
 
 	// TODO: this should probably save when clicking back button, but idk
-	const [durationSeconds, setDurationSeconds] = useState(
-		workoutData.durationSeconds || 0,
-	);
+	const [durationSeconds, setDurationSeconds] = useState(0);
+
+	useEffect(() => {
+		setDurationSeconds(workoutData.durationSeconds ?? 0);
+	}, [workoutData.durationSeconds]);
 
 	useEffect(() => {
 		const interval = setInterval(() => {
