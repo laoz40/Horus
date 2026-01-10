@@ -33,20 +33,15 @@ export default function SetRow({
 		});
 	};
 
-	// TODO: need to rework this it looks ugly
 	return (
 		<>
 			<div className="flex flex-col gap-1">
-				<div className="grid grid-cols-[min-content_0.3fr_1fr_0.3fr_1fr] place-items-center">
+				<div className="grid grid-cols-[min-content_1fr_min-content_1fr_min-content] gap-5 place-items-center">
 					<span className="text-muted-foreground text-xs">{index + 1}</span>
-					<Checkbox
-						className="h-6 w-6"
-						aria-label="Color success"
-					/>
 					<NumberInput
 						variant="decimal"
 						placeholder="kg"
-						className="text-xl h-12"
+						className="text-xl h-11"
 						value={set.weight}
 						onChange={handleWeightUpdate}
 					/>
@@ -54,12 +49,15 @@ export default function SetRow({
 					<NumberInput
 						variant="integer"
 						placeholder="reps"
-						className="text-xl h-12"
+						className="text-xl h-11"
 						value={set.reps}
 						onChange={handleRepsUpdate}
 					/>
+					<Checkbox
+						className="h-11 w-11 ml-4"
+						aria-label="Color success"
+					/>
 				</div>
-				<span className="text-sm text-red-500">Error text here</span>
 			</div>
 		</>
 	);

@@ -21,7 +21,7 @@ function Checkbox({
 			<CheckboxPrimitive.Indicator
 				data-slot="checkbox-indicator"
 				className="grid place-content-center text-current transition-none">
-				<CheckIcon className="size-4" />
+				<CheckIcon className="size-7" />
 			</CheckboxPrimitive.Indicator>
 		</CheckboxPrimitive.Root>
 	);

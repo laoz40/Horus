@@ -3,11 +3,11 @@
 import { ChangeEvent, forwardRef } from "react";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { History } from "lucide-react";
+import { Edit, History } from "lucide-react";
 import SetRow from "./SetRow";
 import { cn } from "@/lib/utils";
 import { ExerciseFormData } from "@/lib/types";
+import InputNoBorder from "./InputNoBorder";
 
 export interface ExerciseFormProps
 	extends React.HTMLAttributes<HTMLDivElement> {
@@ -38,50 +38,96 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			}));
 		};
 
+		const exerciseNames = [
+			"Bench Press",
+			"Lat Pulldown",
+			"Seated Cable Row",
+			"Cable Flyes",
+			"Cable Crunches",
+			"Leg Press",
+			"Romanian Deadlifts",
+			"Leg Extensions",
+			"Hamstring Curls",
+			"Calf Raises",
+			"Bicep Curls",
+			"Tricep Extensions",
+		];
+
 		return (
 			<section
 				ref={ref}
 				className={cn("h-full flex flex-col gap-4 p-4", className)}>
 				{/* Exercise Name */}
-				<div className="flex flex-row gap-2">
-					<Input
-						placeholder="Add an exercise"
-						value={exerciseData.name}
-						onChange={handleNameUpdate}
-					/>
-					<Button
-						variant="secondary"
-						size="icon">
-						<History></History>
-					</Button>
-				</div>
+				<InputNoBorder
+					placeholder="Type an exercise..."
+					className="text-2xl font-medium"
+					value={exerciseData.name}
+					onChange={handleNameUpdate}
+					list="exercises"
+				/>
+				<datalist id="exercises">
+					{exerciseNames.map((exercise: string) => (
+						<option
+							key={exercise}
+							value={exercise}></option>
+					))}
+				</datalist>
 
-				{/* Set Rows */}
-				<div className="flex flex-col overflow-y-auto no-scrollbar grow gap-3">
-					<div className="flex flex-col pl-3 gap-3">
-						{exerciseData.sets.map((set, index) => (
-							<SetRow
-								key={set.id}
-								index={index}
-								set={set}
-								setExerciseData={setExerciseData}
-							/>
-						))}
+				<div className="h-full flex flex-col gap-1">
+					{/* Recent + Edit Buttons */}
+					<div className="flex flex-row justify-between text-xs">
+						<Button
+							className="text-muted-foreground"
+							variant="ghost"
+							size="sm">
+							<History />
+							Recent
+						</Button>
+						<Button
+							className="text-muted-foreground"
+							variant="ghost"
+							size="sm">
+							<Edit />
+							Edit
+						</Button>
 					</div>
+
+					{/* Set Rows */}
+					<div className="flex flex-col overflow-y-auto no-scrollbar grow gap-3">
+						<div className="flex flex-col gap-3 pt-0.5">
+							{exerciseData.sets.map((set, index) => (
+								<SetRow
+									key={set.id}
+									index={index}
+									set={set}
+									setExerciseData={setExerciseData}
+								/>
+							))}
+						</div>
+						<Button
+							variant="ghost"
+							className="w-full text-muted-foreground"
+							type="button"
+							onClick={handleAddSet}>
+							Add Set
+						</Button>
+					</div>
+
+					{/* Add Set Button */}
 					<Button
 						variant="secondary"
 						className="w-full"
 						type="button"
 						onClick={handleAddSet}>
-						+ Set
+						Add Set
 					</Button>
-				</div>
 
-				{/* Difficulty and Notes */}
-				<ExerciseCollapsibles
-					exerciseData={exerciseData}
-					setExerciseData={setExerciseData}
-				/>
+					{/* Difficulty and Notes */}
+					<ExerciseCollapsibles
+						exerciseData={exerciseData}
+						setExerciseData={setExerciseData}
+					/>
+				</div>
 			</section>
 		);
 	},
