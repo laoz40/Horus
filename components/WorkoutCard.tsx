@@ -33,10 +33,10 @@ export default function WorkoutCard({
 				const workoutData = await response.json();
 
 				if (!workoutData.success) {
-					console.error("Failed to delete workout:", workoutData.error);
+					console.log("Failed to delete workout:", workoutData.error);
 				}
 			} catch (err) {
-				console.error("Delete failed", err);
+				console.log("Delete failed", err);
 			}
 		}
 	};

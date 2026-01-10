@@ -147,10 +147,10 @@ export default function WorkoutForm({
 				setWorkoutData(newWorkoutObject);
 				console.log("Success", result);
 			} else {
-				console.error("Unsuccessful", result);
+				console.log("Unsuccessful", result);
 			}
 		} catch (error) {
-			console.error("Failed to submit workout", error);
+			console.log("Failed to submit workout", error);
 		} finally {
 			setSubmitting(false);
 		}

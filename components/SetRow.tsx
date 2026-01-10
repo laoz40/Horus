@@ -7,7 +7,9 @@ interface SetRowProps {
 	key: string;
 	index: number;
 	set: { weight: string; reps: string };
-	setExerciseData: (updaterFn: (prev: ExerciseFormData) => ExerciseFormData) => void;
+	setExerciseData: (
+		updaterFn: (prev: ExerciseFormData) => ExerciseFormData,
+	) => void;
 }
 
 export default function SetRow({
@@ -31,29 +33,33 @@ export default function SetRow({
 		});
 	};
 
+	// TODO: need to rework this it looks ugly
 	return (
 		<>
-			<div className="grid grid-cols-[min-content_0.3fr_1fr_0.3fr_1fr] place-items-center gap-4">
-				<span className="text-muted-foreground text-xs">{index + 1}</span>
-				<Checkbox
-					className="h-6 w-6"
-					aria-label="Color success"
-				/>
-				<NumberInput
-					variant="decimal"
-					placeholder="kg"
-					className="text-xl h-12"
-					value={set.weight}
-					onChange={handleWeightUpdate}
-				/>
-				<span className="text-muted-foreground">×</span>
-				<NumberInput
-					variant="integer"
-					placeholder="reps"
-					className="text-xl h-12"
-					value={set.reps}
-					onChange={handleRepsUpdate}
-				/>
+			<div className="flex flex-col gap-1">
+				<div className="grid grid-cols-[min-content_0.3fr_1fr_0.3fr_1fr] place-items-center">
+					<span className="text-muted-foreground text-xs">{index + 1}</span>
+					<Checkbox
+						className="h-6 w-6"
+						aria-label="Color success"
+					/>
+					<NumberInput
+						variant="decimal"
+						placeholder="kg"
+						className="text-xl h-12"
+						value={set.weight}
+						onChange={handleWeightUpdate}
+					/>
+					<span className="text-muted-foreground">×</span>
+					<NumberInput
+						variant="integer"
+						placeholder="reps"
+						className="text-xl h-12"
+						value={set.reps}
+						onChange={handleRepsUpdate}
+					/>
+				</div>
+				<span className="text-sm text-red-500">Error text here</span>
 			</div>
 		</>
 	);

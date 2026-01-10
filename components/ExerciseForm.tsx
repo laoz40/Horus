@@ -1,4 +1,5 @@
 "use client";
+
 import { ChangeEvent, forwardRef } from "react";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import { Button } from "./ui/button";
@@ -36,8 +37,6 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				sets: [...prev.sets, { id: crypto.randomUUID(), weight: "", reps: "" }],
 			}));
 		};
-
-		// TODO: form validation
 
 		return (
 			<section
