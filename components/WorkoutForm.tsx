@@ -145,9 +145,9 @@ export default function WorkoutForm({
 				router.push("/workouts");
 				// reset form
 				setWorkoutData(newWorkoutObject);
-				console.log("Success", result);
+				console.log(result);
 			} else {
-				console.log("Unsuccessful", result);
+				console.log(result);
 			}
 		} catch (error) {
 			console.log("Failed to submit workout", error);

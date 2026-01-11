@@ -3,6 +3,7 @@ import { db } from "@/lib/prisma";
 import { WorkoutFormData } from "@/lib/types";
 import { Exercise, validateWorkout } from "@/lib/validateWorkout";
 import { NextResponse } from "next/server";
+import { fromZodError } from "zod-validation-error";
 
 export async function PATCH(
 	request: Request,
@@ -17,7 +18,7 @@ export async function PATCH(
 	if (!validationResult.success) {
 		return NextResponse.json({
 			success: false,
-			errors: validationResult.error,
+			errors: fromZodError(validationResult.error),
 		});
 	}
 

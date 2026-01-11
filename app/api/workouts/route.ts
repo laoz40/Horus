@@ -3,6 +3,7 @@ import { WorkoutFormData } from "@/lib/types";
 import { db } from "@/lib/prisma";
 import { normalizeExerciseName, parseWorkout } from "@/lib/convertWorkoutData";
 import { Exercise, validateWorkout } from "@/lib/validateWorkout";
+import { fromZodError } from "zod-validation-error"
 
 // NOTE: currently unused, will be used later when i implement sorting/filtering?
 export async function GET() {
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
 	if (!validationResult.success) {
 		return NextResponse.json({
 			success: false,
-			errors: validationResult.error,
+			errors: fromZodError(validationResult.error),
 		});
 	}
 
