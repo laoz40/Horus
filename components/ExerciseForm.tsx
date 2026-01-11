@@ -73,61 +73,65 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 					))}
 				</datalist>
 
-				<div className="h-full flex flex-col gap-1">
-					{/* Recent + Edit Buttons */}
-					<div className="flex flex-row justify-between text-xs">
-						<Button
-							className="text-muted-foreground"
-							variant="ghost"
-							size="sm">
-							<History />
-							Recent
-						</Button>
-						<Button
-							className="text-muted-foreground"
-							variant="ghost"
-							size="sm">
-							<Edit />
-							Edit
-						</Button>
-					</div>
-
-					{/* Set Rows */}
-					<div className="flex flex-col overflow-y-auto no-scrollbar grow gap-3">
-						<div className="flex flex-col gap-3 pt-0.5">
-							{exerciseData.sets.map((set, index) => (
-								<SetRow
-									key={set.id}
-									index={index}
-									set={set}
-									setExerciseData={setExerciseData}
-								/>
-							))}
+				{exerciseData.name.trim() && (
+					<div className="h-full flex flex-col gap-1">
+						{/* Recent + Edit Buttons */}
+						<div className="flex flex-row justify-between text-xs">
+							<Button
+								variant="ghost"
+								size="sm"
+								type="button"
+								className="text-muted-foreground p-0!">
+								<History />
+								Recent
+							</Button>
+							<Button
+								variant="ghost"
+								size="sm"
+								type="button"
+								className="text-muted-foreground p-0!">
+								<Edit />
+								Edit
+							</Button>
 						</div>
+
+						{/* Set Rows */}
+						<div className="flex flex-col overflow-y-auto no-scrollbar grow gap-3">
+							<div className="flex flex-col gap-3 pt-0.5">
+								{exerciseData.sets.map((set, index) => (
+									<SetRow
+										key={set.id}
+										index={index}
+										set={set}
+										setExerciseData={setExerciseData}
+									/>
+								))}
+							</div>
+							<Button
+								variant="ghost"
+								className="w-full text-muted-foreground"
+								type="button"
+								onClick={handleAddSet}>
+								Add Set
+							</Button>
+						</div>
+
+						{/* Add Set Button */}
 						<Button
-							variant="ghost"
-							className="w-full text-muted-foreground"
+							variant="secondary"
+							className="w-full"
 							type="button"
 							onClick={handleAddSet}>
 							Add Set
 						</Button>
+
+						{/* Difficulty and Notes */}
+						<ExerciseCollapsibles
+							exerciseData={exerciseData}
+							setExerciseData={setExerciseData}
+						/>
 					</div>
-
-					{/* Add Set Button */}
-					<Button
-						variant="secondary"
-						className="w-full"
-						type="button"
-						onClick={handleAddSet}>
-						Add Set
-					</Button>
-
-					{/* Difficulty and Notes */}
-					<ExerciseCollapsibles
-						exerciseData={exerciseData}
-						setExerciseData={setExerciseData}
-					/>
-				</div>
+				)}
 			</section>
 		);
 	},
