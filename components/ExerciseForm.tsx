@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, forwardRef } from "react";
+import { ChangeEvent, forwardRef, useState } from "react";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import { Button } from "./ui/button";
 import { Edit, History } from "lucide-react";
@@ -53,6 +53,8 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			"Tricep Extensions",
 		];
 
+		const [exerciseNameBlurred, setExerciseNameBlurred] = useState(false);
+
 		return (
 			<section
 				ref={ref}
@@ -63,6 +65,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 					className="text-2xl font-medium"
 					value={exerciseData.name}
 					onChange={handleNameUpdate}
+					onBlur={() => setExerciseNameBlurred(true)}
 					list="exercises"
 				/>
 				<datalist id="exercises">
@@ -73,7 +76,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 					))}
 				</datalist>
 
-				{exerciseData.name.trim() && (
+				{exerciseNameBlurred && exerciseData.name.trim() && (
 					<div className="h-full flex flex-col gap-1">
 						{/* Recent + Edit Buttons */}
 						<div className="flex flex-row justify-between text-xs">
