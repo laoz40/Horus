@@ -25,6 +25,7 @@ export default function NumberInput({
 	className,
 	value,
 	onChange,
+	...props
 }: InputProps) {
 	const config = variantConfig[variant];
 
@@ -42,6 +43,7 @@ export default function NumberInput({
 			placeholder={placeholder}
 			className={className}
 			type="text"
+			{...props}
 			value={value}
 			onChange={handleChange}></Input>
 	);

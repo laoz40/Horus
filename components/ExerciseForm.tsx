@@ -8,6 +8,7 @@ import SetRow from "./SetRow";
 import { cn } from "@/lib/utils";
 import { ExerciseFormData } from "@/lib/types";
 import InputNoBorder from "./InputNoBorder";
+import { useFormContext } from "react-hook-form";
 
 export interface ExerciseFormProps
 	extends React.HTMLAttributes<HTMLDivElement> {
@@ -15,10 +16,13 @@ export interface ExerciseFormProps
 	setExerciseData: (
 		updaterFn: (prev: ExerciseFormData) => ExerciseFormData,
 	) => void;
+	exerciseIndex: number
 }
 
 const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
-	({ exerciseData, setExerciseData, className }, ref) => {
+	({ exerciseData, setExerciseData, className, exerciseIndex }, ref) => {
+		const { register } = useFormContext()
+
 		const handleNameUpdate = (input: ChangeEvent<HTMLInputElement>) => {
 			setExerciseData((prev) => ({
 				...prev,
@@ -63,8 +67,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				<InputNoBorder
 					placeholder="Type an exercise..."
 					className="text-2xl font-medium"
-					value={exerciseData.name}
-					onChange={handleNameUpdate}
+					{...register(`exercises.${exerciseIndex}.exercise`)}
 					onBlur={() => setExerciseNameBlurred(true)}
 					list="exercises"
 				/>
@@ -76,7 +79,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 					))}
 				</datalist>
 
-				{exerciseNameBlurred && exerciseData.name.trim() && (
+				{/*	{exerciseNameBlurred && exerciseData.name.trim() && ( */
 					<div className="h-full flex flex-col gap-1">
 						{/* Recent + Edit Buttons */}
 						<div className="flex flex-row justify-between text-xs">
@@ -101,10 +104,11 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 						{/* Set Rows */}
 						<div className="flex flex-col overflow-y-auto no-scrollbar grow gap-3">
 							<div className="flex flex-col gap-3 pt-0.5">
-								{exerciseData.sets.map((set, index) => (
+								{exerciseData.sets.map((set, setIndex) => (
 									<SetRow
 										key={set.id}
-										index={index}
+										setIndex={setIndex}
+										exerciseIndex={exerciseIndex}
 										set={set}
 										setExerciseData={setExerciseData}
 									/>
@@ -134,7 +138,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 							setExerciseData={setExerciseData}
 						/>
 					</div>
-				)}
+				}
 			</section>
 		);
 	},

@@ -8,6 +8,9 @@ import {
 	useState,
 	type ReactElement,
 } from "react";
+import { FormProvider, useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Workout, WorkoutSchema } from "@/lib/validateWorkout"
 import ExerciseForm from "./ExerciseForm";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -15,6 +18,24 @@ import { ExerciseFormData, WorkoutFormData } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { formatDurationFull } from "@/lib/time";
 import { currentDay } from "@/lib/date";
+
+const newExerciseObject = {
+	id: crypto.randomUUID(),
+	name: "",
+	exercise: {
+		exerciseId: undefined,
+		newExerciseName: "",
+	},
+	difficulty: null,
+	notes: "",
+	sets: [
+		{
+			id: crypto.randomUUID(),
+			weight: "",
+			reps: "",
+		},
+	],
+};
 
 const newWorkoutObject: WorkoutFormData = {
 	name: "",
@@ -27,7 +48,7 @@ const newWorkoutObject: WorkoutFormData = {
 				exerciseId: undefined,
 				newExerciseName: "",
 			},
-			difficulty: 0,
+			difficulty: null,
 			notes: "",
 			sets: [
 				{
@@ -53,6 +74,10 @@ export default function WorkoutForm({
 		initialData ? initialData : newWorkoutObject,
 	);
 
+	const methods = useForm<Workout>({
+	});
+	const { register } = methods
+
 	// -----
 
 	// TODO: this should probably save when clicking back button, but idk
@@ -75,30 +100,12 @@ export default function WorkoutForm({
 	// -----
 
 	const handleAddExercise = () => {
-		const newExercise = {
-			id: crypto.randomUUID(),
-			name: "",
-			exercise: {
-				exerciseId: undefined,
-				newExerciseName: "",
-			},
-			difficulty: null,
-			notes: "",
-			sets: [
-				{
-					id: crypto.randomUUID(),
-					weight: "",
-					reps: "",
-				},
-			],
-		};
-
 		setWorkoutData((prev) => ({
 			...prev,
-			exercises: [...prev.exercises, newExercise],
+			exercises: [...prev.exercises, newExerciseObject],
 		}));
 
-		setScrollTargetId(newExercise.id);
+		setScrollTargetId(newExerciseObject.id);
 	};
 
 	// -----
@@ -121,7 +128,7 @@ export default function WorkoutForm({
 	const [submitting, setSubmitting] = useState(false);
 	const router = useRouter();
 
-	const handleSubmit = async (form: FormEvent) => {
+	const handleSubmitOld = async (form: FormEvent) => {
 		form.preventDefault();
 		setSubmitting(true);
 
@@ -156,6 +163,10 @@ export default function WorkoutForm({
 		}
 	};
 
+	const onSubmit = ( data: any ) => {
+		console.log(data)
+	}
+
 	return (
 		<div className="flex flex-col h-svh">
 			{/* Top Actions */}
@@ -176,26 +187,26 @@ export default function WorkoutForm({
 				</Button>
 			</div>
 
+			<FormProvider {...methods}>
+				<form 
+				id="workout-form"
+				onSubmit={methods.handleSubmit(onSubmit)}>
+
 			{/* Workout Name */}
 			<section className="flex flex-col gap-1 pl-4 pr-4 pb-4 border-b bg-input/50 dark:backdrop-blur-xs">
 				<Input
-					autoFocus
 					placeholder={`${currentDay} Workout`}
-					value={workoutData.name}
-					onChange={(input) =>
-						setWorkoutData((prev) => ({ ...prev, name: input.target.value }))
-					}
+					{...register("name")}
 				/>
 			</section>
 
 			{/* Exercise Form */}
-			<form
-				id="workout-form"
-				onSubmit={handleSubmit}
+			<section
 				className="flex flex-col flex-1 overflow-y-auto snap-y snap-mandatory">
-				{workoutData.exercises.map((exerciseData, index) => (
+				{workoutData.exercises.map((exerciseData, exerciseIndex) => (
 					<ExerciseForm
 						key={exerciseData.id}
+						exerciseIndex={exerciseIndex}
 						ref={(ExerciseForm) => {
 							exerciseRefs.current[exerciseData.id] = ExerciseForm;
 						}}
@@ -206,13 +217,13 @@ export default function WorkoutForm({
 						) => {
 							setWorkoutData((prev) => {
 								const exercises = [...prev.exercises];
-								exercises[index] = updaterFn(exercises[index]);
+								exercises[exerciseIndex] = updaterFn(exercises[exerciseIndex]);
 								return { ...prev, exercises: exercises };
 							});
 						}}
 					/>
 				))}
-			</form>
+			</section>
 
 			{/* Add Exercise */}
 			<div className="flex w-full border-t p-4 bg-input/50 dark:backdrop-blur-xs">
@@ -222,6 +233,8 @@ export default function WorkoutForm({
 					+ Exercise
 				</Button>
 			</div>
+				</form>
+			</FormProvider>
 		</div>
 	);
 }

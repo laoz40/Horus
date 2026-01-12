@@ -28,7 +28,7 @@ const ExerciseSchema = z.object({
 	sets: z.array(SetSchema).min(1, "No Sets"),
 });
 
-const WorkoutSchema = z.object({
+export const WorkoutSchema = z.object({
 	name: z.string().min(1, "No Workout Name"),
 	durationSeconds: z.int().nullable(),
 	exercises: z.array(ExerciseSchema).min(1, "No Exercises"),
