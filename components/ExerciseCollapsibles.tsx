@@ -10,63 +10,51 @@ import { BicepsFlexed, ChevronDown, LucideIcon, Notebook } from "lucide-react";
 import { Activity, ChangeEvent, ReactNode, useState } from "react";
 import { Textarea } from "./ui/textarea";
 import { ExerciseFormData } from "@/lib/types";
+import { useFormContext } from "react-hook-form";
 
 interface ExerciseCollapsiblesProps {
-	exerciseData: ExerciseFormData;
-	setExerciseData: (
-		updaterFn: (prev: ExerciseFormData) => ExerciseFormData,
-	) => void;
+	exerciseIndex: number;
 }
 
 const ExerciseCollapsibles = ({
-	exerciseData,
-	setExerciseData,
+	exerciseIndex,
 }: ExerciseCollapsiblesProps) => {
+	const { register } = useFormContext()
+
 	return (
 		<div className="w-full max-w-full">
 			<DifficultySlider
-				exerciseData={exerciseData}
-				setExerciseData={setExerciseData}
+				exerciseIndex={exerciseIndex}
 			/>
 			<ExerciseNotes
-				exerciseData={exerciseData}
-				setExerciseData={setExerciseData}
+				exerciseIndex={exerciseIndex}
 			/>
 		</div>
 	);
 };
 
 function DifficultySlider({
-	exerciseData,
-	setExerciseData,
+	exerciseIndex,
 }: ExerciseCollapsiblesProps) {
 	const difficultyOptions = ["Too Easy", " ", "Standard", " ", "Nightmare"];
 
-	const initialiseDifficultyValue = (openState: boolean) => {
-		if (openState && exerciseData.difficulty === null) {
-			setExerciseData((prev) => ({ ...prev, difficulty: 2 }));
-		}
-	};
+//	const initialiseDifficultyValue = (openState: boolean) => {
+//		if (openState && exerciseData.difficulty === null) {
+//			setExerciseData((prev) => ({ ...prev, difficulty: 2 }));
+//		}
+//	};
 
-	const handleDifficultyUpdate = (value: number[]) => {
-		setExerciseData((prev) => ({ ...prev, difficulty: Number(value) }));
-	};
 
+	const { register } = useFormContext()
 	return (
 		<CollapsibleFilter
 			title="Difficulty"
 			icon={BicepsFlexed}
-			onOpenChange={initialiseDifficultyValue}>
+			>
 			<div className="flex flex-col w-full max-w-sm gap-3">
 				<Slider
 					max={4}
 					step={1}
-					value={
-						exerciseData.difficulty !== null
-							? [exerciseData.difficulty]
-							: undefined
-					}
-					onValueChange={handleDifficultyUpdate}
 				/>
 				<div className="flex flex-row items-center justify-between text-muted-foreground text-xs">
 					{difficultyOptions.map((difficulty, index) => (
@@ -79,12 +67,9 @@ function DifficultySlider({
 }
 
 function ExerciseNotes({
-	exerciseData,
-	setExerciseData,
+	exerciseIndex,
 }: ExerciseCollapsiblesProps) {
-	const handleNotesUpdate = (input: ChangeEvent<HTMLTextAreaElement>) => {
-		setExerciseData((prev) => ({ ...prev, notes: input.target.value }));
-	};
+	const { register } = useFormContext()
 
 	return (
 		<CollapsibleFilter
@@ -92,8 +77,7 @@ function ExerciseNotes({
 			icon={Notebook}>
 			<Textarea
 				placeholder="Write a note..."
-				value={exerciseData.notes ?? ""}
-				onChange={handleNotesUpdate}
+				{...register(`exercises.${exerciseIndex}.notes`)}
 			/>
 		</CollapsibleFilter>
 	);

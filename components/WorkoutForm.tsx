@@ -8,7 +8,7 @@ import {
 	useState,
 	type ReactElement,
 } from "react";
-import { FormProvider, useForm } from "react-hook-form"
+import { FormProvider, useFieldArray, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Workout, WorkoutSchema } from "@/lib/validateWorkout"
 import ExerciseForm from "./ExerciseForm";
@@ -37,7 +37,7 @@ const newExerciseObject = {
 	],
 };
 
-const newWorkoutObject: WorkoutFormData = {
+const OLDnewWorkoutObject = {
 	name: "",
 	durationSeconds: 0,
 	exercises: [
@@ -71,12 +71,20 @@ export default function WorkoutForm({
 	workoutId,
 }: WorkoutFormProps): ReactElement {
 	const [workoutData, setWorkoutData] = useState<WorkoutFormData>(
-		initialData ? initialData : newWorkoutObject,
+		initialData ? initialData : OLDnewWorkoutObject,
 	);
 
 	const methods = useForm<Workout>({
+		defaultValues: {
+			exercises: [
+				{
+					sets: [{ weight: undefined, reps: undefined }]
+				}
+			]
+		}
 	});
 	const { register } = methods
+
 
 	// -----
 
@@ -151,7 +159,7 @@ export default function WorkoutForm({
 			if (result.success) {
 				router.push("/workouts");
 				// reset form
-				setWorkoutData(newWorkoutObject);
+				setWorkoutData(OLDnewWorkoutObject);
 				console.log(result);
 			} else {
 				console.log(result);
@@ -189,50 +197,41 @@ export default function WorkoutForm({
 
 			<FormProvider {...methods}>
 				<form 
-				id="workout-form"
-				onSubmit={methods.handleSubmit(onSubmit)}>
+					className="flex flex-col h-full overflow-y-auto"
+					id="workout-form"
+					onSubmit={methods.handleSubmit(onSubmit)}>
 
-			{/* Workout Name */}
-			<section className="flex flex-col gap-1 pl-4 pr-4 pb-4 border-b bg-input/50 dark:backdrop-blur-xs">
-				<Input
-					placeholder={`${currentDay} Workout`}
-					{...register("name")}
-				/>
-			</section>
+					{/* Workout Name */}
+					<section className="flex flex-col gap-1 pl-4 pr-4 pb-4 border-b bg-input/50 dark:backdrop-blur-xs">
+						<Input
+							placeholder={`${currentDay} Workout`}
+							{...register("name")}
+						/>
+					</section>
 
-			{/* Exercise Form */}
-			<section
-				className="flex flex-col flex-1 overflow-y-auto snap-y snap-mandatory">
-				{workoutData.exercises.map((exerciseData, exerciseIndex) => (
-					<ExerciseForm
-						key={exerciseData.id}
-						exerciseIndex={exerciseIndex}
-						ref={(ExerciseForm) => {
-							exerciseRefs.current[exerciseData.id] = ExerciseForm;
-						}}
-						className="snap-start min-h-full h-full"
-						exerciseData={exerciseData}
-						setExerciseData={(
-							updaterFn: (prev: ExerciseFormData) => ExerciseFormData,
-						) => {
-							setWorkoutData((prev) => {
-								const exercises = [...prev.exercises];
-								exercises[exerciseIndex] = updaterFn(exercises[exerciseIndex]);
-								return { ...prev, exercises: exercises };
-							});
-						}}
-					/>
-				))}
-			</section>
+					{/* Exercise Form */}
+					<section
+						className="flex flex-col flex-1 overflow-y-auto snap-y snap-mandatory">
+						{workoutData.exercises.map((exerciseData, exerciseIndex) => (
+							<ExerciseForm
+								key={exerciseData.id}
+								exerciseIndex={exerciseIndex}
+								ref={(ExerciseForm) => {
+									exerciseRefs.current[exerciseData.id] = ExerciseForm;
+								}}
+								className="snap-start min-h-full h-full"
+							/>
+						))}
+					</section>
 
-			{/* Add Exercise */}
-			<div className="flex w-full border-t p-4 bg-input/50 dark:backdrop-blur-xs">
-				<Button
-					className="flex-1"
-					onClick={handleAddExercise}>
-					+ Exercise
-				</Button>
-			</div>
+					{/* Add Exercise */}
+					<div className="flex w-full border-t p-4 bg-input/50 dark:backdrop-blur-xs">
+						<Button
+							className="flex-1"
+							onClick={handleAddExercise}>
+							+ Exercise
+						</Button>
+					</div>
 				</form>
 			</FormProvider>
 		</div>

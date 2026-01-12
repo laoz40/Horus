@@ -1,45 +1,30 @@
 "use client";
 
-import { ChangeEvent, forwardRef, useState } from "react";
+import { forwardRef, useState } from "react";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import { Button } from "./ui/button";
 import { Edit, History } from "lucide-react";
 import SetRow from "./SetRow";
 import { cn } from "@/lib/utils";
-import { ExerciseFormData } from "@/lib/types";
 import InputNoBorder from "./InputNoBorder";
-import { useFormContext } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 
 export interface ExerciseFormProps
 	extends React.HTMLAttributes<HTMLDivElement> {
-	exerciseData: ExerciseFormData;
-	setExerciseData: (
-		updaterFn: (prev: ExerciseFormData) => ExerciseFormData,
-	) => void;
 	exerciseIndex: number
 }
 
 const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
-	({ exerciseData, setExerciseData, className, exerciseIndex }, ref) => {
+	({ className, exerciseIndex }, ref) => {
 		const { register } = useFormContext()
 
-		const handleNameUpdate = (input: ChangeEvent<HTMLInputElement>) => {
-			setExerciseData((prev) => ({
-				...prev,
-				name: input.target.value,
-				exercise: {
-					...prev,
-					exerciseId: undefined,
-					newExerciseName: input.target.value,
-				},
-			}));
-		};
+		const { fields, append } = useFieldArray({
+			name: `exercises.${exerciseIndex}.sets`
+		})
+		console.log(fields)
 
 		const handleAddSet = () => {
-			setExerciseData((prev) => ({
-				...prev,
-				sets: [...prev.sets, { id: crypto.randomUUID(), weight: "", reps: "" }],
-			}));
+			append({ weight: undefined, reps: undefined })
 		};
 
 		const exerciseNames = [
@@ -104,13 +89,11 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 						{/* Set Rows */}
 						<div className="flex flex-col overflow-y-auto no-scrollbar grow gap-3">
 							<div className="flex flex-col gap-3 pt-0.5">
-								{exerciseData.sets.map((set, setIndex) => (
+								{fields.map((set, setIndex) => (
 									<SetRow
 										key={set.id}
 										setIndex={setIndex}
 										exerciseIndex={exerciseIndex}
-										set={set}
-										setExerciseData={setExerciseData}
 									/>
 								))}
 							</div>
@@ -134,8 +117,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 
 						{/* Difficulty and Notes */}
 						<ExerciseCollapsibles
-							exerciseData={exerciseData}
-							setExerciseData={setExerciseData}
+							exerciseIndex={exerciseIndex}
 						/>
 					</div>
 				}
