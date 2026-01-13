@@ -23,18 +23,28 @@ export default function NumberInput({
 	variant = "integer",
 	placeholder,
 	className,
-	value,
 	onChange,
 	...props
 }: InputProps) {
 	const config = variantConfig[variant];
 
-	const handleChange = (input: React.ChangeEvent<HTMLInputElement>) => {
-		if (input.target.validity.patternMismatch) {
-			return;
-		}
-		if (onChange) onChange(input);
-	};
+const handleBeforeInput = (
+  event: React.FormEvent<HTMLInputElement>
+) => {
+  const e = event as unknown as InputEvent;
+  const char = e.data;
+
+  if (!char) return; // deletion, paste, etc.
+
+  const regex =
+    variant === "integer"
+      ? /^[0-9]$/
+      : /^[0-9.]$/;
+
+  if (!regex.test(char)) {
+    event.preventDefault();
+  }
+};
 
 	return (
 		<Input
@@ -44,7 +54,6 @@ export default function NumberInput({
 			className={className}
 			type="text"
 			{...props}
-			value={value}
-			onChange={handleChange}></Input>
+			onBeforeInput={handleBeforeInput}></Input>
 	);
 }
