@@ -14,52 +14,10 @@ import { Workout, WorkoutSchema } from "@/lib/validateWorkout"
 import ExerciseForm from "./ExerciseForm";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { ExerciseFormData, WorkoutFormData } from "@/lib/types";
+import { WorkoutFormData } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { formatDurationFull } from "@/lib/time";
 import { currentDay } from "@/lib/date";
-
-const newExerciseObject = {
-	id: crypto.randomUUID(),
-	name: "",
-	exercise: {
-		exerciseId: undefined,
-		newExerciseName: "",
-	},
-	difficulty: null,
-	notes: "",
-	sets: [
-		{
-			id: crypto.randomUUID(),
-			weight: "",
-			reps: "",
-		},
-	],
-};
-
-const OLDnewWorkoutObject = {
-	name: "",
-	durationSeconds: 0,
-	exercises: [
-		{
-			id: crypto.randomUUID(),
-			name: "",
-			exercise: {
-				exerciseId: undefined,
-				newExerciseName: "",
-			},
-			difficulty: null,
-			notes: "",
-			sets: [
-				{
-					id: crypto.randomUUID(),
-					weight: "",
-					reps: "",
-				},
-			],
-		},
-	],
-};
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
@@ -70,30 +28,39 @@ export default function WorkoutForm({
 	initialData,
 	workoutId,
 }: WorkoutFormProps): ReactElement {
-	const [workoutData, setWorkoutData] = useState<WorkoutFormData>(
-		initialData ? initialData : OLDnewWorkoutObject,
-	);
+	const [workoutData, setWorkoutData] = useState<WorkoutFormData>();
 
 	const methods = useForm<Workout>({
+		resolver: zodResolver(WorkoutSchema),
+		mode: "onSubmit",
 		defaultValues: {
+			durationSeconds: 0,
 			exercises: [
 				{
-					sets: [{ weight: undefined, reps: undefined }]
+					id: crypto.randomUUID(),
+					exercise: {
+						exerciseId: undefined,
+						newExerciseName: "",
+					},
+					notes: null,
+					difficulty: null,
+					sets: [{ id: crypto.randomUUID(), weight: null, reps: null }],
 				}
 			]
 		}
 	});
-	const { register } = methods
+	const { register, control, handleSubmit, formState: { errors } } = methods;
 
+	//console.log(errors)
+	const { fields, append } = useFieldArray({
+		name: "exercises",
+		control
+	});
 
 	// -----
 
 	// TODO: this should probably save when clicking back button, but idk
 	const [durationSeconds, setDurationSeconds] = useState(0);
-
-	useEffect(() => {
-		setDurationSeconds(workoutData.durationSeconds ?? 0);
-	}, [workoutData.durationSeconds]);
 
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -108,12 +75,18 @@ export default function WorkoutForm({
 	// -----
 
 	const handleAddExercise = () => {
-		setWorkoutData((prev) => ({
-			...prev,
-			exercises: [...prev.exercises, newExerciseObject],
-		}));
+		append({
+			id: crypto.randomUUID(),
+			exercise: {
+				exerciseId: undefined,
+				newExerciseName: "",
+			},
+			notes: null,
+			difficulty: null,
+			sets: [{ id: crypto.randomUUID(), weight: null, reps: null }],
+		});
 
-		setScrollTargetId(newExerciseObject.id);
+		// setScrollTargetId(newExerciseObject.id);
 	};
 
 	// -----
@@ -128,7 +101,6 @@ export default function WorkoutForm({
 		const scrollTargetElement = exerciseRefs.current[scrollTargetId];
 		scrollTargetElement?.scrollIntoView({ behavior: "smooth", block: "end" });
 
-		setScrollTargetId(null);
 	}, [scrollTargetId]);
 
 	// -----
@@ -136,14 +108,9 @@ export default function WorkoutForm({
 	const [submitting, setSubmitting] = useState(false);
 	const router = useRouter();
 
-	const handleSubmitOld = async (form: FormEvent) => {
-		form.preventDefault();
-		setSubmitting(true);
-
-		const payload = {
-			...workoutData,
-			durationSeconds,
-		};
+	const submitWorkout = async ( data: any ) => {
+		const finalData = { ...data, durationSeconds };
+		console.log(finalData)
 
 		try {
 			const saveMethod = workoutId ? "PATCH" : "POST";
@@ -152,27 +119,19 @@ export default function WorkoutForm({
 			const saveWorkout = await fetch(apiUrl, {
 				method: saveMethod,
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(payload),
+				body: JSON.stringify(finalData),
 			});
 
 			const result = await saveWorkout.json();
 			if (result.success) {
 				router.push("/workouts");
-				// reset form
-				setWorkoutData(OLDnewWorkoutObject);
 				console.log(result);
 			} else {
 				console.log(result);
 			}
 		} catch (error) {
 			console.log("Failed to submit workout", error);
-		} finally {
-			setSubmitting(false);
 		}
-	};
-
-	const onSubmit = ( data: any ) => {
-		console.log(data)
 	}
 
 	return (
@@ -199,7 +158,7 @@ export default function WorkoutForm({
 				<form 
 					className="flex flex-col h-full overflow-y-auto"
 					id="workout-form"
-					onSubmit={methods.handleSubmit(onSubmit)}>
+					onSubmit={handleSubmit(submitWorkout)}>
 
 					{/* Workout Name */}
 					<section className="flex flex-col gap-1 pl-4 pr-4 pb-4 border-b bg-input/50 dark:backdrop-blur-xs">
@@ -212,12 +171,12 @@ export default function WorkoutForm({
 					{/* Exercise Form */}
 					<section
 						className="flex flex-col flex-1 overflow-y-auto snap-y snap-mandatory">
-						{workoutData.exercises.map((exerciseData, exerciseIndex) => (
+						{fields.map((exercise, exerciseIndex) => (
 							<ExerciseForm
-								key={exerciseData.id}
+								key={exercise.id}
 								exerciseIndex={exerciseIndex}
 								ref={(ExerciseForm) => {
-									exerciseRefs.current[exerciseData.id] = ExerciseForm;
+									exerciseRefs.current[exercise.id] = ExerciseForm;
 								}}
 								className="snap-start min-h-full h-full"
 							/>

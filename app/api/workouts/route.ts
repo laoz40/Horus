@@ -94,8 +94,8 @@ export async function POST(request: Request) {
 					notes: exercise.notes ?? null,
 					sets: {
 						create: exercise.sets.map((set) => ({
-							weight: set.weight,
-							reps: set.reps,
+							weight: set.weight ?? 0,
+							reps: set.reps ?? 0
 						})),
 					},
 				})),

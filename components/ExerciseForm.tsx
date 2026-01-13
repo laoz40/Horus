@@ -21,10 +21,9 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		const { fields, append } = useFieldArray({
 			name: `exercises.${exerciseIndex}.sets`
 		})
-		console.log(fields)
 
 		const handleAddSet = () => {
-			append({ weight: undefined, reps: undefined })
+			append({ weight: null, reps: null })
 		};
 
 		const exerciseNames = [
@@ -52,7 +51,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				<InputNoBorder
 					placeholder="Type an exercise..."
 					className="text-2xl font-medium"
-					{...register(`exercises.${exerciseIndex}.exercise`)}
+					{...register(`exercises.${exerciseIndex}.exercise.newExerciseName`)}
 					onBlur={() => setExerciseNameBlurred(true)}
 					list="exercises"
 				/>
