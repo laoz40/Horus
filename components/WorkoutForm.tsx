@@ -38,9 +38,8 @@ export default function WorkoutForm({
 			exercises: [
 				{
 					id: crypto.randomUUID(),
-					exercise: {
-						exerciseId: undefined,
-						newExerciseName: "",
+					global: {
+						name: "",
 					},
 					notes: null,
 					difficulty: null,
@@ -77,9 +76,8 @@ export default function WorkoutForm({
 	const handleAddExercise = () => {
 		append({
 			id: crypto.randomUUID(),
-			exercise: {
-				exerciseId: undefined,
-				newExerciseName: "",
+			global: {
+				name: "",
 			},
 			notes: null,
 			difficulty: null,

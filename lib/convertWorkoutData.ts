@@ -8,9 +8,8 @@ export const parseWorkout = (workout: WorkoutFormData): Workout => {
 		durationSeconds: workout.durationSeconds,
 		exercises: workout.exercises.map((exercise) => ({
 			id: exercise.id,
-			exercise: {
-				exerciseId: exercise.exercise.exerciseId,
-				newExerciseName: exercise.exercise.newExerciseName?.trim(),
+			global: {
+				name: exercise.global.name.trim(),
 			},
 			difficulty: exercise.difficulty,
 			notes: (exercise.notes ?? "").trim(),
@@ -36,8 +35,8 @@ export const convertDbToFormData = (
 		exercises: workout.exercises.map((exercise) => ({
 			id: exercise.id,
 			name: exercise.globalExercise.name,
-			exercise: {
-				exerciseId: exercise.globalExerciseId,
+			global: {
+				name: exercise.globalExercise.name,
 			},
 			difficulty: exercise.difficulty,
 			notes: exercise.notes,

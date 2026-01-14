@@ -20,9 +20,8 @@ export interface SetFormData {
 export interface ExerciseFormData {
 	id: string;
 	name: string;
-	exercise: {
-		exerciseId?: string;
-		newExerciseName?: string;
+	global: {
+		name: string;
 	};
 	difficulty: number | null;
 	notes: string | null;

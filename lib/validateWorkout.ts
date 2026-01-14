@@ -1,22 +1,11 @@
 import * as z from "zod";
 
-export const GlobalExerciseInputSchema = z
-	.object({
-		exerciseId: z.string({ message: "Exercise ID not found" }).optional(),
-		newExerciseName: z
-			.string()
-			.trim()
-			.min(2, "Can you enter a real exercise?")
-			.optional(),
-	})
-	.refine(
-		(value) =>
-			(value.exerciseId && !value.newExerciseName) ||
-			(!value.exerciseId && value.newExerciseName),
-		{
-			message: "Select or type an exercise.",
-		},
-	);
+export const GlobalExerciseInputSchema = z.object({
+	name: z
+		.string()
+		.trim()
+		.min(2, "Can you enter a real exercise?")
+});
 
 const SetSchema = z
 	.object({
@@ -34,7 +23,7 @@ const SetSchema = z
 
 const ExerciseSchema = z.object({
 	id: z.string(),
-	exercise: GlobalExerciseInputSchema,
+	global: GlobalExerciseInputSchema,
 	difficulty: z.number().nullable(),
 	notes: z.string().nullable(),
 	sets: z.array(SetSchema).min(1, "Exercise has no sets. Did you even do it?"),

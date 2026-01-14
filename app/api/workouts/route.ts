@@ -39,15 +39,9 @@ export async function POST(request: Request) {
 	const validWorkout = validationResult.data;
 
 	const getGlobalExerciseId = async (exercise: Exercise): Promise<string> => {
-		// if existing exercise selected, return id
-		if (exercise.exercise.exerciseId) {
-			return exercise.exercise.exerciseId;
-		}
-
-		// if custom input
-		if (exercise.exercise.newExerciseName) {
+		if (exercise.global.name) {
 			const normalizedName = normalizeExerciseName(
-				exercise.exercise.newExerciseName,
+				exercise.global.name,
 			);
 			const existingExercise = await db.globalExercise.findUnique({
 				where: { normalizedName },
@@ -61,7 +55,7 @@ export async function POST(request: Request) {
 			// else create new global exercise
 			const createNew = await db.globalExercise.create({
 				data: {
-					name: exercise.exercise.newExerciseName,
+					name: exercise.global.name,
 					normalizedName,
 				},
 			});
