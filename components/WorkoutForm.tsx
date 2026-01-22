@@ -34,6 +34,7 @@ export default function WorkoutForm({
 		resolver: zodResolver(WorkoutSchema),
 		mode: "onSubmit",
 		defaultValues: {
+			name: "",
 			durationSeconds: 0,
 			exercises: [
 				{
@@ -50,7 +51,7 @@ export default function WorkoutForm({
 	});
 	const { register, control, handleSubmit, formState: { errors } } = methods;
 
-	//console.log(errors)
+	// console.log(errors)
 	const { fields, append } = useFieldArray({
 		name: "exercises",
 		control
@@ -108,7 +109,7 @@ export default function WorkoutForm({
 
 	const submitWorkout = async ( data: any ) => {
 		const finalData = { ...data, durationSeconds };
-		console.log(finalData)
+		// console.log(finalData)
 
 		try {
 			const saveMethod = workoutId ? "PATCH" : "POST";
@@ -153,7 +154,7 @@ export default function WorkoutForm({
 			</div>
 
 			<FormProvider {...methods}>
-				<form 
+				<form
 					className="flex flex-col h-full overflow-y-auto"
 					id="workout-form"
 					onSubmit={handleSubmit(submitWorkout)}>

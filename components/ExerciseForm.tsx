@@ -51,7 +51,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				<InputNoBorder
 					placeholder="Type an exercise..."
 					className="text-2xl font-medium"
-					{...register(`exercises.${exerciseIndex}.exercise.newExerciseName`)}
+					{...register(`exercises.${exerciseIndex}.global.name`)}
 					onBlur={() => setExerciseNameBlurred(true)}
 					list="exercises"
 				/>
