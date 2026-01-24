@@ -2,6 +2,8 @@ import { type ReactElement } from "react";
 import { Checkbox } from "./ui/checkbox";
 import NumberInput from "./NumberInput";
 import { useFormContext } from "react-hook-form";
+import { Workout } from "@/lib/validateWorkout";
+
 interface SetRowProps {
 	key: string;
 	exerciseIndex: number;
@@ -13,10 +15,9 @@ export default function SetRow({
 	setIndex,
 }: SetRowProps): ReactElement {
 
-	const { register } = useFormContext()
+	const { register, formState: { errors } } = useFormContext<Workout>();
 
 	return (
-
 		<>
 			<div className="flex flex-col gap-1">
 				<div className="grid grid-cols-[min-content_1fr_min-content_1fr_min-content] gap-5 place-items-center">
@@ -39,6 +40,12 @@ export default function SetRow({
 						aria-label="Color success"
 					/>
 				</div>
+				{errors.exercises?.[exerciseIndex]?.sets?.[setIndex]?.reps && (
+					<span className="text-red-500 text-sm">
+						{errors.exercises?.[exerciseIndex]?.sets?.[setIndex]?.reps.message}
+					</span>
+				)}
+
 			</div>
 		</>
 	);

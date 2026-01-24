@@ -8,9 +8,9 @@ import {
 	useState,
 	type ReactElement,
 } from "react";
-import { FormProvider, useFieldArray, useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Workout, WorkoutSchema } from "@/lib/validateWorkout"
+import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Workout, WorkoutSchema } from "@/lib/validateWorkout";
 import ExerciseForm from "./ExerciseForm";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -44,17 +44,23 @@ export default function WorkoutForm({
 					},
 					notes: null,
 					difficulty: null,
-					sets: [{ id: crypto.randomUUID(), weight: null, reps: null }],
-				}
-			]
-		}
+					sets: [{ id: crypto.randomUUID(), weight: null, reps: undefined }],
+				},
+			],
+		},
 	});
-	const { register, control, handleSubmit, formState: { errors } } = methods;
+
+	const {
+		register,
+		control,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+	} = methods;
 
 	// console.log(errors)
 	const { fields, append } = useFieldArray({
 		name: "exercises",
-		control
+		control,
 	});
 
 	// -----
@@ -82,7 +88,7 @@ export default function WorkoutForm({
 			},
 			notes: null,
 			difficulty: null,
-			sets: [{ id: crypto.randomUUID(), weight: null, reps: null }],
+			sets: [{ id: crypto.randomUUID(), weight: null, reps: undefined }],
 		});
 
 		// setScrollTargetId(newExerciseObject.id);
@@ -99,17 +105,14 @@ export default function WorkoutForm({
 
 		const scrollTargetElement = exerciseRefs.current[scrollTargetId];
 		scrollTargetElement?.scrollIntoView({ behavior: "smooth", block: "end" });
-
 	}, [scrollTargetId]);
 
 	// -----
 
-	const [submitting, setSubmitting] = useState(false);
 	const router = useRouter();
 
-	const submitWorkout = async ( data: any ) => {
+	const submitWorkout = async (data: any) => {
 		const finalData = { ...data, durationSeconds };
-		// console.log(finalData)
 
 		try {
 			const saveMethod = workoutId ? "PATCH" : "POST";
@@ -131,7 +134,7 @@ export default function WorkoutForm({
 		} catch (error) {
 			console.log("Failed to submit workout", error);
 		}
-	}
+	};
 
 	return (
 		<div className="flex flex-col h-svh">
@@ -147,9 +150,9 @@ export default function WorkoutForm({
 				<Button
 					type="submit"
 					form="workout-form"
-					disabled={submitting}
+					disabled={isSubmitting}
 					size="sm">
-					{submitting ? "Saving" : "Done"}
+					{isSubmitting ? "Saving" : "Done"}
 				</Button>
 			</div>
 
@@ -158,7 +161,6 @@ export default function WorkoutForm({
 					className="flex flex-col h-full overflow-y-auto"
 					id="workout-form"
 					onSubmit={handleSubmit(submitWorkout)}>
-
 					{/* Workout Name */}
 					<section className="flex flex-col gap-1 pl-4 pr-4 pb-4 border-b bg-input/50 dark:backdrop-blur-xs">
 						<Input
@@ -168,8 +170,7 @@ export default function WorkoutForm({
 					</section>
 
 					{/* Exercise Form */}
-					<section
-						className="flex flex-col flex-1 overflow-y-auto snap-y snap-mandatory">
+					<section className="flex flex-col flex-1 overflow-y-auto snap-y snap-mandatory">
 						{fields.map((exercise, exerciseIndex) => (
 							<ExerciseForm
 								key={exercise.id}

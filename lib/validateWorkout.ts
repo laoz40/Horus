@@ -1,25 +1,21 @@
 import * as z from "zod";
 
 export const GlobalExerciseInputSchema = z.object({
-	name: z
-		.string()
-		.trim()
-		.min(2, "Can you enter a real exercise?")
+	name: z.string().trim().min(2, "Can you enter an actual exercise?"),
 });
 
-const SetSchema = z
-	.object({
-		id: z.string(),
-		weight: z.number().nonnegative().nullable(),
-		reps: z
+const SetSchema = z.object({
+	id: z.string(),
+	weight: z.number().nonnegative().nullable(),
+	reps: z.preprocess(
+		(value) => (value === undefined ? 0 : value),
+		z
 			.number()
 			.int()
 			.gt(0, "Set doesn't have reps. You can't just do nothing.")
-			.nullable(),
-	})
-	.refine((set) => set.weight !== null && set.reps !== null, {
-		message: "Set is empty",
-	});
+			.optional(),
+	),
+});
 
 const ExerciseSchema = z.object({
 	id: z.string(),
@@ -30,7 +26,7 @@ const ExerciseSchema = z.object({
 });
 
 export const WorkoutSchema = z.object({
-	name: z.string().min(1, "No Workout Name"),
+	name: z.string(),
 	durationSeconds: z.int().nullable(),
 	exercises: z
 		.array(ExerciseSchema)

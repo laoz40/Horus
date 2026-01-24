@@ -3,27 +3,31 @@
 import { forwardRef, useState } from "react";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import { Button } from "./ui/button";
-import { Edit, History } from "lucide-react";
+import { CircleAlert, Edit, History } from "lucide-react";
 import SetRow from "./SetRow";
 import { cn } from "@/lib/utils";
 import InputNoBorder from "./InputNoBorder";
 import { useFieldArray, useFormContext } from "react-hook-form";
+import { Workout } from "@/lib/validateWorkout";
 
 export interface ExerciseFormProps
 	extends React.HTMLAttributes<HTMLDivElement> {
-	exerciseIndex: number
+	exerciseIndex: number;
 }
 
 const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 	({ className, exerciseIndex }, ref) => {
-		const { register } = useFormContext()
+		const {
+			register,
+			formState: { errors },
+		} = useFormContext<Workout>();
 
 		const { fields, append } = useFieldArray({
-			name: `exercises.${exerciseIndex}.sets`
-		})
+			name: `exercises.${exerciseIndex}.sets`,
+		});
 
 		const handleAddSet = () => {
-			append({ weight: null, reps: null })
+			append({ weight: null, reps: null });
 		};
 
 		const exerciseNames = [
@@ -62,8 +66,14 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 							value={exercise}></option>
 					))}
 				</datalist>
+				{errors.exercises?.[exerciseIndex]?.global?.name && (
+					<span className="text-red-500 text-sm">
+						{errors.exercises?.[exerciseIndex]?.global?.name?.message}
+					</span>
+				)}
 
-				{/*	{exerciseNameBlurred && exerciseData.name.trim() && ( */
+				{
+					/*	{exerciseNameBlurred && exerciseData.name.trim() && ( */
 					<div className="h-full flex flex-col gap-1">
 						{/* Recent + Edit Buttons */}
 						<div className="flex flex-row justify-between text-xs">
@@ -96,6 +106,12 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 									/>
 								))}
 							</div>
+							{/* NOTE: need to test this when deleting sets is added */}
+							{errors.exercises?.[exerciseIndex]?.sets?.message && (
+								<span className="text-red-500 text-sm">
+									{errors.exercises?.[exerciseIndex]?.sets?.message}
+								</span>
+							)}
 							<Button
 								variant="ghost"
 								className="w-full text-muted-foreground"
@@ -115,9 +131,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 						</Button>
 
 						{/* Difficulty and Notes */}
-						<ExerciseCollapsibles
-							exerciseIndex={exerciseIndex}
-						/>
+						<ExerciseCollapsibles exerciseIndex={exerciseIndex} />
 					</div>
 				}
 			</section>
