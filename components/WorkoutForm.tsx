@@ -40,7 +40,7 @@ export default function WorkoutForm({
 					},
 					notes: undefined,
 					difficulty: undefined,
-					sets: [{ id: crypto.randomUUID(), weight: null, reps: undefined }],
+					sets: [{ id: crypto.randomUUID(), weight: undefined, reps: undefined }],
 				},
 			],
 		},
@@ -53,7 +53,7 @@ export default function WorkoutForm({
 		formState: { errors, isSubmitting },
 	} = methods;
 
-	// console.log(errors)
+	console.log(errors)
 	const { fields, append } = useFieldArray({
 		name: "exercises",
 		control,
@@ -84,7 +84,7 @@ export default function WorkoutForm({
 			},
 			notes: undefined,
 			difficulty: undefined,
-			sets: [{ id: crypto.randomUUID(), weight: null, reps: undefined }],
+			sets: [{ id: crypto.randomUUID(), weight: undefined, reps: undefined }],
 		});
 
 		// setScrollTargetId(newExerciseObject.id);
