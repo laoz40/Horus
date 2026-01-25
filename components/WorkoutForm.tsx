@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-	FormEvent,
 	useEffect,
 	useRef,
 	useState,
@@ -44,7 +43,7 @@ export default function WorkoutForm({
 					},
 					notes: null,
 					difficulty: null,
-					sets: [{ id: crypto.randomUUID(), weight: null, reps: undefined }],
+					sets: [{ id: crypto.randomUUID(), weight: undefined, reps: undefined }],
 				},
 			],
 		},
@@ -88,7 +87,7 @@ export default function WorkoutForm({
 			},
 			notes: null,
 			difficulty: null,
-			sets: [{ id: crypto.randomUUID(), weight: null, reps: undefined }],
+			sets: [{ id: crypto.randomUUID(), weight: undefined, reps: undefined }],
 		});
 
 		// setScrollTargetId(newExerciseObject.id);

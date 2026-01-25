@@ -1,12 +1,12 @@
 import * as z from "zod";
 
 export const GlobalExerciseInputSchema = z.object({
-	name: z.string().trim().min(2, "Can you enter an actual exercise?"),
+	name: z.string().trim().min(2, "Enter an exercise"),
 });
 
 const SetSchema = z.object({
 	id: z.string(),
-	weight: z.number().nonnegative().nullable(),
+	weight: z.number().nonnegative().optional(),
 	reps: z
 	.union([
 		z.number("Set doesn't have reps.").int().positive("Set doesn't have reps. You can't just do nothing."),
