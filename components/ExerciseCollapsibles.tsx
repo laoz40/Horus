@@ -1,10 +1,6 @@
 "use client";
 
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Slider } from "@/components/ui/slider";
 import { BicepsFlexed, ChevronDown, LucideIcon, Notebook } from "lucide-react";
 import { Activity, ReactNode, useState } from "react";
