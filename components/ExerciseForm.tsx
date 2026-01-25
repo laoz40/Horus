@@ -3,7 +3,7 @@
 import { forwardRef, useState } from "react";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import { Button } from "./ui/button";
-import { CircleAlert, Edit, History } from "lucide-react";
+import { Edit, History } from "lucide-react";
 import SetRow from "./SetRow";
 import { cn } from "@/lib/utils";
 import InputNoBorder from "./InputNoBorder";

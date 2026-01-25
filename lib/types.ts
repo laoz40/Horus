@@ -23,8 +23,8 @@ export interface ExerciseFormData {
 	global: {
 		name: string;
 	};
-	difficulty: number | null;
-	notes: string | null;
+	difficulty: number | undefined;
+	notes: string | undefined;
 	sets: SetFormData[];
 }
 

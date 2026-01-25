@@ -18,8 +18,8 @@ const SetSchema = z.object({
 const ExerciseSchema = z.object({
 	id: z.string(),
 	global: GlobalExerciseInputSchema,
-	difficulty: z.number().nullable(),
-	notes: z.string().nullable(),
+	difficulty: z.number().optional(),
+	notes: z.string().optional(),
 	sets: z.array(SetSchema).min(1, "Exercise has no sets. Did you even do it?"),
 });
 

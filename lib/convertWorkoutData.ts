@@ -38,8 +38,8 @@ export const convertDbToFormData = (
 			global: {
 				name: exercise.globalExercise.name,
 			},
-			difficulty: exercise.difficulty,
-			notes: exercise.notes,
+			difficulty: exercise.difficulty === null ? undefined : exercise.difficulty,
+			notes: exercise.notes === null ? undefined : exercise.notes,
 			sets: exercise.sets.map((set) => ({
 				id: set.id,
 				weight: String(set.weight),

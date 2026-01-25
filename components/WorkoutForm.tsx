@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-	FormEvent,
 	useEffect,
 	useRef,
 	useState,
@@ -25,11 +24,8 @@ interface WorkoutFormProps {
 }
 
 export default function WorkoutForm({
-	initialData,
 	workoutId,
 }: WorkoutFormProps): ReactElement {
-	const [workoutData, setWorkoutData] = useState<WorkoutFormData>();
-
 	const methods = useForm<Workout>({
 		resolver: zodResolver(WorkoutSchema),
 		mode: "onSubmit",
@@ -42,8 +38,8 @@ export default function WorkoutForm({
 					global: {
 						name: "",
 					},
-					notes: null,
-					difficulty: null,
+					notes: undefined,
+					difficulty: undefined,
 					sets: [{ id: crypto.randomUUID(), weight: null, reps: undefined }],
 				},
 			],
@@ -86,8 +82,8 @@ export default function WorkoutForm({
 			global: {
 				name: "",
 			},
-			notes: null,
-			difficulty: null,
+			notes: undefined,
+			difficulty: undefined,
 			sets: [{ id: crypto.randomUUID(), weight: null, reps: undefined }],
 		});
 
