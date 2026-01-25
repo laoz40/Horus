@@ -1,15 +1,10 @@
 "use client";
 
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Slider } from "@/components/ui/slider";
 import { BicepsFlexed, ChevronDown, LucideIcon, Notebook } from "lucide-react";
-import { Activity, ChangeEvent, ReactNode, useState } from "react";
+import { Activity, ReactNode, useState } from "react";
 import { Textarea } from "./ui/textarea";
-import { ExerciseFormData } from "@/lib/types";
 import { useFormContext } from "react-hook-form";
 
 interface ExerciseCollapsiblesProps {
@@ -44,8 +39,8 @@ function DifficultySlider({
 //		}
 //	};
 
-
 	const { register } = useFormContext()
+
 	return (
 		<CollapsibleFilter
 			title="Difficulty"
