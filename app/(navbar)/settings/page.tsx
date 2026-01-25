@@ -26,7 +26,6 @@ const handleClick = async () => {
 };
 
 export default function SettingsPage() {
-	// TODO: Delete all workouts buttons
 	return (
 		<>
 			<div className="p-4">

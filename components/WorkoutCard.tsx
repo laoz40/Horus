@@ -6,7 +6,6 @@ import WorkoutCardStats from "./WorkoutCardStats";
 import WorkoutCardOptions from "./WorkoutCardOptions";
 import { Badge } from "./ui/badge";
 
-// TODO: calculate pr
 const pr = 2;
 
 interface WorkoutCardProps {
