@@ -7,14 +7,12 @@ export const GlobalExerciseInputSchema = z.object({
 const SetSchema = z.object({
 	id: z.string(),
 	weight: z.number().nonnegative().nullable(),
-	reps: z.preprocess(
-		(value) => (value === undefined ? 0 : value),
-		z
-			.number()
-			.int()
-			.gt(0, "Set doesn't have reps. You can't just do nothing.")
-			.optional(),
-	),
+	reps: z
+		.union([
+			z.number().int().gt(0, "Set doesn't have reps. You can't just do nothing."),
+			z.undefined(),
+		])
+		.transform((value) => value === 0 ? undefined : value),
 });
 
 const ExerciseSchema = z.object({
