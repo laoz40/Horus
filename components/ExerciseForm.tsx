@@ -27,7 +27,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		});
 
 		const handleAddSet = () => {
-			append({ weight: null, reps: null });
+			append({ id: crypto.randomUUID(), weight: undefined, reps: undefined });
 		};
 
 		const exerciseNames = [
