@@ -81,8 +81,10 @@ export default function WorkoutForm({
 	// -----
 
 	const handleAddExercise = () => {
+		const newExerciseId = crypto.randomUUID();
+
 		append({
-			id: crypto.randomUUID(),
+			id: newExerciseId,
 			global: {
 				name: "",
 			},
@@ -91,7 +93,7 @@ export default function WorkoutForm({
 			sets: [{ id: crypto.randomUUID(), weight: undefined, reps: undefined }],
 		});
 
-		// setScrollTargetId(newExerciseObject.id);
+		setScrollTargetId(newExerciseId);
 	};
 
 	// -----
@@ -103,8 +105,9 @@ export default function WorkoutForm({
 	useEffect(() => {
 		if (scrollTargetId == null) return;
 
+		// TODO: this is not smooth for some reason
 		const scrollTargetElement = exerciseRefs.current[scrollTargetId];
-		scrollTargetElement?.scrollIntoView({ behavior: "smooth", block: "end" });
+		scrollTargetElement?.scrollIntoView({ behavior: "auto", block: "end" });
 	}, [scrollTargetId]);
 
 	// -----
@@ -187,6 +190,7 @@ export default function WorkoutForm({
 					<div className="flex w-full border-t p-4 bg-input/50 dark:backdrop-blur-xs">
 						<Button
 							className="flex-1"
+							type="button"
 							onClick={handleAddExercise}>
 							+ Exercise
 						</Button>
