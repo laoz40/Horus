@@ -13,8 +13,8 @@ export type WorkoutDbData = PrismaWorkout & {
 
 export interface SetFormData {
 	id: string;
-	weight: string;
-	reps: string;
+	weight: number;
+	reps: number;
 }
 
 export interface ExerciseFormData {

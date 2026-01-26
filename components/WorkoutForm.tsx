@@ -1,12 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-	useEffect,
-	useRef,
-	useState,
-	type ReactElement,
-} from "react";
+import { useEffect, useRef, useState, type ReactElement } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Workout, WorkoutSchema } from "@/lib/validateWorkout";
@@ -24,6 +19,7 @@ interface WorkoutFormProps {
 }
 
 export default function WorkoutForm({
+	initialData,
 	workoutId,
 }: WorkoutFormProps): ReactElement {
 	const methods = useForm<Workout>({
@@ -40,7 +36,9 @@ export default function WorkoutForm({
 					},
 					notes: undefined,
 					difficulty: undefined,
-					sets: [{ id: crypto.randomUUID(), weight: undefined, reps: undefined }],
+					sets: [
+						{ id: crypto.randomUUID(), weight: undefined, reps: undefined },
+					],
 				},
 			],
 		},
@@ -51,18 +49,24 @@ export default function WorkoutForm({
 		control,
 		handleSubmit,
 		formState: { errors, isSubmitting },
+		reset,
 	} = methods;
 
-	console.log(errors)
+	// console.log(errors);
 	const { fields, append } = useFieldArray({
 		name: "exercises",
 		control,
 	});
 
+	useEffect(() => {
+		if (!initialData) return;
+		reset(initialData);
+	}, []);
+
 	// -----
 
-	// TODO: this should probably save when clicking back button, but idk
-	const [durationSeconds, setDurationSeconds] = useState(0);
+	// NOTE: this should probably save when clicking back button, but idk
+	const [durationSeconds, setDurationSeconds] = useState(initialData?.durationSeconds ?? 0);
 
 	useEffect(() => {
 		const interval = setInterval(() => {

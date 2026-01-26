@@ -42,8 +42,8 @@ export const convertDbToFormData = (
 			notes: exercise.notes === null ? undefined : exercise.notes,
 			sets: exercise.sets.map((set) => ({
 				id: set.id,
-				weight: String(set.weight),
-				reps: String(set.reps),
+				weight: set.weight,
+				reps: set.reps,
 			})),
 		})),
 	};
