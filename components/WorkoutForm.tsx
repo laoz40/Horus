@@ -53,7 +53,7 @@ export default function WorkoutForm({
 	} = methods;
 
 	// console.log(errors);
-	const { fields, append } = useFieldArray({
+	const { fields: exercises, append } = useFieldArray({
 		name: "exercises",
 		control,
 	});
@@ -61,12 +61,15 @@ export default function WorkoutForm({
 	useEffect(() => {
 		if (!initialData) return;
 		reset(initialData);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	// -----
 
 	// NOTE: this should probably save when clicking back button, but idk
-	const [durationSeconds, setDurationSeconds] = useState(initialData?.durationSeconds ?? 0);
+	const [durationSeconds, setDurationSeconds] = useState(
+		initialData?.durationSeconds ?? 0,
+	);
 
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -80,34 +83,54 @@ export default function WorkoutForm({
 
 	// -----
 
+	const [scrollTargetId, setScrollTargetId] = useState<string | null>(null);
+	const [previousExercisesLength, setPreviousExercisesLength] = useState(
+		exercises.length,
+	);
+
 	const handleAddExercise = () => {
-		const newExerciseId = crypto.randomUUID();
-
-		append({
-			id: newExerciseId,
-			global: {
-				name: "",
+		append(
+			{
+				id: crypto.randomUUID(),
+				global: {
+					name: "",
+				},
+				notes: undefined,
+				difficulty: undefined,
+				sets: [{ id: crypto.randomUUID(), weight: undefined, reps: undefined }],
 			},
-			notes: undefined,
-			difficulty: undefined,
-			sets: [{ id: crypto.randomUUID(), weight: undefined, reps: undefined }],
-		});
-
-		setScrollTargetId(newExerciseId);
+			{
+				shouldFocus: false,
+			},
+		);
 	};
+
+	useEffect(() => {
+		const newExerciseAdded =
+			exercises.length > previousExercisesLength && exercises.length > 0;
+		if (newExerciseAdded) {
+			const latestExerciseId = exercises[exercises.length - 1]?.id;
+			if (latestExerciseId) {
+				setScrollTargetId(latestExerciseId);
+			}
+		}
+
+		setPreviousExercisesLength(exercises.length);
+	}, [exercises, previousExercisesLength]);
 
 	// -----
 
-	const [scrollTargetId, setScrollTargetId] = useState<string | null>(null);
 	// attach each exercise form div to the exercise id
-	const exerciseRefs = useRef<Record<string, HTMLDivElement | null>>({});
+	const exerciseFormDivRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
 	useEffect(() => {
 		if (scrollTargetId == null) return;
 
-		// TODO: this is not smooth for some reason
-		const scrollTargetElement = exerciseRefs.current[scrollTargetId];
-		scrollTargetElement?.scrollIntoView({ behavior: "auto", block: "end" });
+		const scrollTarget = exerciseFormDivRefs.current[scrollTargetId];
+		scrollTarget?.scrollIntoView({
+			behavior: "smooth",
+			block: "end",
+		});
 	}, [scrollTargetId]);
 
 	// -----
@@ -118,11 +141,9 @@ export default function WorkoutForm({
 		const finalData = { ...data, durationSeconds };
 
 		try {
-			const saveMethod = workoutId ? "PATCH" : "POST";
 			const apiUrl = workoutId ? `/api/workouts/${workoutId}` : "/api/workouts";
-
 			const saveWorkout = await fetch(apiUrl, {
-				method: saveMethod,
+				method: workoutId ? "PATCH" : "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(finalData),
 			});
@@ -174,12 +195,12 @@ export default function WorkoutForm({
 
 					{/* Exercise Form */}
 					<section className="flex flex-col flex-1 overflow-y-auto snap-y snap-mandatory">
-						{fields.map((exercise, exerciseIndex) => (
+						{exercises.map((exercise, exerciseIndex) => (
 							<ExerciseForm
 								key={exercise.id}
 								exerciseIndex={exerciseIndex}
 								ref={(ExerciseForm) => {
-									exerciseRefs.current[exercise.id] = ExerciseForm;
+									exerciseFormDivRefs.current[exercise.id] = ExerciseForm;
 								}}
 								className="snap-start min-h-full h-full"
 							/>
