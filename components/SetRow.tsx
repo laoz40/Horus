@@ -30,7 +30,7 @@ export default function SetRow({
 					<NumberInput
 						variant="decimal"
 						placeholder="kg"
-						className="text-xl h-11"
+						className="text-2xl h-11"
 						{...register(`exercises.${exerciseIndex}.sets.${setIndex}.weight`, {
 							valueAsNumber: true,
 						})}
@@ -39,7 +39,7 @@ export default function SetRow({
 					<NumberInput
 						variant="integer"
 						placeholder="reps"
-						className="text-xl h-11"
+						className="text-2xl h-11"
 						{...register(`exercises.${exerciseIndex}.sets.${setIndex}.reps`, {
 							valueAsNumber: true,
 						})}

@@ -2,7 +2,6 @@
 
 import { cn } from "@/lib/utils";
 import { Workout } from "@/lib/validateWorkout";
-import { Check, Edit, History } from "lucide-react";
 import { forwardRef, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
@@ -56,7 +55,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		return (
 			<section
 				ref={ref}
-				className={cn("h-full flex flex-col gap-4 p-4", className)}>
+				className={cn("h-full flex flex-col gap-5 p-4", className)}>
 				{/* Exercise Name */}
 				<InputNoBorder
 					placeholder="Type an exercise..."
@@ -80,35 +79,39 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 
 				{
 					/*	{exerciseNameBlurred && exerciseData.name.trim() && ( */
-					<div className="h-full flex flex-col gap-1">
+					<div className="h-full flex flex-col gap-2">
 						{/* Recent + Edit Buttons */}
 						<div className="flex flex-row justify-between text-xs">
 							<Button
-								variant="ghost"
+								variant="secondary"
 								size="sm"
 								type="button"
-								className="text-muted-foreground p-0!">
-								<History />
+								className="text-muted-foreground text-xs">
 								Recent
 							</Button>
-							<Button
-								variant="ghost"
-								size="sm"
-								type="button"
-								className="text-muted-foreground p-0!"
-								onClick={() => setIsEditing(!isEditing)}>
-								{isEditing ? (
-									<div className="flex flex-row items-center justify-center gap-1">
-										<Check />
+							{isEditing ? (
+								<Button
+									variant="default"
+									size="sm"
+									type="button"
+									className="text-muted-foreground w-12"
+									onClick={() => setIsEditing(!isEditing)}>
+									<div className="flex flex-row items-center justify-center gap-1 text-xs text-primary-foreground">
 										Done
 									</div>
-								) : (
-									<div className="flex flex-row items-center justify-center gap-1">
-										<Edit />
+								</Button>
+							) : (
+								<Button
+									variant="secondary"
+									size="sm"
+									type="button"
+									className="text-muted-foreground w-12"
+									onClick={() => setIsEditing(!isEditing)}>
+									<div className="flex flex-row items-center justify-center gap-1 text-xs">
 										Edit
 									</div>
-								)}
-							</Button>
+								</Button>
+							)}
 						</div>
 
 						{/* Set Rows */}
@@ -139,13 +142,23 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 						</div>
 
 						{/* Add Set Button */}
-						<Button
-							variant="secondary"
-							className="w-full"
-							type="button"
-							onClick={handleAddSet}>
-							Add Set
-						</Button>
+						{isEditing ? (
+							<Button
+								variant="destructive"
+								className="w-full"
+								type="button"
+								onClick={() => console.log("delete")}>
+								Delete Exercise
+							</Button>
+						) : (
+							<Button
+								variant="secondary"
+								className="w-full"
+								type="button"
+								onClick={handleAddSet}>
+								Add Set
+							</Button>
+						)}
 
 						{/* Difficulty and Notes */}
 						<ExerciseCollapsibles exerciseIndex={exerciseIndex} />
