@@ -57,25 +57,27 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				ref={ref}
 				className={cn("h-full flex flex-col gap-5 p-4", className)}>
 				{/* Exercise Name */}
-				<InputNoBorder
-					placeholder="Type an exercise..."
-					className="text-2xl font-medium"
-					{...register(`exercises.${exerciseIndex}.global.name`)}
-					onBlur={() => setExerciseNameBlurred(true)}
-					list="exercises"
-				/>
-				<datalist id="exercises">
-					{exerciseNames.map((exercise: string) => (
-						<option
-							key={exercise}
-							value={exercise}></option>
-					))}
-				</datalist>
-				{errors.exercises?.[exerciseIndex]?.global?.name && (
-					<span className="text-red-500 text-sm">
-						{errors.exercises?.[exerciseIndex]?.global?.name?.message}
-					</span>
-				)}
+				<div className="flex flex-col gap-2">
+					<InputNoBorder
+						placeholder="Type an exercise..."
+						className="text-2xl font-medium"
+						{...register(`exercises.${exerciseIndex}.global.name`)}
+						onBlur={() => setExerciseNameBlurred(true)}
+						list="exercises"
+					/>
+					<datalist id="exercises">
+						{exerciseNames.map((exercise: string) => (
+							<option
+								key={exercise}
+								value={exercise}></option>
+						))}
+					</datalist>
+					{errors.exercises?.[exerciseIndex]?.global?.name && (
+						<span className="text-red-500 text-sm">
+							{errors.exercises?.[exerciseIndex]?.global?.name?.message}
+						</span>
+					)}
+				</div>
 
 				{
 					/*	{exerciseNameBlurred && exerciseData.name.trim() && ( */
