@@ -1,14 +1,14 @@
 "use client";
 
-import { forwardRef, useState } from "react";
-import ExerciseCollapsibles from "./ExerciseCollapsibles";
-import { Button } from "./ui/button";
-import { Edit, History } from "lucide-react";
-import SetRow from "./SetRow";
 import { cn } from "@/lib/utils";
-import InputNoBorder from "./InputNoBorder";
-import { useFieldArray, useFormContext } from "react-hook-form";
 import { Workout } from "@/lib/validateWorkout";
+import { Check, Edit, History } from "lucide-react";
+import { forwardRef, useState } from "react";
+import { useFieldArray, useFormContext } from "react-hook-form";
+import ExerciseCollapsibles from "./ExerciseCollapsibles";
+import InputNoBorder from "./InputNoBorder";
+import SetRow from "./SetRow";
+import { Button } from "./ui/button";
 
 export interface ExerciseFormProps
 	extends React.HTMLAttributes<HTMLDivElement> {
@@ -27,7 +27,11 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		});
 
 		const handleAddSet = () => {
-			append({ id: crypto.randomUUID(), weight: undefined, reps: undefined });
+			append({
+				id: crypto.randomUUID(),
+				weight: undefined,
+				reps: undefined,
+			});
 		};
 
 		const exerciseNames = [
@@ -46,6 +50,8 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		];
 
 		const [exerciseNameBlurred, setExerciseNameBlurred] = useState(false);
+
+		const [isEditing, setIsEditing] = useState(false);
 
 		return (
 			<section
@@ -89,9 +95,19 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 								variant="ghost"
 								size="sm"
 								type="button"
-								className="text-muted-foreground p-0!">
-								<Edit />
-								Edit
+								className="text-muted-foreground p-0!"
+								onClick={() => setIsEditing(!isEditing)}>
+								{isEditing ? (
+									<div className="flex flex-row items-center justify-center gap-1">
+										<Check />
+										Done
+									</div>
+								) : (
+									<div className="flex flex-row items-center justify-center gap-1">
+										<Edit />
+										Edit
+									</div>
+								)}
 							</Button>
 						</div>
 
@@ -103,6 +119,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 										key={set.id}
 										setIndex={setIndex}
 										exerciseIndex={exerciseIndex}
+										isEditing={isEditing}
 									/>
 								))}
 							</div>

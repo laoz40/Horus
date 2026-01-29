@@ -1,21 +1,26 @@
-import { type ReactElement } from "react";
-import { Checkbox } from "./ui/checkbox";
-import NumberInput from "./NumberInput";
-import { useFormContext } from "react-hook-form";
 import { Workout } from "@/lib/validateWorkout";
+import { Trash } from "lucide-react";
+import { type ReactElement } from "react";
+import { useFormContext } from "react-hook-form";
+import NumberInput from "./NumberInput";
+import { Checkbox } from "./ui/checkbox";
 
 interface SetRowProps {
 	key: string;
 	exerciseIndex: number;
 	setIndex: number;
+	isEditing: boolean;
 }
 
 export default function SetRow({
 	exerciseIndex,
 	setIndex,
+	isEditing,
 }: SetRowProps): ReactElement {
-
-	const { register, formState: { errors } } = useFormContext<Workout>();
+	const {
+		register,
+		formState: { errors },
+	} = useFormContext<Workout>();
 
 	return (
 		<>
@@ -26,26 +31,35 @@ export default function SetRow({
 						variant="decimal"
 						placeholder="kg"
 						className="text-xl h-11"
-						{...register(`exercises.${exerciseIndex}.sets.${setIndex}.weight`, {valueAsNumber: true})}
+						{...register(`exercises.${exerciseIndex}.sets.${setIndex}.weight`, {
+							valueAsNumber: true,
+						})}
 					/>
 					<span className="text-muted-foreground">×</span>
 					<NumberInput
 						variant="integer"
 						placeholder="reps"
 						className="text-xl h-11"
-						{...register(`exercises.${exerciseIndex}.sets.${setIndex}.reps`, {valueAsNumber: true})}
+						{...register(`exercises.${exerciseIndex}.sets.${setIndex}.reps`, {
+							valueAsNumber: true,
+						})}
 					/>
-					<Checkbox
-						className="h-11 w-11 ml-4"
-						aria-label="Color success"
-					/>
+					{isEditing ? (
+						<div className="h-6 w-6 ml-4 flex items-center justify-center text-destructive">
+							<Trash />
+						</div>
+					) : (
+						<Checkbox
+							className="h-6 w-6 ml-4"
+							aria-label="Color success"
+						/>
+					)}
 				</div>
 				{errors.exercises?.[exerciseIndex]?.sets?.[setIndex]?.reps && (
 					<span className="text-red-500 text-sm">
 						{errors.exercises?.[exerciseIndex]?.sets?.[setIndex]?.reps.message}
 					</span>
 				)}
-
 			</div>
 		</>
 	);
