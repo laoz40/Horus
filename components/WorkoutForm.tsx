@@ -99,6 +99,7 @@ export default function WorkoutForm({
 				difficulty: undefined,
 				sets: [{ id: crypto.randomUUID(), weight: undefined, reps: undefined }],
 			},
+			// prevent insta scrolling
 			{
 				shouldFocus: false,
 			},
