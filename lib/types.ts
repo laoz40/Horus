@@ -15,6 +15,7 @@ export interface SetFormData {
 	id: string;
 	weight: number;
 	reps: number;
+	completed: boolean;
 }
 
 export interface ExerciseFormData {

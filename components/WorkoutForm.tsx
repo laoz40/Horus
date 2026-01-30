@@ -38,7 +38,12 @@ export default function WorkoutForm({
 					notes: undefined,
 					difficulty: undefined,
 					sets: [
-						{ id: crypto.randomUUID(), weight: undefined, reps: undefined },
+						{
+							id: crypto.randomUUID(),
+							weight: undefined,
+							reps: undefined,
+							completed: false,
+						},
 					],
 				},
 			],
@@ -105,7 +110,14 @@ export default function WorkoutForm({
 				},
 				notes: undefined,
 				difficulty: undefined,
-				sets: [{ id: crypto.randomUUID(), weight: undefined, reps: undefined }],
+				sets: [
+					{
+						id: crypto.randomUUID(),
+						weight: undefined,
+						reps: undefined,
+						completed: false,
+					},
+				],
 			},
 			// prevent insta scrolling
 			{

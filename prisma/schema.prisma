@@ -39,5 +39,6 @@ model Set {
   weight     Float
   reps       Int
   exerciseId String
+  completed  Boolean   @default(false)
   exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
 }

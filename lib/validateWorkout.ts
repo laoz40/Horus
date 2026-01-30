@@ -15,6 +15,7 @@ const SetSchema = z.object({
 		// valueAsNumber: true stops the input from being undefined
 		z.undefined(),
 	]),
+	completed: z.boolean(),
 });
 
 const ExerciseSchema = z.object({

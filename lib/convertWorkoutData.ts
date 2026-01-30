@@ -17,6 +17,7 @@ export const parseWorkout = (workout: WorkoutFormData): Workout => {
 				id: set.id,
 				weight: Number(set.weight) ?? 0,
 				reps: Number(set.reps),
+				completed: set.completed ?? false,
 			})),
 		})),
 	};
@@ -45,6 +46,7 @@ export const convertDbToFormData = (
 				id: set.id,
 				weight: set.weight,
 				reps: set.reps,
+				completed: set.completed,
 			})),
 		})),
 	};
