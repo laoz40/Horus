@@ -3,7 +3,7 @@
 import { Workout } from "@/lib/validateWorkout";
 import { Trash } from "lucide-react";
 import { useState, type ReactElement } from "react";
-import { useFormContext } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import NumberInput from "./NumberInput";
 import { Checkbox } from "./ui/checkbox";
 
@@ -21,10 +21,14 @@ export default function SetRow({
 }: SetRowProps): ReactElement {
 	const {
 		register,
+		control,
+		watch,
 		formState: { errors },
 	} = useFormContext<Workout>();
 
-	const [isChecked, setIsChecked] = useState(false);
+	const isChecked = watch(
+		`exercises.${exerciseIndex}.sets.${setIndex}.completed`,
+	);
 
 	return (
 		<>
@@ -59,11 +63,20 @@ export default function SetRow({
 							<Trash />
 						</div>
 					) : (
-						<Checkbox
-							className="h-6 w-6 ml-4"
-							aria-label="Color success"
-							checked={isChecked}
-							onCheckedChange={(value) => setIsChecked(!!value)}
+						<Controller
+							name={`exercises.${exerciseIndex}.sets.${setIndex}.completed`}
+							control={control}
+							defaultValue={false}
+							render={({ field }) => (
+								<Checkbox
+									className="h-6 w-6 ml-4"
+									aria-label="Color success"
+									checked={field.value}
+									onCheckedChange={(value) => {
+										field.onChange(!!value);
+									}}
+								/>
+							)}
 						/>
 					)}
 				</div>

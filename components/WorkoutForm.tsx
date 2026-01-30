@@ -53,17 +53,17 @@ export default function WorkoutForm({
 	const {
 		register,
 		control,
-		// watch,
+		watch,
 		handleSubmit,
 		formState: { errors, isSubmitting },
 		reset,
 	} = methods;
 
-	// const formValues = watch();
-	//
-	// useEffect(() => {
-	// 	console.log("form values:", formValues);
-	// }, [formValues]);
+	const formValues = watch();
+
+	useEffect(() => {
+		console.log("form values:", formValues);
+	}, [formValues]);
 
 	// console.log(errors);
 	const { fields: exercises, append } = useFieldArray({
