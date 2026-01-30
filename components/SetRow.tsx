@@ -2,7 +2,7 @@
 
 import { Workout } from "@/lib/validateWorkout";
 import { Trash } from "lucide-react";
-import { useState, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import NumberInput from "./NumberInput";
 import { Checkbox } from "./ui/checkbox";
