@@ -18,6 +18,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 	({ className, exerciseIndex }, ref) => {
 		const {
 			register,
+			getValues,
 			formState: { errors },
 		} = useFormContext<Workout>();
 
@@ -48,7 +49,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			"Tricep Extensions",
 		];
 
-		const [exerciseNameBlurred, setExerciseNameBlurred] = useState(false);
+		const getExerciseName = getValues(`exercises.${exerciseIndex}.global.name`);
 
 		const [isEditing, setIsEditing] = useState(false);
 
@@ -62,7 +63,6 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 						placeholder="Type an exercise..."
 						className="text-2xl font-medium"
 						{...register(`exercises.${exerciseIndex}.global.name`)}
-						onBlur={() => setExerciseNameBlurred(true)}
 						list="exercises"
 					/>
 					<datalist id="exercises">
@@ -79,8 +79,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 					)}
 				</div>
 
-				{
-					/*	{exerciseNameBlurred && exerciseData.name.trim() && ( */
+				{getExerciseName.trim() && (
 					<div className="h-full flex flex-col gap-2">
 						{/* Recent + Edit Buttons */}
 						<div className="flex flex-row justify-between text-xs">
@@ -165,7 +164,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 						{/* Difficulty and Notes */}
 						<ExerciseCollapsibles exerciseIndex={exerciseIndex} />
 					</div>
-				}
+				)}
 			</section>
 		);
 	},
