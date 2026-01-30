@@ -24,27 +24,27 @@ export default function NumberInput({
 	placeholder,
 	className,
 	onChange,
+	value,
 	...props
 }: InputProps) {
 	const config = variantConfig[variant];
 
-const handleBeforeInput = (
-  event: React.FormEvent<HTMLInputElement>
-) => {
-  const e = event as unknown as InputEvent;
-  const char = e.data;
+	const handleBeforeInput = (event: React.FormEvent<HTMLInputElement>) => {
+		const e = event as unknown as InputEvent;
+		const char = e.data;
 
-  if (!char) return; // deletion, paste, etc.
+		if (!char) return; // deletion, paste, etc.
 
-  const regex =
-    variant === "integer"
-      ? /^[0-9]$/
-      : /^[0-9.]$/;
+		const regex = variant === "integer" ? /^[0-9]$/ : /^[0-9.]$/;
 
-  if (!regex.test(char)) {
-    event.preventDefault();
-  }
-};
+		if (!regex.test(char)) {
+			event.preventDefault();
+		}
+	};
+
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		onChange?.(e);
+	};
 
 	return (
 		<Input
@@ -53,6 +53,8 @@ const handleBeforeInput = (
 			placeholder={placeholder}
 			className={className}
 			type="text"
+			onChange={handleChange}
+			value={value}
 			{...props}
 			onBeforeInput={handleBeforeInput}></Input>
 	);

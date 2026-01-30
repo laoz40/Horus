@@ -25,6 +25,7 @@ export default function WorkoutForm({
 	const methods = useForm<Workout>({
 		resolver: zodResolver(WorkoutSchema),
 		mode: "onSubmit",
+		reValidateMode: "onChange",
 		defaultValues: {
 			name: "",
 			durationSeconds: 0,
@@ -47,10 +48,17 @@ export default function WorkoutForm({
 	const {
 		register,
 		control,
+		// watch,
 		handleSubmit,
 		formState: { errors, isSubmitting },
 		reset,
 	} = methods;
+
+	// const formValues = watch();
+	//
+	// useEffect(() => {
+	// 	console.log("form values:", formValues);
+	// }, [formValues]);
 
 	// console.log(errors);
 	const { fields: exercises, append } = useFieldArray({

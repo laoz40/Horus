@@ -15,7 +15,7 @@ export const parseWorkout = (workout: WorkoutFormData): Workout => {
 			notes: (exercise.notes ?? "").trim(),
 			sets: exercise.sets.map((set) => ({
 				id: set.id,
-				weight: Number(set.weight),
+				weight: Number(set.weight) ?? 0,
 				reps: Number(set.reps),
 			})),
 		})),
@@ -38,7 +38,8 @@ export const convertDbToFormData = (
 			global: {
 				name: exercise.globalExercise.name,
 			},
-			difficulty: exercise.difficulty === null ? undefined : exercise.difficulty,
+			difficulty:
+				exercise.difficulty === null ? undefined : exercise.difficulty,
 			notes: exercise.notes === null ? undefined : exercise.notes,
 			sets: exercise.sets.map((set) => ({
 				id: set.id,

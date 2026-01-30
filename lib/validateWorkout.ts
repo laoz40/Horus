@@ -6,13 +6,15 @@ export const GlobalExerciseInputSchema = z.object({
 
 const SetSchema = z.object({
 	id: z.string(),
-	weight: z.number().nonnegative().optional(),
-	reps: z
-	.union([
-		z.number("Set doesn't have reps.").int().positive("Set doesn't have reps. You can't just do nothing."),
+	weight: z.union([z.number().nonnegative().optional(), z.nan()]),
+	reps: z.union([
+		z
+			.number("Set doesn't have reps.")
+			.int()
+			.positive("Set doesn't have reps. You can't just do nothing."),
 		// valueAsNumber: true stops the input from being undefined
 		z.undefined(),
-	])
+	]),
 });
 
 const ExerciseSchema = z.object({

@@ -3,7 +3,7 @@ import { WorkoutFormData } from "@/lib/types";
 import { db } from "@/lib/prisma";
 import { normalizeExerciseName, parseWorkout } from "@/lib/convertWorkoutData";
 import { Exercise, validateWorkout } from "@/lib/validateWorkout";
-import { fromZodError } from "zod-validation-error"
+import { fromZodError } from "zod-validation-error";
 
 // NOTE: currently unused, will be used later when i implement sorting/filtering?
 export async function GET() {
@@ -40,9 +40,7 @@ export async function POST(request: Request) {
 
 	const getGlobalExerciseId = async (exercise: Exercise): Promise<string> => {
 		if (exercise.global.name) {
-			const normalizedName = normalizeExerciseName(
-				exercise.global.name,
-			);
+			const normalizedName = normalizeExerciseName(exercise.global.name);
 			const existingExercise = await db.globalExercise.findUnique({
 				where: { normalizedName },
 			});
@@ -88,8 +86,8 @@ export async function POST(request: Request) {
 					notes: exercise.notes ?? null,
 					sets: {
 						create: exercise.sets.map((set) => ({
-							weight: set.weight ?? 0,
-							reps: set.reps ?? 0
+							weight: Number(set.weight),
+							reps: Number(set.reps),
 						})),
 					},
 				})),

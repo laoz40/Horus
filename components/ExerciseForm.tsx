@@ -136,7 +136,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 							)}
 							<Button
 								variant="ghost"
-								className="w-full text-muted-foreground"
+								className="w-full text-muted-foreground text-sm"
 								type="button"
 								onClick={handleAddSet}>
 								Add Set
