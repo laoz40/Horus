@@ -12,7 +12,6 @@ export async function PATCH(
 	const { id } = await params;
 	const rawWorkout: WorkoutFormData = await request.json();
 	const parsedWorkout = parseWorkout(rawWorkout);
-
 	const validationResult = validateWorkout(parsedWorkout);
 
 	if (!validationResult.success) {
@@ -26,9 +25,7 @@ export async function PATCH(
 
 	const getGlobalExerciseId = async (exercise: Exercise): Promise<string> => {
 		if (exercise.global.name) {
-			const normalizedName = normalizeExerciseName(
-				exercise.global.name,
-			);
+			const normalizedName = normalizeExerciseName(exercise.global.name);
 			const existingExercise = await db.globalExercise.findUnique({
 				where: { normalizedName },
 			});
@@ -75,15 +72,16 @@ export async function PATCH(
 					where: { id: exercise.id },
 					// update only existing exercises (have ids)
 					update: {
-							globalExercise: { connect: { id: exercise.globalExerciseId } },
-							difficulty: exercise.difficulty ?? null,
-							notes: exercise.notes ?? null,
-							sets: {
-								deleteMany: {},
-								create: exercise.sets.map((set) => ({
-									weight: Number(set.weight),
-									reps: Number(set.reps),
-								})),
+						globalExercise: { connect: { id: exercise.globalExerciseId } },
+						difficulty: exercise.difficulty ?? null,
+						notes: exercise.notes ?? null,
+						sets: {
+							deleteMany: {},
+							create: exercise.sets.map((set) => ({
+								weight: Number(set.weight),
+								reps: Number(set.reps),
+								completed: set.completed ?? false,
+							})),
 						},
 					},
 					// create the new exercises that don't have ids
@@ -95,6 +93,7 @@ export async function PATCH(
 							create: exercise.sets.map((set) => ({
 								weight: Number(set.weight),
 								reps: Number(set.reps),
+								completed: set.completed ?? false,
 							})),
 						},
 					},
