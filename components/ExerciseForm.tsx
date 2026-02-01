@@ -128,12 +128,6 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 									/>
 								))}
 							</div>
-							{/* NOTE: need to test this when deleting sets is added */}
-							{errors.exercises?.[exerciseIndex]?.sets?.message && (
-								<span className="text-red-500 text-sm">
-									{errors.exercises?.[exerciseIndex]?.sets?.message}
-								</span>
-							)}
 							<Button
 								variant="ghost"
 								className="w-full text-muted-foreground text-sm"
@@ -141,6 +135,12 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 								onClick={handleAddSet}>
 								Add Set
 							</Button>
+							{ // FIX: error doesn't dissappear when adding a new set
+								errors.exercises?.[exerciseIndex]?.sets?.root?.message && (
+								<span className="text-red-500 text-sm">
+									{errors.exercises?.[exerciseIndex]?.sets?.root?.message}
+								</span>
+							)}
 						</div>
 
 						{/* Add Set Button */}
