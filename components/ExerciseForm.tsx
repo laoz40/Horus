@@ -22,7 +22,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			formState: { errors },
 		} = useFormContext<Workout>();
 
-		const { fields, append } = useFieldArray({
+		const { fields, append, remove } = useFieldArray({
 			name: `exercises.${exerciseIndex}.sets`,
 		});
 
@@ -124,6 +124,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 										setIndex={setIndex}
 										exerciseIndex={exerciseIndex}
 										isEditing={isEditing}
+										onRemoveSet={() => remove(setIndex)}
 									/>
 								))}
 							</div>
