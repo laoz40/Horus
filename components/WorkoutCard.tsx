@@ -5,6 +5,7 @@ import { ShineBorder } from "./ui/shine-border";
 import WorkoutCardStats from "./WorkoutCardStats";
 import WorkoutCardOptions from "./WorkoutCardOptions";
 import { Badge } from "./ui/badge";
+import { toast } from "sonner";
 
 const pr = 2;
 
@@ -29,8 +30,21 @@ export default function WorkoutCard({
 				const response = await fetch(`/api/workouts/${workout.id}`, {
 					method: "DELETE",
 				});
-				const workoutData = await response.json();
 
+				toast.info("Workout deleted", {
+					position: "top-center",
+					action: {
+						// TODO: undo delete
+						label: "Undo",
+						onClick: () => toast.dismiss(),
+					},
+					actionButtonStyle: {
+						background: "var(--muted)",
+						color: "var(--muted-foreground)",
+					},
+				});
+
+				const workoutData = await response.json();
 				if (!workoutData.success) {
 					console.log("Failed to delete workout:", workoutData.error);
 				}
@@ -70,7 +84,10 @@ export default function WorkoutCard({
 					</div>
 				</div>
 
-				<WorkoutCardStats pr={pr} duration={workout.durationSeconds ?? 0} />
+				<WorkoutCardStats
+					pr={pr}
+					duration={workout.durationSeconds ?? 0}
+				/>
 			</Card>
 		</>
 	);

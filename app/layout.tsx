@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Oxanium } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
 	title: "V3 Workout Tracker",
@@ -23,6 +24,7 @@ export default function RootLayout({
 			className={oxanium.className}
 			suppressHydrationWarning>
 			<body className="flex flex-col h-dvh w-full dark:bg-black relative">
+				<Toaster />
 				{/* Cosmic Nebula */}
 				<div
 					className="absolute inset-0 z-0 hidden dark:block"

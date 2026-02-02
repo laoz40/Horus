@@ -8,6 +8,7 @@ import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import InputNoBorder from "./InputNoBorder";
 import SetRow from "./SetRow";
 import { Button } from "./ui/button";
+import { toast } from "sonner";
 
 export interface ExerciseFormProps
 	extends React.HTMLAttributes<HTMLDivElement> {
@@ -35,6 +36,23 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				reps: undefined,
 			});
 			trigger(`exercises.${exerciseIndex}.sets`);
+		};
+
+		const handleDeleteSet = (setIndex: number) => {
+			remove(setIndex);
+			toast.info("Set deleted", {
+				position: "top-center",
+				duration: 1500,
+				action: {
+					// TODO: undo delete
+					label: "Undo",
+					onClick: () => toast.dismiss(),
+				},
+				actionButtonStyle: {
+					background: "var(--muted)",
+					color: "var(--muted-foreground)",
+				},
+			});
 		};
 
 		const exerciseNames = [
@@ -127,7 +145,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 										setIndex={setIndex}
 										exerciseIndex={exerciseIndex}
 										isEditing={isEditing}
-										handleDeleteSet={() => remove(setIndex)}
+										handleDeleteSet={() => handleDeleteSet(setIndex)}
 									/>
 								))}
 							</div>

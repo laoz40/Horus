@@ -12,6 +12,7 @@ import { WorkoutFormData } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { formatDurationFull } from "@/lib/time";
 import { currentDay } from "@/lib/date";
+import { toast } from "sonner";
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
@@ -69,7 +70,11 @@ export default function WorkoutForm({
 	// }, [formValues]);
 
 	// console.log(errors);
-	const { fields: exercises, append, remove } = useFieldArray({
+	const {
+		fields: exercises,
+		append,
+		remove,
+	} = useFieldArray({
 		name: "exercises",
 		control,
 	});
@@ -142,6 +147,22 @@ export default function WorkoutForm({
 		setPreviousExercisesLength(exercises.length);
 	}, [exercises, previousExercisesLength]);
 
+	const handleDeleteExercise = (exerciseIndex: number) => {
+		remove(exerciseIndex);
+		toast.info("Exercise deleted", {
+			position: "top-center",
+			action: {
+				// TODO: undo delete
+				label: "Undo",
+				onClick: () => toast.dismiss(),
+			},
+			actionButtonStyle: {
+				background: "var(--muted)",
+				color: "var(--muted-foreground)",
+			},
+		});
+	};
+
 	// -----
 
 	// attach each exercise form div to the exercise id
@@ -175,7 +196,19 @@ export default function WorkoutForm({
 			const result = await saveWorkout.json();
 			if (result.success) {
 				router.push("/workouts");
-				console.log(result);
+				// TODO: use promise toast instead to show loading state
+				toast.success(`Saved ${result.workout.name}`, {
+					position: "top-center",
+					action: {
+						label: "Dismiss",
+						onClick: () => toast.dismiss(),
+						actionButtonStyle: {},
+					},
+					actionButtonStyle: {
+						background: "var(--muted)",
+						color: "var(--muted-foreground)",
+					},
+				});
 			} else {
 				console.log(result);
 			}
@@ -227,7 +260,7 @@ export default function WorkoutForm({
 									exerciseFormDivRefs.current[exercise.id] = ExerciseForm;
 								}}
 								className="snap-start min-h-full h-full"
-								handleDeleteExercise={() => remove(exerciseIndex)}
+								handleDeleteExercise={() => handleDeleteExercise(exerciseIndex)}
 							/>
 						))}
 					</section>
