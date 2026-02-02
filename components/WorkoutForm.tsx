@@ -69,7 +69,7 @@ export default function WorkoutForm({
 	// }, [formValues]);
 
 	// console.log(errors);
-	const { fields: exercises, append } = useFieldArray({
+	const { fields: exercises, append, remove } = useFieldArray({
 		name: "exercises",
 		control,
 	});
@@ -227,6 +227,7 @@ export default function WorkoutForm({
 									exerciseFormDivRefs.current[exercise.id] = ExerciseForm;
 								}}
 								className="snap-start min-h-full h-full"
+								handleDeleteExercise={() => remove(exerciseIndex)}
 							/>
 						))}
 					</section>

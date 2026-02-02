@@ -12,10 +12,11 @@ import { Button } from "./ui/button";
 export interface ExerciseFormProps
 	extends React.HTMLAttributes<HTMLDivElement> {
 	exerciseIndex: number;
+	handleDeleteExercise: () => void;
 }
 
 const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
-	({ className, exerciseIndex }, ref) => {
+	({ className, exerciseIndex, handleDeleteExercise }, ref) => {
 		const {
 			register,
 			getValues,
@@ -124,7 +125,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 										setIndex={setIndex}
 										exerciseIndex={exerciseIndex}
 										isEditing={isEditing}
-										onRemoveSet={() => remove(setIndex)}
+										handleDeleteSet={() => remove(setIndex)}
 									/>
 								))}
 							</div>
@@ -149,7 +150,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 								variant="destructive"
 								className="w-full"
 								type="button"
-								onClick={() => console.log("delete")}>
+								onClick={handleDeleteExercise}>
 								Delete Exercise
 							</Button>
 						) : (

@@ -13,14 +13,14 @@ interface SetRowProps {
 	exerciseIndex: number;
 	setIndex: number;
 	isEditing: boolean;
-	onRemoveSet: () => void;
+	handleDeleteSet: () => void;
 }
 
 export default function SetRow({
 	exerciseIndex,
 	setIndex,
 	isEditing,
-	onRemoveSet,
+	handleDeleteSet,
 }: SetRowProps): ReactElement {
 	const {
 		register,
@@ -63,9 +63,13 @@ export default function SetRow({
 					/>
 					{isEditing ? (
 						<div className="h-6 w-6 ml-4 flex items-center justify-center text-destructive">
-							<Button variant="ghost" size="icon" type="button" onClick={onRemoveSet}>
-							<Trash />
-</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								type="button"
+								onClick={handleDeleteSet}>
+								<Trash />
+							</Button>
 						</div>
 					) : (
 						<Controller
