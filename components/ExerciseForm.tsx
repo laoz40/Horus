@@ -4,11 +4,11 @@ import { cn } from "@/lib/utils";
 import { Workout } from "@/lib/validateWorkout";
 import { forwardRef, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
+import { toast } from "sonner";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import InputNoBorder from "./InputNoBorder";
 import SetRow from "./SetRow";
 import { Button } from "./ui/button";
-import { toast } from "sonner";
 
 export interface ExerciseFormProps
 	extends React.HTMLAttributes<HTMLDivElement> {
@@ -20,15 +20,23 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 	({ className, exerciseIndex, handleDeleteExercise }, ref) => {
 		const {
 			register,
+			unregister,
 			getValues,
 			trigger,
+			watch,
 			formState: { errors },
 		} = useFormContext<Workout>();
 
-		const { fields, append, remove } = useFieldArray({
+		const {
+			fields: sets,
+			append,
+			remove,
+		} = useFieldArray({
 			name: `exercises.${exerciseIndex}.sets`,
-			shouldUnregister: true,
 		});
+
+		const watchedSets = watch(`exercises.${exerciseIndex}.sets`);
+		console.log(watchedSets);
 
 		const handleAddSet = () => {
 			append({
@@ -42,6 +50,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 
 		const handleDeleteSet = (setIndex: number) => {
 			remove(setIndex);
+			unregister(`exercises.${exerciseIndex}.sets.${setIndex}`);
 			toast.info("Set deleted", {
 				position: "top-center",
 				duration: 1500,
@@ -141,7 +150,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 						{/* Set Rows */}
 						<div className="flex flex-col overflow-y-auto no-scrollbar grow gap-3">
 							<div className="flex flex-col gap-3 pt-0.5">
-								{fields.map((set, setIndex) => (
+								{sets.map((set, setIndex) => (
 									<SetRow
 										key={set.id}
 										setIndex={setIndex}

@@ -1,18 +1,18 @@
 "use client";
 
+import { currentDay } from "@/lib/date";
+import { formatDurationFull } from "@/lib/time";
+import { WorkoutFormData } from "@/lib/types";
+import { Workout, WorkoutSchema } from "@/lib/validateWorkout";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactElement } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Workout, WorkoutSchema } from "@/lib/validateWorkout";
+import { toast } from "sonner";
 import ExerciseForm from "./ExerciseForm";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { WorkoutFormData } from "@/lib/types";
-import { useRouter } from "next/navigation";
-import { formatDurationFull } from "@/lib/time";
-import { currentDay } from "@/lib/date";
-import { toast } from "sonner";
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
@@ -64,7 +64,7 @@ export default function WorkoutForm({
 	} = methods;
 
 	// const formValues = watch();
-
+	//
 	// useEffect(() => {
 	// 	console.log("form values:", formValues);
 	// }, [formValues]);
