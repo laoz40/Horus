@@ -16,9 +16,16 @@ export default async function EditWorkoutPage({
 		include: {
 			exercises: {
 				include: {
-					sets: true,
+					sets: {
+						orderBy: {
+							id: "asc"
+						}
+					},
 					globalExercise: true,
 				},
+				orderBy: {
+					id: "asc"
+				}
 			},
 		},
 	});
