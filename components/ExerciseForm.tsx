@@ -156,14 +156,11 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 								onClick={handleAddSet}>
 								Add Set
 							</Button>
-							{
-								// FIX: error doesn't dissappear when adding a new set
-								errors.exercises?.[exerciseIndex]?.sets?.root?.message && (
-									<span className="text-red-500 text-sm">
-										{errors.exercises?.[exerciseIndex]?.sets?.root?.message}
-									</span>
-								)
-							}
+							{errors.exercises?.[exerciseIndex]?.sets?.root?.message && (
+								<span className="text-red-500 text-sm">
+									{errors.exercises?.[exerciseIndex]?.sets?.root?.message}
+								</span>
+							)}
 						</div>
 
 						{/* Add Set Button */}
