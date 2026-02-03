@@ -27,6 +27,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 
 		const { fields, append, remove } = useFieldArray({
 			name: `exercises.${exerciseIndex}.sets`,
+			shouldUnregister: true,
 		});
 
 		const handleAddSet = () => {
@@ -34,6 +35,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				id: crypto.randomUUID(),
 				weight: undefined,
 				reps: undefined,
+				completed: false,
 			});
 			trigger(`exercises.${exerciseIndex}.sets`);
 		};
