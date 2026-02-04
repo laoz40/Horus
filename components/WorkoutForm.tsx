@@ -1,6 +1,5 @@
 "use client";
 
-import { currentDay } from "@/lib/date";
 import { formatDurationFull } from "@/lib/time";
 import { WorkoutFormData } from "@/lib/types";
 import { Workout, WorkoutSchema } from "@/lib/validateWorkout";
@@ -18,7 +17,7 @@ import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import ExerciseForm from "./ExerciseForm";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { WorkoutNameDialog } from "./WorkoutNameDialog";
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
@@ -58,7 +57,6 @@ export default function WorkoutForm({
 	});
 
 	const {
-		register,
 		control,
 		// watch,
 		handleSubmit,
@@ -215,9 +213,6 @@ export default function WorkoutForm({
 				// TODO: use promise toast instead to show loading state
 				toast.success(`Saved ${result.workout.name}`, {
 					position: "top-center",
-					style: {
-						top: "48px",
-					},
 					action: {
 						label: "Dismiss",
 						onClick: () => toast.dismiss(),
@@ -238,37 +233,29 @@ export default function WorkoutForm({
 
 	return (
 		<div className="flex flex-col h-svh">
-			{/* Top Actions */}
-			<div className="flex flex-row justify-between items-center p-4 bg-input/50 dark:backdrop-blur-xs">
-				<Button
-					variant="secondary"
-					asChild
-					size="sm">
-					<Link href={workoutId ? "/workouts" : "/"}>Back</Link>
-				</Button>
-				<span>{formatDurationFull(durationSeconds)}</span>
-				<Button
-					type="submit"
-					form="workout-form"
-					disabled={isSubmitting}
-					size="sm">
-					{isSubmitting ? "Saving" : "Done"}
-				</Button>
-			</div>
-
 			<FormProvider {...methods}>
+				{/* Top Actions */}
+				<div className="flex flex-row justify-between items-center p-4 bg-input/50 dark:backdrop-blur-xs border-b">
+					<Button
+						variant="secondary"
+						asChild
+						size="sm">
+						<Link href={workoutId ? "/workouts" : "/"}>Back</Link>
+					</Button>
+					<span>{formatDurationFull(durationSeconds)}</span>
+					<WorkoutNameDialog>
+						<Button
+							disabled={isSubmitting}
+							size="sm">
+							{isSubmitting ? "Saving" : "Done"}
+						</Button>
+					</WorkoutNameDialog>
+				</div>
+
 				<form
 					className="flex flex-col h-full overflow-y-auto"
 					id="workout-form"
 					onSubmit={handleSubmit(submitWorkout)}>
-					{/* Workout Name */}
-					<section className="flex flex-col gap-1 pl-4 pr-4 pb-4 border-b bg-input/50 dark:backdrop-blur-xs">
-						<Input
-							placeholder={`${currentDay} Workout`}
-							{...register("name")}
-						/>
-					</section>
-
 					{/* Exercise Form */}
 					<section className="flex flex-col flex-1 overflow-y-auto snap-y snap-mandatory">
 						{exercises.map((exercise, exerciseIndex) => (

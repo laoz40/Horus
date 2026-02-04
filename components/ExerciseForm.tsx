@@ -61,7 +61,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			toast.info("Set deleted", {
 				position: "top-center",
 				style: {
-					top: "48px"
+					top: "48px",
 				},
 				duration: 2000,
 				action: {
