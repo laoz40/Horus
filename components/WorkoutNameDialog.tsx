@@ -3,6 +3,7 @@ import {
 	Dialog,
 	DialogClose,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -34,6 +35,7 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 				<DialogHeader>
 					<DialogTitle>Save Workout</DialogTitle>
 				</DialogHeader>
+				<DialogDescription />
 				<FieldGroup>
 					<Field>
 						<Label htmlFor="name-1">Enter workout name</Label>

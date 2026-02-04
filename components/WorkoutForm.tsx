@@ -67,12 +67,7 @@ export default function WorkoutForm({
 		reset,
 	} = methods;
 
-	// const formValues = watch();
-	//
-	// useEffect(() => {
-	// 	console.log("form values:", formValues);
-	// }, [formValues]);
-
+	// console.log("form values:", watch());
 	// console.log(errors);
 
 	const {
