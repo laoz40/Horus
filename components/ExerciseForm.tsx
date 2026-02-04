@@ -6,10 +6,10 @@ import { forwardRef, useCallback, useEffect, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
-import InputNoBorder from "./InputNoBorder";
 import SetRow from "./SetRow";
 import { Button } from "./ui/button";
 import { AlertDialogDestructive } from "./DeleteWorkoutDialog";
+import { ExerciseNameInputDropdown } from "./ExerciseNameInputDropdown";
 
 export interface ExerciseFormProps
 	extends React.HTMLAttributes<HTMLDivElement> {
@@ -20,11 +20,10 @@ export interface ExerciseFormProps
 const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 	({ className, exerciseIndex, handleDeleteExercise }, ref) => {
 		const {
-			register,
 			unregister,
 			getValues,
 			trigger,
-			watch,
+			// watch,
 			formState: { errors },
 		} = useFormContext<Workout>();
 
@@ -36,8 +35,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			name: `exercises.${exerciseIndex}.sets`,
 		});
 
-		const watchedSets = watch(`exercises.${exerciseIndex}.sets`);
-		console.log(watchedSets);
+		// console.log(watch(`exercises.${exerciseIndex}.sets`));
 
 		const handleAddSet = useCallback(() => {
 			append({
@@ -76,20 +74,6 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			});
 		};
 
-		const exerciseNames = [
-			"Bench Press",
-			"Lat Pulldown",
-			"Seated Cable Row",
-			"Cable Flyes",
-			"Cable Crunches",
-			"Leg Press",
-			"Romanian Deadlifts",
-			"Leg Extensions",
-			"Hamstring Curls",
-			"Calf Raises",
-			"Bicep Curls",
-			"Tricep Extensions",
-		];
 
 		const getExerciseName = getValues(`exercises.${exerciseIndex}.global.name`);
 
@@ -101,19 +85,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				className={cn("h-full flex flex-col gap-5 p-4", className)}>
 				{/* Exercise Name */}
 				<div className="flex flex-col gap-2">
-					<InputNoBorder
-						placeholder="Type an exercise..."
-						className="text-2xl font-medium"
-						{...register(`exercises.${exerciseIndex}.global.name`)}
-						list="exercises"
-					/>
-					<datalist id="exercises">
-						{exerciseNames.map((exercise: string) => (
-							<option
-								key={exercise}
-								value={exercise}></option>
-						))}
-					</datalist>
+					<ExerciseNameInputDropdown exerciseIndex={exerciseIndex} />
 					{errors.exercises?.[exerciseIndex]?.global?.name && (
 						<span className="text-red-500 text-sm">
 							{errors.exercises?.[exerciseIndex]?.global?.name?.message}
@@ -121,7 +93,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 					)}
 				</div>
 
-				{getExerciseName.trim() && (
+				{getExerciseName && (
 					<div className="h-full flex flex-col gap-2">
 						{/* Recent + Edit Buttons */}
 						<div className="flex flex-row justify-between text-xs">
