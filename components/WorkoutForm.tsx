@@ -7,7 +7,13 @@ import { Workout, WorkoutSchema } from "@/lib/validateWorkout";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, type ReactElement } from "react";
+import {
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+	type ReactElement,
+} from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import ExerciseForm from "./ExerciseForm";
@@ -70,6 +76,7 @@ export default function WorkoutForm({
 	// }, [formValues]);
 
 	// console.log(errors);
+
 	const {
 		fields: exercises,
 		append,
@@ -156,6 +163,10 @@ export default function WorkoutForm({
 		remove(exerciseIndex);
 		toast.info("Exercise deleted", {
 			position: "top-center",
+			style: {
+				top: "48px",
+			},
+			duration: 2000,
 			action: {
 				// TODO: undo delete
 				label: "Undo",
@@ -204,6 +215,9 @@ export default function WorkoutForm({
 				// TODO: use promise toast instead to show loading state
 				toast.success(`Saved ${result.workout.name}`, {
 					position: "top-center",
+					style: {
+						top: "48px",
+					},
 					action: {
 						label: "Dismiss",
 						onClick: () => toast.dismiss(),

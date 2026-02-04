@@ -29,6 +29,9 @@ export default function WorkoutCard({
 
 			toast.info("Workout deleted", {
 				position: "top-center",
+				style: {
+					top: "48px"
+				},
 				action: {
 					// TODO: undo delete
 					label: "Undo",

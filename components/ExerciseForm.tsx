@@ -60,7 +60,10 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			unregister(`exercises.${exerciseIndex}.sets.${setIndex}`);
 			toast.info("Set deleted", {
 				position: "top-center",
-				duration: 1500,
+				style: {
+					top: "48px"
+				},
+				duration: 2000,
 				action: {
 					// TODO: undo delete
 					label: "Undo",
