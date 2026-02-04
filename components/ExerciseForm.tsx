@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Workout } from "@/lib/validateWorkout";
-import { forwardRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
@@ -39,7 +39,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		const watchedSets = watch(`exercises.${exerciseIndex}.sets`);
 		console.log(watchedSets);
 
-		const handleAddSet = () => {
+		const handleAddSet = useCallback(() => {
 			append({
 				id: crypto.randomUUID(),
 				weight: undefined,
@@ -47,7 +47,13 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				completed: false,
 			});
 			trigger(`exercises.${exerciseIndex}.sets`);
-		};
+		}, [append, exerciseIndex, trigger]);
+
+		useEffect(() => {
+			if (sets.length === 0) {
+				handleAddSet();
+			}
+		}, [sets.length, handleAddSet]);
 
 		const handleDeleteSet = (setIndex: number) => {
 			remove(setIndex);

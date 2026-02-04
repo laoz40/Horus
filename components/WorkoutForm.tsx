@@ -7,7 +7,7 @@ import { Workout, WorkoutSchema } from "@/lib/validateWorkout";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ReactElement } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactElement } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import ExerciseForm from "./ExerciseForm";
@@ -109,7 +109,7 @@ export default function WorkoutForm({
 		exercises.length,
 	);
 
-	const handleAddExercise = () => {
+	const handleAddExercise = useCallback(() => {
 		append(
 			{
 				id: crypto.randomUUID(),
@@ -132,7 +132,7 @@ export default function WorkoutForm({
 				shouldFocus: false,
 			},
 		);
-	};
+	}, [append]);
 
 	useEffect(() => {
 		const newExerciseAdded =
@@ -143,9 +143,14 @@ export default function WorkoutForm({
 				setScrollTargetId(latestExerciseId);
 			}
 		}
-
 		setPreviousExercisesLength(exercises.length);
 	}, [exercises, previousExercisesLength]);
+
+	useEffect(() => {
+		if (exercises.length === 0) {
+			handleAddExercise();
+		}
+	}, [exercises.length, handleAddExercise]);
 
 	const handleDeleteExercise = (exerciseIndex: number) => {
 		remove(exerciseIndex);
