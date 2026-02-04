@@ -6,11 +6,12 @@ import WorkoutCardStats from "./WorkoutCardStats";
 import WorkoutCardOptions from "./WorkoutCardOptions";
 import { Badge } from "./ui/badge";
 import { toast } from "sonner";
+import { WorkoutDbData } from "@/lib/types";
 
 const pr = 2;
 
 interface WorkoutCardProps {
-	workout: Workout;
+	workout: WorkoutDbData;
 	deleteLocalWorkout: (deleteId: string) => void;
 }
 
@@ -19,38 +20,32 @@ export default function WorkoutCard({
 	deleteLocalWorkout,
 }: WorkoutCardProps) {
 	const handleDelete = async () => {
-		const confirmDeleted = confirm(
-			"This will permanently delete all workouts. Continue?",
-		);
+		deleteLocalWorkout(workout.id);
 
-		if (confirmDeleted) {
-			deleteLocalWorkout(workout.id);
+		try {
+			const response = await fetch(`/api/workouts/${workout.id}`, {
+				method: "DELETE",
+			});
 
-			try {
-				const response = await fetch(`/api/workouts/${workout.id}`, {
-					method: "DELETE",
-				});
+			toast.info("Workout deleted", {
+				position: "top-center",
+				action: {
+					// TODO: undo delete
+					label: "Undo",
+					onClick: () => toast.dismiss(),
+				},
+				actionButtonStyle: {
+					background: "var(--muted)",
+					color: "var(--muted-foreground)",
+				},
+			});
 
-				toast.info("Workout deleted", {
-					position: "top-center",
-					action: {
-						// TODO: undo delete
-						label: "Undo",
-						onClick: () => toast.dismiss(),
-					},
-					actionButtonStyle: {
-						background: "var(--muted)",
-						color: "var(--muted-foreground)",
-					},
-				});
-
-				const workoutData = await response.json();
-				if (!workoutData.success) {
-					console.log("Failed to delete workout:", workoutData.error);
-				}
-			} catch (err) {
-				console.log("Delete failed", err);
+			const workoutData = await response.json();
+			if (!workoutData.success) {
+				console.log("Failed to delete workout:", workoutData.error);
 			}
+		} catch (err) {
+			console.log("Delete failed", err);
 		}
 	};
 
@@ -73,6 +68,7 @@ export default function WorkoutCard({
 					<WorkoutCardOptions
 						handleDelete={handleDelete}
 						workoutId={workout.id}
+						workout={workout}
 					/>
 				</div>
 

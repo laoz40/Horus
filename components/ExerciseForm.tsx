@@ -9,6 +9,7 @@ import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import InputNoBorder from "./InputNoBorder";
 import SetRow from "./SetRow";
 import { Button } from "./ui/button";
+import { AlertDialogDestructive } from "./DeleteWorkoutDialog";
 
 export interface ExerciseFormProps
 	extends React.HTMLAttributes<HTMLDivElement> {
@@ -176,13 +177,17 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 
 						{/* Add Set Button */}
 						{isEditing ? (
-							<Button
-								variant="destructive"
-								className="w-full"
-								type="button"
-								onClick={handleDeleteExercise}>
-								Delete Exercise
-							</Button>
+							<AlertDialogDestructive
+								handleDelete={handleDeleteExercise}
+								title="Delete exercise?"
+								description="This will permanently delete the exercise.">
+								<Button
+									variant="destructive"
+									className="w-full"
+									type="button">
+									Delete Exercise
+								</Button>
+							</AlertDialogDestructive>
 						) : (
 							<Button
 								variant="secondary"

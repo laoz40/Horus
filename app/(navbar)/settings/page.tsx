@@ -1,27 +1,22 @@
 "use client";
 
+import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { ModeToggle } from "@/components/ModeToggle";
 import SectionCard from "@/components/SectionCard";
 import { Button } from "@/components/ui/button";
 
 const handleClick = async () => {
-	const confirmDeleted = confirm(
-		"This will permanently delete all workouts. Continue?",
-	);
+	try {
+		const response = await fetch("/api/workouts/", {
+			method: "DELETE",
+		});
+		const workoutData = await response.json();
 
-	if (confirmDeleted) {
-		try {
-			const response = await fetch("/api/workouts/", {
-				method: "DELETE",
-			});
-			const workoutData = await response.json();
-
-			if (!workoutData.success) {
-				console.log("Failed to delete workout:", workoutData.error);
-			}
-		} catch (err) {
-			console.log("Delete failed", err);
+		if (!workoutData.success) {
+			console.log("Failed to delete workout:", workoutData.error);
 		}
+	} catch (err) {
+		console.log("Delete failed", err);
 	}
 };
 
@@ -43,11 +38,12 @@ export default function SettingsPage() {
 			<SectionCard
 				header="Workouts"
 				className="bg-accent">
-				<Button
-					variant="destructive"
-					onClick={handleClick}>
-					Delete all workouts
-				</Button>
+				<AlertDialogDestructive
+					title="Delete all workouts?"
+					description="This will permanently delete all workouts."
+					handleDelete={() => handleClick()}>
+					<Button variant="destructive">Delete all workouts</Button>
+				</AlertDialogDestructive>
 			</SectionCard>
 		</>
 	);

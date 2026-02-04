@@ -9,15 +9,20 @@ import {
 } from "./ui/dropdown-menu";
 import Link from "next/link";
 import { EllipsisVertical } from "lucide-react";
+import { AlertDialogDestructive } from "./DeleteWorkoutDialog";
+import { Workout } from "@prisma/client";
+import { WorkoutDbData } from "@/lib/types";
 
 interface WorkoutCardOptionsProps {
 	handleDelete: () => void;
 	workoutId: string;
+	workout: WorkoutDbData;
 }
 
 export default function WorkoutCardOptions({
 	handleDelete,
 	workoutId,
+	workout,
 }: WorkoutCardOptionsProps): ReactElement {
 	return (
 		<>
@@ -30,15 +35,23 @@ export default function WorkoutCardOptions({
 					className="w-34">
 					<DropdownMenuGroup>
 						<DropdownMenuItem asChild>
-							<Link href={`/workouts/${workoutId}/edit`}>Edit</Link>
+							<Link href={`/workouts/${workout.id}/edit`}>Edit</Link>
 						</DropdownMenuItem>
+
 						<DropdownMenuItem>Share</DropdownMenuItem>
+
 						<DropdownMenuSeparator />
-						<DropdownMenuItem
-							variant="destructive"
-							onClick={handleDelete}>
-							Delete
-						</DropdownMenuItem>
+
+						<AlertDialogDestructive
+							title="Delete workout?"
+							description={`This will permanently delete workout: ${workout?.name}`}
+							handleDelete={handleDelete}>
+							<DropdownMenuItem
+								variant="destructive"
+								onSelect={(e) => e.preventDefault()}>
+								Delete
+							</DropdownMenuItem>
+						</AlertDialogDestructive>
 					</DropdownMenuGroup>
 				</DropdownMenuContent>
 			</DropdownMenu>
