@@ -19,6 +19,11 @@ export async function fetchExercisesFromApi(query: string) {
 				"x-rapidapi-host": "exercisedb.p.rapidapi.com",
 			},
 		});
+		if (!response.ok) {
+			const errorText = await response.text();
+			console.error("API error:", response.status, errorText);
+			return;
+		}
 		const result = await response.json();
 		const exercisesFromApi = Array.isArray(result.data)
 			? result.data.map((exercise: any) => ({
@@ -26,6 +31,7 @@ export async function fetchExercisesFromApi(query: string) {
 					name: exercise.name,
 				}))
 			: [];
+		console.log("exercisesFromApi", exercisesFromApi);
 		return exercisesFromApi;
 	} catch (error) {
 		console.error(error);

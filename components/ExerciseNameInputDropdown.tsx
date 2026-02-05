@@ -2,7 +2,6 @@ import { Controller, useFormContext } from "react-hook-form";
 import {
 	Combobox,
 	ComboboxContent,
-	ComboboxEmpty,
 	ComboboxInput,
 	ComboboxItem,
 	ComboboxList,
@@ -21,24 +20,24 @@ export function ExerciseNameInputDropdown({
 	const [searchText, setSearchText] = useState("");
 
 	useEffect(() => {
-		if (!searchText.trim()) return;
+		if (searchText.trim().length === 0) return;
 
 		const timeout = setTimeout(async () => {
 			try {
 				const response = await fetch(
 					`/api/exercises/search?query=${encodeURIComponent(searchText)}`,
 				);
-				const exercisesFromApi = await response.json();
-				const exerciseArray = Array.isArray(exercisesFromApi.exercises)
-					? exercisesFromApi.exercises
+				const dataFromDb = await response.json();
+				const exercisesFromDb = Array.isArray(dataFromDb.exercises)
+					? dataFromDb.exercises
 					: [];
 
-				setSuggestions(exerciseArray);
-			} catch (err) {
-				console.error(err);
+				setSuggestions(exercisesFromDb);
+			} catch (error) {
+				console.log("Query not found", error);
 				setSuggestions([]);
 			}
-		}, 500);
+		}, 300);
 
 		return () => clearTimeout(timeout);
 	}, [searchText]);
@@ -46,6 +45,26 @@ export function ExerciseNameInputDropdown({
 	const filteredSuggestions = searchText.trim()
 		? suggestions.map((exercise) => exercise.name)
 		: [];
+
+	console.log("Suggestions passed to Combobox:", filteredSuggestions);
+
+	const handleShowMore = async () => {
+		if (searchText.trim().length === 0) return;
+
+		try {
+			const response = await fetch(
+				`/api/exercises/search?query=${encodeURIComponent(searchText)}&source=api`,
+			);
+			const dataFromApi = await response.json();
+			console.log("dataFromApi", dataFromApi);
+
+			if (dataFromApi.success) {
+				setSuggestions((existing) => [...existing, ...dataFromApi.exercises]);
+			}
+		} catch (error) {
+			console.error("Error fetching from API:", error);
+		}
+	};
 
 	// const exerciseNames = [
 	// 	"Bench Press",
@@ -82,15 +101,21 @@ export function ExerciseNameInputDropdown({
 						}}
 					/>
 					<ComboboxContent>
-						<ComboboxEmpty>No items found.</ComboboxEmpty>
 						<ComboboxList>
-							{(item) => (
+							{filteredSuggestions.map((item) => (
 								<ComboboxItem
 									className="text-base"
 									key={item}
 									value={item}>
 									{item}
 								</ComboboxItem>
+							))}
+							{searchText.trim().length > 0 && (
+								<button
+									className="text-base text-muted-foreground underline w-full flex justify-start align-center p-2"
+									onClick={handleShowMore}>
+									Show more
+								</button>
 							)}
 						</ComboboxList>
 					</ComboboxContent>

@@ -1,30 +1,88 @@
-import { fetchExercisesFromApi } from "@/lib/exercisesDb";
 import { db } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
 	const query = searchParams.get("query");
+	const source = searchParams.get("source");
+
 	if (!query) {
 		return NextResponse.json({ success: false, error: "query is required" });
 	}
 
-	const exercisesFromDb = await db.globalExercise.findMany({
-		where: {
-			name: {
-				contains: query,
+	if (source !== "api") {
+		const exercisesFromDb = await db.globalExercise.findMany({
+			where: {
+				name: {
+					contains: query,
+				},
 			},
-		},
-		take: 10,
-		orderBy: {
-			name: "asc",
-		},
-	});
+			take: 10,
+			orderBy: {
+				name: "asc",
+			},
+		});
 
-	if (exercisesFromDb.length === 0) {
-		const exercisesFromApi = await fetchExercisesFromApi(query);
-		return NextResponse.json({ success: true, exercises: exercisesFromApi });
-	} else {
-		return NextResponse.json({ success: true, exercises: exercisesFromDb });
+		return NextResponse.json({
+			success: exercisesFromDb.length > 0,
+			exercises: exercisesFromDb,
+			error: exercisesFromDb.length === 0 ? "Query not found" : undefined,
+		});
+	}
+
+	const apiKey = process.env.EXERCISEDB_API_KEY;
+
+	if (!apiKey) {
+		return NextResponse.json({
+			success: false,
+			exercises: [],
+			error: "API key not set",
+		});
+	}
+
+	try {
+		const url = new URL("https://exercisedb-api.vercel.app/api/v1/exercises");
+		url.searchParams.set("search", query);
+		url.searchParams.set("limit", "10");
+		url.searchParams.set("sortBy", "name");
+
+		const response = await fetch(url.toString(), {
+			headers: {
+				"x-rapidapi-key": apiKey,
+				"x-rapidapi-host": "exercisedb.p.rapidapi.com",
+			},
+		});
+
+		if (!response.ok) {
+			const errorText = await response.text();
+			console.error("API error:", response.status, errorText);
+
+			return NextResponse.json({
+				success: false,
+				exercises: [],
+				error: `External API error: ${response.status}`,
+			});
+		}
+
+		const result = await response.json();
+
+		const exercisesFromApi = Array.isArray(result.data)
+			? result.data.map((exercise: any) => ({
+					id: exercise.exerciseId,
+					name: exercise.name,
+				}))
+			: [];
+
+		return NextResponse.json({
+			success: true,
+			exercises: exercisesFromApi,
+		});
+	} catch (error) {
+		console.error("Unexpected API error:", error);
+		return NextResponse.json({
+			success: false,
+			exercises: [],
+			error: "Unexpected server error",
+		});
 	}
 }
