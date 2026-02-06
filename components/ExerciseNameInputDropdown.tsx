@@ -1,4 +1,4 @@
-import { Controller, useFormContext, useWatch } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import {
 	Combobox,
 	ComboboxContent,
@@ -14,75 +14,80 @@ export function ExerciseNameInputDropdown({
 }: {
 	exerciseIndex: number;
 }) {
+	const { control } = useFormContext<Workout>();
+
 	const [suggestions, setSuggestions] = useState<
 		{ id: string; name: string }[]
 	>([]);
-
-	const { control } = useFormContext<Workout>();
-
-	const searchText =
-		useWatch({
-			control,
-			name: `exercises.${exerciseIndex}.global.name`,
-		}) ?? "";
+	const [query, setQuery] = useState<string>("");
 
 	useEffect(() => {
-		if (searchText.trim().length === 0) return;
+		if (query && query.trim().length === 0) return;
 
 		const timeout = setTimeout(async () => {
 			try {
 				const response = await fetch(
-					`/api/exercises/search?query=${encodeURIComponent(searchText)}`,
+					`/api/exercises/search?query=${encodeURIComponent(query)}`,
 				);
 				const dataFromDb = await response.json();
 				const exercisesFromDb = Array.isArray(dataFromDb.exercises)
 					? dataFromDb.exercises
 					: [];
-
 				setSuggestions(exercisesFromDb);
 			} catch (error) {
 				console.log("Query not found", error);
 				setSuggestions([]);
 			}
 		}, 300);
-
 		return () => clearTimeout(timeout);
-	}, [searchText]);
+	}, [query]);
 
 	const handleShowMore = async () => {
-		if (searchText.trim().length === 0) return;
+		if (query && query.trim().length === 0) return;
 
 		try {
 			const response = await fetch(
-				`/api/exercises/search?query=${encodeURIComponent(searchText)}&source=api`,
+				`/api/exercises/search?query=${encodeURIComponent(query)}&source=api`,
 			);
 			const dataFromApi = await response.json();
 			if (dataFromApi.success) {
-				setSuggestions((existing) => [...existing, ...dataFromApi.exercises]);
+				const merged = mergeDeduplicateExercises(
+					suggestions,
+					dataFromApi.exercises,
+				);
+				setSuggestions(merged);
 			}
 		} catch (error) {
 			console.error("Error fetching from API:", error);
 		}
 	};
 
-	const filteredSuggestions = searchText.trim()
-		? suggestions.map((exercise) => exercise.name)
-		: [];
+	const filteredSuggestions = query.trim() ? suggestions : [];
 
-	// const exerciseNames = [
-	// 	"Bench Press",
-	// 	"Lat Pulldown",
-	// 	"Seated Cable Row",
-	// 	"Cable Flyes",
-	// 	"Cable Crunches",
-	// 	"Leg Press",
-	// 	"Romanian Deadlifts",
-	// 	"Leg Extensions",
-	// 	"Hamstring Curls",
-	// 	"Calf Raises",
-	// 	"Bicep Curls",
-	// 	"Tricep Extensions",
-	// ];
+	function mergeDeduplicateExercises(
+		dbExercises: { id: string; name: string }[],
+		apiExercises: { id?: string; name?: string; exercise_name?: string }[],
+	) {
+		const map = new Map<string, { id: string; name: string }>();
+
+		for (const exercise of dbExercises) {
+			if (!exercise.name) continue;
+			map.set(exercise.name.trim().toLowerCase(), {
+				id: exercise.id,
+				name: exercise.name.trim(),
+			});
+		}
+		for (const exercise of apiExercises) {
+			const name = (exercise.name ?? exercise.exercise_name ?? "").trim();
+			if (!name) continue;
+
+			const key = name.toLowerCase();
+			if (!map.has(key)) {
+				map.set(key, { id: exercise.id ?? crypto.randomUUID(), name });
+			}
+		}
+		return Array.from(map.values());
+	}
 
 	return (
 		<Controller
@@ -91,24 +96,29 @@ export function ExerciseNameInputDropdown({
 			render={({ field }) => (
 				<Combobox
 					items={filteredSuggestions}
-					onValueChange={field.onChange}>
+					onValueChange={(value: string | null) => {
+						if (!value) return;
+						setQuery(value);
+						field.onChange(value);
+					}}>
 					<ComboboxInput
 						placeholder="Enter an exercise..."
 						className="text-2xl font-medium h-11"
-						value={field.value}
-						onChange={(input) => field.onChange(input.target.value)}
+						value={query}
+						onChange={(e) => setQuery(e.target.value ?? "")}
+						onBlur={() => field.onChange(query)}
 					/>
 					<ComboboxContent>
 						<ComboboxList>
 							{filteredSuggestions.map((exercise) => (
 								<ComboboxItem
 									className="text-base"
-									key={exercise}
-									value={exercise}>
-									{exercise}
+									key={exercise.id}
+									value={exercise.name}>
+									{exercise.name}
 								</ComboboxItem>
 							))}
-							{searchText.trim().length > 0 && (
+							{query && query.trim().length > 0 && (
 								<button
 									className="text-base text-muted-foreground underline w-full flex justify-start align-center p-2"
 									onClick={handleShowMore}>
