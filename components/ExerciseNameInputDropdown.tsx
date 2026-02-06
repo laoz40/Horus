@@ -8,6 +8,7 @@ import {
 } from "./ui/combobox";
 import { Workout } from "@/lib/validateWorkout";
 import { useEffect, useState } from "react";
+import { mergeDeduplicateExercises } from "@/lib/convertWorkoutData";
 
 export function ExerciseNameInputDropdown({
 	exerciseIndex,
@@ -63,31 +64,6 @@ export function ExerciseNameInputDropdown({
 	};
 
 	const filteredSuggestions = query.trim() ? suggestions : [];
-
-	function mergeDeduplicateExercises(
-		dbExercises: { id: string; name: string }[],
-		apiExercises: { id?: string; name?: string; exercise_name?: string }[],
-	) {
-		const map = new Map<string, { id: string; name: string }>();
-
-		for (const exercise of dbExercises) {
-			if (!exercise.name) continue;
-			map.set(exercise.name.trim().toLowerCase(), {
-				id: exercise.id,
-				name: exercise.name.trim(),
-			});
-		}
-		for (const exercise of apiExercises) {
-			const name = (exercise.name ?? exercise.exercise_name ?? "").trim();
-			if (!name) continue;
-
-			const key = name.toLowerCase();
-			if (!map.has(key)) {
-				map.set(key, { id: exercise.id ?? crypto.randomUUID(), name });
-			}
-		}
-		return Array.from(map.values());
-	}
 
 	return (
 		<Controller
