@@ -41,12 +41,14 @@ export async function GET(request: Request) {
 	}
 
 	try {
-		const url = new URL("https://exercisedb-api.vercel.app/api/v1/exercises");
+		const url = new URL("https://exercisedb-api.vercel.app/api/v1/exercises/filter");
 		url.searchParams.set("search", query);
 		url.searchParams.set("limit", "10");
 		url.searchParams.set("sortBy", "name");
+		url.searchParams.set("sortOrder", "asc");
 
 		const response = await fetch(url.toString(), {
+			method: "GET",
 			headers: {
 				"x-rapidapi-key": apiKey,
 				"x-rapidapi-host": "exercisedb.p.rapidapi.com",
