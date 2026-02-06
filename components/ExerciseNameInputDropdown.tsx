@@ -52,11 +52,11 @@ export function ExerciseNameInputDropdown({
 			);
 			const dataFromApi = await response.json();
 			if (dataFromApi.success) {
-				const merged = mergeDeduplicateExercises(
+				const mergedExercises = mergeDeduplicateExercises(
 					suggestions,
 					dataFromApi.exercises,
 				);
-				setSuggestions(merged);
+				setSuggestions(mergedExercises);
 			}
 		} catch (error) {
 			console.error("Error fetching from API:", error);
@@ -94,7 +94,7 @@ export function ExerciseNameInputDropdown({
 									{exercise.name}
 								</ComboboxItem>
 							))}
-							{query && query.trim().length > 0 && (
+							{query.trim() && (
 								<button
 									className="text-base text-muted-foreground underline w-full flex justify-start align-center p-2"
 									onClick={handleShowMore}>
