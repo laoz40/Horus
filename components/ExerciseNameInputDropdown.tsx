@@ -1,4 +1,4 @@
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 import {
 	Combobox,
 	ComboboxContent,
@@ -17,7 +17,14 @@ export function ExerciseNameInputDropdown({
 	const [suggestions, setSuggestions] = useState<
 		{ id: string; name: string }[]
 	>([]);
-	const [searchText, setSearchText] = useState("");
+
+	const { control } = useFormContext<Workout>();
+
+	const searchText =
+		useWatch({
+			control,
+			name: `exercises.${exerciseIndex}.global.name`,
+		}) ?? "";
 
 	useEffect(() => {
 		if (searchText.trim().length === 0) return;
@@ -42,12 +49,6 @@ export function ExerciseNameInputDropdown({
 		return () => clearTimeout(timeout);
 	}, [searchText]);
 
-	const filteredSuggestions = searchText.trim()
-		? suggestions.map((exercise) => exercise.name)
-		: [];
-
-	console.log("Suggestions passed to Combobox:", filteredSuggestions);
-
 	const handleShowMore = async () => {
 		if (searchText.trim().length === 0) return;
 
@@ -56,8 +57,6 @@ export function ExerciseNameInputDropdown({
 				`/api/exercises/search?query=${encodeURIComponent(searchText)}&source=api`,
 			);
 			const dataFromApi = await response.json();
-			console.log("dataFromApi", dataFromApi);
-
 			if (dataFromApi.success) {
 				setSuggestions((existing) => [...existing, ...dataFromApi.exercises]);
 			}
@@ -65,6 +64,10 @@ export function ExerciseNameInputDropdown({
 			console.error("Error fetching from API:", error);
 		}
 	};
+
+	const filteredSuggestions = searchText.trim()
+		? suggestions.map((exercise) => exercise.name)
+		: [];
 
 	// const exerciseNames = [
 	// 	"Bench Press",
@@ -81,8 +84,6 @@ export function ExerciseNameInputDropdown({
 	// 	"Tricep Extensions",
 	// ];
 
-	const { control } = useFormContext<Workout>();
-
 	return (
 		<Controller
 			name={`exercises.${exerciseIndex}.global.name`}
@@ -94,27 +95,24 @@ export function ExerciseNameInputDropdown({
 					<ComboboxInput
 						placeholder="Enter an exercise..."
 						className="text-2xl font-medium h-11"
-						value={searchText}
-						onChange={(e) => {
-							setSearchText(e.target.value);
-							field.onChange(e.target.value);
-						}}
+						value={field.value}
+						onChange={(input) => field.onChange(input.target.value)}
 					/>
 					<ComboboxContent>
 						<ComboboxList>
-							{filteredSuggestions.map((item) => (
+							{filteredSuggestions.map((exercise) => (
 								<ComboboxItem
 									className="text-base"
-									key={item}
-									value={item}>
-									{item}
+									key={exercise}
+									value={exercise}>
+									{exercise}
 								</ComboboxItem>
 							))}
 							{searchText.trim().length > 0 && (
 								<button
 									className="text-base text-muted-foreground underline w-full flex justify-start align-center p-2"
 									onClick={handleShowMore}>
-									Show more
+									Search Online
 								</button>
 							)}
 						</ComboboxList>
