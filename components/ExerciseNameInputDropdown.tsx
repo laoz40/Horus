@@ -15,12 +15,14 @@ export function ExerciseNameInputDropdown({
 }: {
 	exerciseIndex: number;
 }) {
-	const { control } = useFormContext<Workout>();
+	const { control, getValues } = useFormContext<Workout>();
+
+	const getExerciseName = getValues(`exercises.${exerciseIndex}.global.name`);
 
 	const [suggestions, setSuggestions] = useState<
 		{ id: string; name: string }[]
 	>([]);
-	const [query, setQuery] = useState<string>("");
+	const [query, setQuery] = useState<string>(getExerciseName ?? "");
 
 	useEffect(() => {
 		if (query && query.trim().length === 0) return;
