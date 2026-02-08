@@ -4,7 +4,7 @@
 
 A web app to track my gym workouts. Created my own because I don't enjoy
 existing solutions and my current method of tracking workouts (excel sheet) is
-inefficient and has no aura.
+extremely inefficient and laggy.
 
 This is a learning project. I write the code myself to understand it and enjoy
 the process. I'm using AI as a teacher to help me learn, not as a tool to
