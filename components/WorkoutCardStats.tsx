@@ -10,7 +10,7 @@ interface WorkoutCardStatsProps {
 
 export default function WorkoutCardStats({
 	pr,
-	duration
+	duration,
 }: WorkoutCardStatsProps): ReactElement {
 	return (
 		<div className="flex flex-row justify-between mt-4 pt-2 border-t">
@@ -29,16 +29,17 @@ export default function WorkoutCardStats({
 			{/* Workout Duration */}
 			<div className="flex items-center justify-center space-x-1.5 py-1">
 				<Clock className="size-4 shrink-0" />
-				<span className="text-sm font-medium whitespace-nowrap">{formatDurationSummary(duration)}</span>
+				<span className="text-sm font-medium whitespace-nowrap">
+					{formatDurationSummary(duration)}
+				</span>
 			</div>
 
 			{/* PR Indicator */}
 			<div className="flex items-center justify-center space-x-1.5 py-1">
-				{pr > 0 && (
-					<Badge className="text-primary-foreground text-sm font-semibold">
-						{pr} PRs
-					</Badge>
-				)}
+				<Badge
+					className={`text-primary-foreground text-sm font-semibold ${pr === 0 ? "invisible" : ""}`}>
+					{pr} PRs
+				</Badge>
 			</div>
 		</div>
 	);

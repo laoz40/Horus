@@ -95,6 +95,10 @@ this app.
 - [x] load save workouts from db
 - [x] edit workouts using the same form
 - [ ] make seperate workout view page for past workouts
+- [x] fix card when no prs
+- [ ] implement muscle groups to display on the workout card
+    - [ ] workouts need to save muscle groups info
+    - [ ] if no muscle groups from db, ie. custom exercise, get muscle groups from the api
 - [ ] calculate prs
 - [ ] filter workouts, by:
     - [ ] date ranges
