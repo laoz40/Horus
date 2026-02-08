@@ -6,7 +6,7 @@ A web app to track my gym workouts. Created my own because I don't enjoy
 existing solutions and my current method of tracking workouts (excel sheet) is
 inefficient and doesn't scale well.
 
-![App Screenshot](screenshot.png)
+<img src="screenshot.png" alt="Screenshot" style="width:50%;"/>
 
 ---
 
