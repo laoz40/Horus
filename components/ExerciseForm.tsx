@@ -20,7 +20,6 @@ export interface ExerciseFormProps
 const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 	({ className, exerciseIndex, handleDeleteExercise }, ref) => {
 		const {
-			unregister,
 			getValues,
 			trigger,
 			// watch,
@@ -53,9 +52,9 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			}
 		}, [sets.length, handleAddSet]);
 
+		// BUG: when loading a workout to edit, adding new sets after deleting sets loads previous data
 		const handleDeleteSet = (setIndex: number) => {
 			remove(setIndex);
-			unregister(`exercises.${exerciseIndex}.sets.${setIndex}`);
 			toast.info("Set deleted", {
 				position: "top-center",
 				style: {
@@ -73,7 +72,6 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				},
 			});
 		};
-
 
 		const getExerciseName = getValues(`exercises.${exerciseIndex}.global.name`);
 
