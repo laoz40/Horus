@@ -1,4 +1,4 @@
-import { toTitleCase } from "@/lib/convertWorkoutData";
+import { normalizeExerciseName, toTitleCase } from "@/lib/convertWorkoutData";
 import { db } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -80,8 +80,11 @@ export async function GET(request: Request) {
 			? result.data.map((exercise: any) => ({
 					id: exercise.exerciseId,
 					name: toTitleCase(exercise.name),
+					normalizedName: normalizeExerciseName(exercise.name),
 				}))
 			: [];
+
+		console.log(exercisesFromApi);
 
 		return NextResponse.json({
 			success: true,

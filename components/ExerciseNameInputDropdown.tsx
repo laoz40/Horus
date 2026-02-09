@@ -20,7 +20,7 @@ export function ExerciseNameInputDropdown({
 	const getExerciseName = getValues(`exercises.${exerciseIndex}.global.name`);
 
 	const [suggestions, setSuggestions] = useState<
-		{ id: string; name: string }[]
+		{ id: string; name: string; normalizedName: string }[]
 	>([]);
 	const [query, setQuery] = useState<string>(getExerciseName ?? "");
 
@@ -91,7 +91,7 @@ export function ExerciseNameInputDropdown({
 							{filteredSuggestions.map((exercise) => (
 								<ComboboxItem
 									className="text-base"
-									key={exercise.id}
+									key={exercise.normalizedName}
 									value={exercise.name}>
 									{exercise.name}
 								</ComboboxItem>

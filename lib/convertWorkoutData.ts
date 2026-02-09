@@ -52,35 +52,45 @@ export const convertDbToFormData = (
 };
 
 export function mergeDeduplicateExercises(
-	dbExercises: { id: string; name: string }[],
-	apiExercises: { id?: string; name?: string; exercise_name?: string }[],
+	dbExercises: { id: string; name: string; normalizedName: string }[],
+	apiExercises: { id: string; name: string; normalizedName: string }[],
 ) {
-	const map = new Map<string, { id: string; name: string }>();
+	const map = new Map<
+		string,
+		{ id: string; name: string; normalizedName: string }
+	>();
+
+	// TODO: refactor this
 
 	for (const exercise of dbExercises) {
-		if (!exercise.name) continue;
-		map.set(exercise.name.trim().toLowerCase(), {
+		if (!exercise.normalizedName) continue;
+
+		map.set(exercise.normalizedName, {
 			id: exercise.id,
 			name: exercise.name.trim(),
+			normalizedName: exercise.normalizedName,
 		});
 	}
-	for (const exercise of apiExercises) {
-		const name = (exercise.name ?? exercise.exercise_name ?? "").trim();
-		if (!name) continue;
 
-		const key = name.toLowerCase();
-		if (!map.has(key)) {
-			map.set(key, { id: exercise.id ?? crypto.randomUUID(), name });
+	for (const exercise of apiExercises) {
+		if (!exercise.normalizedName) continue;
+
+		if (!map.has(exercise.normalizedName)) {
+			map.set(exercise.normalizedName, {
+				id: exercise.id,
+				name: exercise.name.trim(),
+				normalizedName: exercise.normalizedName,
+			});
 		}
 	}
 	return Array.from(map.values());
 }
 
 export function toTitleCase(value: string): string {
-  return value
-    .toLowerCase()
-    .split(" ")
-    .filter(Boolean)
-    .map(word => word[0].toUpperCase() + word.slice(1))
-    .join(" ");
+	return value
+		.toLowerCase()
+		.split(" ")
+		.filter(Boolean)
+		.map((word) => word[0].toUpperCase() + word.slice(1))
+		.join(" ");
 }
