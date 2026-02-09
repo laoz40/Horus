@@ -24,10 +24,15 @@ export async function GET(request: Request) {
 			},
 		});
 
+		const formattedExercises = exercisesFromDb.map((exercise) => ({
+			...exercise,
+			name: toTitleCase(exercise.name),
+		}));
+
 		return NextResponse.json({
-			success: exercisesFromDb.length > 0,
-			exercises: exercisesFromDb,
-			error: exercisesFromDb.length === 0 ? "Query not found" : undefined,
+			success: formattedExercises.length > 0,
+			exercises: formattedExercises,
+			error: formattedExercises.length === 0 ? "Query not found" : undefined,
 		});
 	}
 
@@ -42,7 +47,9 @@ export async function GET(request: Request) {
 	}
 
 	try {
-		const url = new URL("https://exercisedb-api.vercel.app/api/v1/exercises/filter");
+		const url = new URL(
+			"https://exercisedb-api.vercel.app/api/v1/exercises/filter",
+		);
 		url.searchParams.set("search", query);
 		url.searchParams.set("limit", "10");
 		url.searchParams.set("sortBy", "name");

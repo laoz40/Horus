@@ -35,9 +35,8 @@ export const convertDbToFormData = (
 		durationSeconds: workout.durationSeconds,
 		exercises: workout.exercises.map((exercise) => ({
 			id: exercise.id,
-			name: exercise.globalExercise.name,
 			global: {
-				name: exercise.globalExercise.name,
+				name: toTitleCase(exercise.globalExercise.name),
 			},
 			difficulty:
 				exercise.difficulty === null ? undefined : exercise.difficulty,

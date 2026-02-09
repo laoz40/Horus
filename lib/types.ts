@@ -20,7 +20,6 @@ export interface SetFormData {
 
 export interface ExerciseFormData {
 	id: string;
-	name: string;
 	global: {
 		name: string;
 	};
