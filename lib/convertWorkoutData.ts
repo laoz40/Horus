@@ -51,38 +51,34 @@ export const convertDbToFormData = (
 	};
 };
 
+interface fetchedExercise {
+	id: string;
+	name: string;
+	normalizedName: string;
+}
+
 export function deduplicateExercises(
-	groupOne: { id: string; name: string; normalizedName: string }[],
-	groupTwo: { id: string; name: string; normalizedName: string }[],
+	groupOne: fetchedExercise[],
+	groupTwo: fetchedExercise[],
 ) {
-	const map = new Map<
-		string,
-		{ id: string; name: string; normalizedName: string }
-	>();
+	const map = new Map<string, fetchedExercise>();
 
-	// TODO: refactor this
+	const addIfMissing = (exercise: fetchedExercise, addAll: boolean) => {
+		if (!exercise.normalizedName) return;
 
-	for (const exercise of groupOne) {
-		if (!exercise.normalizedName) continue;
-
-		map.set(exercise.normalizedName, {
-			id: exercise.id,
-			name: exercise.name.trim(),
-			normalizedName: exercise.normalizedName,
-		});
-	}
-
-	for (const exercise of groupTwo) {
-		if (!exercise.normalizedName) continue;
-
-		if (!map.has(exercise.normalizedName)) {
+		const exerciseMissing = !map.has(exercise.normalizedName);
+		if (addAll || exerciseMissing) {
 			map.set(exercise.normalizedName, {
 				id: exercise.id,
 				name: exercise.name.trim(),
 				normalizedName: exercise.normalizedName,
 			});
 		}
-	}
+	};
+
+	for (const exercise of groupOne) addIfMissing(exercise, true);
+	for (const exercise of groupTwo) addIfMissing(exercise, false);
+
 	return Array.from(map.values());
 }
 
