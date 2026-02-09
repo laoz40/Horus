@@ -8,7 +8,7 @@ import {
 } from "./ui/combobox";
 import { Workout } from "@/lib/validateWorkout";
 import { useEffect, useState } from "react";
-import { mergeDeduplicateExercises } from "@/lib/convertWorkoutData";
+import { deduplicateExercises } from "@/lib/convertWorkoutData";
 
 export function ExerciseNameInputDropdown({
 	exerciseIndex,
@@ -54,7 +54,7 @@ export function ExerciseNameInputDropdown({
 			);
 			const dataFromApi = await response.json();
 			if (dataFromApi.success) {
-				const mergedExercises = mergeDeduplicateExercises(
+				const mergedExercises = deduplicateExercises(
 					suggestions,
 					dataFromApi.exercises,
 				);

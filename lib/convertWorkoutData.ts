@@ -51,9 +51,9 @@ export const convertDbToFormData = (
 	};
 };
 
-export function mergeDeduplicateExercises(
-	dbExercises: { id: string; name: string; normalizedName: string }[],
-	apiExercises: { id: string; name: string; normalizedName: string }[],
+export function deduplicateExercises(
+	groupOne: { id: string; name: string; normalizedName: string }[],
+	groupTwo: { id: string; name: string; normalizedName: string }[],
 ) {
 	const map = new Map<
 		string,
@@ -62,7 +62,7 @@ export function mergeDeduplicateExercises(
 
 	// TODO: refactor this
 
-	for (const exercise of dbExercises) {
+	for (const exercise of groupOne) {
 		if (!exercise.normalizedName) continue;
 
 		map.set(exercise.normalizedName, {
@@ -72,7 +72,7 @@ export function mergeDeduplicateExercises(
 		});
 	}
 
-	for (const exercise of apiExercises) {
+	for (const exercise of groupTwo) {
 		if (!exercise.normalizedName) continue;
 
 		if (!map.has(exercise.normalizedName)) {

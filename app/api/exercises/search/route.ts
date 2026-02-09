@@ -1,6 +1,7 @@
-import { normalizeExerciseName, toTitleCase } from "@/lib/convertWorkoutData";
+import { deduplicateExercises, normalizeExerciseName, toTitleCase } from "@/lib/convertWorkoutData";
 import { db } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { DEFAULT_EXERCISES } from "@/lib/defaultExercises";
 
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
 	}
 
 	if (source !== "api") {
-		const exercisesFromDb = await db.globalExercise.findMany({
+		const dbExercises = await db.globalExercise.findMany({
 			where: {
 				name: {
 					contains: query,
@@ -24,15 +25,32 @@ export async function GET(request: Request) {
 			},
 		});
 
-		const formattedExercises = exercisesFromDb.map((exercise) => ({
+		const matchedDefaults = DEFAULT_EXERCISES.filter((exercise) =>
+			normalizeExerciseName(exercise.name).includes(
+				normalizeExerciseName(query),
+			),
+		);
+
+		const defaultsFormatted = matchedDefaults.map((exercise) => ({
+			id: exercise.id,
+			name: toTitleCase(exercise.name),
+			normalizedName: normalizeExerciseName(exercise.name),
+		}));
+
+		const dbExercisesFormatted = dbExercises.map((exercise) => ({
 			...exercise,
 			name: toTitleCase(exercise.name),
 		}));
 
+		const mergedExercises = deduplicateExercises(
+			dbExercisesFormatted,
+			defaultsFormatted,
+		);
+
 		return NextResponse.json({
-			success: formattedExercises.length > 0,
-			exercises: formattedExercises,
-			error: formattedExercises.length === 0 ? "Query not found" : undefined,
+			success: mergedExercises.length > 0,
+			exercises: mergedExercises,
+			error: mergedExercises.length === 0 ? "Query not found" : undefined,
 		});
 	}
 
@@ -76,7 +94,7 @@ export async function GET(request: Request) {
 
 		const result = await response.json();
 
-		const exercisesFromApi = Array.isArray(result.data)
+		const apiExercises = Array.isArray(result.data)
 			? result.data.map((exercise: any) => ({
 					id: exercise.exerciseId,
 					name: toTitleCase(exercise.name),
@@ -84,11 +102,9 @@ export async function GET(request: Request) {
 				}))
 			: [];
 
-		console.log(exercisesFromApi);
-
 		return NextResponse.json({
 			success: true,
-			exercises: exercisesFromApi,
+			exercises: apiExercises,
 		});
 	} catch (error) {
 		console.error("Unexpected API error:", error);
