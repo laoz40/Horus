@@ -1,3 +1,4 @@
+import { toTitleCase } from "@/lib/convertWorkoutData";
 import { db } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -71,7 +72,7 @@ export async function GET(request: Request) {
 		const exercisesFromApi = Array.isArray(result.data)
 			? result.data.map((exercise: any) => ({
 					id: exercise.exerciseId,
-					name: exercise.name,
+					name: toTitleCase(exercise.name),
 				}))
 			: [];
 
