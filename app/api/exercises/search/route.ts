@@ -1,4 +1,8 @@
-import { deduplicateExercises, normalizeExerciseName, toTitleCase } from "@/lib/convertWorkoutData";
+import {
+	createSuggestionObject,
+	deduplicateExercises,
+	normalizeExerciseName,
+} from "@/lib/convertWorkoutData";
 import { db } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { DEFAULT_EXERCISES } from "@/lib/defaultExercises";
@@ -13,7 +17,7 @@ export async function GET(request: Request) {
 	}
 
 	if (source !== "api") {
-		const dbExercises = await db.globalExercise.findMany({
+		const matchedDbExercises = await db.globalExercise.findMany({
 			where: {
 				name: {
 					contains: query,
@@ -25,27 +29,18 @@ export async function GET(request: Request) {
 			},
 		});
 
-		const matchedDefaults = DEFAULT_EXERCISES.filter((exercise) =>
+		const matchedDefaultExercises = DEFAULT_EXERCISES.filter((exercise) =>
 			normalizeExerciseName(exercise.name).includes(
 				normalizeExerciseName(query),
 			),
 		);
 
-		const defaultsFormatted = matchedDefaults.map((exercise) => ({
-			id: exercise.id,
-			name: toTitleCase(exercise.name),
-			normalizedName: normalizeExerciseName(exercise.name),
-		}));
-
-		const dbExercisesFormatted = dbExercises.map((exercise) => ({
-			...exercise,
-			name: toTitleCase(exercise.name),
-		}));
-
-		const mergedExercises = deduplicateExercises(
-			dbExercisesFormatted,
-			defaultsFormatted,
+		const defaultExercises = matchedDefaultExercises.map(
+			createSuggestionObject,
 		);
+		const dbExercises = matchedDbExercises.map(createSuggestionObject);
+
+		const mergedExercises = deduplicateExercises(dbExercises, defaultExercises);
 
 		return NextResponse.json({
 			success: mergedExercises.length > 0,
@@ -92,15 +87,8 @@ export async function GET(request: Request) {
 			});
 		}
 
-		const result = await response.json();
-
-		const apiExercises = Array.isArray(result.data)
-			? result.data.map((exercise: any) => ({
-					id: exercise.exerciseId,
-					name: toTitleCase(exercise.name),
-					normalizedName: normalizeExerciseName(exercise.name),
-				}))
-			: [];
+		const matchedApiExercises = await response.json();
+		const apiExercises = matchedApiExercises.data.map(createSuggestionObject);
 
 		return NextResponse.json({
 			success: true,
