@@ -1,11 +1,8 @@
 import {
-	createSuggestionObject,
 	deduplicateExercises,
-	normalizeExerciseName,
 } from "@/lib/convertWorkoutData";
-import { db } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { DEFAULT_EXERCISES } from "@/lib/defaultExercises";
+import { fetchApiExercises, fetchDbExercises, fetchDefaultExercises } from "@/lib/fetchExercises";
 
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
@@ -17,29 +14,8 @@ export async function GET(request: Request) {
 	}
 
 	if (source !== "api") {
-		const matchedDbExercises = await db.globalExercise.findMany({
-			where: {
-				name: {
-					contains: query,
-				},
-			},
-			take: 10,
-			orderBy: {
-				name: "asc",
-			},
-		});
-
-		const matchedDefaultExercises = DEFAULT_EXERCISES.filter((exercise) =>
-			normalizeExerciseName(exercise.name).includes(
-				normalizeExerciseName(query),
-			),
-		);
-
-		const defaultExercises = matchedDefaultExercises.map(
-			createSuggestionObject,
-		);
-		const dbExercises = matchedDbExercises.map(createSuggestionObject);
-
+		const defaultExercises = await fetchDefaultExercises(query);
+		const dbExercises = await fetchDbExercises(query);
 		const mergedExercises = deduplicateExercises(dbExercises, defaultExercises);
 
 		return NextResponse.json({
@@ -49,46 +25,8 @@ export async function GET(request: Request) {
 		});
 	}
 
-	const apiKey = process.env.EXERCISEDB_API_KEY;
-
-	if (!apiKey) {
-		return NextResponse.json({
-			success: false,
-			exercises: [],
-			error: "API key not set",
-		});
-	}
-
 	try {
-		const url = new URL(
-			"https://exercisedb-api.vercel.app/api/v1/exercises/filter",
-		);
-		url.searchParams.set("search", query);
-		url.searchParams.set("limit", "10");
-		url.searchParams.set("sortBy", "name");
-		url.searchParams.set("sortOrder", "asc");
-
-		const response = await fetch(url.toString(), {
-			method: "GET",
-			headers: {
-				"x-rapidapi-key": apiKey,
-				"x-rapidapi-host": "exercisedb.p.rapidapi.com",
-			},
-		});
-
-		if (!response.ok) {
-			const errorText = await response.text();
-			console.error("API error:", response.status, errorText);
-
-			return NextResponse.json({
-				success: false,
-				exercises: [],
-				error: `External API error: ${response.status}`,
-			});
-		}
-
-		const matchedApiExercises = await response.json();
-		const apiExercises = matchedApiExercises.data.map(createSuggestionObject);
+		const apiExercises = await fetchApiExercises(query);
 
 		return NextResponse.json({
 			success: true,
