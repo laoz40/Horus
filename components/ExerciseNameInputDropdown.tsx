@@ -16,7 +16,6 @@ export function ExerciseNameInputDropdown({
 	exerciseIndex: number;
 }) {
 	const { control, getValues } = useFormContext<Workout>();
-
 	const getExerciseName = getValues(`exercises.${exerciseIndex}.global.name`);
 
 	const [suggestions, setSuggestions] = useState<
@@ -33,10 +32,10 @@ export function ExerciseNameInputDropdown({
 					`/api/exercises/search?query=${encodeURIComponent(query)}`,
 				);
 				const dataFromDb = await response.json();
-				const exercisesFromDb = Array.isArray(dataFromDb.exercises)
+				const dbExercises = Array.isArray(dataFromDb.exercises)
 					? dataFromDb.exercises
 					: [];
-				setSuggestions(exercisesFromDb);
+				setSuggestions(dbExercises);
 			} catch (error) {
 				console.log("Query not found", error);
 				setSuggestions([]);
