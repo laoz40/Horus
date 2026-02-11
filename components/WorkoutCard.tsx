@@ -5,7 +5,7 @@ import { ShineBorder } from "./ui/shine-border";
 import WorkoutCardStats from "./WorkoutCardStats";
 import WorkoutCardOptions from "./WorkoutCardOptions";
 import { Badge } from "./ui/badge";
-import { toast } from "sonner";
+import { showWorkoutDeletedToast } from "@/lib/toastMessages";
 import { WorkoutDbData } from "@/lib/types";
 
 const pr = 2;
@@ -27,21 +27,7 @@ export default function WorkoutCard({
 				method: "DELETE",
 			});
 
-			toast.info("Workout deleted", {
-				position: "top-center",
-				style: {
-					top: "48px"
-				},
-				action: {
-					// TODO: undo delete
-					label: "Undo",
-					onClick: () => toast.dismiss(),
-				},
-				actionButtonStyle: {
-					background: "var(--muted)",
-					color: "var(--muted-foreground)",
-				},
-			});
+			showWorkoutDeletedToast();
 
 			const workoutData = await response.json();
 			if (!workoutData.success) {

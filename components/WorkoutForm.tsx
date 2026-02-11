@@ -14,7 +14,10 @@ import {
 	type ReactElement,
 } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
-import { toast } from "sonner";
+import {
+	showExerciseDeletedToast,
+	showWorkoutSavedToast,
+} from "@/lib/toastMessages";
 import ExerciseForm from "./ExerciseForm";
 import { Button } from "./ui/button";
 import { WorkoutNameDialog } from "./WorkoutNameDialog";
@@ -154,22 +157,7 @@ export default function WorkoutForm({
 
 	const handleDeleteExercise = (exerciseIndex: number) => {
 		remove(exerciseIndex);
-		toast.info("Exercise deleted", {
-			position: "top-center",
-			style: {
-				top: "48px",
-			},
-			duration: 2000,
-			action: {
-				// TODO: undo delete
-				label: "Undo",
-				onClick: () => toast.dismiss(),
-			},
-			actionButtonStyle: {
-				background: "var(--muted)",
-				color: "var(--muted-foreground)",
-			},
-		});
+		showExerciseDeletedToast();
 	};
 
 	// -----
@@ -206,18 +194,7 @@ export default function WorkoutForm({
 			if (result.success) {
 				router.push("/workouts");
 				// TODO: use promise toast instead to show loading state
-				toast.success(`Saved ${result.workout.name}`, {
-					position: "top-center",
-					action: {
-						label: "Dismiss",
-						onClick: () => toast.dismiss(),
-						actionButtonStyle: {},
-					},
-					actionButtonStyle: {
-						background: "var(--muted)",
-						color: "var(--muted-foreground)",
-					},
-				});
+				showWorkoutSavedToast(result.workout.name);
 			} else {
 				console.log(result);
 			}

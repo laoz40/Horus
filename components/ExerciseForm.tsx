@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Workout } from "@/lib/validateWorkout";
 import { forwardRef, useCallback, useEffect, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { toast } from "sonner";
+import { showSetDeletedToast } from "@/lib/toastMessages";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import SetRow from "./SetRow";
 import { Button } from "./ui/button";
@@ -55,22 +55,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		// BUG: when loading a workout to edit, adding new sets after deleting sets loads previous data
 		const handleDeleteSet = (setIndex: number) => {
 			remove(setIndex);
-			toast.info("Set deleted", {
-				position: "top-center",
-				style: {
-					top: "48px",
-				},
-				duration: 2000,
-				action: {
-					// TODO: undo delete
-					label: "Undo",
-					onClick: () => toast.dismiss(),
-				},
-				actionButtonStyle: {
-					background: "var(--muted)",
-					color: "var(--muted-foreground)",
-				},
-			});
+			showSetDeletedToast();
 		};
 
 		const getExerciseName = getValues(`exercises.${exerciseIndex}.global.name`);
