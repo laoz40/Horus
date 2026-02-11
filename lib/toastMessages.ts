@@ -2,7 +2,7 @@ import { toast } from "sonner";
 
 const toastPosition = "top-center";
 const topMargin = {
-	top: "48px",
+	top: "40px",
 };
 const actionButtonStyle = {
 	background: "var(--muted)",
@@ -22,8 +22,6 @@ const dismissAction = {
 		toast.dismiss();
 	},
 };
-
-
 
 export const showWorkoutDeletedToast = () => {
 	toast.info("Workout deleted", {
