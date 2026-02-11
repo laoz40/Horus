@@ -1,8 +1,10 @@
-import {
-	deduplicateExercises,
-} from "@/lib/convertWorkoutData";
+import { deduplicateExercises } from "@/lib/convertWorkoutData";
 import { NextResponse } from "next/server";
-import { fetchApiExercises, fetchDbExercises, fetchDefaultExercises } from "@/lib/fetchExercises";
+import {
+	fetchApiExercises,
+	fetchDbExercises,
+	fetchDefaultExercises,
+} from "@/lib/fetchExercises";
 
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
@@ -28,23 +30,21 @@ export async function GET(request: Request) {
 	try {
 		const apiExercises = await fetchApiExercises(query);
 
-		if (apiExercises.length === 0) {
-			return NextResponse.json({
-				success: false,
-				exercises: [],
-				error: "Query not found",
-			});
-		}
-
 		return NextResponse.json({
 			success: true,
 			exercises: apiExercises,
 		});
 	} catch (error) {
-		return NextResponse.json({
-			success: false,
-			exercises: [],
-			error: error,
-		});
+		const message =
+			error instanceof Error ? error.message : "Failed to fetch exercises";
+
+		return NextResponse.json(
+			{
+				success: false,
+				exercises: [],
+				error: message,
+			},
+			{ status: message === "Too many requests" ? 429 : 500 },
+		);
 	}
 }

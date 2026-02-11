@@ -9,6 +9,10 @@ import {
 import { Workout } from "@/lib/validateWorkout";
 import { useEffect, useState } from "react";
 import { deduplicateExercises } from "@/lib/convertWorkoutData";
+import {
+	showExerciseSearchFailedToast,
+	showExerciseSearchRateLimitToast,
+} from "@/lib/toastMessages";
 
 export function ExerciseNameInputDropdown({
 	exerciseIndex,
@@ -51,8 +55,16 @@ export function ExerciseNameInputDropdown({
 			const response = await fetch(
 				`/api/exercises/search?query=${encodeURIComponent(query)}&source=api`,
 			);
+			if (response.status === 429) {
+				showExerciseSearchRateLimitToast();
+				return;
+			}
+			if (!response.ok) {
+				showExerciseSearchFailedToast();
+				return;
+			}
 			const dataFromApi = await response.json();
-			if (dataFromApi.success) {
+			if (dataFromApi.success && dataFromApi.exercises.length > 0) {
 				const mergedExercises = deduplicateExercises(
 					suggestions,
 					dataFromApi.exercises,

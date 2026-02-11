@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import {
 	createSuggestionObject,
 	normalizeExerciseName,
@@ -31,11 +30,7 @@ export const fetchDbExercises = async (query: string) => {
 export const fetchApiExercises = async (query: string) => {
 	const apiKey = process.env.EXERCISEDB_API_KEY;
 	if (!apiKey) {
-		return NextResponse.json({
-			success: false,
-			exercises: [],
-			error: "API key not set",
-		});
+		throw new Error("API key not set");
 	}
 
 	const url = new URL(
@@ -54,15 +49,12 @@ export const fetchApiExercises = async (query: string) => {
 		},
 	});
 
-	if (!response.ok) {
-		const errorText = await response.text();
-		console.error("API error:", response.status, errorText);
+	if (response.status === 429) {
+		throw new Error("Too many requests");
+	}
 
-		return NextResponse.json({
-			success: false,
-			exercises: [],
-			error: `External API error: ${response.status}`,
-		});
+	if (!response.ok) {
+		throw new Error(`API Error: ${response.status} ${response.statusText}`);
 	}
 
 	const matchedApiExercises = await response.json();
