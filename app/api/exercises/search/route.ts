@@ -28,16 +28,23 @@ export async function GET(request: Request) {
 	try {
 		const apiExercises = await fetchApiExercises(query);
 
+		if (apiExercises.length === 0) {
+			return NextResponse.json({
+				success: false,
+				exercises: [],
+				error: "Query not found",
+			});
+		}
+
 		return NextResponse.json({
 			success: true,
 			exercises: apiExercises,
 		});
 	} catch (error) {
-		console.error("Unexpected API error:", error);
 		return NextResponse.json({
 			success: false,
 			exercises: [],
-			error: "Unexpected server error",
+			error: error,
 		});
 	}
 }
