@@ -21,6 +21,16 @@ import {
 import ExerciseForm from "./ExerciseForm";
 import { Button } from "./ui/button";
 import { WorkoutNameDialog } from "./WorkoutNameDialog";
+import { PlusIcon } from "lucide-react";
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectLabel,
+	SelectTrigger,
+	SelectValue,
+} from "./ui/select";
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
@@ -61,7 +71,7 @@ export default function WorkoutForm({
 
 	const {
 		control,
-		// watch,
+		watch,
 		handleSubmit,
 		formState: {
 			// errors,
@@ -163,17 +173,55 @@ export default function WorkoutForm({
 	// -----
 
 	// attach each exercise form div to the exercise id
-	const exerciseFormDivRefs = useRef<Record<string, HTMLDivElement | null>>({});
+	const exerciseFormRefs = useRef<Record<string, HTMLDivElement | null>>({});
+	const selectedFormRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
 		if (scrollTargetId == null) return;
 
-		const scrollTarget = exerciseFormDivRefs.current[scrollTargetId];
+		const scrollTarget = exerciseFormRefs.current[scrollTargetId];
 		scrollTarget?.scrollIntoView({
 			behavior: "smooth",
 			block: "end",
 		});
 	}, [scrollTargetId]);
+
+	const watchedExercises = watch("exercises");
+	const [selectedExerciseId, setSelectedExerciseId] = useState<
+		string | undefined
+	>(() => exercises[0]?.id ?? "");
+
+	const setExerciseLabel = (exerciseIndex: number) => {
+		const selectLabel = watchedExercises?.[exerciseIndex]?.global?.name?.trim();
+		return selectLabel ? selectLabel : "No exercise added";
+	};
+
+	useEffect(() => {
+		const scrollContainer = selectedFormRef.current;
+		if (!scrollContainer) return;
+
+		const observer = new IntersectionObserver(
+			(forms) => {
+				const visible = forms.filter((form) => form.isIntersecting);
+				if (visible.length === 0) return;
+				// Sort visible forms by how much is on screen (most visible first), then pick the first one
+				const mostVisible = visible.sort(
+					(a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0),
+				)[0];
+				const id = (mostVisible.target as HTMLElement).dataset.exerciseId;
+				if (id) setSelectedExerciseId(id);
+			},
+			{
+				root: scrollContainer,
+				rootMargin: "-45% 0px -45% 0px",
+				threshold: [0, 0.5, 1],
+			},
+		);
+		Object.values(exerciseFormRefs.current).forEach((form) => {
+			if (form) observer.observe(form);
+		});
+		return () => observer.disconnect();
+	}, [exercises.length]);
 
 	// -----
 
@@ -229,13 +277,17 @@ export default function WorkoutForm({
 					id="workout-form"
 					onSubmit={handleSubmit(submitWorkout)}>
 					{/* Exercise Form */}
-					<section className="flex flex-col flex-1 overflow-y-auto snap-y snap-mandatory">
+					<section
+						ref={selectedFormRef}
+						className="flex flex-col flex-1 overflow-y-auto snap-y snap-mandatory">
 						{exercises.map((exercise, exerciseIndex) => (
 							<ExerciseForm
 								key={exercise.id}
 								exerciseIndex={exerciseIndex}
 								ref={(ExerciseForm) => {
-									exerciseFormDivRefs.current[exercise.id] = ExerciseForm;
+									exerciseFormRefs.current[exercise.id] = ExerciseForm;
+									if (ExerciseForm)
+										ExerciseForm.dataset.exerciseId = exercise.id;
 								}}
 								className="snap-start min-h-full h-full"
 								handleDeleteExercise={() => handleDeleteExercise(exerciseIndex)}
@@ -244,12 +296,36 @@ export default function WorkoutForm({
 					</section>
 
 					{/* Add Exercise */}
-					<div className="flex w-full border-t p-4 bg-input/50 dark:backdrop-blur-xs">
+					<div className="flex flex-row w-full gap-4 border-t p-4 bg-input/50 dark:backdrop-blur-xs">
+						<div className="flex grow items-center justify-start">
+							<Select
+								value={selectedExerciseId}
+								onValueChange={(value) => {
+									setSelectedExerciseId(value);
+									setScrollTargetId(value);
+								}}>
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder="No Exercise Added" />
+								</SelectTrigger>
+								<SelectContent position="popper">
+									<SelectGroup>
+										<SelectLabel>Exercises</SelectLabel>
+										{exercises.map((exercise, exerciseIndex) => (
+											<SelectItem
+												key={exercise.id}
+												value={exercise.id}>
+												{exerciseIndex + 1}: {setExerciseLabel(exerciseIndex)}
+											</SelectItem>
+										))}
+									</SelectGroup>
+								</SelectContent>
+							</Select>
+						</div>
 						<Button
-							className="flex-1"
+							variant="default"
 							type="button"
 							onClick={handleAddExercise}>
-							+ Exercise
+							<PlusIcon />
 						</Button>
 					</div>
 				</form>
