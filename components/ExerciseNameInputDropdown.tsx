@@ -19,10 +19,15 @@ export function ExerciseNameInputDropdown({
 }: {
 	exerciseIndex: number;
 }) {
-	const { control, getValues } = useFormContext<Workout>();
+	const { control, getValues, setValue } = useFormContext<Workout>();
 	const getExerciseName = getValues(`exercises.${exerciseIndex}.global.name`);
 	const [suggestions, setSuggestions] = useState<
-		{ id: string; name: string; normalizedName: string }[]
+		{
+			id: string;
+			name: string;
+			normalizedName: string;
+			muscleGroups?: string[];
+		}[]
 	>([]);
 	const [query, setQuery] = useState<string>(getExerciseName ?? "");
 	const [isLoading, setIsLoading] = useState(false);
@@ -101,12 +106,27 @@ export function ExerciseNameInputDropdown({
 						if (!value) return;
 						setQuery(value);
 						field.onChange(value);
+
+						const match = suggestions.find(
+							(exercise) => exercise.name === value,
+						);
+						setValue(
+							`exercises.${exerciseIndex}.global.muscleGroups`,
+							match?.muscleGroups ?? [],
+							{ shouldDirty: true },
+						);
 					}}>
 					<ComboboxInput
 						placeholder="Enter an exercise..."
 						className="text-2xl font-medium h-11"
 						value={query}
-						onChange={(e) => setQuery(e.target.value ?? "")}
+						onChange={(e) => {
+							setQuery(e.target.value ?? "");
+							// reset muscle groups when typing in the input
+							setValue(`exercises.${exerciseIndex}.global.muscleGroups`, [], {
+								shouldDirty: true,
+							});
+						}}
 						onBlur={() => field.onChange(query)}
 					/>
 					<ComboboxContent>

@@ -53,6 +53,7 @@ export default function WorkoutForm({
 					id: crypto.randomUUID(),
 					global: {
 						name: "",
+						muscleGroups: [],
 					},
 					notes: undefined,
 					difficulty: undefined,
@@ -128,6 +129,7 @@ export default function WorkoutForm({
 				id: crypto.randomUUID(),
 				global: {
 					name: "",
+					muscleGroups: [],
 				},
 				notes: undefined,
 				difficulty: undefined,

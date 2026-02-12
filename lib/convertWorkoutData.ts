@@ -55,6 +55,7 @@ interface fetchedExercise {
 	id: string;
 	name: string;
 	normalizedName: string;
+	muscleGroups?: string[];
 }
 
 export const deduplicateExercises = (
@@ -72,6 +73,7 @@ export const deduplicateExercises = (
 				id: exercise.id,
 				name: exercise.name.trim(),
 				normalizedName: exercise.normalizedName,
+				muscleGroups: exercise.muscleGroups,
 			});
 		}
 	};
@@ -95,8 +97,12 @@ export const createSuggestionObject = (exercise: {
 	id: string;
 	name: string;
 	normalizedName?: string;
+	targetMuscles?: string[];
+	muscleGroups?: string[];
 }) => ({
-		id: exercise.id,
-		name: toTitleCase(exercise.name),
-		normalizedName: exercise.normalizedName ?? normalizeExerciseName(exercise.name),
-	})
+	id: exercise.id,
+	name: toTitleCase(exercise.name),
+	normalizedName:
+		exercise.normalizedName ?? normalizeExerciseName(exercise.name),
+	muscleGroups: exercise.muscleGroups ?? exercise.targetMuscles,
+});
