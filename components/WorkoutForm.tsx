@@ -305,7 +305,7 @@ export default function WorkoutForm({
 					</section>
 
 					{/* Add Exercise */}
-					{currentExerciseName.length > 0 ? (
+					{currentExerciseName.length > 0 || exercises.length > 1 ? (
 						<div className="flex flex-row w-full gap-4 border-t p-4 bg-input/50 dark:backdrop-blur-xs">
 							<div className="flex grow items-center justify-start">
 								<Select
