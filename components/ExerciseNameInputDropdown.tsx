@@ -57,6 +57,8 @@ export function ExerciseNameInputDropdown({
 	const handleShowMore = async () => {
 		if (query && query.trim().length === 0) return;
 
+		setIsLoading(true);
+
 		try {
 			const response = await fetch(
 				`/api/exercises/search?query=${encodeURIComponent(query)}&source=api`,
@@ -81,6 +83,8 @@ export function ExerciseNameInputDropdown({
 			}
 		} catch (error) {
 			console.error("Error fetching from API:", error);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
