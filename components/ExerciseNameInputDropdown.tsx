@@ -21,14 +21,16 @@ export function ExerciseNameInputDropdown({
 }) {
 	const { control, getValues } = useFormContext<Workout>();
 	const getExerciseName = getValues(`exercises.${exerciseIndex}.global.name`);
-
 	const [suggestions, setSuggestions] = useState<
 		{ id: string; name: string; normalizedName: string }[]
 	>([]);
 	const [query, setQuery] = useState<string>(getExerciseName ?? "");
+	const [isLoading, setIsLoading] = useState(false);
 
 	useEffect(() => {
 		if (query && query.trim().length === 0) return;
+
+		setIsLoading(true);
 
 		const timeout = setTimeout(async () => {
 			try {
@@ -43,9 +45,13 @@ export function ExerciseNameInputDropdown({
 			} catch (error) {
 				console.log("Query not found", error);
 				setSuggestions([]);
+			} finally {
+				setIsLoading(false);
 			}
 		}, 300);
-		return () => clearTimeout(timeout);
+		return () => {
+			clearTimeout(timeout);
+		};
 	}, [query]);
 
 	const handleShowMore = async () => {
@@ -55,6 +61,7 @@ export function ExerciseNameInputDropdown({
 			const response = await fetch(
 				`/api/exercises/search?query=${encodeURIComponent(query)}&source=api`,
 			);
+
 			if (response.status === 429) {
 				showExerciseSearchRateLimitToast();
 				return;
@@ -63,6 +70,7 @@ export function ExerciseNameInputDropdown({
 				showExerciseSearchFailedToast();
 				return;
 			}
+
 			const dataFromApi = await response.json();
 			if (dataFromApi.success && dataFromApi.exercises.length > 0) {
 				const mergedExercises = deduplicateExercises(
@@ -111,7 +119,7 @@ export function ExerciseNameInputDropdown({
 								<button
 									className="text-base text-muted-foreground underline w-full flex justify-start align-center p-2"
 									onClick={handleShowMore}>
-									Search Online
+									{isLoading ? "Loading..." : "Search Online"}
 								</button>
 							)}
 						</ComboboxList>
