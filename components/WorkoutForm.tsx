@@ -223,6 +223,15 @@ export default function WorkoutForm({
 		return () => observer.disconnect();
 	}, [exercises.length]);
 
+	const currentExerciseIndex = exercises.findIndex(
+		(exercise) => exercise.id === selectedExerciseId,
+	);
+
+	const currentExerciseName =
+		currentExerciseIndex >= 0
+			? watchedExercises?.[currentExerciseIndex]?.global?.name?.trim()
+			: "";
+
 	// -----
 
 	const router = useRouter();
@@ -296,38 +305,40 @@ export default function WorkoutForm({
 					</section>
 
 					{/* Add Exercise */}
-					<div className="flex flex-row w-full gap-4 border-t p-4 bg-input/50 dark:backdrop-blur-xs">
-						<div className="flex grow items-center justify-start">
-							<Select
-								value={selectedExerciseId}
-								onValueChange={(value) => {
-									setSelectedExerciseId(value);
-									setScrollTargetId(value);
-								}}>
-								<SelectTrigger className="w-full">
-									<SelectValue placeholder="No Exercise Added" />
-								</SelectTrigger>
-								<SelectContent position="popper">
-									<SelectGroup>
-										<SelectLabel>Exercises</SelectLabel>
-										{exercises.map((exercise, exerciseIndex) => (
-											<SelectItem
-												key={exercise.id}
-												value={exercise.id}>
-												{exerciseIndex + 1}: {setExerciseLabel(exerciseIndex)}
-											</SelectItem>
-										))}
-									</SelectGroup>
-								</SelectContent>
-							</Select>
+					{currentExerciseName.length > 0 ? (
+						<div className="flex flex-row w-full gap-4 border-t p-4 bg-input/50 dark:backdrop-blur-xs">
+							<div className="flex grow items-center justify-start">
+								<Select
+									value={selectedExerciseId}
+									onValueChange={(value) => {
+										setSelectedExerciseId(value);
+										setScrollTargetId(value);
+									}}>
+									<SelectTrigger className="w-full">
+										<SelectValue placeholder="No Exercise Added" />
+									</SelectTrigger>
+									<SelectContent position="popper">
+										<SelectGroup>
+											<SelectLabel>Exercises</SelectLabel>
+											{exercises.map((exercise, exerciseIndex) => (
+												<SelectItem
+													key={exercise.id}
+													value={exercise.id}>
+													{exerciseIndex + 1}: {setExerciseLabel(exerciseIndex)}
+												</SelectItem>
+											))}
+										</SelectGroup>
+									</SelectContent>
+								</Select>
+							</div>
+							<Button
+								variant="default"
+								type="button"
+								onClick={handleAddExercise}>
+								<PlusIcon />
+							</Button>
 						</div>
-						<Button
-							variant="default"
-							type="button"
-							onClick={handleAddExercise}>
-							<PlusIcon />
-						</Button>
-					</div>
+					) : null}
 				</form>
 			</FormProvider>
 		</div>
