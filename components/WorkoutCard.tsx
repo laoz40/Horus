@@ -7,6 +7,7 @@ import { Badge } from "./ui/badge";
 import { showWorkoutDeletedToast } from "@/lib/toastMessages";
 import { WorkoutDbData } from "@/lib/types";
 import { toTitleCase } from "@/lib/convertWorkoutData";
+import { calculateWorkoutVolume } from "@/lib/calculateWorkoutStats";
 
 const pr = 2;
 
@@ -55,6 +56,9 @@ export default function WorkoutCard({
 		.filter((muscleGroup) => muscleGroup != null)
 		.reverse();
 
+	const workoutVolume = calculateWorkoutVolume(workout);
+	console.log("workoutVolume:", workoutVolume);
+
 	return (
 		<>
 			<Card>
@@ -93,6 +97,7 @@ export default function WorkoutCard({
 				<WorkoutCardStats
 					pr={pr}
 					duration={workout.durationSeconds ?? 0}
+					workoutVolume={workoutVolume}
 				/>
 			</Card>
 		</>

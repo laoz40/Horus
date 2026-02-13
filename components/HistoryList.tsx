@@ -5,7 +5,7 @@ import WorkoutCard from "@/components/WorkoutCard";
 import { WorkoutDbData } from "@/lib/types";
 
 export default function HistoryList({
-	workouts: workouts,
+	workouts,
 }: {
 	workouts: WorkoutDbData[];
 }) {
