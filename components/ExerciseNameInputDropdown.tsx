@@ -113,7 +113,6 @@ export function ExerciseNameInputDropdown({
 						setValue(
 							`exercises.${exerciseIndex}.global.muscleGroups`,
 							match?.muscleGroups ?? [],
-							{ shouldDirty: true },
 						);
 					}}>
 					<ComboboxInput
@@ -123,9 +122,7 @@ export function ExerciseNameInputDropdown({
 						onChange={(e) => {
 							setQuery(e.target.value ?? "");
 							// reset muscle groups when typing in the input
-							setValue(`exercises.${exerciseIndex}.global.muscleGroups`, [], {
-								shouldDirty: true,
-							});
+							setValue(`exercises.${exerciseIndex}.global.muscleGroups`, []);
 						}}
 						onBlur={() => field.onChange(query)}
 					/>

@@ -32,16 +32,6 @@ export async function PATCH(
 
 			// check if it already exists, return id
 			if (existingExercise) {
-				// update muscle groups if they don't exist
-				if (
-					existingExercise.muscleGroups == null &&
-					exercise.global.muscleGroups?.length
-				) {
-					await db.globalExercise.update({
-						where: { id: existingExercise.id },
-						data: { muscleGroups: exercise.global.muscleGroups },
-					});
-				}
 				return existingExercise.id;
 			}
 
