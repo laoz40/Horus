@@ -1,12 +1,12 @@
 import Card from "./Card";
 import { getRelativeTime } from "@/lib/date";
-import { Workout } from "@prisma/client";
 import { ShineBorder } from "./ui/shine-border";
 import WorkoutCardStats from "./WorkoutCardStats";
 import WorkoutCardOptions from "./WorkoutCardOptions";
 import { Badge } from "./ui/badge";
 import { showWorkoutDeletedToast } from "@/lib/toastMessages";
 import { WorkoutDbData } from "@/lib/types";
+import { toTitleCase } from "@/lib/convertWorkoutData";
 
 const pr = 2;
 
@@ -38,6 +38,23 @@ export default function WorkoutCard({
 		}
 	};
 
+	const mapMuscleGroups = workout.exercises
+		.slice(0, 3)
+		.map((exercise) => {
+			const muscleGroups = exercise.globalExercise?.muscleGroups;
+			if (!Array.isArray(muscleGroups)) return null;
+			const firstMusleGroup = muscleGroups[0];
+			if (
+				typeof firstMusleGroup !== "string" ||
+				firstMusleGroup.trim().length === 0
+			)
+				return null;
+			return toTitleCase(firstMusleGroup);
+		})
+		// filter out nulls
+		.filter((muscleGroup) => muscleGroup != null)
+		.reverse();
+
 	return (
 		<>
 			<Card>
@@ -63,9 +80,13 @@ export default function WorkoutCard({
 
 				<div className="grid grid-cols-[1fr_min-content] mt-1">
 					<div className="flex flex-row justify-start gap-4">
-						<Badge variant="secondary">Chest</Badge>
-						<Badge variant="secondary">Back</Badge>
-						<Badge variant="secondary">Shoulders</Badge>
+						{mapMuscleGroups.map((label, index) => (
+							<Badge
+								key={index}
+								variant="secondary">
+								{label}
+							</Badge>
+						))}
 					</div>
 				</div>
 
