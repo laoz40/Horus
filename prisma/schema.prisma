@@ -19,6 +19,8 @@ model GlobalExercise {
   id             String   @id @default(cuid())
   name           String
   normalizedName String   @unique
+	// Stored as JSON array of strings
+	muscleGroups   Json?
 
   exercises      Exercise[]
 }

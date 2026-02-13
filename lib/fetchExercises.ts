@@ -24,7 +24,20 @@ export const fetchDbExercises = async (query: string) => {
 			name: "asc",
 		},
 	});
-	return matchedDbExercises.map(createSuggestionObject);
+	return matchedDbExercises.map((exercise) => {
+		const muscleGroups = Array.isArray(exercise.muscleGroups)
+			? exercise.muscleGroups.filter(
+					(value: unknown): value is string => typeof value === "string",
+				)
+			: undefined;
+
+		return createSuggestionObject({
+			id: exercise.id,
+			name: exercise.name,
+			normalizedName: exercise.normalizedName,
+			muscleGroups,
+		});
+	});
 };
 
 export const fetchApiExercises = async (query: string) => {

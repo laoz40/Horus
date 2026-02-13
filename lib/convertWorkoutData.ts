@@ -10,6 +10,7 @@ export const parseWorkout = (workout: WorkoutFormData): Workout => {
 			id: exercise.id,
 			global: {
 				name: exercise.global.name.trim(),
+				muscleGroups: exercise.global.muscleGroups,
 			},
 			difficulty: exercise.difficulty,
 			notes: (exercise.notes ?? "").trim(),
@@ -27,6 +28,14 @@ export const normalizeExerciseName = (name: string) => {
 	return name.trim().replace(/\s+/g, " ").toLowerCase();
 };
 
+const toArray = (value: any): string[] | undefined => {
+	if (!Array.isArray(value)) return undefined;
+	const strings = value.filter(
+		(item) => typeof item === "string" && item.length > 0,
+	);
+	return strings.length > 0 ? strings : undefined;
+};
+
 export const convertDbToFormData = (
 	workout: WorkoutDbData,
 ): WorkoutFormData => {
@@ -37,6 +46,7 @@ export const convertDbToFormData = (
 			id: exercise.id,
 			global: {
 				name: toTitleCase(exercise.globalExercise.name),
+				muscleGroups: toArray(exercise.globalExercise.muscleGroups),
 			},
 			difficulty:
 				exercise.difficulty === null ? undefined : exercise.difficulty,
@@ -104,5 +114,6 @@ export const createSuggestionObject = (exercise: {
 	name: toTitleCase(exercise.name),
 	normalizedName:
 		exercise.normalizedName ?? normalizeExerciseName(exercise.name),
+	// muscleGroups if from DB, targetMuscles if from form api
 	muscleGroups: exercise.muscleGroups ?? exercise.targetMuscles,
 });

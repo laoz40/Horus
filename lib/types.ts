@@ -1,4 +1,4 @@
-import { Workout as PrismaWorkout, Exercise, Set } from "@prisma/client";
+import { Workout as PrismaWorkout, Exercise, Set, Prisma } from "@prisma/client";
 
 export type WorkoutDbData = PrismaWorkout & {
 	exercises: (Exercise & {
@@ -7,6 +7,7 @@ export type WorkoutDbData = PrismaWorkout & {
 			id: string;
 			name: string;
 			normalizedName: string;
+			muscleGroups: Prisma.JsonValue | null;
 		};
 	})[];
 };
@@ -22,6 +23,7 @@ export interface ExerciseFormData {
 	id: string;
 	global: {
 		name: string;
+		muscleGroups?: string[];
 	};
 	difficulty: number | undefined;
 	notes: string | undefined;
