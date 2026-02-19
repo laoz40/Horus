@@ -37,9 +37,7 @@ export default function WorkoutCard({
 		}
 	};
 
-	console.log("workout:", workout);
 	const pr = workout.totalPrSets;
-	console.log("pr:", pr);
 
 	const mapMuscleGroups = workout.exercises
 		.slice(0, 3)
@@ -59,7 +57,6 @@ export default function WorkoutCard({
 		.reverse();
 
 	const workoutVolume = calculateWorkoutVolume(workout);
-	console.log("workoutVolume:", workoutVolume);
 
 	return (
 		<>
