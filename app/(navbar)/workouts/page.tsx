@@ -1,8 +1,9 @@
 import HistoryList from "@/components/HistoryList";
+import { calculateWorkoutPrs } from "@/lib/calculateWorkoutStats";
 import { db } from "@/lib/prisma";
 
 export default async function HistoryPage() {
-	const getWorkouts = await db.workout.findMany({
+	const workouts = await db.workout.findMany({
 		include: {
 			exercises: {
 				include: {
@@ -13,13 +14,15 @@ export default async function HistoryPage() {
 		},
 	});
 
+	const workoutsWithPrs = calculateWorkoutPrs(workouts);
+
 	return (
 		<>
 			<div className="p-4">
 				<h1>Workout History</h1>
 			</div>
 
-			<HistoryList workouts={getWorkouts} />
+			<HistoryList workouts={workoutsWithPrs} />
 		</>
 	);
 }

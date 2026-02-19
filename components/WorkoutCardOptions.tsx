@@ -10,7 +10,6 @@ import {
 import Link from "next/link";
 import { EllipsisVertical } from "lucide-react";
 import { AlertDialogDestructive } from "./DeleteWorkoutDialog";
-import { Workout } from "@prisma/client";
 import { WorkoutDbData } from "@/lib/types";
 
 interface WorkoutCardOptionsProps {

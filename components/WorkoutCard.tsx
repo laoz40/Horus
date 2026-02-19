@@ -5,14 +5,12 @@ import WorkoutCardStats from "./WorkoutCardStats";
 import WorkoutCardOptions from "./WorkoutCardOptions";
 import { Badge } from "./ui/badge";
 import { showWorkoutDeletedToast } from "@/lib/toastMessages";
-import { WorkoutDbData } from "@/lib/types";
+import { WorkoutWithPrData } from "@/lib/types";
 import { toTitleCase } from "@/lib/convertWorkoutData";
 import { calculateWorkoutVolume } from "@/lib/calculateWorkoutStats";
 
-const pr = 2;
-
 interface WorkoutCardProps {
-	workout: WorkoutDbData;
+	workout: WorkoutWithPrData;
 	deleteLocalWorkout: (deleteId: string) => void;
 }
 
@@ -38,6 +36,10 @@ export default function WorkoutCard({
 			console.log("Delete failed", err);
 		}
 	};
+
+	console.log("workout:", workout);
+	const pr = workout.totalPrSets;
+	console.log("pr:", pr);
 
 	const mapMuscleGroups = workout.exercises
 		.slice(0, 3)
