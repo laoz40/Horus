@@ -13,6 +13,8 @@ model Workout {
   createdAt				DateTime   @default(now())
 	durationSeconds Int?
   exercises				Exercise[]
+	totalVolume			Float			@default(0)
+	totalPrSets			Int				@default(0)
 }
 
 model GlobalExercise {
