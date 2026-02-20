@@ -1,6 +1,8 @@
+import { Set } from "./validateWorkout";
+
 export const calculateWorkoutVolume = (workout: {
 	exercises: {
-		sets: { weight: unknown; reps: unknown; completed: boolean }[];
+		sets: Pick<Set, "weight" | "reps" | "completed">[];
 	}[];
 }): number => {
 	let total = 0;
@@ -24,13 +26,13 @@ interface PrComparableWorkout {
 			completed: boolean;
 		}[];
 	}[];
-};
+}
 
 interface exercisePr {
 	weightPr: number;
 	volumePr: number;
 	bodyweightRepsPr: number;
-};
+}
 
 export const calculateWorkoutPrs = <T extends PrComparableWorkout>(
 	workouts: T[],
