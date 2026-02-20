@@ -7,7 +7,6 @@ import { Badge } from "./ui/badge";
 import { showWorkoutDeletedToast } from "@/lib/toastMessages";
 import { WorkoutWithPrData } from "@/lib/types";
 import { toTitleCase } from "@/lib/convertWorkoutData";
-import { calculateWorkoutVolume } from "@/lib/calculateWorkoutStats";
 
 interface WorkoutCardProps {
 	workout: WorkoutWithPrData;
@@ -56,7 +55,7 @@ export default function WorkoutCard({
 		.filter((muscleGroup) => muscleGroup != null)
 		.reverse();
 
-	const workoutVolume = calculateWorkoutVolume(workout);
+	const workoutVolume = workout.totalVolume;
 
 	return (
 		<>

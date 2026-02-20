@@ -3,6 +3,7 @@ import { WorkoutFormData } from "@/lib/types";
 import { db } from "@/lib/prisma";
 import { normalizeExerciseName, parseWorkout } from "@/lib/convertWorkoutData";
 import { Exercise, validateWorkout } from "@/lib/validateWorkout";
+import { calculateWorkoutVolume } from "@/lib/calculateWorkoutStats";
 import { fromZodError } from "zod-validation-error";
 
 // NOTE: currently unused, will be used later when i implement sorting/filtering?
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
 	}
 
 	const validWorkout = validationResult.data;
+	const totalVolume = calculateWorkoutVolume(validWorkout);
 
 	const getGlobalExerciseId = async (exercise: Exercise): Promise<string> => {
 		if (exercise.global.name) {
@@ -80,6 +82,7 @@ export async function POST(request: Request) {
 		data: {
 			name: validWorkout.name,
 			durationSeconds: validWorkout.durationSeconds,
+			totalVolume,
 			exercises: {
 				create: exercisesToCreate.map((exercise) => ({
 					globalExercise: { connect: { id: exercise.globalExerciseId } },

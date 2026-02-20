@@ -2,6 +2,7 @@ import { normalizeExerciseName, parseWorkout } from "@/lib/convertWorkoutData";
 import { db } from "@/lib/prisma";
 import { WorkoutFormData } from "@/lib/types";
 import { Exercise, validateWorkout } from "@/lib/validateWorkout";
+import { calculateWorkoutVolume } from "@/lib/calculateWorkoutStats";
 import { NextResponse } from "next/server";
 import { fromZodError } from "zod-validation-error";
 
@@ -22,6 +23,7 @@ export async function PATCH(
 	}
 
 	const validWorkout = validationResult.data;
+	const totalVolume = calculateWorkoutVolume(validWorkout);
 
 	const getGlobalExerciseId = async (exercise: Exercise): Promise<string> => {
 		if (exercise.global.name) {
@@ -68,6 +70,7 @@ export async function PATCH(
 		data: {
 			name: validWorkout.name,
 			durationSeconds: validWorkout.durationSeconds,
+			totalVolume,
 			exercises: {
 				upsert: exercisesToUpdate.map((exercise) => ({
 					where: { id: exercise.id },
