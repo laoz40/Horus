@@ -3,7 +3,10 @@ import { WorkoutFormData } from "@/lib/types";
 import { db } from "@/lib/prisma";
 import { normalizeExerciseName, parseWorkout } from "@/lib/convertWorkoutData";
 import { Exercise, validateWorkout } from "@/lib/validateWorkout";
-import { calculateWorkoutVolume } from "@/lib/calculateWorkoutStats";
+import {
+	countTotalPrSetsInWorkout,
+	calculateWorkoutVolume,
+} from "@/lib/calculateWorkoutStats";
 import { fromZodError } from "zod-validation-error";
 
 // NOTE: currently unused, will be used later when i implement sorting/filtering?
@@ -38,7 +41,6 @@ export async function POST(request: Request) {
 	}
 
 	const validWorkout = validationResult.data;
-	const totalVolume = calculateWorkoutVolume(validWorkout);
 
 	const getGlobalExerciseId = async (exercise: Exercise): Promise<string> => {
 		if (exercise.global.name) {
@@ -78,11 +80,59 @@ export async function POST(request: Request) {
 		}),
 	);
 
+	const targetExerciseIds = [
+		...new Set(exercisesToCreate.map((exercise) => exercise.globalExerciseId)),
+	];
+
+	const previousSets = await db.set.findMany({
+		where: {
+			completed: true,
+			exercise: {
+				globalExerciseId: {
+					in: targetExerciseIds,
+				},
+			},
+		},
+		select: {
+			weight: true,
+			reps: true,
+			completed: true,
+			exercise: {
+				select: {
+					globalExerciseId: true,
+				},
+			},
+		},
+	});
+
+	const totalVolume = calculateWorkoutVolume(validWorkout);
+	const totalPrSets = countTotalPrSetsInWorkout(
+		// current workout
+		{
+			exercises: exercisesToCreate.map((exercise) => ({
+				globalExerciseId: exercise.globalExerciseId,
+				sets: exercise.sets.map((set) => ({
+					weight: Number(set.weight) || 0,
+					reps: Number(set.reps) || 0,
+					completed: set.completed ?? false,
+				})),
+			})),
+		},
+		// previous sets
+		previousSets.map((set) => ({
+			globalExerciseId: set.exercise.globalExerciseId,
+			weight: set.weight,
+			reps: set.reps,
+			completed: set.completed,
+		})),
+	);
+
 	await db.workout.create({
 		data: {
 			name: validWorkout.name,
 			durationSeconds: validWorkout.durationSeconds,
 			totalVolume,
+			totalPrSets,
 			exercises: {
 				create: exercisesToCreate.map((exercise) => ({
 					globalExercise: { connect: { id: exercise.globalExerciseId } },

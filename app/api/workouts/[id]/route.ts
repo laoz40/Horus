@@ -2,7 +2,10 @@ import { normalizeExerciseName, parseWorkout } from "@/lib/convertWorkoutData";
 import { db } from "@/lib/prisma";
 import { WorkoutFormData } from "@/lib/types";
 import { Exercise, validateWorkout } from "@/lib/validateWorkout";
-import { calculateWorkoutVolume } from "@/lib/calculateWorkoutStats";
+import {
+	countTotalPrSetsInWorkout,
+	calculateWorkoutVolume,
+} from "@/lib/calculateWorkoutStats";
 import { NextResponse } from "next/server";
 import { fromZodError } from "zod-validation-error";
 
@@ -64,6 +67,67 @@ export async function PATCH(
 		}),
 	);
 
+	const workoutToUpdate = await db.workout.findUnique({
+		where: { id },
+		select: { createdAt: true },
+	});
+
+	if (!workoutToUpdate) {
+		return NextResponse.json(
+			{ success: false, error: "Workout not found" },
+			{ status: 404 },
+		);
+	}
+
+	const targetExerciseIds = [
+		...new Set(exercisesToUpdate.map((exercise) => exercise.globalExerciseId)),
+	];
+
+	const historicalSets = await db.set.findMany({
+		where: {
+			completed: true,
+			exercise: {
+				globalExerciseId: {
+					in: targetExerciseIds,
+				},
+				workout: {
+					createdAt: {
+						lt: workoutToUpdate.createdAt,
+					},
+				},
+			},
+		},
+		select: {
+			weight: true,
+			reps: true,
+			completed: true,
+			exercise: {
+				select: {
+					globalExerciseId: true,
+				},
+			},
+		},
+	});
+
+	const totalPrSets = countTotalPrSetsInWorkout(
+		{
+			exercises: exercisesToUpdate.map((exercise) => ({
+				globalExerciseId: exercise.globalExerciseId,
+				sets: exercise.sets.map((set) => ({
+					weight: Number(set.weight) || 0,
+					reps: Number(set.reps) || 0,
+					completed: set.completed ?? false,
+				})),
+			})),
+		},
+		historicalSets.map((set) => ({
+			globalExerciseId: set.exercise.globalExerciseId,
+			weight: set.weight,
+			reps: set.reps,
+			completed: set.completed,
+		})),
+	);
+
 	// TODO: need to make it remove deleted exercises once that feature is in
 	await db.workout.update({
 		where: { id: id },
@@ -71,6 +135,7 @@ export async function PATCH(
 			name: validWorkout.name,
 			durationSeconds: validWorkout.durationSeconds,
 			totalVolume,
+			totalPrSets,
 			exercises: {
 				upsert: exercisesToUpdate.map((exercise) => ({
 					where: { id: exercise.id },

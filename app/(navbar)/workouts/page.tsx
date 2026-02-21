@@ -1,5 +1,4 @@
 import HistoryList from "@/components/HistoryList";
-import { calculateWorkoutPrs } from "@/lib/calculateWorkoutStats";
 import { db } from "@/lib/prisma";
 
 export default async function HistoryPage() {
@@ -14,15 +13,13 @@ export default async function HistoryPage() {
 		},
 	});
 
-	const workoutsWithPrs = calculateWorkoutPrs(workouts);
-
 	return (
 		<>
 			<div className="p-4">
 				<h1>Workout History</h1>
 			</div>
 
-			<HistoryList workouts={workoutsWithPrs} />
+			<HistoryList workouts={workouts} />
 		</>
 	);
 }

@@ -1,4 +1,4 @@
-import { Set } from "./validateWorkout";
+import { type Set } from "./validateWorkout";
 
 export const calculateWorkoutVolume = (workout: {
 	exercises: {
@@ -17,66 +17,114 @@ export const calculateWorkoutVolume = (workout: {
 	return total;
 };
 
-interface PrComparableWorkout {
-	exercises: {
-		globalExerciseId: string;
-		sets: {
-			weight: number;
-			reps: number;
-			completed: boolean;
-		}[];
-	}[];
-}
-
-interface exercisePr {
+interface ExercisePrs {
 	weightPr: number;
 	volumePr: number;
 	bodyweightRepsPr: number;
 }
 
-export const calculateWorkoutPrs = <T extends PrComparableWorkout>(
-	workouts: T[],
-): (T & { totalPrSets: number })[] => {
-	const exercisePrs = new Map<string, exercisePr>();
-	const workoutsWithPrs: (T & { totalPrSets: number })[] = [];
+interface ComparableSet {
+	weight: number;
+	reps: number;
+	completed: boolean;
+}
 
-	for (const workout of workouts) {
-		let totalPrSets = 0;
+interface PrBaselineSet extends ComparableSet {
+	globalExerciseId: string;
+}
 
-		for (const exercise of workout.exercises) {
-			const current = exercisePrs.get(exercise.globalExerciseId) ?? {
-				weightPr: 0,
-				volumePr: 0,
-				bodyweightRepsPr: 0,
-			};
+interface CurrentWorkoutForPr {
+	exercises: {
+		globalExerciseId: string;
+		sets: ComparableSet[];
+	}[];
+}
 
-			for (const set of exercise.sets) {
-				if (!set.completed) continue;
-				const weight = set.weight || 0;
-				const reps = set.reps || 0;
-				const volume = weight * reps;
+const getEmptyExercisePrs = (): ExercisePrs => ({
+	weightPr: 0,
+	volumePr: 0,
+	bodyweightRepsPr: 0,
+});
 
-				let isPr = false;
-				if (weight === 0) {
-					if (reps > current.bodyweightRepsPr) isPr = true;
-				} else if (weight > current.weightPr || volume > current.volumePr) {
-					isPr = true;
-				}
+const normalizeSet = (set: ComparableSet): ComparableSet => ({
+	weight: set.weight || 0,
+	reps: set.reps || 0,
+	completed: set.completed,
+});
 
-				if (isPr) {
-					totalPrSets += 1;
-				}
+const isPrSet = (set: ComparableSet, currentExercise: ExercisePrs): boolean => {
+	if (!set.completed) return false;
 
-				current.weightPr = Math.max(current.weightPr, weight);
-				current.volumePr = Math.max(current.volumePr, volume);
-				current.bodyweightRepsPr = Math.max(current.bodyweightRepsPr, reps);
-
-				exercisePrs.set(exercise.globalExerciseId, current);
-			}
-		}
-
-		workoutsWithPrs.push({ ...workout, totalPrSets });
+	if (set.weight === 0) {
+		return set.reps > currentExercise.bodyweightRepsPr;
 	}
 
-	return workoutsWithPrs;
+	const volume = set.weight * set.reps;
+	return (
+		set.weight > currentExercise.weightPr || volume > currentExercise.volumePr
+	);
+};
+
+const updateExercisePrs = (
+	set: ComparableSet,
+	currentExercise: ExercisePrs,
+): ExercisePrs => {
+	if (!set.completed) return currentExercise;
+
+	const volume = set.weight * set.reps;
+
+	return {
+		weightPr: Math.max(currentExercise.weightPr, set.weight),
+		volumePr: Math.max(currentExercise.volumePr, volume),
+		bodyweightRepsPr:
+			set.weight === 0
+				? Math.max(currentExercise.bodyweightRepsPr, set.reps)
+				: currentExercise.bodyweightRepsPr,
+	};
+};
+
+const mapExercisePrs = (
+	previousSets: PrBaselineSet[],
+): Map<string, ExercisePrs> => {
+	const exercisePrs = new Map<string, ExercisePrs>();
+
+	for (const previousSet of previousSets) {
+		const set = normalizeSet(previousSet);
+		const currentExercise =
+			exercisePrs.get(previousSet.globalExerciseId) ?? getEmptyExercisePrs();
+
+		exercisePrs.set(
+			previousSet.globalExerciseId,
+			updateExercisePrs(set, currentExercise),
+		);
+	}
+
+	return exercisePrs;
+};
+
+export const countTotalPrSetsInWorkout = (
+	workout: CurrentWorkoutForPr,
+	previousSets: PrBaselineSet[],
+): number => {
+	const exercisePrs = mapExercisePrs(previousSets);
+	let totalPrSets = 0;
+
+	for (const exercise of workout.exercises) {
+		let currentExercise =
+			exercisePrs.get(exercise.globalExerciseId) ?? getEmptyExercisePrs();
+
+		for (const workoutSet of exercise.sets) {
+			const set = normalizeSet(workoutSet);
+
+			if (isPrSet(set, currentExercise)) {
+				totalPrSets += 1;
+			}
+
+			currentExercise = updateExercisePrs(set, currentExercise);
+		}
+
+		exercisePrs.set(exercise.globalExerciseId, currentExercise);
+	}
+
+	return totalPrSets;
 };
