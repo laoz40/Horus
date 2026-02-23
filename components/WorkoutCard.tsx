@@ -36,8 +36,6 @@ export default function WorkoutCard({
 		}
 	};
 
-	const pr = workout.totalPrSets;
-
 	const mapMuscleGroups = workout.exercises
 		.slice(0, 3)
 		.map((exercise) => {
@@ -55,12 +53,10 @@ export default function WorkoutCard({
 		.filter((muscleGroup) => muscleGroup != null)
 		.reverse();
 
-	const workoutVolume = workout.totalVolume;
-
 	return (
 		<>
 			<Card>
-				{pr > 0 && (
+				{workout.totalPrSets > 0 && (
 					<ShineBorder
 						shineColor="#34e1c9"
 						duration={8}
@@ -93,9 +89,9 @@ export default function WorkoutCard({
 				</div>
 
 				<WorkoutCardStats
-					pr={pr}
+					pr={workout.totalPrSets}
 					duration={workout.durationSeconds ?? 0}
-					workoutVolume={workoutVolume}
+					workoutVolume={workout.totalVolume}
 					exerciseCount={workout.exercises.length}
 				/>
 			</Card>
