@@ -42,6 +42,11 @@ Swift. In the future, I plan to build a native mobile version of this app.
 
 ## TODO:
 
+### General
+
+- [ ] redesign nav bar component
+- [ ] make a proper dark mode, and have 3 app styles/themes (glass effect looks like slop unfortunately)
+
 ### Create Workout Page
 
 - [x] fix stopwatch not resuming progress
