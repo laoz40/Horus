@@ -96,6 +96,7 @@ export default function WorkoutCard({
 					pr={pr}
 					duration={workout.durationSeconds ?? 0}
 					workoutVolume={workoutVolume}
+					exerciseCount={workout.exercises.length}
 				/>
 			</Card>
 		</>

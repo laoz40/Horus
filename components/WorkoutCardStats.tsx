@@ -7,25 +7,31 @@ interface WorkoutCardStatsProps {
 	pr: number;
 	duration: number;
 	workoutVolume: number;
+	exerciseCount: number;
 }
 
 export default function WorkoutCardStats({
 	pr,
 	duration,
 	workoutVolume,
+	exerciseCount,
 }: WorkoutCardStatsProps): ReactElement {
 	return (
 		<div className="flex flex-row justify-between mt-4 pt-2 border-t">
 			{/* Number of exercises */}
 			<div className="flex items-center justify-center space-x-1.5 py-1">
 				<Dumbbell className="size-4 shrink-0" />
-				<span className="text-sm font-medium whitespace-nowrap">5</span>
+				<span className="text-sm font-medium whitespace-nowrap">
+					{exerciseCount}
+				</span>
 			</div>
 
 			{/* Total volume lifted */}
 			<div className="flex items-center justify-center space-x-1.5 py-1">
 				<Weight className="size-4 shrink-0" />
-				<span className="text-sm font-medium whitespace-nowrap">{workoutVolume} kg</span>
+				<span className="text-sm font-medium whitespace-nowrap">
+					{workoutVolume} kg
+				</span>
 			</div>
 
 			{/* Workout Duration */}
