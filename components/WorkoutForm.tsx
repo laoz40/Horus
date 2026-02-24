@@ -267,7 +267,7 @@ export default function WorkoutForm({
 			<FormProvider {...methods}>
 				{/* Top Actions */}
 				<div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen bg-input/50 dark:backdrop-blur-xs border-b">
-					<div className="max-w-5xl mx-auto px-4 md:px-6 lg:px-8 flex flex-row justify-between items-center py-4">
+					<div className="max-w-5xl mx-auto px-4 flex flex-row justify-between items-center py-4">
 						<Button
 							variant="secondary"
 							asChild
@@ -312,7 +312,7 @@ export default function WorkoutForm({
 				{/* Add Exercise button and exercise dropdown */}
 				{currentExerciseName.length > 0 || exercises.length > 1 ? (
 					<div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-t bg-input/50 dark:backdrop-blur-xs">
-						<div className="max-w-5xl mx-auto px-4 md:px-6 lg:px-8 flex flex-row w-full gap-4 py-4">
+						<div className="max-w-5xl mx-auto px-4 flex flex-row w-full gap-4 py-4">
 							<div className="flex grow items-center justify-start">
 								<Select
 									value={selectedExerciseId}
