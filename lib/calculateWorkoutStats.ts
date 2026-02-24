@@ -1,4 +1,4 @@
-import { type Set } from "./validateWorkout";
+import { type Set } from "@/features/workout-form/lib/validateWorkout";
 
 export const calculateWorkoutVolume = (workout: {
 	exercises: {
