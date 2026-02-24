@@ -266,21 +266,23 @@ export default function WorkoutForm({
 		<div className="flex flex-col h-svh">
 			<FormProvider {...methods}>
 				{/* Top Actions */}
-				<div className="flex flex-row justify-between items-center p-4 bg-input/50 dark:backdrop-blur-xs border-b">
-					<Button
-						variant="secondary"
-						asChild
-						size="sm">
-						<Link href={workoutId ? "/workouts" : "/"}>Back</Link>
-					</Button>
-					<span>{formatDurationFull(durationSeconds)}</span>
-					<WorkoutNameDialog>
+				<div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen bg-input/50 dark:backdrop-blur-xs border-b">
+					<div className="max-w-5xl mx-auto px-4 md:px-6 lg:px-8 flex flex-row justify-between items-center py-4">
 						<Button
-							disabled={isSubmitting}
+							variant="secondary"
+							asChild
 							size="sm">
-							{isSubmitting ? "Saving" : "Done"}
+							<Link href={workoutId ? "/workouts" : "/"}>Back</Link>
 						</Button>
-					</WorkoutNameDialog>
+						<span>{formatDurationFull(durationSeconds)}</span>
+						<WorkoutNameDialog>
+							<Button
+								disabled={isSubmitting}
+								size="sm">
+								{isSubmitting ? "Saving" : "Done"}
+							</Button>
+						</WorkoutNameDialog>
+					</div>
 				</div>
 
 				<form
@@ -305,10 +307,12 @@ export default function WorkoutForm({
 							/>
 						))}
 					</section>
+				</form>
 
-					{/* Add Exercise */}
-					{currentExerciseName.length > 0 || exercises.length > 1 ? (
-						<div className="flex flex-row w-full gap-4 border-t p-4 bg-input/50 dark:backdrop-blur-xs">
+				{/* Add Exercise button and exercise dropdown */}
+				{currentExerciseName.length > 0 || exercises.length > 1 ? (
+					<div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-t bg-input/50 dark:backdrop-blur-xs">
+						<div className="max-w-5xl mx-auto px-4 md:px-6 lg:px-8 flex flex-row w-full gap-4 py-4">
 							<div className="flex grow items-center justify-start">
 								<Select
 									value={selectedExerciseId}
@@ -340,8 +344,8 @@ export default function WorkoutForm({
 								<PlusIcon />
 							</Button>
 						</div>
-					) : null}
-				</form>
+					</div>
+				) : null}
 			</FormProvider>
 		</div>
 	);
