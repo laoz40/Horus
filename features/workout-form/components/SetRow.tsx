@@ -1,12 +1,12 @@
 "use client";
 
-import { Workout } from "@/lib/validateWorkout";
+import { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { Trash } from "lucide-react";
 import { type ReactElement } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import NumberInput from "./NumberInput";
-import { Checkbox } from "./ui/checkbox";
-import { Button } from "./ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 
 interface SetRowProps {
 	key: string;

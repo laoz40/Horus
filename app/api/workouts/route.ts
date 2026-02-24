@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
-import { WorkoutFormData } from "@/lib/types";
+import { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { db } from "@/lib/prisma";
-import { normalizeExerciseName, parseWorkout } from "@/lib/convertWorkoutData";
-import { Exercise, validateWorkout } from "@/lib/validateWorkout";
+import {
+	normalizeExerciseName,
+	parseWorkout,
+} from "@/features/workout-form/lib/convertWorkoutData";
+import {
+	Exercise,
+	validateWorkout,
+} from "@/features/workout-form/lib/validateWorkout";
 import {
 	countTotalPrSetsInWorkout,
 	calculateWorkoutVolume,

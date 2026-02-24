@@ -3,7 +3,7 @@ import {
 	normalizeExerciseName,
 } from "./convertWorkoutData";
 import { DEFAULT_EXERCISES } from "./defaultExercises";
-import { db } from "./prisma";
+import { db } from "@/lib/prisma";
 
 export const fetchDefaultExercises = async (query: string) => {
 	const matchedDefaultExercises = DEFAULT_EXERCISES.filter((exercise) =>

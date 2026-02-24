@@ -1,10 +1,10 @@
-import { deduplicateExercises } from "@/lib/convertWorkoutData";
+import { deduplicateExercises } from "@/features/workout-form/lib/convertWorkoutData";
 import { NextResponse } from "next/server";
 import {
 	fetchApiExercises,
 	fetchDbExercises,
 	fetchDefaultExercises,
-} from "@/lib/fetchExercises";
+} from "@/features/workout-form/lib/fetchExercises";
 
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);

@@ -1,7 +1,13 @@
-import { normalizeExerciseName, parseWorkout } from "@/lib/convertWorkoutData";
+import {
+	normalizeExerciseName,
+	parseWorkout,
+} from "@/features/workout-form/lib/convertWorkoutData";
 import { db } from "@/lib/prisma";
-import { WorkoutFormData } from "@/lib/types";
-import { Exercise, validateWorkout } from "@/lib/validateWorkout";
+import { WorkoutFormData } from "@/features/workout-form/lib/types";
+import {
+	Exercise,
+	validateWorkout,
+} from "@/features/workout-form/lib/validateWorkout";
 import {
 	countTotalPrSetsInWorkout,
 	calculateWorkoutVolume,

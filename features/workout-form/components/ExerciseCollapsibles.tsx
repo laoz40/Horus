@@ -1,10 +1,14 @@
 "use client";
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Slider } from "@/components/ui/slider";
 import { BicepsFlexed, ChevronDown, LucideIcon, Notebook } from "lucide-react";
 import { Activity, ReactNode, useState } from "react";
-import { Textarea } from "./ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { Controller, useFormContext } from "react-hook-form";
 
 interface ExerciseCollapsiblesProps {
@@ -23,12 +27,12 @@ const ExerciseCollapsibles = ({ exerciseIndex }: ExerciseCollapsiblesProps) => {
 function DifficultySlider({ exerciseIndex }: ExerciseCollapsiblesProps) {
 	const difficultyOptions = ["Too Easy", " ", "Standard", " ", "Nightmare"];
 
-		const initDifficultyValue = (openState: boolean) => {
-			const currentValue = getValues(`exercises.${exerciseIndex}.difficulty`);
-			if (openState && currentValue === undefined) {
-				setValue(`exercises.${exerciseIndex}.difficulty`, 2);
-			}
-		};
+	const initDifficultyValue = (openState: boolean) => {
+		const currentValue = getValues(`exercises.${exerciseIndex}.difficulty`);
+		if (openState && currentValue === undefined) {
+			setValue(`exercises.${exerciseIndex}.difficulty`, 2);
+		}
+	};
 
 	const { control, getValues, setValue } = useFormContext();
 

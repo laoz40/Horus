@@ -1,8 +1,11 @@
 "use client";
 
 import { formatDurationFull } from "@/lib/time";
-import { WorkoutFormData } from "@/lib/types";
-import { Workout, WorkoutSchema } from "@/lib/validateWorkout";
+import { WorkoutFormData } from "@/features/workout-form/lib/types";
+import {
+	Workout,
+	WorkoutSchema,
+} from "@/features/workout-form/lib/validateWorkout";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,7 +22,7 @@ import {
 	showWorkoutSavedToast,
 } from "@/lib/toastMessages";
 import ExerciseForm from "./ExerciseForm";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { WorkoutNameDialog } from "./WorkoutNameDialog";
 import { PlusIcon } from "lucide-react";
 import {
@@ -30,7 +33,7 @@ import {
 	SelectLabel,
 	SelectTrigger,
 	SelectValue,
-} from "./ui/select";
+} from "@/components/ui/select";
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;

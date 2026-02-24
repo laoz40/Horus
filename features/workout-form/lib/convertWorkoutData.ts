@@ -1,5 +1,6 @@
-import { currentDay } from "./date";
-import { WorkoutDbData, WorkoutFormData } from "./types";
+import { currentDay } from "@/lib/date";
+import { WorkoutDbData } from "@/features/workout-history/lib/types";
+import { WorkoutFormData } from "./types";
 import { Workout } from "./validateWorkout";
 
 export const parseWorkout = (workout: WorkoutFormData): Workout => {

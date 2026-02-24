@@ -6,21 +6,19 @@ import {
 	DropdownMenuItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { EllipsisVertical } from "lucide-react";
-import { AlertDialogDestructive } from "./DeleteWorkoutDialog";
-import { WorkoutDbData } from "@/lib/types";
+import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
+import { WorkoutDbData } from "@/features/workout-history/lib/types";
 
 interface WorkoutCardOptionsProps {
 	handleDelete: () => void;
-	workoutId: string;
 	workout: WorkoutDbData;
 }
 
 export default function WorkoutCardOptions({
 	handleDelete,
-	workoutId,
 	workout,
 }: WorkoutCardOptionsProps): ReactElement {
 	return (

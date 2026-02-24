@@ -1,6 +1,6 @@
 import { db } from "@/lib/prisma";
-import WorkoutForm from "@/components/WorkoutForm";
-import { convertDbToFormData } from "@/lib/convertWorkoutData";
+import WorkoutForm from "@/features/workout-form/components/WorkoutForm";
+import { convertDbToFormData } from "@/features/workout-form/lib/convertWorkoutData";
 
 export default async function EditWorkoutPage({
 	params,
@@ -18,14 +18,14 @@ export default async function EditWorkoutPage({
 				include: {
 					sets: {
 						orderBy: {
-							id: "asc"
-						}
+							id: "asc",
+						},
 					},
 					globalExercise: true,
 				},
 				orderBy: {
-					id: "asc"
-				}
+					id: "asc",
+				},
 			},
 		},
 	});

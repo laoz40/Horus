@@ -5,10 +5,10 @@ import {
 	ComboboxInput,
 	ComboboxItem,
 	ComboboxList,
-} from "./ui/combobox";
-import { Workout } from "@/lib/validateWorkout";
+} from "@/components/ui/combobox";
+import { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { useEffect, useState } from "react";
-import { deduplicateExercises } from "@/lib/convertWorkoutData";
+import { deduplicateExercises } from "@/features/workout-form/lib/convertWorkoutData";
 import {
 	showExerciseSearchFailedToast,
 	showExerciseSearchRateLimitToast,

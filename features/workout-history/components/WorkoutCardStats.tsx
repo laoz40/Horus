@@ -1,6 +1,6 @@
 import { Clock, Dumbbell, Weight } from "lucide-react";
 import { type ReactElement } from "react";
-import { Badge } from "./ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { formatDurationSummary } from "@/lib/time";
 
 interface WorkoutCardStatsProps {

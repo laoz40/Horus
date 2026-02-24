@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import WorkoutCard from "@/components/WorkoutCard";
-import { WorkoutWithPrData } from "@/lib/types";
+import WorkoutCard from "./WorkoutCard";
+import { WorkoutWithPrData } from "@/features/workout-history/lib/types";
 
 export default function HistoryList({
 	workouts,

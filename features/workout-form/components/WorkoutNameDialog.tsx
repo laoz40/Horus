@@ -13,7 +13,7 @@ import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { currentDay } from "@/lib/date";
-import { Workout } from "@/lib/validateWorkout";
+import { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 

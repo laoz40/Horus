@@ -1,12 +1,12 @@
-import Card from "./Card";
+import Card from "@/components/Card";
 import { getRelativeTime } from "@/lib/date";
-import { ShineBorder } from "./ui/shine-border";
+import { ShineBorder } from "@/components/ui/shine-border";
 import WorkoutCardStats from "./WorkoutCardStats";
 import WorkoutCardOptions from "./WorkoutCardOptions";
-import { Badge } from "./ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { showWorkoutDeletedToast } from "@/lib/toastMessages";
-import { WorkoutWithPrData } from "@/lib/types";
-import { toTitleCase } from "@/lib/convertWorkoutData";
+import { WorkoutWithPrData } from "@/features/workout-history/lib/types";
+import { toTitleCase } from "@/features/workout-form/lib/convertWorkoutData";
 
 interface WorkoutCardProps {
 	workout: WorkoutWithPrData;
@@ -71,7 +71,6 @@ export default function WorkoutCard({
 					</div>
 					<WorkoutCardOptions
 						handleDelete={handleDelete}
-						workoutId={workout.id}
 						workout={workout}
 					/>
 				</div>

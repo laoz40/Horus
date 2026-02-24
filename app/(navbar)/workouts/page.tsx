@@ -1,4 +1,5 @@
-import HistoryList from "@/components/HistoryList";
+import HistoryList from "@/features/workout-history/components/HistoryList";
+import HistoryPagination from "@/features/workout-history/components/HistoryPagination";
 import { db } from "@/lib/prisma";
 
 export default async function HistoryPage() {

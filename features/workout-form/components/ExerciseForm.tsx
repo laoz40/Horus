@@ -1,14 +1,14 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Workout } from "@/lib/validateWorkout";
+import { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { forwardRef, useCallback, useEffect, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { showSetDeletedToast } from "@/lib/toastMessages";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import SetRow from "./SetRow";
-import { Button } from "./ui/button";
-import { AlertDialogDestructive } from "./DeleteWorkoutDialog";
+import { Button } from "@/components/ui/button";
+import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { ExerciseNameInputDropdown } from "./ExerciseNameInputDropdown";
 
 export interface ExerciseFormProps
