@@ -25,15 +25,7 @@ import ExerciseForm from "./ExerciseForm";
 import { Button } from "@/components/ui/button";
 import { WorkoutNameDialog } from "./WorkoutNameDialog";
 import { PlusIcon } from "lucide-react";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import ExerciseSelector from "./ExerciseSelector";
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
@@ -317,28 +309,15 @@ export default function WorkoutForm({
 					<div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-t bg-input/50 dark:backdrop-blur-xs">
 						<div className="max-w-5xl mx-auto px-4 flex flex-row w-full gap-4 py-4">
 							<div className="flex grow items-center justify-start">
-								<Select
-									value={selectedExerciseId}
+								<ExerciseSelector
+									exercises={exercises}
+									selectedExerciseId={selectedExerciseId}
+									getExerciseLabel={setExerciseLabel}
 									onValueChange={(value) => {
 										setSelectedExerciseId(value);
 										setScrollTargetId(value);
-									}}>
-									<SelectTrigger className="w-full">
-										<SelectValue placeholder="No Exercise Added" />
-									</SelectTrigger>
-									<SelectContent position="popper">
-										<SelectGroup>
-											<SelectLabel>Exercises</SelectLabel>
-											{exercises.map((exercise, exerciseIndex) => (
-												<SelectItem
-													key={exercise.id}
-													value={exercise.id}>
-													{exerciseIndex + 1}: {setExerciseLabel(exerciseIndex)}
-												</SelectItem>
-											))}
-										</SelectGroup>
-									</SelectContent>
-								</Select>
+									}}
+								/>
 							</div>
 							<Button
 								variant="default"
