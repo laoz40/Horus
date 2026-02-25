@@ -7,12 +7,8 @@ import {
 	ComboboxList,
 } from "@/components/ui/combobox";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
-import { useEffect, useState } from "react";
-import { deduplicateExercises } from "@/features/workout-form/lib/convertWorkoutData";
-import {
-	showExerciseSearchFailedToast,
-	showExerciseSearchRateLimitToast,
-} from "@/lib/toastMessages";
+import { useState } from "react";
+import { useExerciseSuggestions } from "@/features/workout-form/hooks/useExerciseSuggestions";
 
 export function ExerciseNameInputDropdown({
 	exerciseIndex,
@@ -21,77 +17,9 @@ export function ExerciseNameInputDropdown({
 }) {
 	const { control, getValues, setValue } = useFormContext<Workout>();
 	const getExerciseName = getValues(`exercises.${exerciseIndex}.global.name`);
-	const [suggestions, setSuggestions] = useState<
-		{
-			id: string;
-			name: string;
-			normalizedName: string;
-			muscleGroups?: string[];
-		}[]
-	>([]);
 	const [query, setQuery] = useState<string>(getExerciseName ?? "");
-	const [isLoading, setIsLoading] = useState(false);
-
-	useEffect(() => {
-		if (query && query.trim().length === 0) return;
-
-		setIsLoading(true);
-
-		const timeout = setTimeout(async () => {
-			try {
-				const response = await fetch(
-					`/api/exercises/search?query=${encodeURIComponent(query)}`,
-				);
-				const dataFromDb = await response.json();
-				const dbExercises = Array.isArray(dataFromDb.exercises)
-					? dataFromDb.exercises
-					: [];
-				setSuggestions(dbExercises);
-			} catch (error) {
-				console.log("Query not found", error);
-				setSuggestions([]);
-			} finally {
-				setIsLoading(false);
-			}
-		}, 300);
-		return () => {
-			clearTimeout(timeout);
-		};
-	}, [query]);
-
-	const handleShowMore = async () => {
-		if (query && query.trim().length === 0) return;
-
-		setIsLoading(true);
-
-		try {
-			const response = await fetch(
-				`/api/exercises/search?query=${encodeURIComponent(query)}&source=api`,
-			);
-
-			if (response.status === 429) {
-				showExerciseSearchRateLimitToast();
-				return;
-			}
-			if (!response.ok) {
-				showExerciseSearchFailedToast();
-				return;
-			}
-
-			const dataFromApi = await response.json();
-			if (dataFromApi.success && dataFromApi.exercises.length > 0) {
-				const mergedExercises = deduplicateExercises(
-					suggestions,
-					dataFromApi.exercises,
-				);
-				setSuggestions(mergedExercises);
-			}
-		} catch (error) {
-			console.error("Error fetching from API:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	};
+	const { suggestions, isLoading, fetchMoreSuggestions } =
+		useExerciseSuggestions(query);
 
 	const filteredSuggestions = query.trim() ? suggestions : [];
 
@@ -139,7 +67,7 @@ export function ExerciseNameInputDropdown({
 							{query.trim() && (
 								<button
 									className="text-base text-muted-foreground underline w-full flex justify-start align-center p-2"
-									onClick={handleShowMore}>
+									onClick={fetchMoreSuggestions}>
 									{isLoading ? "Loading..." : "Search Online"}
 								</button>
 							)}
