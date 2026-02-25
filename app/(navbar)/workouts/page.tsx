@@ -1,8 +1,9 @@
 import HistoryList from "@/features/workout-history/components/HistoryList";
 import HistoryPagination from "@/features/workout-history/components/HistoryPagination";
+import SearchBar from "@/features/workout-history/components/SearchBar";
 import { fetchWorkouts } from "@/features/workout-history/lib/fetchWorkouts";
 
-const workoutsPerPage = 2;
+const workoutsPerPage = 10;
 
 interface WorkoutHistoryPageProps {
 	searchParams: Promise<{
@@ -28,13 +29,17 @@ export default async function HistoryPage({
 
 	return (
 		<>
-			<div className="p-4">
-				<h1>Workout History</h1>
+			<div className="flex flex-col p-4 gap-1">
+				<h1 className="font-semibold">Workout History</h1>
+				<SearchBar />
 			</div>
 
 			<HistoryList workouts={paginatedWorkouts} />
 
-			<HistoryPagination hasNextPage={hasNextPage} />
+			<HistoryPagination
+				hasNextPage={hasNextPage}
+				className="my-4"
+			/>
 		</>
 	);
 }
