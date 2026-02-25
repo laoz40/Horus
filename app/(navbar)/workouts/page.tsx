@@ -34,7 +34,7 @@ export default async function HistoryPage({
 				<SearchBar />
 			</div>
 
-			<HistoryList workouts={paginatedWorkouts} />
+			<HistoryList key={currentPage} workouts={paginatedWorkouts} />
 
 			<HistoryPagination
 				hasNextPage={hasNextPage}
