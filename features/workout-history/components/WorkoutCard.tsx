@@ -59,7 +59,7 @@ export default function WorkoutCard({
 				{workout.totalPrSets > 0 && (
 					<ShineBorder
 						shineColor="#34e1c9"
-						duration={8}
+						duration={20}
 					/>
 				)}
 				<div className="grid grid-cols-[1fr_min-content] items-center">
