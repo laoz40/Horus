@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 interface PaginationProps {
-	pageCount: number;
+	hasNextPage: boolean;
 	className?: string;
 }
 
@@ -44,7 +44,7 @@ const PaginationArrow: FC<PaginationArrowProps> = ({
 };
 
 export default function HistoryPagination({
-	pageCount,
+	hasNextPage,
 	className,
 }: Readonly<PaginationProps>) {
 	const pathname = usePathname();
@@ -74,7 +74,7 @@ export default function HistoryPagination({
 					<PaginationArrow
 						direction="right"
 						href={createPageURL(currentPage + 1)}
-						isDisabled={currentPage >= pageCount}
+						isDisabled={!hasNextPage}
 					/>
 				</PaginationItem>
 			</PaginationContent>

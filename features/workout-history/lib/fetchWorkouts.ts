@@ -1,12 +1,11 @@
 import { db } from "@/lib/prisma";
 
 interface fetchWorkoutsProps {
-	pageSize?: number;
+	workoutsPerPage?: number;
 	offset?: number;
 }
 
-export const fetchWorkouts = async ({ pageSize, offset }: fetchWorkoutsProps) => {
-	await new Promise((resolve) => setTimeout(resolve, 1000));
+export const fetchWorkouts = async ({ workoutsPerPage, offset }: fetchWorkoutsProps) => {
 	const workouts = await db.workout.findMany({
 		include: {
 			exercises: {
@@ -16,7 +15,7 @@ export const fetchWorkouts = async ({ pageSize, offset }: fetchWorkoutsProps) =>
 				},
 			},
 		},
-		take: pageSize,
+		take: workoutsPerPage,
 		skip: offset,
 		orderBy: {
 			createdAt: "desc",
@@ -27,7 +26,6 @@ export const fetchWorkouts = async ({ pageSize, offset }: fetchWorkoutsProps) =>
 };
 
 export const countWorkouts = async () => {
-
 	const count = await db.workout.count();
 	return count;
 };

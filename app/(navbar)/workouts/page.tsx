@@ -1,6 +1,6 @@
 import HistoryList from "@/features/workout-history/components/HistoryList";
 import HistoryPagination from "@/features/workout-history/components/HistoryPagination";
-import { countWorkouts, fetchWorkouts } from "@/features/workout-history/lib/fetchWorkouts";
+import { fetchWorkouts } from "@/features/workout-history/lib/fetchWorkouts";
 
 const workoutsPerPage = 2;
 
@@ -17,14 +17,14 @@ export default async function HistoryPage({
 
 	const currentPage = page ? parseInt(page) : 1;
 	const offset = workoutsPerPage * (currentPage - 1);
-	const workoutsCount = await countWorkouts();
 
 	const workouts = await fetchWorkouts({
-		pageSize: workoutsPerPage,
-		offset: offset,
+		workoutsPerPage: workoutsPerPage + 1,
+		offset,
 	});
 
-	const pageCount = Math.ceil(workoutsCount / workoutsPerPage);
+	const hasNextPage = workouts.length > workoutsPerPage;
+	const paginatedWorkouts = workouts.slice(0, workoutsPerPage);
 
 	return (
 		<>
@@ -32,9 +32,9 @@ export default async function HistoryPage({
 				<h1>Workout History</h1>
 			</div>
 
-			<HistoryList workouts={workouts} />
+			<HistoryList workouts={paginatedWorkouts} />
 
-			<HistoryPagination pageCount={pageCount} />
+			<HistoryPagination hasNextPage={hasNextPage} />
 		</>
 	);
 }
