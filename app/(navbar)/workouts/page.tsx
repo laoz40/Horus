@@ -29,23 +29,27 @@ export default async function HistoryPage({
 	const paginatedWorkouts = workouts.slice(0, workoutsPerPage);
 
 	return (
-		<>
-			<div className="flex flex-col p-4 gap-1">
-				<h1 className="font-semibold">Workout History</h1>
+		<div className="px-4 pb-10 pt-6 md:px-8 md:pb-12 md:pt-8">
+			<div className="mx-auto flex w-full max-w-3xl flex-col gap-6 md:gap-8">
 				<SearchBar />
-			</div>
 
-			<HistoryList
-				key={currentPage}
-				workouts={paginatedWorkouts}
-			/>
-
-			<Suspense fallback={<div>Loading...</div>}>
-				<HistoryPagination
-					hasNextPage={hasNextPage}
-					className="my-4"
+				<HistoryList
+					key={currentPage}
+					workouts={paginatedWorkouts}
 				/>
-			</Suspense>
-		</>
+
+				<Suspense
+					fallback={
+						<div className="text-center text-sm text-muted-foreground">
+							Loading pages...
+						</div>
+					}>
+					<HistoryPagination
+						hasNextPage={hasNextPage}
+						className="mt-1"
+					/>
+				</Suspense>
+			</div>
+		</div>
 	);
 }

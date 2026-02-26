@@ -62,7 +62,7 @@ export default function WorkoutCard({
 						duration={20}
 					/>
 				)}
-			<div className="grid grid-cols-[1fr_min-content] items-center">
+			<div className="grid grid-cols-[1fr_min-content] items-start">
 				<div className="flex min-w-0 flex-col">
 						<span className="w-fit whitespace-nowrap text-muted-foreground text-sm font-light">
 							{getRelativeTime(workout.createdAt)}

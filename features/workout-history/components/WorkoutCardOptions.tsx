@@ -11,6 +11,7 @@ import Link from "next/link";
 import { EllipsisVertical } from "lucide-react";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { WorkoutDbData } from "@/features/workout-history/lib/types";
+import { Button } from "@/components/ui/button";
 
 interface WorkoutCardOptionsProps {
 	handleDelete: () => void;
@@ -25,10 +26,16 @@ export default function WorkoutCardOptions({
 		<>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<EllipsisVertical className="pl-1 pr-0" />
+				<Button
+					variant="ghost"
+					size="icon-sm"
+					className="mt-0.5 border border-transparent text-muted-foreground transition-colors hover:border-border/70 hover:text-foreground"
+					aria-label="Workout options">
+					<EllipsisVertical className="size-5" />
+				</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
-					align="start"
+					align="end"
 					className="w-34">
 					<DropdownMenuGroup>
 						<DropdownMenuItem asChild>
