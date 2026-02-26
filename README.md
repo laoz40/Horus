@@ -51,49 +51,49 @@ Swift. In the future, I plan to build a native mobile version of this app.
 
 - [x] fix stopwatch not resuming progress
 - [x] implement react hook form instead of state
-    - [x] fix validation with RHF
-        - [x] fix reps validation error not dissappearing until submit
-    - [x] fix not loading previous data in edit mode
-        - [x] fix exercises loading in reverse order
-    - [x] fix autoscroll behaviour not working
-        - need to get the id since it doesnt exist yet, cant use same var
-        - [x] fix not smooth scrolling
-    - [x] implement deleting sets/exercises
-        - [x] add toggle for edit mode
-        - [x] need to make buttons look like actual buttons, recent look like a heading
-        - [x] make the add exercise button toggle to delete exercise in edit mode
-        - [x] checkbox state needs to persist between changing edit mode
-        - [ ] deleting a set during edit and re-adding it makes it show up again
-        - [x] deleting a set removed everything after it, not just that set
-        - [ ] implement undo delete
+  - [x] fix validation with RHF
+    - [x] fix reps validation error not dissappearing until submit
+  - [x] fix not loading previous data in edit mode
+    - [x] fix exercises loading in reverse order
+  - [x] fix autoscroll behaviour not working
+    - need to get the id since it doesnt exist yet, cant use same var
+    - [x] fix not smooth scrolling
+  - [x] implement deleting sets/exercises
+    - [x] add toggle for edit mode
+    - [x] need to make buttons look like actual buttons, recent look like a heading
+    - [x] make the add exercise button toggle to delete exercise in edit mode
+    - [x] checkbox state needs to persist between changing edit mode
+    - [ ] deleting a set during edit and re-adding it makes it show up again
+    - [x] deleting a set removed everything after it, not just that set
+    - [ ] implement undo delete
 - [x] print validation errors in the ui
-    - [x] fix no sets error doesn't go away when adding set
+  - [x] fix no sets error doesn't go away when adding set
 - [x] suggestions for exercises
-    - [x] get exercises from an api
-    - [x] show results that are actually similar/matching to the input
-    - [x] fix exercises names not loading for edit
-    - [x] fix choosing exercise from the list makes the set inputs nan
-    - [x] make function to turn exercises from api into title case
-    - [ ] cache api results to prevent repeat api requests
-        - [ ] clear suggestions (global exercises that have no instances)
-            - only keep globals if they have instances, cache suggestion results instead
-    - [x] make a search button instead of auto calling the api
-    - [x] add default exercises (common ones)
-    - [x] show loading state for fetching exercises from db and api
-    - [x] show error for too many requests as a toast
-    - [x] fix Error fetching from API: TypeError: groupTwo is not iterable
-    - [x] extract the toast messages into a toastMessages.ts
-    - [ ] learn how to use this in prod without showing api key
--  [x] make exercise form appear after typing the name
+  - [x] get exercises from an api
+  - [x] show results that are actually similar/matching to the input
+  - [x] fix exercises names not loading for edit
+  - [x] fix choosing exercise from the list makes the set inputs nan
+  - [x] make function to turn exercises from api into title case
+  - [ ] cache api results to prevent repeat api requests
+    - [ ] clear suggestions (global exercises that have no instances)
+      - only keep globals if they have instances, cache suggestion results instead
+  - [x] make a search button instead of auto calling the api
+  - [x] add default exercises (common ones)
+  - [x] show loading state for fetching exercises from db and api
+  - [x] show error for too many requests as a toast
+  - [x] fix Error fetching from API: TypeError: groupTwo is not iterable
+  - [x] extract the toast messages into a toastMessages.ts
+  - [ ] learn how to use this in prod without showing api key
+- [x] make exercise form appear after typing the name
 - [x] always add empty set or exercise if last one is deleted
 - [x] remove workout title input, only prompt workout title on submit
 - [ ] implement preset feature
-    - [ ] add option to save an existing workout as a preset
-    - [ ] add ability to keep rep and weights or use blank
+  - [ ] add option to save an existing workout as a preset
+  - [ ] add ability to keep rep and weights or use blank
 - [ ] implement saving incomplete workout draft
 - [ ] implement supersetting feature
 - [x] add exercise indicator to show how many exercises in the workout
-    - [x] tap to select exercises from a list, to scroll to that one
+  - [x] tap to select exercises from a list, to scroll to that one
 - [ ] history icon -> opens dialog to show last 5 sets of that exercise
 
 ### History
@@ -103,32 +103,32 @@ Swift. In the future, I plan to build a native mobile version of this app.
 - [ ] make seperate workout view page for past workouts
 - [x] fix card when no prs
 - [x] implement muscle groups to display on the workout card
-    - [x] workouts need to save muscle groups info
-    - [x] update prisma schema to include muscleGroups
-    - [x] load muscle group for each exercise
+  - [x] workouts need to save muscle groups info
+  - [x] update prisma schema to include muscleGroups
+  - [x] load muscle group for each exercise
 - [x] calculate prs
-    - Weighted exercises
-        -Heaviest weight: weight
-        - Highest set volume: weight * reps
-    - Bodyweight exercises
-        - Highest reps: reps
+  - Weighted exercises
+    -Heaviest weight: weight
+    - Highest set volume: weight \* reps
+  - Bodyweight exercises
+    - Highest reps: reps
 - [x] calculate prs on submission instead of history fetch, to allow for pagination and faster loading
 - [x] calculate total volume lifted
 - [ ] calculate total exercises in workout
 - [ ] add search bar
 - [ ] filter workouts, by:
-    - [ ] date ranges
-    - [ ] workout type/presets
-    - [ ] workouts containing specific exercise/muscle group
+  - [ ] date ranges
+  - [ ] workout type/presets
+  - [ ] workouts containing specific exercise/muscle group
 - [ ] add pagination
 - [ ] clear suggestions (global exercises that have no instances)
-    - only keep globals if they have instances, cache suggestion results instead
+  - only keep globals if they have instances, cache suggestion results instead
 - [x] add modals
-    - [ ] creating workout/loading draft
-    - [x] submitting workout
-    - [x] deleting
+  - [ ] creating workout/loading draft
+  - [x] submitting workout
+  - [x] deleting
 - [x] add toast notifications
-    - [ ] implement async toast notification for submitting workout
+  - [ ] implement async toast notification for submitting workout
 - [ ] learn type safe error handling
 
 ### History
@@ -138,29 +138,29 @@ Swift. In the future, I plan to build a native mobile version of this app.
 - [ ] make seperate workout view page for past workouts
 - [x] fix card when no prs
 - [x] implement muscle groups to display on the workout card
-    - [x] workouts need to save muscle groups info
-    - [x] update prisma schema to include muscleGroups
-    - [x] load muscle group for each exercise
+  - [x] workouts need to save muscle groups info
+  - [x] update prisma schema to include muscleGroups
+  - [x] load muscle group for each exercise
 - [x] calculate prs
-    - Weighted exercises
-        -Heaviest weight: weight
-        - Highest set volume: weight * reps
-    - Bodyweight exercises
-        - Highest reps: reps
+  - Weighted exercises
+    -Heaviest weight: weight
+    - Highest set volume: weight \* reps
+  - Bodyweight exercises
+    - Highest reps: reps
 - [x] calculate prs on submission instead of history fetch, to allow for pagination and faster loading
 - [x] calculate total volume lifted
 - [ ] calculate total exercises in workout
 - [ ] add search bar
 - [ ] filter workouts, by:
-    - [ ] date ranges
-    - [ ] workout type/presets
-    - [ ] workouts containing specific exercise/muscle group
+  - [ ] date ranges
+  - [ ] workout type/presets
+  - [ ] workouts containing specific exercise/muscle group
 - [ ] add pagination
 
 ### Progress
 
 - [ ] graphs to show progression over time
-    - [ ] chart.js?
+  - [ ] chart.js?
 - [ ] [filter stats](workout-tracker.md#stats-to-calculate)
 - [ ] frequency heatmap to show sessions per time period
 - [ ] weekly summary

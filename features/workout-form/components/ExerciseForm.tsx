@@ -11,8 +11,7 @@ import { Button } from "@/components/ui/button";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { ExerciseNameInputDropdown } from "./ExerciseNameInputDropdown";
 
-export interface ExerciseFormProps
-	extends React.HTMLAttributes<HTMLDivElement> {
+export interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
 	exerciseIndex: number;
 	handleDeleteExercise: () => void;
 }

@@ -5,7 +5,10 @@ interface fetchWorkoutsProps {
 	offset?: number;
 }
 
-export const fetchWorkouts = async ({ workoutsPerPage, offset }: fetchWorkoutsProps) => {
+export const fetchWorkouts = async ({
+	workoutsPerPage,
+	offset,
+}: fetchWorkoutsProps) => {
 	const workouts = await db.workout.findMany({
 		include: {
 			exercises: {

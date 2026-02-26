@@ -35,7 +35,10 @@ export default async function HistoryPage({
 				<SearchBar />
 			</div>
 
-			<HistoryList key={currentPage} workouts={paginatedWorkouts} />
+			<HistoryList
+				key={currentPage}
+				workouts={paginatedWorkouts}
+			/>
 
 			<Suspense fallback={<div>Loading...</div>}>
 				<HistoryPagination

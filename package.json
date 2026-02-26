@@ -7,8 +7,8 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"format": "oxfmt",
-		"format:check": "oxfmt --check",
+		"format": "oxfmt --check",
+		"format:fix": "oxfmt",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix"
 	},

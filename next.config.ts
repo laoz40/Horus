@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
 		ignoreBuildErrors: true,
 	},
 	turbopack: {
-		root: "."
-	}
+		root: ".",
+	},
 };
 
 export default nextConfig;
