@@ -12,7 +12,7 @@ function Section({ header, children, className }: SectionProps) {
 			<h2 className="text-muted-foreground mb-1">{header}</h2>
 			<div
 				className={cn(
-					"p-2 border rounded-md dark:bg-input dark:border-accent",
+					"p-2 border rounded-md bg-card",
 					className,
 				)}>
 				{children}

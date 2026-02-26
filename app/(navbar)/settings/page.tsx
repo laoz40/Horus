@@ -26,18 +26,14 @@ export default function SettingsPage() {
 			<div className="p-4">
 				<h1>Settings</h1>
 			</div>
-			<SectionCard
-				header="Appearance"
-				className="bg-accent">
+			<SectionCard header="Appearance">
 				<div className="flex flex-row items-center justify-between">
 					<p>Theme</p>
 					<ModeToggle />
 				</div>
 			</SectionCard>
 
-			<SectionCard
-				header="Workouts"
-				className="bg-accent">
+			<SectionCard header="Workouts">
 				<AlertDialogDestructive
 					title="Delete all workouts?"
 					description="This will permanently delete all workouts."
