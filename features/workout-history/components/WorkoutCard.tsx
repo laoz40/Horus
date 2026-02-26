@@ -62,12 +62,12 @@ export default function WorkoutCard({
 						duration={20}
 					/>
 				)}
-			<div className="grid grid-cols-[1fr_min-content] items-start">
+			<div className="grid grid-cols-[1fr_min-content] items-start gap-x-2">
 				<div className="flex min-w-0 flex-col">
-						<span className="w-fit whitespace-nowrap text-muted-foreground text-sm font-light">
+						<span className="w-fit whitespace-nowrap text-[0.62rem] font-medium uppercase tracking-[0.16em] text-muted-foreground/90">
 							{getRelativeTime(workout.createdAt)}
 						</span>
-					<h2 className="max-w-full truncate text-base font-bold">
+					<h2 className="mt-0.5 max-w-full truncate text-base font-semibold leading-tight">
 						{workout.name}
 					</h2>
 					</div>
@@ -77,12 +77,13 @@ export default function WorkoutCard({
 					/>
 				</div>
 
-				<div className="grid grid-cols-[1fr_min-content] mt-1">
-					<div className="flex flex-row justify-start gap-4">
+				<div className="mt-2 grid grid-cols-[1fr_min-content]">
+					<div className="flex flex-row flex-wrap justify-start gap-2">
 						{mapMuscleGroups.map((label) => (
 							<Badge
 								key={label}
-								variant="secondary">
+								variant="secondary"
+								className="rounded-sm border border-border/70 bg-secondary/70 px-1.5 py-0 text-[0.62rem] font-medium uppercase tracking-[0.1em] text-secondary-foreground/95">
 								{label}
 							</Badge>
 						))}
