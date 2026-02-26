@@ -54,7 +54,7 @@ export function ExerciseNameInputDropdown({
 						}}
 						onBlur={() => field.onChange(query)}
 					/>
-					<ComboboxContent>
+					<ComboboxContent className="min-w-(--anchor-width)">
 						<ComboboxList>
 							{filteredSuggestions.map((exercise) => (
 								<ComboboxItem
