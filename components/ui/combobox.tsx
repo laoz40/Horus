@@ -8,8 +8,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
 	InputGroup,
-	InputGroupAddon,
-	InputGroupButton,
 	InputGroupInput,
 } from "@/components/ui/input-group";
 
@@ -35,30 +33,7 @@ function ComboboxTrigger({
 			className={cn("[&_svg:not([class*='size-'])]:size-4", className)}
 			{...props}>
 			{children}
-			{/*
-      <ChevronDownIcon
-        data-slot="combobox-trigger-icon"
-        className="text-muted-foreground pointer-events-none size-4"
-      />
-			*/}
 		</ComboboxPrimitive.Trigger>
-	);
-}
-
-function ComboboxClear({ className, ...props }: ComboboxPrimitive.Clear.Props) {
-	return (
-		<ComboboxPrimitive.Clear
-			data-slot="combobox-clear"
-			render={
-				<InputGroupButton
-					variant="ghost"
-					size="icon-xs"
-				/>
-			}
-			className={cn(className)}
-			{...props}>
-			<XIcon className="pointer-events-none" />
-		</ComboboxPrimitive.Clear>
 	);
 }
 
@@ -66,33 +41,17 @@ function ComboboxInput({
 	className,
 	children,
 	disabled = false,
-	showTrigger = true,
-	showClear = false,
 	...props
 }: ComboboxPrimitive.Input.Props & {
 	showTrigger?: boolean;
 	showClear?: boolean;
 }) {
 	return (
-		<InputGroup className={cn("w-auto", className)}>
+		<InputGroup className={cn("w-auto bg-input dark:bg-input", className)}>
 			<ComboboxPrimitive.Input
 				render={<InputGroupInput disabled={disabled} />}
 				{...props}
 			/>
-			<InputGroupAddon align="inline-end">
-				{showTrigger && (
-					<InputGroupButton
-						size="icon-xs"
-						variant="ghost"
-						asChild
-						data-slot="input-group-button"
-						className="group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent"
-						disabled={disabled}>
-						<ComboboxTrigger />
-					</InputGroupButton>
-				)}
-				{showClear && <ComboboxClear disabled={disabled} />}
-			</InputGroupAddon>
 			{children}
 		</InputGroup>
 	);
@@ -286,7 +245,6 @@ function ComboboxChip({
 
 function ComboboxChipsInput({
 	className,
-	children,
 	...props
 }: ComboboxPrimitive.Input.Props) {
 	return (
