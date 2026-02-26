@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import HistoryList from "@/features/workout-history/components/HistoryList";
 import HistoryPagination from "@/features/workout-history/components/HistoryPagination";
 import SearchBar from "@/features/workout-history/components/SearchBar";
@@ -36,10 +37,12 @@ export default async function HistoryPage({
 
 			<HistoryList key={currentPage} workouts={paginatedWorkouts} />
 
-			<HistoryPagination
-				hasNextPage={hasNextPage}
-				className="my-4"
-			/>
+			<Suspense fallback={<div>Loading...</div>}>
+				<HistoryPagination
+					hasNextPage={hasNextPage}
+					className="my-4"
+				/>
+			</Suspense>
 		</>
 	);
 }
