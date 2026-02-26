@@ -27,7 +27,7 @@ export default function RootLayout({
 				<Toaster />
 				{/* Cosmic Nebula */}
 				<div
-					className="absolute inset-0 z-0 hidden dark:block"
+					className="absolute inset-0 z-0 hidden glass:block"
 					style={{
 						background: `
           radial-gradient(ellipse 70% 55% at 20% 50%, rgba(50, 20, 147, 0.15), transparent 60%),
@@ -41,6 +41,12 @@ export default function RootLayout({
 				<ThemeProvider
 					attribute="class"
 					defaultTheme="system"
+					themes={["light", "dark", "glass"]}
+					value={{
+						light: "light",
+						dark: "dark",
+						glass: "glass",
+					}}
 					enableSystem
 					disableTransitionOnChange>
 					{children}

@@ -1,7 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *, .glass *));
+@custom-variant glass (&:is(.glass *));
 
 :root {
 	--background: oklch(0.9674 0.0013 286.3752);
@@ -68,7 +69,8 @@
 	--spacing: 0.25rem;
 }
 
-.dark {
+.dark,
+.glass {
 	--background: oklch(0.1822 0 0);
 	--foreground: oklch(0.9851 0 0);
 	--card: oklch(0.2046 0 0);

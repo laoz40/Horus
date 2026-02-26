@@ -14,20 +14,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function ModeToggle() {
-	const { resolvedTheme, setTheme } = useTheme();
+	const { theme, resolvedTheme, setTheme } = useTheme();
 	const [mounted, setMounted] = useState<boolean>(false);
 
 	useEffect(() => {
 		setMounted(true);
 	}, []);
 
+	const activeTheme = theme === "system" ? resolvedTheme : theme;
+
 	const label = !mounted
 		? "Theme"
-		: resolvedTheme === "dark"
-			? "Dark theme"
-			: resolvedTheme === "light"
-				? "Light theme"
-				: "System";
+		: activeTheme === "glass"
+			? "Glass theme"
+			: activeTheme === "dark"
+				? "Dark theme"
+				: activeTheme === "light"
+					? "Light theme"
+					: "System theme";
 
 	return (
 		<DropdownMenu>
@@ -50,6 +54,9 @@ export function ModeToggle() {
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={() => setTheme("dark")}>
 					Dark mode
+				</DropdownMenuItem>
+				<DropdownMenuItem onClick={() => setTheme("glass")}>
+					Glass mode
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={() => setTheme("system")}>
 					System theme
