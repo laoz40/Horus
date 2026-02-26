@@ -1,17 +1,20 @@
-import { ModeToggle } from "@/components/ModeToggle";
 import Section from "@/components/Section";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function DashboardPage() {
 	return (
 		<>
-			<div className="flex flex-row justify-between align-bottom p-4">
+			<div className="flex flex-row justify-between items-start p-4">
 				<div>
-					<h2 className="justify-center font-light">Welcome back,</h2>
-					<h1 className="justify-center font-semibold">Leo Zhou</h1>
+					<h2 className="font-light">Welcome back,</h2>
+					<h1 className="font-semibold">Leo Zhou</h1>
 				</div>
-				<ModeToggle></ModeToggle>
+				<Avatar className="mt-0.5">
+					<AvatarImage src="" />
+					<AvatarFallback>LZ</AvatarFallback>
+				</Avatar>
 			</div>
 
 			<Section header="Start">
