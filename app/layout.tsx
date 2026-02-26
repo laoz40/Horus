@@ -23,7 +23,7 @@ export default function RootLayout({
 			lang="en"
 			className={oxanium.className}
 			suppressHydrationWarning>
-			<body className="flex flex-col h-dvh w-full dark:bg-black relative">
+			<body className="flex flex-col h-dvh w-full dark:bg-background relative">
 				<Toaster />
 				{/* Cosmic Nebula */}
 				<div
