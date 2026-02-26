@@ -81,7 +81,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 						<div className="flex flex-row justify-between text-xs">
 							<Button
 								variant="outline"
-								size="sm"
+								size="xs"
 								type="button"
 								className="text-muted-foreground text-xs">
 								Recent
@@ -89,7 +89,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 							{isEditing ? (
 								<Button
 									variant="default"
-									size="sm"
+									size="xs"
 									type="button"
 									className="text-muted-foreground w-12"
 									onClick={() => setIsEditing(!isEditing)}>
@@ -100,7 +100,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 							) : (
 								<Button
 									variant="outline"
-									size="sm"
+									size="xs"
 									type="button"
 									className="text-muted-foreground w-12"
 									onClick={() => setIsEditing(!isEditing)}>
