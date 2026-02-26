@@ -62,12 +62,14 @@ export default function WorkoutCard({
 						duration={20}
 					/>
 				)}
-				<div className="grid grid-cols-[1fr_min-content] items-center">
-					<div className="flex flex-col">
+			<div className="grid grid-cols-[1fr_min-content] items-center">
+				<div className="flex min-w-0 flex-col">
 						<span className="w-fit whitespace-nowrap text-muted-foreground text-sm font-light">
 							{getRelativeTime(workout.createdAt)}
 						</span>
-						<h2 className="text-base font-bold">{workout.name}</h2>
+					<h2 className="max-w-full truncate text-base font-bold">
+						{workout.name}
+					</h2>
 					</div>
 					<WorkoutCardOptions
 						handleDelete={handleDelete}
