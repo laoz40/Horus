@@ -27,7 +27,7 @@ export default function DashboardPage() {
 
 					<Button
 						asChild
-						variant="secondary"
+						variant="outline"
 						className="w-full flex-1">
 						<Link href="#preset">Create a Preset</Link>
 					</Button>
@@ -37,22 +37,22 @@ export default function DashboardPage() {
 			<Section header="Presets">
 				<div className="flex flex-col gap-2">
 					<Button
-						variant="secondary"
+						variant="outline"
 						size="lg">
 						Upper 1
 					</Button>
 					<Button
-						variant="secondary"
+						variant="outline"
 						size="lg">
 						Lower 1
 					</Button>
 					<Button
-						variant="secondary"
+						variant="outline"
 						size="lg">
 						Upper 2
 					</Button>
 					<Button
-						variant="secondary"
+						variant="outline"
 						size="lg">
 						Lower 2
 					</Button>

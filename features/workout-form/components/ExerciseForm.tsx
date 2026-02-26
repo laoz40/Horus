@@ -80,7 +80,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 						{/* Recent + Edit Buttons */}
 						<div className="flex flex-row justify-between text-xs">
 							<Button
-								variant="secondary"
+								variant="outline"
 								size="sm"
 								type="button"
 								className="text-muted-foreground text-xs">
@@ -99,7 +99,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 								</Button>
 							) : (
 								<Button
-									variant="secondary"
+									variant="outline"
 									size="sm"
 									type="button"
 									className="text-muted-foreground w-12"

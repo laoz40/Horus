@@ -260,7 +260,7 @@ export default function WorkoutForm({
 		<div className="flex flex-col h-svh">
 			<FormProvider {...methods}>
 				{/* Top Actions */}
-				<div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen bg-input/50 dark:bg-input glass:bg-input/50 glass:backdrop-blur-xs border-b">
+				<div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen bg-input/60 dark:bg-input glass:backdrop-blur-xs border-b">
 					<div className="max-w-5xl mx-auto px-4 flex flex-row justify-between items-center py-4">
 						<Button
 							variant="secondary"
@@ -305,7 +305,7 @@ export default function WorkoutForm({
 
 				{/* Add Exercise button and exercise dropdown */}
 				{currentExerciseName.length > 0 || exercises.length > 1 ? (
-					<div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-t bg-input/50 dark:bg-input glass:bg-input/50 glass:backdrop-blur-xs">
+					<div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-t bg-input/60 dark:bg-input glass:backdrop-blur-xs">
 						<div className="max-w-5xl mx-auto px-4 flex flex-row w-full gap-4 py-4">
 							<div className="flex grow items-center justify-start">
 								<ExerciseSelector
