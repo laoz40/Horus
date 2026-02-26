@@ -17,7 +17,7 @@ export const parseWorkout = (workout: WorkoutFormData): Workout => {
 			notes: (exercise.notes ?? "").trim(),
 			sets: exercise.sets.map((set) => ({
 				id: set.id,
-				weight: Number(set.weight) ?? 0,
+				weight: Number(set.weight) || 0,
 				reps: Number(set.reps),
 				completed: set.completed ?? false,
 			})),
