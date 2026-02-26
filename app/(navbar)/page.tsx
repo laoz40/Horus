@@ -5,37 +5,37 @@ import Link from "next/link";
 
 export default function DashboardPage() {
 	return (
-		<>
-			<div className="flex flex-row justify-between items-start p-4">
-				<div>
-					<h2 className="font-light">Welcome back,</h2>
-					<h1 className="font-semibold">Leo Zhou</h1>
+		<div className="flex flex-col gap-3 pt-2 pb-5">
+			<div className="flex flex-row items-start justify-between px-4 pt-2">
+				<div className="space-y-0.5">
+					<h2 className="text-sm font-normal text-muted-foreground">Welcome back,</h2>
+					<h1 className="text-2xl leading-tight font-semibold tracking-tight">Leo Zhou</h1>
 				</div>
-				<Avatar className="mt-0.5">
+				<Avatar className="mt-0.5 size-10 shrink-0">
 					<AvatarImage src="" />
 					<AvatarFallback>LZ</AvatarFallback>
 				</Avatar>
 			</div>
 
 			<Section header="Start">
-				<div className="align-center flex w-full flex-row justify-center gap-2">
+				<div className="flex w-full flex-wrap items-center justify-center gap-2">
 					<Button
 						asChild
-						className="w-full flex-1">
+						className="min-h-11 min-w-40 flex-1">
 						<Link href="/workouts/new">Create Workout</Link>
 					</Button>
 
 					<Button
 						asChild
 						variant="outline"
-						className="w-full flex-1">
+						className="min-h-11 min-w-40 flex-1">
 						<Link href="#preset">Create a Preset</Link>
 					</Button>
 				</div>
 			</Section>
 
 			<Section header="Presets">
-				<div className="flex flex-col gap-2">
+				<div className="flex flex-col gap-2.5">
 					<Button
 						variant="outline"
 						size="lg">
@@ -58,6 +58,6 @@ export default function DashboardPage() {
 					</Button>
 				</div>
 			</Section>
-		</>
+		</div>
 	);
 }
