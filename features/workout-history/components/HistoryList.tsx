@@ -9,18 +9,21 @@ export default function HistoryList({
 }: {
 	workouts: WorkoutWithPrData[];
 }) {
-	const [localWorkouts, setLocalWorkouts] = useState(workouts);
+	const [deletedWorkoutIds, setDeletedWorkoutIds] = useState<Set<string>>(
+		new Set(),
+	);
+
+	const visibleWorkouts = workouts.filter(
+		(workout) => !deletedWorkoutIds.has(workout.id),
+	);
 
 	const deleteLocalWorkout = (deleteId: string) => {
-		setLocalWorkouts((prev) =>
-			prev.filter((workout) => workout.id !== deleteId),
-		);
+		setDeletedWorkoutIds((prev) => new Set(prev).add(deleteId));
 	};
-
 
 	return (
 		<>
-			{localWorkouts.map((workout) => (
+			{visibleWorkouts.map((workout) => (
 				<WorkoutCard
 					key={workout.id}
 					workout={workout}
