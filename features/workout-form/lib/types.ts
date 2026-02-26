@@ -1,11 +1,11 @@
-export interface SetFormData {
+interface SetFormData {
 	id: string;
 	weight: number;
 	reps: number;
 	completed: boolean;
 }
 
-export interface ExerciseFormData {
+interface ExerciseFormData {
 	id: string;
 	global: {
 		name: string;
