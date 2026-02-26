@@ -77,9 +77,9 @@ export default function WorkoutCard({
 
 				<div className="grid grid-cols-[1fr_min-content] mt-1">
 					<div className="flex flex-row justify-start gap-4">
-						{mapMuscleGroups.map((label, index) => (
+						{mapMuscleGroups.map((label) => (
 							<Badge
-								key={index}
+								key={label}
 								variant="secondary">
 								{label}
 							</Badge>
