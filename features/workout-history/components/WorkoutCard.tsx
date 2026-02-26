@@ -11,11 +11,13 @@ import { toTitleCase } from "@/features/workout-form/lib/convertWorkoutData";
 interface WorkoutCardProps {
 	workout: WorkoutWithPrData;
 	deleteLocalWorkout: (deleteId: string) => void;
+	workoutIndex: number;
 }
 
 export default function WorkoutCard({
 	workout,
 	deleteLocalWorkout,
+	workoutIndex,
 }: WorkoutCardProps) {
 	const handleDelete = async () => {
 		deleteLocalWorkout(workout.id);
@@ -95,6 +97,7 @@ export default function WorkoutCard({
 					duration={workout.durationSeconds ?? 0}
 					workoutVolume={workout.totalVolume}
 					exerciseCount={workout.exercises.length}
+					workoutIndex={workoutIndex}
 				/>
 			</Card>
 		</>

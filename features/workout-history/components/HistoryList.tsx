@@ -28,11 +28,12 @@ export default function HistoryList({
 					No workouts found for this page.
 				</div>
 			) : (
-				visibleWorkouts.map((workout) => (
+				visibleWorkouts.map((workout, index) => (
 					<WorkoutCard
 						key={workout.id}
 						workout={workout}
 						deleteLocalWorkout={deleteLocalWorkout}
+						workoutIndex={visibleWorkouts.length - index}
 					/>
 				))
 			)}
