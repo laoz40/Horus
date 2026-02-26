@@ -91,8 +91,7 @@ export default function WorkoutForm({
 	useEffect(() => {
 		if (!initialData) return;
 		reset(initialData);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [initialData, reset]);
 
 	// -----
 
