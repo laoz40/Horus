@@ -21,14 +21,16 @@ export default function DashboardPage() {
 				<div className="flex w-full flex-wrap items-center justify-center gap-2">
 					<Button
 						asChild
-						className="min-h-11 min-w-40 flex-1">
+						size="lg"
+						className="flex-1">
 						<Link href="/workouts/new">Create Workout</Link>
 					</Button>
 
 					<Button
 						asChild
 						variant="outline"
-						className="min-h-11 min-w-40 flex-1">
+						size="lg"
+						className="flex-1">
 						<Link href="#preset">Create a Preset</Link>
 					</Button>
 				</div>

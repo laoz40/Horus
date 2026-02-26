@@ -50,7 +50,7 @@ export default function NavigationMenuMobile() {
 							<NavigationMenuLink
 								className={cn(
 									"flex flex-col h-auto items-center justify-center w-full rounded-none px-3 py-2.5",
-									"bg-transparent! text-muted-foreground text-xs",
+									"bg-transparent! text-muted-foreground text-sm",
 									"transition-colors duration-150",
 									"hover:bg-transparent hover:text-primary",
 									"focus:bg-transparent focus:text-primary",
@@ -60,7 +60,7 @@ export default function NavigationMenuMobile() {
 								active={active}
 								asChild>
 								<Link href={item.href}>
-									<item.icon className={cn("mb-1 h-5! w-5! text-current")} />
+									<item.icon className={cn("mb-1 h-6! w-6! text-current")} />
 									{item.title}
 								</Link>
 							</NavigationMenuLink>
