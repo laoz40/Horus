@@ -55,8 +55,8 @@ function DifficultySlider({ exerciseIndex }: ExerciseCollapsiblesProps) {
 					)}
 				/>
 				<div className="flex flex-row items-center justify-between text-muted-foreground text-xs">
-					{difficultyOptions.map((difficulty, index) => (
-						<span key={index}>{difficulty}</span>
+					{difficultyOptions.map((difficulty) => (
+						<span key={difficulty}>{difficulty}</span>
 					))}
 				</div>
 			</div>
