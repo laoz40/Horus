@@ -29,13 +29,14 @@ const PaginationArrow: FC<PaginationArrowProps> = ({
 }) => {
 	const router = useRouter();
 	const isLeft = direction === "left";
-	const disabledClassName = isDisabled ? "opacity-0 cursor-not-allowed" : "";
+	const disabledClassName = isDisabled ? "bg-background border-none cursor-not-allowed" : "";
 
 	return (
 		<Button
 			onClick={() => router.push(href)}
-			className={`${disabledClassName}`}
+			className={`${disabledClassName} border`}
 			variant="secondary"
+			size="lg"
 			aria-disabled={isDisabled}
 			disabled={isDisabled}>
 			{isLeft ? <ChevronLeftIcon /> : <ChevronRightIcon />}
