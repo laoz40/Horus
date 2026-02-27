@@ -38,11 +38,11 @@ export default function WorkoutCardOptions({
 					align="end"
 					className="w-34">
 					<DropdownMenuGroup>
-						<DropdownMenuItem asChild>
+						<DropdownMenuItem className="h-10" asChild>
 							<Link href={`/workouts/${workout.id}/edit`}>Edit</Link>
 						</DropdownMenuItem>
 
-						<DropdownMenuItem>Share</DropdownMenuItem>
+						<DropdownMenuItem className="h-10">Share</DropdownMenuItem>
 
 						<DropdownMenuSeparator />
 
@@ -51,6 +51,7 @@ export default function WorkoutCardOptions({
 							description={`This will permanently delete workout: ${workout?.name}`}
 							handleDelete={handleDelete}>
 							<DropdownMenuItem
+								className="h-10"
 								variant="destructive"
 								onSelect={(e) => e.preventDefault()}>
 								Delete
