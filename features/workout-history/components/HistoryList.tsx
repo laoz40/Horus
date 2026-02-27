@@ -24,8 +24,8 @@ export default function HistoryList({
 	return (
 		<div className="space-y-4 md:space-y-5">
 			{visibleWorkouts.length === 0 ? (
-				<div className="rounded-xl border border-dashed border-border/80 bg-card/50 px-5 py-10 text-center text-sm text-muted-foreground">
-					No workouts found for this page.
+				<div className="border border-border/80 bg-card/50 px-5 py-10 text-center text-sm text-muted-foreground">
+					No saved workouts. Try creating one!
 				</div>
 			) : (
 				visibleWorkouts.map((workout, index) => (
