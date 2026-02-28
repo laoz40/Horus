@@ -7,8 +7,11 @@ existing solutions and my current method of tracking workouts (excel sheet) is
 inefficient and doesn't scale well.
 
 <div align="center">
-    <img src="screenshot-workout-form.png" alt="Screenshot of Workout Form" style="width:30%;"/>
-    <img src="screenshot-history.png" alt="Screenshot of History" style="width:30%;"/>
+    <img src="screenshot-workout-form.png" style="width:30%;" />
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="screenshot-history.png" style="width:30%;" />
 </div>
 
 ---
