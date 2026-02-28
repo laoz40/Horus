@@ -18,7 +18,7 @@ export default function DashboardPage() {
 			</div>
 
 			<Section header="Start">
-				<div className="flex w-full flex-wrap items-center justify-center gap-2">
+				<div className="flex flex-row w-full flex-wrap items-center justify-center gap-2">
 					<Button
 						asChild
 						size="lg"
@@ -37,7 +37,7 @@ export default function DashboardPage() {
 			</Section>
 
 			<Section header="Presets">
-				<div className="flex flex-col gap-2.5">
+				<div className="flex flex-col gap-2">
 					<Button
 						variant="outline"
 						size="lg">
