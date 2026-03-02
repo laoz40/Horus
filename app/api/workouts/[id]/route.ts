@@ -1,19 +1,20 @@
-import {
-	normalizeExerciseName,
-	parseWorkout,
-} from "@/features/workout-form/lib/convertWorkoutData";
+import { parseWorkout } from "@/features/workout-form/lib/convertWorkoutData";
 import { db } from "@/lib/prisma";
 import { WorkoutFormData } from "@/features/workout-form/lib/types";
-import {
-	Exercise,
-	validateWorkout,
-} from "@/features/workout-form/lib/validateWorkout";
+import { validateWorkout } from "@/features/workout-form/lib/validateWorkout";
 import {
 	countTotalPrSetsInWorkout,
 	calculateWorkoutVolume,
 } from "@/lib/calculateWorkoutStats";
 import { NextResponse } from "next/server";
 import { fromZodError } from "zod-validation-error";
+import { mapExercisesWithGlobalIds } from "@/lib/globalExercise";
+import {
+	getHistoricalCompletedSetsByGlobalExerciseIdsBeforeDate,
+	getTargetGlobalExerciseIds,
+	toCurrentWorkoutForPr,
+	toPrBaselineSets,
+} from "@/lib/workoutPrSets";
 
 export async function PATCH(
 	request: Request,
@@ -33,45 +34,7 @@ export async function PATCH(
 
 	const validWorkout = validationResult.data;
 	const totalVolume = calculateWorkoutVolume(validWorkout);
-
-	const getGlobalExerciseId = async (exercise: Exercise): Promise<string> => {
-		if (exercise.global.name) {
-			const normalizedName = normalizeExerciseName(exercise.global.name);
-			const existingExercise = await db.globalExercise.findUnique({
-				where: { normalizedName },
-			});
-
-			// check if it already exists, return id
-			if (existingExercise) {
-				return existingExercise.id;
-			}
-
-			// else create new global exercise
-			const createNew = await db.globalExercise.create({
-				data: {
-					name: exercise.global.name,
-					normalizedName,
-					muscleGroups: exercise.global.muscleGroups,
-				},
-			});
-			return createNew.id;
-		}
-		throw new Error("exerciseId or newExerciseName missing");
-	};
-
-	const exercisesToUpdate = await Promise.all(
-		validWorkout.exercises.map(async (exercise) => {
-			const globalExerciseId = await getGlobalExerciseId(exercise);
-
-			return {
-				id: exercise.id,
-				globalExerciseId,
-				difficulty: exercise.difficulty ?? null,
-				notes: exercise.notes ?? null,
-				sets: exercise.sets,
-			};
-		}),
-	);
+	const exercisesToUpdate = await mapExercisesWithGlobalIds(validWorkout.exercises);
 
 	const workoutToUpdate = await db.workout.findUnique({
 		where: { id },
@@ -85,53 +48,16 @@ export async function PATCH(
 		);
 	}
 
-	const targetExerciseIds = [
-		...new Set(exercisesToUpdate.map((exercise) => exercise.globalExerciseId)),
-	];
-
-	const historicalSets = await db.set.findMany({
-		where: {
-			completed: true,
-			exercise: {
-				globalExerciseId: {
-					in: targetExerciseIds,
-				},
-				workout: {
-					createdAt: {
-						lt: workoutToUpdate.createdAt,
-					},
-				},
-			},
-		},
-		select: {
-			weight: true,
-			reps: true,
-			completed: true,
-			exercise: {
-				select: {
-					globalExerciseId: true,
-				},
-			},
-		},
-	});
+	const targetExerciseIds = getTargetGlobalExerciseIds(exercisesToUpdate);
+	const historicalSets =
+		await getHistoricalCompletedSetsByGlobalExerciseIdsBeforeDate(
+			targetExerciseIds,
+			workoutToUpdate.createdAt,
+		);
 
 	const totalPrSets = countTotalPrSetsInWorkout(
-		{
-			exercises: exercisesToUpdate.map((exercise) => ({
-				globalExerciseId: exercise.globalExerciseId,
-				sets: exercise.sets.map((set) => ({
-					weight: Number(set.weight) || 0,
-					reps: Number(set.reps) || 0,
-					completed: set.completed ?? false,
-				})),
-			})),
-		},
-		historicalSets.map((set) => ({
-			globalExerciseId: set.exercise.globalExerciseId,
-			weight: set.weight,
-			reps: set.reps,
-			completed: set.completed,
-		})),
+		toCurrentWorkoutForPr(exercisesToUpdate),
+		toPrBaselineSets(historicalSets),
 	);
 
 	// TODO: need to make it remove deleted exercises once that feature is in

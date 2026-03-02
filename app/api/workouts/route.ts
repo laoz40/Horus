@@ -1,19 +1,20 @@
 import { NextResponse } from "next/server";
 import { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { db } from "@/lib/prisma";
-import {
-	normalizeExerciseName,
-	parseWorkout,
-} from "@/features/workout-form/lib/convertWorkoutData";
-import {
-	Exercise,
-	validateWorkout,
-} from "@/features/workout-form/lib/validateWorkout";
+import { parseWorkout } from "@/features/workout-form/lib/convertWorkoutData";
+import { validateWorkout } from "@/features/workout-form/lib/validateWorkout";
 import {
 	countTotalPrSetsInWorkout,
 	calculateWorkoutVolume,
 } from "@/lib/calculateWorkoutStats";
 import { fromZodError } from "zod-validation-error";
+import { mapExercisesWithGlobalIds } from "@/lib/globalExercise";
+import {
+	getPreviousCompletedSetsByGlobalExerciseIds,
+	getTargetGlobalExerciseIds,
+	toCurrentWorkoutForPr,
+	toPrBaselineSets,
+} from "@/lib/workoutPrSets";
 
 // NOTE: currently unused, will be used later when i implement sorting/filtering?
 export async function GET() {
@@ -47,90 +48,16 @@ export async function POST(request: Request) {
 	}
 
 	const validWorkout = validationResult.data;
-
-	const getGlobalExerciseId = async (exercise: Exercise): Promise<string> => {
-		if (exercise.global.name) {
-			const normalizedName = normalizeExerciseName(exercise.global.name);
-			const existingExercise = await db.globalExercise.findUnique({
-				where: { normalizedName },
-			});
-
-			// check if it already exists, return id
-			if (existingExercise) {
-				return existingExercise.id;
-			}
-
-			// else create new global exercise
-			const createNew = await db.globalExercise.create({
-				data: {
-					name: exercise.global.name,
-					normalizedName,
-					muscleGroups: exercise.global.muscleGroups,
-				},
-			});
-			return createNew.id;
-		}
-		throw new Error("exerciseId or newExerciseName missing");
-	};
-
-	const exercisesToCreate = await Promise.all(
-		validWorkout.exercises.map(async (exercise) => {
-			const globalExerciseId = await getGlobalExerciseId(exercise);
-
-			return {
-				globalExerciseId: globalExerciseId,
-				difficulty: exercise.difficulty ?? null,
-				notes: exercise.notes ?? null,
-				sets: exercise.sets,
-			};
-		}),
+	const exercisesToCreate = await mapExercisesWithGlobalIds(validWorkout.exercises);
+	const targetExerciseIds = getTargetGlobalExerciseIds(exercisesToCreate);
+	const previousSets = await getPreviousCompletedSetsByGlobalExerciseIds(
+		targetExerciseIds,
 	);
-
-	const targetExerciseIds = [
-		...new Set(exercisesToCreate.map((exercise) => exercise.globalExerciseId)),
-	];
-
-	const previousSets = await db.set.findMany({
-		where: {
-			completed: true,
-			exercise: {
-				globalExerciseId: {
-					in: targetExerciseIds,
-				},
-			},
-		},
-		select: {
-			weight: true,
-			reps: true,
-			completed: true,
-			exercise: {
-				select: {
-					globalExerciseId: true,
-				},
-			},
-		},
-	});
 
 	const totalVolume = calculateWorkoutVolume(validWorkout);
 	const totalPrSets = countTotalPrSetsInWorkout(
-		// current workout
-		{
-			exercises: exercisesToCreate.map((exercise) => ({
-				globalExerciseId: exercise.globalExerciseId,
-				sets: exercise.sets.map((set) => ({
-					weight: Number(set.weight) || 0,
-					reps: Number(set.reps) || 0,
-					completed: set.completed ?? false,
-				})),
-			})),
-		},
-		// previous sets
-		previousSets.map((set) => ({
-			globalExerciseId: set.exercise.globalExerciseId,
-			weight: set.weight,
-			reps: set.reps,
-			completed: set.completed,
-		})),
+		toCurrentWorkoutForPr(exercisesToCreate),
+		toPrBaselineSets(previousSets),
 	);
 
 	await db.workout.create({
