@@ -21,6 +21,8 @@ import {
 	showExerciseDeletedToast,
 	showWorkoutSavedToast,
 } from "@/lib/toastMessages";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import ExerciseForm from "./ExerciseForm";
 import { Button } from "@/components/ui/button";
 import { WorkoutNameDialog } from "./WorkoutNameDialog";
@@ -231,20 +233,16 @@ export default function WorkoutForm({
 	// -----
 
 	const router = useRouter();
+	const createWorkout = useMutation(api.workouts.createWorkout);
 
 	const submitWorkout = async (data: any) => {
 		const finalData = { ...data, durationSeconds };
 
 		try {
-			const apiUrl = workoutId ? `/api/workouts/${workoutId}` : "/api/workouts";
-			const saveWorkout = await fetch(apiUrl, {
-				method: workoutId ? "PATCH" : "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(finalData),
-			});
+			const workoutInput = JSON.parse(JSON.stringify(finalData));
+			const result = await createWorkout({ workout: workoutInput });
 
-			const result = await saveWorkout.json();
-			if (result.success) {
+			if (result.success && result.workout) {
 				router.push("/workouts");
 				// TODO: use promise toast instead to show loading state
 				showWorkoutSavedToast(result.workout.name);

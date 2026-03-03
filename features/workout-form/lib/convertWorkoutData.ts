@@ -1,29 +1,5 @@
-import { currentDay } from "@/lib/date";
 import { WorkoutDbData } from "@/features/workout-history/lib/types";
 import { WorkoutFormData } from "./types";
-import { Workout } from "./validateWorkout";
-
-export const parseWorkout = (workout: WorkoutFormData): Workout => {
-	return {
-		name: workout.name.trim() || `${currentDay} Workout`,
-		durationSeconds: workout.durationSeconds,
-		exercises: workout.exercises.map((exercise) => ({
-			id: exercise.id,
-			global: {
-				name: exercise.global.name.trim(),
-				muscleGroups: exercise.global.muscleGroups,
-			},
-			difficulty: exercise.difficulty,
-			notes: (exercise.notes ?? "").trim(),
-			sets: exercise.sets.map((set) => ({
-				id: set.id,
-				weight: Number(set.weight) || 0,
-				reps: Number(set.reps),
-				completed: set.completed ?? false,
-			})),
-		})),
-	};
-};
 
 export const normalizeExerciseName = (name: string) => {
 	return name.trim().replace(/\s+/g, " ").toLowerCase();

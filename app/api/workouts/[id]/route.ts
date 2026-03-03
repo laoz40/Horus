@@ -1,4 +1,4 @@
-import { parseWorkout } from "@/features/workout-form/lib/convertWorkoutData";
+import { parseWorkout } from "@/lib/workout/parseWorkout";
 import { db } from "@/lib/prisma";
 import { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { validateWorkout } from "@/features/workout-form/lib/validateWorkout";
