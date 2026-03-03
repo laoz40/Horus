@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { validateWorkout } from "../features/workout-form/lib/validateWorkout";
 import type { WorkoutFormData } from "../features/workout-form/lib/types";
@@ -6,6 +6,8 @@ import { parseWorkout } from "../lib/workout/parseWorkout";
 import { mapExercisesWithGlobalExerciseIds } from "../lib/workout/globalExerciseLookup";
 import { calculateWorkoutVolume } from "../lib/workout/calculateStatVolume";
 import { calculateTotalPrSets } from "../lib/workout/calculateStatPr";
+import { paginationOptsValidator } from "convex/server";
+import { getWorkoutMuscleGroups } from "../lib/workout/getWorkoutMuscleGroups";
 
 export const createWorkout = mutation({
 	args: {
@@ -45,16 +47,17 @@ export const createWorkout = mutation({
 		}
 		const exercisesWithGlobalExerciseIds =
 			await mapExercisesWithGlobalExerciseIds(ctx, parsedWorkout.exercises);
-
-		const totalVolume = calculateWorkoutVolume(parsedWorkout);
 		const totalPrSets = await calculateTotalPrSets(
 			ctx,
 			exercisesWithGlobalExerciseIds,
 		);
+		const muscleGroups = getWorkoutMuscleGroups(parsedWorkout);
+		const totalVolume = calculateWorkoutVolume(parsedWorkout);
 
 		await ctx.db.insert("workouts", {
 			name: parsedWorkout.name,
 			durationSeconds: parsedWorkout.durationSeconds,
+			muscleGroups,
 			exercises: exercisesWithGlobalExerciseIds,
 			totalPrSets,
 			totalVolume,
@@ -63,6 +66,33 @@ export const createWorkout = mutation({
 		return {
 			success: true,
 			workout: validationResult.data,
+		};
+	},
+});
+
+export const listWorkouts = query({
+	args: {
+		paginationOpts: paginationOptsValidator,
+	},
+	handler: async (ctx, args) => {
+		const results = await ctx.db
+			.query("workouts")
+			.withIndex("by_creation_time")
+			.order("desc")
+			.paginate(args.paginationOpts);
+
+		return {
+			...results,
+			page: results.page.map((workout) => ({
+				_id: workout._id,
+				_creationTime: workout._creationTime,
+				name: workout.name,
+				durationSeconds: workout.durationSeconds,
+				totalVolume: workout.totalVolume,
+				totalPrSets: workout.totalPrSets,
+				exerciseCount: workout.exercises.length,
+				muscleGroups: workout.muscleGroups ?? [],
+			})),
 		};
 	},
 });
