@@ -1,9 +1,7 @@
-import {
-	createSuggestionObject,
-	normalizeExerciseName,
-} from "./convertWorkoutData";
+import { createSuggestionObject } from "./convertWorkoutData";
 import { DEFAULT_EXERCISES } from "./defaultExercises";
 import { db } from "@/lib/prisma";
+import { normalizeExerciseName } from "@/lib/workout/normalizeExerciseName";
 
 export const fetchDefaultExercises = async (query: string) => {
 	const matchedDefaultExercises = DEFAULT_EXERCISES.filter((exercise) =>

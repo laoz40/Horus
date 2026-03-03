@@ -1,6 +1,6 @@
-import { normalizeExerciseName } from "@/features/workout-form/lib/convertWorkoutData";
 import { type Exercise } from "@/features/workout-form/lib/validateWorkout";
 import { db } from "@/lib/prisma";
+import { normalizeExerciseName } from "@/lib/workout/normalizeExerciseName";
 
 export interface ExerciseWithGlobalId {
 	id: string;

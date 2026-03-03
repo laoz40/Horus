@@ -1,9 +1,6 @@
 import { WorkoutDbData } from "@/features/workout-history/lib/types";
+import { normalizeExerciseName } from "@/lib/workout/normalizeExerciseName";
 import { WorkoutFormData } from "./types";
-
-export const normalizeExerciseName = (name: string) => {
-	return name.trim().replace(/\s+/g, " ").toLowerCase();
-};
 
 const toArray = (value: any): string[] | undefined => {
 	if (!Array.isArray(value)) return undefined;
