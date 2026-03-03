@@ -8,6 +8,7 @@ import {
 	insertMissingGlobalExercises,
 } from "../lib/workout/globalExerciseLookup";
 import { calculateWorkoutVolume } from "../lib/calculateWorkoutStats";
+import { calculateTotalPrSets } from "../lib/workout/workoutPrStats";
 
 export const createWorkout = mutation({
 	args: {
@@ -52,9 +53,11 @@ export const createWorkout = mutation({
 		await insertMissingGlobalExercises(ctx, uniqueGlobalExercises);
 
 		const totalVolume = calculateWorkoutVolume(parsedWorkout);
+		const totalPrSets = await calculateTotalPrSets(ctx, parsedWorkout);
 
 		await ctx.db.insert("workouts", {
 			...parsedWorkout,
+			totalPrSets,
 			totalVolume,
 		});
 

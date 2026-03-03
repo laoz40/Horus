@@ -24,6 +24,7 @@ export default defineSchema({
       })
     ),
     name: v.string(),
+    totalPrSets: v.float64(),
     totalVolume: v.float64(),
   }),
   globalExercises: defineTable({
