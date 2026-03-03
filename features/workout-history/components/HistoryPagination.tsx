@@ -5,14 +5,14 @@ import { cn } from "@/lib/utils";
 
 interface HistoryPaginationProps {
 	hasNextPage: boolean;
-	isLoadingMore: boolean;
+	isLoading: boolean;
 	onLoadMore: () => void;
 	className?: string;
 }
 
 export default function HistoryPagination({
 	hasNextPage,
-	isLoadingMore,
+	isLoading,
 	onLoadMore,
 	className,
 }: Readonly<HistoryPaginationProps>) {
@@ -22,11 +22,11 @@ export default function HistoryPagination({
 		<div className={cn("flex justify-center", className)}>
 			<Button
 				onClick={onLoadMore}
-				disabled={isLoadingMore}
-				variant="secondary"
+				disabled={isLoading}
+				variant="outline"
 				size="lg"
-				className="min-w-36 border">
-				{isLoadingMore ? "Loading..." : "Load more"}
+				>
+				{isLoading ? "Loading..." : "Load more"}
 			</Button>
 		</div>
 	);
