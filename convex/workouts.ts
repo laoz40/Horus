@@ -3,6 +3,11 @@ import { v } from "convex/values";
 import { validateWorkout } from "../features/workout-form/lib/validateWorkout";
 import type { WorkoutFormData } from "../features/workout-form/lib/types";
 import { parseWorkout } from "../lib/workout/parseWorkout";
+import {
+	getUniqueGlobalExercises,
+	insertMissingGlobalExercises,
+} from "../lib/workout/globalExerciseLookup";
+import { calculateWorkoutVolume } from "../lib/calculateWorkoutStats";
 
 export const createWorkout = mutation({
 	args: {
@@ -41,7 +46,17 @@ export const createWorkout = mutation({
 			};
 		}
 
-		await ctx.db.insert("workouts", parsedWorkout);
+		const uniqueGlobalExercises = getUniqueGlobalExercises(
+			parsedWorkout.exercises,
+		);
+		await insertMissingGlobalExercises(ctx, uniqueGlobalExercises);
+
+		const totalVolume = calculateWorkoutVolume(parsedWorkout);
+
+		await ctx.db.insert("workouts", {
+			...parsedWorkout,
+			totalVolume,
+		});
 
 		return {
 			success: true,

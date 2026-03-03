@@ -24,5 +24,11 @@ export default defineSchema({
       })
     ),
     name: v.string(),
+    totalVolume: v.float64(),
   }),
+  globalExercises: defineTable({
+    muscleGroups: v.optional(v.array(v.string())),
+    name: v.string(),
+    normalizedName: v.string(),
+  }).index("by_normalizedName", ["normalizedName"]),
 });

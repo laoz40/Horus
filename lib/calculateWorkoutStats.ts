@@ -1,8 +1,12 @@
-import { type Set } from "@/features/workout-form/lib/validateWorkout";
+interface VolumeSet {
+	weight?: number;
+	reps?: number;
+	completed: boolean;
+}
 
 export const calculateWorkoutVolume = (workout: {
 	exercises: {
-		sets: Pick<Set, "weight" | "reps" | "completed">[];
+		sets: VolumeSet[];
 	}[];
 }): number => {
 	let total = 0;
