@@ -3,7 +3,7 @@ import { api } from "@/convex/_generated/api";
 import SearchBar from "@/features/workout-history/components/SearchBar";
 import HistoryFeed from "@/features/workout-history/components/HistoryFeed";
 
-const WORKOUTS_PER_PAGE = 1;
+const WORKOUTS_PER_PAGE = 10;
 
 export default async function HistoryPage() {
 	const preloadedWorkouts = await preloadQuery(api.workouts.listWorkouts, {
