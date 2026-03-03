@@ -1,5 +1,4 @@
 import type { MutationCtx } from "../../convex/_generated/server";
-import { countTotalPrSetsInWorkout } from "../calculateWorkoutStats";
 import { normalizeExerciseName } from "./normalizeExerciseName";
 
 interface WorkoutForPrCalculation {
@@ -14,6 +13,122 @@ interface WorkoutForPrCalculation {
 		}[];
 	}[];
 }
+
+interface ExercisePrs {
+	weightPr: number;
+	volumePr: number;
+	bodyweightRepsPr: number;
+}
+
+interface ComparableSet {
+	weight: number;
+	reps: number;
+	completed: boolean;
+}
+
+interface PrBaselineSet extends ComparableSet {
+	globalExerciseId: string;
+}
+
+interface CurrentWorkoutForPr {
+	exercises: {
+		globalExerciseId: string;
+		sets: ComparableSet[];
+	}[];
+}
+
+const emptyExercisePrs = (): ExercisePrs => ({
+	weightPr: 0,
+	volumePr: 0,
+	bodyweightRepsPr: 0,
+});
+
+const normalizeSet = (set: ComparableSet): ComparableSet => ({
+	weight: set.weight || 0,
+	reps: set.reps || 0,
+	completed: set.completed,
+});
+
+const isPrSet = (set: ComparableSet, currentExercise: ExercisePrs): boolean => {
+	if (!set.completed) return false;
+
+	// if true, then bodyweight reps pr
+	if (set.weight === 0) {
+		return set.reps > currentExercise.bodyweightRepsPr;
+	}
+
+	// if true, then weight pr or volume pr
+	const volume = set.weight * set.reps;
+	return (
+		set.weight > currentExercise.weightPr || volume > currentExercise.volumePr
+	);
+};
+
+const updateExercisePrs = (
+	set: ComparableSet,
+	currentExercise: ExercisePrs,
+): ExercisePrs => {
+	if (!set.completed) return currentExercise;
+
+	const volume = set.weight * set.reps;
+
+	return {
+		weightPr: Math.max(currentExercise.weightPr, set.weight),
+		volumePr: Math.max(currentExercise.volumePr, volume),
+		bodyweightRepsPr:
+			set.weight === 0
+				? Math.max(currentExercise.bodyweightRepsPr, set.reps)
+				: currentExercise.bodyweightRepsPr,
+	};
+};
+
+// build a reference map of exercise prs from previous workouts
+const getExercisePrReferences = (
+	previousSets: PrBaselineSet[],
+): Map<string, ExercisePrs> => {
+	const exercisePrs = new Map<string, ExercisePrs>();
+
+	for (const previousSet of previousSets) {
+		const set = normalizeSet(previousSet);
+		const currentExercise =
+			exercisePrs.get(previousSet.globalExerciseId) ?? emptyExercisePrs();
+
+		exercisePrs.set(
+			previousSet.globalExerciseId,
+			updateExercisePrs(set, currentExercise),
+		);
+	}
+
+	return exercisePrs;
+};
+
+export const countTotalPrSetsInWorkout = (
+	workout: CurrentWorkoutForPr,
+	previousSets: PrBaselineSet[],
+): number => {
+	const exercisePrs = getExercisePrReferences(previousSets);
+	let totalPrSets = 0;
+
+	for (const exercise of workout.exercises) {
+		// get the current exercise prs
+		let currentExercisePrs =
+			exercisePrs.get(exercise.globalExerciseId) ?? emptyExercisePrs();
+
+		for (const workoutSet of exercise.sets) {
+			const set = normalizeSet(workoutSet);
+
+			if (isPrSet(set, currentExercisePrs)) {
+				totalPrSets += 1;
+			}
+
+			currentExercisePrs = updateExercisePrs(set, currentExercisePrs);
+		}
+
+		exercisePrs.set(exercise.globalExerciseId, currentExercisePrs);
+	}
+
+	return totalPrSets;
+};
 
 export const calculateTotalPrSets = async (
 	ctx: MutationCtx,
@@ -36,6 +151,7 @@ export const calculateTotalPrSets = async (
 
 	return countTotalPrSetsInWorkout(
 		{
+			// current workout
 			exercises: workout.exercises.map((exercise) => ({
 				globalExerciseId: normalizeExerciseName(exercise.global.name),
 				sets: exercise.sets.map((set) => ({
