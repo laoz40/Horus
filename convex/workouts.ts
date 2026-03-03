@@ -8,7 +8,7 @@ import {
 	insertMissingGlobalExercises,
 } from "../lib/workout/globalExerciseLookup";
 import { calculateWorkoutVolume } from "../lib/calculateWorkoutStats";
-import { calculateTotalPrSets } from "../lib/workout/workoutPrStats";
+import { calculateTotalPrSets } from "../lib/workout/calculateStatPr";
 
 export const createWorkout = mutation({
 	args: {
