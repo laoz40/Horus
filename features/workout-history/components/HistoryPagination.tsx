@@ -1,84 +1,33 @@
 "use client";
 
-import { FC } from "react";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import {
-	Pagination,
-	PaginationContent,
-	PaginationItem,
-} from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
-interface PaginationProps {
+interface HistoryPaginationProps {
 	hasNextPage: boolean;
+	isLoadingMore: boolean;
+	onLoadMore: () => void;
 	className?: string;
 }
 
-interface PaginationArrowProps {
-	direction: "left" | "right";
-	href: string;
-	isDisabled: boolean;
-}
-
-const PaginationArrow: FC<PaginationArrowProps> = ({
-	direction,
-	href,
-	isDisabled,
-}) => {
-	const router = useRouter();
-	const isLeft = direction === "left";
-	const disabledClassName = isDisabled ? "bg-background border-none cursor-not-allowed" : "";
-
-	return (
-		<Button
-			onClick={() => router.push(href)}
-			className={`${disabledClassName} border`}
-			variant="secondary"
-			size="lg"
-			aria-disabled={isDisabled}
-			disabled={isDisabled}>
-			{isLeft ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-		</Button>
-	);
-};
-
 export default function HistoryPagination({
 	hasNextPage,
+	isLoadingMore,
+	onLoadMore,
 	className,
-}: Readonly<PaginationProps>) {
-	const pathname = usePathname();
-	const searchParams = useSearchParams();
-	const currentPage = Number(searchParams.get("page")) || 1;
-
-	const createPageURL = (pageNumber: number | string) => {
-		const params = new URLSearchParams(searchParams);
-		params.set("page", pageNumber.toString());
-		return `${pathname}?${params.toString()}`;
-	};
+}: Readonly<HistoryPaginationProps>) {
+	if (!hasNextPage) return null;
 
 	return (
-		<Pagination className={cn("", className)}>
-			<PaginationContent>
-				<PaginationItem>
-					<PaginationArrow
-						direction="left"
-						href={createPageURL(currentPage - 1)}
-						isDisabled={currentPage <= 1}
-					/>
-				</PaginationItem>
-				<PaginationItem>
-					<span className="p-2">Page {currentPage}</span>
-				</PaginationItem>
-				<PaginationItem>
-					<PaginationArrow
-						direction="right"
-						href={createPageURL(currentPage + 1)}
-						isDisabled={!hasNextPage}
-					/>
-				</PaginationItem>
-			</PaginationContent>
-		</Pagination>
+		<div className={cn("flex justify-center", className)}>
+			<Button
+				onClick={onLoadMore}
+				disabled={isLoadingMore}
+				variant="secondary"
+				size="lg"
+				className="min-w-36 border">
+				{isLoadingMore ? "Loading..." : "Load more"}
+			</Button>
+		</div>
 	);
 }

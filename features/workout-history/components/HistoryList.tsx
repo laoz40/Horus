@@ -2,19 +2,19 @@
 
 import { useState } from "react";
 import WorkoutCard from "./WorkoutCard";
-import { WorkoutWithPrData } from "@/features/workout-history/lib/types";
+import { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
 
 export default function HistoryList({
 	workouts,
 }: {
-	workouts: WorkoutWithPrData[];
+	workouts: WorkoutHistoryItem[];
 }) {
 	const [deletedWorkoutIds, setDeletedWorkoutIds] = useState<Set<string>>(
 		new Set(),
 	);
 
 	const visibleWorkouts = workouts.filter(
-		(workout) => !deletedWorkoutIds.has(workout.id),
+		(workout) => !deletedWorkoutIds.has(workout._id),
 	);
 
 	const deleteLocalWorkout = (deleteId: string) => {
@@ -30,7 +30,7 @@ export default function HistoryList({
 			) : (
 				visibleWorkouts.map((workout, index) => (
 					<WorkoutCard
-						key={workout.id}
+						key={workout._id}
 						workout={workout}
 						deleteLocalWorkout={deleteLocalWorkout}
 						workoutIndex={visibleWorkouts.length - index}

@@ -5,11 +5,11 @@ import WorkoutCardStats from "./WorkoutCardStats";
 import WorkoutCardOptions from "./WorkoutCardOptions";
 import { Badge } from "@/components/ui/badge";
 import { showWorkoutDeletedToast } from "@/lib/toastMessages";
-import { WorkoutWithPrData } from "@/features/workout-history/lib/types";
+import { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
 import { toTitleCase } from "@/features/workout-form/lib/convertWorkoutData";
 
 interface WorkoutCardProps {
-	workout: WorkoutWithPrData;
+	workout: WorkoutHistoryItem;
 	deleteLocalWorkout: (deleteId: string) => void;
 	workoutIndex: number;
 }
@@ -20,10 +20,10 @@ export default function WorkoutCard({
 	workoutIndex,
 }: WorkoutCardProps) {
 	const handleDelete = async () => {
-		deleteLocalWorkout(workout.id);
+		deleteLocalWorkout(workout._id);
 
 		try {
-			const response = await fetch(`/api/workouts/${workout.id}`, {
+			const response = await fetch(`/api/workouts/${workout._id}`, {
 				method: "DELETE",
 			});
 
@@ -38,22 +38,9 @@ export default function WorkoutCard({
 		}
 	};
 
-	const mapMuscleGroups = workout.exercises
+	const mapMuscleGroups = workout.muscleGroups
 		.slice(0, 3)
-		.map((exercise) => {
-			const muscleGroups = exercise.globalExercise?.muscleGroups;
-			if (!Array.isArray(muscleGroups)) return null;
-			const firstMusleGroup = muscleGroups[0];
-			if (
-				typeof firstMusleGroup !== "string" ||
-				firstMusleGroup.trim().length === 0
-			)
-				return null;
-			return toTitleCase(firstMusleGroup);
-		})
-		// filter out nulls
-		.filter((muscleGroup) => muscleGroup != null)
-		.reverse();
+		.map((muscleGroup) => toTitleCase(muscleGroup));
 
 	return (
 		<>
@@ -67,7 +54,7 @@ export default function WorkoutCard({
 			<div className="grid grid-cols-[1fr_min-content] items-start gap-x-2">
 				<div className="flex min-w-0 flex-col">
 						<span className="w-fit whitespace-nowrap text-[0.62rem] font-medium uppercase tracking-[0.16em] text-muted-foreground/90">
-							{getRelativeTime(workout.createdAt)}
+							{getRelativeTime(new Date(workout._creationTime))}
 						</span>
 					<h2 className="mt-0.5 max-w-full truncate text-base font-semibold leading-tight">
 						{workout.name}
@@ -75,7 +62,8 @@ export default function WorkoutCard({
 					</div>
 					<WorkoutCardOptions
 						handleDelete={handleDelete}
-						workout={workout}
+						workoutId={workout._id}
+						workoutName={workout.name}
 					/>
 				</div>
 
@@ -96,7 +84,7 @@ export default function WorkoutCard({
 					pr={workout.totalPrSets}
 					duration={workout.durationSeconds ?? 0}
 					workoutVolume={workout.totalVolume}
-					exerciseCount={workout.exercises.length}
+					exerciseCount={workout.exerciseCount}
 					workoutIndex={workoutIndex}
 				/>
 			</Card>

@@ -10,17 +10,18 @@ import {
 import Link from "next/link";
 import { EllipsisVertical } from "lucide-react";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
-import { WorkoutDbData } from "@/features/workout-history/lib/types";
 import { Button } from "@/components/ui/button";
 
 interface WorkoutCardOptionsProps {
 	handleDelete: () => void;
-	workout: WorkoutDbData;
+	workoutId: string;
+	workoutName: string;
 }
 
 export default function WorkoutCardOptions({
 	handleDelete,
-	workout,
+	workoutId,
+	workoutName,
 }: WorkoutCardOptionsProps): ReactElement {
 	return (
 		<>
@@ -39,7 +40,7 @@ export default function WorkoutCardOptions({
 					className="w-34">
 					<DropdownMenuGroup>
 						<DropdownMenuItem className="h-10" asChild>
-							<Link href={`/workouts/${workout.id}/edit`}>Edit</Link>
+							<Link href={`/workouts/${workoutId}/edit`}>Edit</Link>
 						</DropdownMenuItem>
 
 						<DropdownMenuItem className="h-10">Share</DropdownMenuItem>
@@ -48,7 +49,7 @@ export default function WorkoutCardOptions({
 
 						<AlertDialogDestructive
 							title="Delete workout?"
-							description={`This will permanently delete workout: ${workout?.name}`}
+							description={`This will permanently delete workout: ${workoutName}`}
 							handleDelete={handleDelete}>
 							<DropdownMenuItem
 								className="h-10"
