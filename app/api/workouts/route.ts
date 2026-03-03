@@ -3,7 +3,7 @@ import { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { db } from "@/lib/prisma";
 import { parseWorkout } from "@/lib/workout/parseWorkout";
 import { validateWorkout } from "@/features/workout-form/lib/validateWorkout";
-import { calculateWorkoutVolume } from "@/lib/calculateWorkoutStats";
+import { calculateWorkoutVolume } from "@/lib/workout/calculateStatVolume";
 import { countTotalPrSetsInWorkout } from "@/lib/workout/calculateStatPr";
 import { fromZodError } from "zod-validation-error";
 import { mapExercisesWithGlobalIds } from "@/lib/globalExercise";

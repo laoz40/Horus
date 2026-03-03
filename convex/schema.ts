@@ -7,12 +7,9 @@ export default defineSchema({
     exercises: v.array(
       v.object({
         difficulty: v.optional(v.float64()),
-        global: v.object({
-          muscleGroups: v.optional(v.array(v.string())),
-          name: v.string(),
-        }),
+        globalExerciseId: v.id("globalExercises"),
         id: v.string(),
-        notes: v.string(),
+        notes: v.optional(v.string()),
         sets: v.array(
           v.object({
             completed: v.boolean(),

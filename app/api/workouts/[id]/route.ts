@@ -2,7 +2,7 @@ import { parseWorkout } from "@/lib/workout/parseWorkout";
 import { db } from "@/lib/prisma";
 import { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { validateWorkout } from "@/features/workout-form/lib/validateWorkout";
-import { calculateWorkoutVolume } from "@/lib/calculateWorkoutStats";
+import { calculateWorkoutVolume } from "@/lib/workout/calculateStatVolume";
 import { countTotalPrSetsInWorkout } from "@/lib/workout/calculateStatPr";
 import { NextResponse } from "next/server";
 import { fromZodError } from "zod-validation-error";

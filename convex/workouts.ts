@@ -3,11 +3,8 @@ import { v } from "convex/values";
 import { validateWorkout } from "../features/workout-form/lib/validateWorkout";
 import type { WorkoutFormData } from "../features/workout-form/lib/types";
 import { parseWorkout } from "../lib/workout/parseWorkout";
-import {
-	getUniqueGlobalExercises,
-	insertMissingGlobalExercises,
-} from "../lib/workout/globalExerciseLookup";
-import { calculateWorkoutVolume } from "../lib/calculateWorkoutStats";
+import { mapExercisesWithGlobalExerciseIds } from "../lib/workout/globalExerciseLookup";
+import { calculateWorkoutVolume } from "../lib/workout/calculateStatVolume";
 import { calculateTotalPrSets } from "../lib/workout/calculateStatPr";
 
 export const createWorkout = mutation({
@@ -46,17 +43,19 @@ export const createWorkout = mutation({
 				errors: validationResult.error.issues,
 			};
 		}
-
-		const uniqueGlobalExercises = getUniqueGlobalExercises(
-			parsedWorkout.exercises,
-		);
-		await insertMissingGlobalExercises(ctx, uniqueGlobalExercises);
+		const exercisesWithGlobalExerciseIds =
+			await mapExercisesWithGlobalExerciseIds(ctx, parsedWorkout.exercises);
 
 		const totalVolume = calculateWorkoutVolume(parsedWorkout);
-		const totalPrSets = await calculateTotalPrSets(ctx, parsedWorkout);
+		const totalPrSets = await calculateTotalPrSets(
+			ctx,
+			exercisesWithGlobalExerciseIds,
+		);
 
 		await ctx.db.insert("workouts", {
-			...parsedWorkout,
+			name: parsedWorkout.name,
+			durationSeconds: parsedWorkout.durationSeconds,
+			exercises: exercisesWithGlobalExerciseIds,
 			totalPrSets,
 			totalVolume,
 		});

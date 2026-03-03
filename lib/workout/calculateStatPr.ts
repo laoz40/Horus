@@ -1,16 +1,12 @@
 import type { MutationCtx } from "../../convex/_generated/server";
-import { normalizeExerciseName } from "./normalizeExerciseName";
+import type { Id } from "../../convex/_generated/dataModel";
 
 interface WorkoutForPrCalculation {
-	exercises: {
-		global: {
-			name: string;
-		};
-		sets: {
-			weight: number;
-			reps: number;
-			completed: boolean;
-		}[];
+	globalExerciseId: Id<"globalExercises">;
+	sets: {
+		weight: number;
+		reps: number;
+		completed: boolean;
 	}[];
 }
 
@@ -132,7 +128,7 @@ export const countTotalPrSetsInWorkout = (
 
 export const calculateTotalPrSets = async (
 	ctx: MutationCtx,
-	workout: WorkoutForPrCalculation,
+	exercises: WorkoutForPrCalculation[],
 ): Promise<number> => {
 	const previousWorkouts = await ctx.db.query("workouts").collect();
 
@@ -141,7 +137,7 @@ export const calculateTotalPrSets = async (
 			exercise.sets
 				.filter((set) => set.completed)
 				.map((set) => ({
-					globalExerciseId: normalizeExerciseName(exercise.global.name),
+					globalExerciseId: exercise.globalExerciseId,
 					weight: set.weight,
 					reps: set.reps,
 					completed: set.completed,
@@ -152,8 +148,8 @@ export const calculateTotalPrSets = async (
 	return countTotalPrSetsInWorkout(
 		{
 			// current workout
-			exercises: workout.exercises.map((exercise) => ({
-				globalExerciseId: normalizeExerciseName(exercise.global.name),
+			exercises: exercises.map((exercise) => ({
+				globalExerciseId: exercise.globalExerciseId,
 				sets: exercise.sets.map((set) => ({
 					weight: Number(set.weight) || 0,
 					reps: Number(set.reps) || 0,
