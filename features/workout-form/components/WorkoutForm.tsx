@@ -6,6 +6,10 @@ import {
 	Workout,
 	WorkoutSchema,
 } from "@/features/workout-form/lib/validateWorkout";
+import {
+	createDefaultExercise,
+	createDefaultWorkoutValues,
+} from "./WorkoutFormDefaults";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -42,29 +46,7 @@ export default function WorkoutForm({
 		resolver: zodResolver(WorkoutSchema),
 		mode: "onSubmit",
 		reValidateMode: "onChange",
-		defaultValues: {
-			name: "",
-			durationSeconds: 0,
-			exercises: [
-				{
-					id: crypto.randomUUID(),
-					global: {
-						name: "",
-						muscleGroups: [],
-					},
-					notes: undefined,
-					difficulty: undefined,
-					sets: [
-						{
-							id: crypto.randomUUID(),
-							weight: undefined,
-							reps: undefined,
-							completed: false,
-						},
-					],
-				},
-			],
-		},
+		defaultValues: createDefaultWorkoutValues(),
 	});
 
 	const {
@@ -121,23 +103,7 @@ export default function WorkoutForm({
 
 	const handleAddExercise = useCallback(() => {
 		append(
-			{
-				id: crypto.randomUUID(),
-				global: {
-					name: "",
-					muscleGroups: [],
-				},
-				notes: undefined,
-				difficulty: undefined,
-				sets: [
-					{
-						id: crypto.randomUUID(),
-						weight: undefined,
-						reps: undefined,
-						completed: false,
-					},
-				],
-			},
+			createDefaultExercise(),
 			// prevent insta scrolling
 			{
 				shouldFocus: false,
@@ -235,7 +201,7 @@ export default function WorkoutForm({
 	const router = useRouter();
 	const createWorkout = useMutation(api.workouts.createWorkout);
 
-	const submitWorkout = async (data: any) => {
+	const submitWorkout = async (data: Workout) => {
 		const finalData = { ...data, durationSeconds };
 
 		try {
