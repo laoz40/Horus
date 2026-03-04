@@ -13,7 +13,6 @@ import {
 import { useWorkoutTimer } from "./hooks/useWorkoutTimer";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
 	useCallback,
 	useEffect,
@@ -22,17 +21,13 @@ import {
 	type ReactElement,
 } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
-import {
-	showExerciseDeletedToast,
-	showWorkoutSavedToast,
-} from "@/lib/toastMessages";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { showExerciseDeletedToast } from "@/lib/toastMessages";
 import ExerciseForm from "./ExerciseForm";
 import { Button } from "@/components/ui/button";
 import { WorkoutNameDialog } from "./WorkoutNameDialog";
 import { PlusIcon } from "lucide-react";
 import ExerciseSelector from "./ExerciseSelector";
+import { useWorkoutSubmit } from "./hooks/useWorkoutSubmit";
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
@@ -188,27 +183,7 @@ export default function WorkoutForm({
 
 	// -----
 
-	const router = useRouter();
-	const createWorkout = useMutation(api.workouts.createWorkout);
-
-	const submitWorkout = async (data: Workout) => {
-		const finalData = { ...data, durationSeconds };
-
-		try {
-			const workoutInput = JSON.parse(JSON.stringify(finalData));
-			const result = await createWorkout({ workout: workoutInput });
-
-			if (result.success && result.workout) {
-				router.push("/workouts");
-				// TODO: use promise toast instead to show loading state
-				showWorkoutSavedToast(result.workout.name);
-			} else {
-				console.log(result);
-			}
-		} catch (error) {
-			console.log("Failed to submit workout", error);
-		}
-	};
+	const { submitWorkout } = useWorkoutSubmit({ durationSeconds });
 
 	return (
 		<div className="flex flex-col h-svh">
