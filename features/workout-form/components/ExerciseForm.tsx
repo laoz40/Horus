@@ -10,6 +10,7 @@ import SetRow from "./SetRow";
 import { Button } from "@/components/ui/button";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { ExerciseNameInputDropdown } from "./ExerciseNameInputDropdown";
+import { createDefaultSet } from "../lib/WorkoutFormDefaults";
 
 export interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
 	exerciseIndex: number;
@@ -33,15 +34,8 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			name: `exercises.${exerciseIndex}.sets`,
 		});
 
-		// console.log(watch(`exercises.${exerciseIndex}.sets`));
-
 		const handleAddSet = useCallback(() => {
-			append({
-				id: crypto.randomUUID(),
-				weight: undefined,
-				reps: undefined,
-				completed: false,
-			});
+			append(createDefaultSet());
 			trigger(`exercises.${exerciseIndex}.sets`);
 		}, [append, exerciseIndex, trigger]);
 

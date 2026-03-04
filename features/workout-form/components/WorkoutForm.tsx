@@ -9,7 +9,7 @@ import {
 import {
 	createDefaultExercise,
 	createDefaultWorkoutValues,
-} from "./WorkoutFormDefaults";
+} from "@/features/workout-form/lib/WorkoutFormDefaults";
 import { useWorkoutTimer } from "./hooks/useWorkoutTimer";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
