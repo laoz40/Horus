@@ -10,6 +10,7 @@ import {
 	createDefaultExercise,
 	createDefaultWorkoutValues,
 } from "./WorkoutFormDefaults";
+import { useWorkoutTimer } from "./hooks/useWorkoutTimer";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -79,20 +80,9 @@ export default function WorkoutForm({
 
 	// -----
 
-	// NOTE: this should probably save when clicking back button, but idk
-	const [durationSeconds, setDurationSeconds] = useState(
-		initialData?.durationSeconds ?? 0,
-	);
-
-	useEffect(() => {
-		const interval = setInterval(() => {
-			setDurationSeconds((prev) => prev + 1);
-		}, 1000);
-
-		return () => {
-			clearInterval(interval);
-		};
-	}, []);
+	const { durationSeconds } = useWorkoutTimer({
+		initialSeconds: initialData?.durationSeconds ?? 0,
+	});
 
 	// -----
 
