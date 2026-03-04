@@ -10,7 +10,7 @@ import {
 	createDefaultExercise,
 	createDefaultWorkoutValues,
 } from "@/features/workout-form/lib/WorkoutFormDefaults";
-import { useWorkoutTimer } from "./hooks/useWorkoutTimer";
+import { useWorkoutTimer } from "@/features/workout-form/hooks/useWorkoutTimer";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import {
@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button";
 import { WorkoutNameDialog } from "./WorkoutNameDialog";
 import { PlusIcon } from "lucide-react";
 import ExerciseSelector from "./ExerciseSelector";
-import { useWorkoutSubmit } from "./hooks/useWorkoutSubmit";
+import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit";
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
@@ -49,10 +49,7 @@ export default function WorkoutForm({
 		control,
 		watch,
 		handleSubmit,
-		formState: {
-			// errors,
-			isSubmitting,
-		},
+		formState: { errors, isSubmitting },
 		reset,
 	} = methods;
 
@@ -63,10 +60,7 @@ export default function WorkoutForm({
 		fields: exercises,
 		append,
 		remove,
-	} = useFieldArray({
-		name: "exercises",
-		control,
-	});
+	} = useFieldArray({ name: "exercises", control });
 
 	useEffect(() => {
 		if (!initialData) return;
