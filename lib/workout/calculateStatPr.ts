@@ -57,44 +57,28 @@ const isPrSet = (set: ComparableSet, currentExercise: ExercisePrs): boolean => {
 
 	// if true, then weight pr or volume pr
 	const volume = set.weight * set.reps;
-	return (
-		set.weight > currentExercise.weightPr || volume > currentExercise.volumePr
-	);
+	return set.weight > currentExercise.weightPr || volume > currentExercise.volumePr;
 };
 
-const updateExercisePrs = (
-	set: ComparableSet,
-	currentExercise: ExercisePrs,
-): ExercisePrs => {
+const updateExercisePrs = (set: ComparableSet, currentExercise: ExercisePrs): ExercisePrs => {
 	if (!set.completed) return currentExercise;
-
-	const volume = set.weight * set.reps;
 
 	return {
 		weightPr: Math.max(currentExercise.weightPr, set.weight),
-		volumePr: Math.max(currentExercise.volumePr, volume),
-		bodyweightRepsPr:
-			set.weight === 0
-				? Math.max(currentExercise.bodyweightRepsPr, set.reps)
-				: currentExercise.bodyweightRepsPr,
+		volumePr: Math.max(currentExercise.volumePr, set.weight * set.reps),
+		bodyweightRepsPr: Math.max(currentExercise.bodyweightRepsPr, set.weight === 0 ? set.reps : 0),
 	};
 };
 
 // build a reference map of exercise prs from previous workouts
-const getExercisePrReferences = (
-	previousSets: PrBaselineSet[],
-): Map<ExerciseKey, ExercisePrs> => {
+const getExercisePrReferences = (previousSets: PrBaselineSet[]): Map<ExerciseKey, ExercisePrs> => {
 	const exercisePrs = new Map<ExerciseKey, ExercisePrs>();
 
 	for (const previousSet of previousSets) {
 		const set = normalizeSet(previousSet);
-		const currentExercise =
-			exercisePrs.get(previousSet.globalExerciseId) ?? emptyExercisePrs();
+		const currentExercisePrs = exercisePrs.get(previousSet.globalExerciseId) ?? emptyExercisePrs();
 
-		exercisePrs.set(
-			previousSet.globalExerciseId,
-			updateExercisePrs(set, currentExercise),
-		);
+		exercisePrs.set(previousSet.globalExerciseId, updateExercisePrs(set, currentExercisePrs));
 	}
 
 	return exercisePrs;
@@ -108,23 +92,19 @@ export const countTotalPrSetsInWorkout = (
 	let totalPrSets = 0;
 
 	for (const exercise of workout.exercises) {
-		// get the current exercise prs
-		let currentExercisePrs =
-			exercisePrs.get(exercise.globalExerciseId) ?? emptyExercisePrs();
-
-		for (const workoutSet of exercise.sets) {
-			const set = normalizeSet(workoutSet);
-
-			if (isPrSet(set, currentExercisePrs)) {
+		// get prs for exercise
+		let currentExercisePrs = exercisePrs.get(exercise.globalExerciseId) ?? emptyExercisePrs();
+		// count for each set in exercise
+		for (const set of exercise.sets) {
+			const normalizedSet = normalizeSet(set);
+			if (isPrSet(normalizedSet, currentExercisePrs)) {
 				totalPrSets += 1;
 			}
-
-			currentExercisePrs = updateExercisePrs(set, currentExercisePrs);
+			currentExercisePrs = updateExercisePrs(normalizedSet, currentExercisePrs);
 		}
-
+		// update for each exercise
 		exercisePrs.set(exercise.globalExerciseId, currentExercisePrs);
 	}
-
 	return totalPrSets;
 };
 
@@ -133,19 +113,22 @@ export const calculateTotalPrSets = async (
 	exercises: WorkoutForPrCalculation[],
 ): Promise<number> => {
 	const previousWorkouts = await ctx.db.query("workouts").collect();
-	const targetGlobalExerciseIds = new Set(
-		exercises.map((exercise) => exercise.globalExerciseId),
-	);
+	// use ids from the current workout only
+	const targetGlobalExerciseIds = new Set(exercises.map((exercise) => exercise.globalExerciseId));
 
+	// make list of completed old sets for matching exercises
 	const previousSets = previousWorkouts.flatMap((previousWorkout) =>
 		previousWorkout.exercises.flatMap((exercise) =>
+			// if exercise is in current workout, keep completed sets, else skip
 			targetGlobalExerciseIds.has(exercise.globalExerciseId)
-				? exercise.sets.filter((set) => set.completed).map((set) => ({
-						globalExerciseId: exercise.globalExerciseId,
-						weight: set.weight,
-						reps: set.reps,
-						completed: set.completed,
-					}))
+				? exercise.sets
+						.filter((set) => set.completed)
+						.map((set) => ({
+							globalExerciseId: exercise.globalExerciseId,
+							weight: set.weight,
+							reps: set.reps,
+							completed: set.completed,
+						}))
 				: [],
 		),
 	);
