@@ -8,6 +8,7 @@ import { calculateWorkoutVolume } from "../lib/workout/calculateStatVolume";
 import { calculateTotalPrSets } from "../lib/workout/calculateStatPr";
 import { paginationOptsValidator } from "convex/server";
 import { getWorkoutMuscleGroups } from "../lib/workout/getWorkoutMuscleGroups";
+import { fromZodError } from "zod-validation-error";
 
 export const createWorkout = mutation({
 	args: {
@@ -42,7 +43,7 @@ export const createWorkout = mutation({
 		if (!validationResult.success) {
 			return {
 				success: false,
-				errors: validationResult.error.issues,
+				errors: fromZodError(validationResult.error),
 			};
 		}
 		const exercisesWithGlobalExerciseIds =
