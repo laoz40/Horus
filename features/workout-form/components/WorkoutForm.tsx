@@ -16,8 +16,6 @@ import Link from "next/link";
 import {
 	useCallback,
 	useEffect,
-	useRef,
-	useState,
 	type ReactElement,
 } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
@@ -27,6 +25,8 @@ import { Button } from "@/components/ui/button";
 import { WorkoutNameDialog } from "./WorkoutNameDialog";
 import { PlusIcon } from "lucide-react";
 import ExerciseSelector from "./ExerciseSelector";
+import { useExerciseNavigation } from "@/features/workout-form/hooks/useExerciseNavigation";
+import { useExerciseSelection } from "@/features/workout-form/hooks/useExerciseSelection";
 import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit";
 
 interface WorkoutFormProps {
@@ -73,12 +73,7 @@ export default function WorkoutForm({
 		initialSeconds: initialData?.durationSeconds ?? 0,
 	});
 
-	// -----
-
-	const [scrollTargetId, setScrollTargetId] = useState<string | null>(null);
-	const [previousExercisesLength, setPreviousExercisesLength] = useState(
-		exercises.length,
-	);
+	const exerciseIds = exercises.map((exercise) => exercise.id);
 
 	const handleAddExercise = useCallback(() => {
 		append(
@@ -91,18 +86,6 @@ export default function WorkoutForm({
 	}, [append]);
 
 	useEffect(() => {
-		const newExerciseAdded =
-			exercises.length > previousExercisesLength && exercises.length > 0;
-		if (newExerciseAdded) {
-			const latestExerciseId = exercises[exercises.length - 1]?.id;
-			if (latestExerciseId) {
-				setScrollTargetId(latestExerciseId);
-			}
-		}
-		setPreviousExercisesLength(exercises.length);
-	}, [exercises, previousExercisesLength]);
-
-	useEffect(() => {
 		if (exercises.length === 0) {
 			handleAddExercise();
 		}
@@ -113,67 +96,14 @@ export default function WorkoutForm({
 		showExerciseDeletedToast();
 	};
 
-	// -----
-
-	// attach each exercise form div to the exercise id
-	const exerciseFormRefs = useRef<Record<string, HTMLDivElement | null>>({});
-	const selectedFormRef = useRef<HTMLDivElement | null>(null);
-
-	useEffect(() => {
-		if (scrollTargetId == null) return;
-
-		const scrollTarget = exerciseFormRefs.current[scrollTargetId];
-		scrollTarget?.scrollIntoView({
-			behavior: "smooth",
-			block: "end",
-		});
-	}, [scrollTargetId]);
-
 	const watchedExercises = watch("exercises");
-	const [selectedExerciseId, setSelectedExerciseId] = useState<
-		string | undefined
-	>(() => exercises[0]?.id ?? "");
+	const { selectedExerciseId, setSelectedExerciseId, getExerciseLabel, currentExerciseName } =
+		useExerciseSelection({ exerciseIds, watchedExercises });
 
-	const setExerciseLabel = (exerciseIndex: number) => {
-		const selectLabel = watchedExercises?.[exerciseIndex]?.global?.name?.trim();
-		return selectLabel ? selectLabel : "No exercise added";
-	};
-
-	useEffect(() => {
-		const scrollContainer = selectedFormRef.current;
-		if (!scrollContainer) return;
-
-		const observer = new IntersectionObserver(
-			(forms) => {
-				const visible = forms.filter((form) => form.isIntersecting);
-				if (visible.length === 0) return;
-				// Sort visible forms by how much is on screen (most visible first), then pick the first one
-				const mostVisible = visible.sort(
-					(a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0),
-				)[0];
-				const id = (mostVisible.target as HTMLElement).dataset.exerciseId;
-				if (id) setSelectedExerciseId(id);
-			},
-			{
-				root: scrollContainer,
-				rootMargin: "-45% 0px -45% 0px",
-				threshold: [0, 0.5, 1],
-			},
-		);
-		Object.values(exerciseFormRefs.current).forEach((form) => {
-			if (form) observer.observe(form);
-		});
-		return () => observer.disconnect();
-	}, [exercises.length]);
-
-	const currentExerciseIndex = exercises.findIndex(
-		(exercise) => exercise.id === selectedExerciseId,
-	);
-
-	const currentExerciseName =
-		currentExerciseIndex >= 0
-			? watchedExercises?.[currentExerciseIndex]?.global?.name?.trim()
-			: "";
+	const { exerciseListRef, registerExerciseRef, setScrollTargetId } = useExerciseNavigation({
+		exerciseIds,
+		setSelectedExerciseId,
+	});
 
 	// -----
 
@@ -208,7 +138,7 @@ export default function WorkoutForm({
 					onSubmit={handleSubmit(submitWorkout)}>
 					{/* Exercise Form */}
 					<section
-						ref={selectedFormRef}
+						ref={exerciseListRef}
 						className="flex flex-col flex-1 overflow-y-auto snap-y snap-mandatory">
 						{exercises.map((exercise, exerciseIndex) => (
 							<ExerciseForm
@@ -234,7 +164,7 @@ export default function WorkoutForm({
 								<ExerciseSelector
 									exercises={exercises}
 									selectedExerciseId={selectedExerciseId}
-									getExerciseLabel={setExerciseLabel}
+									getExerciseLabel={getExerciseLabel}
 									onValueChange={(value) => {
 										setSelectedExerciseId(value);
 										setScrollTargetId(value);
