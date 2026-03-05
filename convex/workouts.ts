@@ -71,6 +71,29 @@ export const createWorkout = mutation({
 	},
 });
 
+export const deleteWorkout = mutation({
+	args: {
+		workoutId: v.id("workouts"),
+	},
+	handler: async (ctx, args) => {
+		const workout = await ctx.db.get(args.workoutId);
+
+		if (!workout) {
+			return {
+				success: false,
+				error: "Workout not found",
+			};
+		}
+
+		await ctx.db.delete(args.workoutId);
+
+		return {
+			success: true,
+			deletedWorkoutId: args.workoutId,
+		};
+	},
+});
+
 export const listWorkouts = query({
 	args: {
 		paginationOpts: paginationOptsValidator,

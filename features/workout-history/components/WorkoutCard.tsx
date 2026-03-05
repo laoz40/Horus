@@ -1,12 +1,15 @@
 import Card from "@/components/Card";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
+import { toTitleCase } from "@/features/workout-form/lib/convertWorkoutData";
 import { getRelativeTime } from "@/lib/date";
 import { ShineBorder } from "@/components/ui/shine-border";
 import WorkoutCardStats from "./WorkoutCardStats";
 import WorkoutCardOptions from "./WorkoutCardOptions";
 import { Badge } from "@/components/ui/badge";
 import { showWorkoutDeletedToast } from "@/lib/toastMessages";
-import { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
-import { toTitleCase } from "@/features/workout-form/lib/convertWorkoutData";
+import { useMutation } from "convex/react";
 
 interface WorkoutCardProps {
 	workout: WorkoutHistoryItem;
@@ -19,20 +22,21 @@ export default function WorkoutCard({
 	deleteLocalWorkout,
 	workoutIndex,
 }: WorkoutCardProps) {
-	const handleDelete = async () => {
-		deleteLocalWorkout(workout._id);
+	const deleteWorkout = useMutation(api.workouts.deleteWorkout);
 
+	const handleDelete = async () => {
 		try {
-			const response = await fetch(`/api/workouts/${workout._id}`, {
-				method: "DELETE",
+			const result = await deleteWorkout({
+				workoutId: workout._id as Id<"workouts">,
 			});
 
-			showWorkoutDeletedToast();
-
-			const workoutData = await response.json();
-			if (!workoutData.success) {
-				console.log("Failed to delete workout:", workoutData.error);
+			if (!result.success) {
+				console.log("Failed to delete workout:", result.error);
+				return;
 			}
+
+			deleteLocalWorkout(workout._id);
+			showWorkoutDeletedToast();
 		} catch (err) {
 			console.log("Delete failed", err);
 		}
@@ -51,14 +55,14 @@ export default function WorkoutCard({
 						duration={20}
 					/>
 				)}
-			<div className="grid grid-cols-[1fr_min-content] items-start gap-x-2">
-				<div className="flex min-w-0 flex-col">
+				<div className="grid grid-cols-[1fr_min-content] items-start gap-x-2">
+					<div className="flex min-w-0 flex-col">
 						<span className="w-fit whitespace-nowrap text-[0.62rem] font-medium uppercase tracking-[0.16em] text-muted-foreground/90">
 							{getRelativeTime(new Date(workout._creationTime))}
 						</span>
-					<h2 className="mt-0.5 max-w-full truncate text-base font-semibold leading-tight">
-						{workout.name}
-					</h2>
+						<h2 className="mt-0.5 max-w-full truncate text-base font-semibold leading-tight">
+							{workout.name}
+						</h2>
 					</div>
 					<WorkoutCardOptions
 						handleDelete={handleDelete}
