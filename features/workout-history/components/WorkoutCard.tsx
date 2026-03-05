@@ -26,19 +26,14 @@ export default function WorkoutCard({
 
 	const handleDelete = async () => {
 		try {
-			const result = await deleteWorkout({
+			const deletedWorkout = await deleteWorkout({
 				workoutId: workout._id as Id<"workouts">,
 			});
 
-			if (!result.success) {
-				console.log("Failed to delete workout:", result.error);
-				return;
-			}
-
 			deleteLocalWorkout(workout._id);
-			showWorkoutDeletedToast();
-		} catch (err) {
-			console.log("Delete failed", err);
+			showWorkoutDeletedToast(deletedWorkout.deletedWorkoutName);
+		} catch (error) {
+			console.log("Delete failed", error);
 		}
 	};
 

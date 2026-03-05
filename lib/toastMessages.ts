@@ -23,8 +23,8 @@ const dismissAction = {
 	},
 };
 
-export const showWorkoutDeletedToast = () => {
-	toast.info("Workout deleted", {
+export const showWorkoutDeletedToast = (workoutName: string) => {
+	toast.info(`Deleted ${workoutName}`, {
 		position: toastPosition,
 		style: topMargin,
 		action: undoAction,

@@ -46,12 +46,11 @@ export const createWorkout = mutation({
 				errors: fromZodError(validationResult.error),
 			};
 		}
-		const exercisesWithGlobalExerciseIds =
-			await mapExercisesWithGlobalExerciseIds(ctx, parsedWorkout.exercises);
-		const totalPrSets = await calculateTotalPrSets(
+		const exercisesWithGlobalExerciseIds = await mapExercisesWithGlobalExerciseIds(
 			ctx,
-			exercisesWithGlobalExerciseIds,
+			parsedWorkout.exercises,
 		);
+		const totalPrSets = await calculateTotalPrSets(ctx, exercisesWithGlobalExerciseIds);
 		const muscleGroups = getWorkoutMuscleGroups(parsedWorkout);
 		const totalVolume = calculateWorkoutVolume(parsedWorkout);
 
@@ -77,19 +76,14 @@ export const deleteWorkout = mutation({
 	},
 	handler: async (ctx, args) => {
 		const workout = await ctx.db.get(args.workoutId);
-
-		if (!workout) {
-			return {
-				success: false,
-				error: "Workout not found",
-			};
-		}
+		if (!workout) throw new Error("Workout not found");
 
 		await ctx.db.delete(args.workoutId);
 
 		return {
 			success: true,
 			deletedWorkoutId: args.workoutId,
+			deletedWorkoutName: workout.name,
 		};
 	},
 });
