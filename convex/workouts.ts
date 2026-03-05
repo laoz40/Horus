@@ -1,5 +1,5 @@
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { validateWorkout } from "../features/workout-form/lib/validateWorkout";
 import type { WorkoutFormData } from "../features/workout-form/lib/types";
 import { parseWorkout } from "../lib/workout/parseWorkout";
@@ -41,11 +41,16 @@ export const createWorkout = mutation({
 
 		const validationResult = validateWorkout(parsedWorkout);
 		if (!validationResult.success) {
-			return {
-				success: false,
-				errors: fromZodError(validationResult.error),
-			};
+			throw new ConvexError({
+				type: "INVALID_WORKOUT",
+				message: fromZodError(validationResult.error).message,
+				issues: validationResult.error.issues.map((issue) => ({
+					path: issue.path.join("."),
+					message: issue.message,
+				})),
+			});
 		}
+
 		const exercisesWithGlobalExerciseIds = await mapExercisesWithGlobalExerciseIds(
 			ctx,
 			parsedWorkout.exercises,

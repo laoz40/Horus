@@ -1,7 +1,8 @@
 import { api } from "@/convex/_generated/api";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
-import { showWorkoutSavedToast } from "@/lib/toastMessages";
+import { showErrorToast, showWorkoutSavedToast } from "@/lib/toastMessages";
 import { useMutation } from "convex/react";
+import { ConvexError } from "convex/values";
 import { useRouter } from "next/navigation";
 
 interface UseWorkoutSubmitProps {
@@ -20,19 +21,35 @@ export const useWorkoutSubmit = ({
 
 	const submitWorkout = async (data: Workout) => {
 		const finalData = { ...data, durationSeconds };
+		const workoutInput = JSON.parse(JSON.stringify(finalData));
 
 		try {
-			const workoutInput = JSON.parse(JSON.stringify(finalData));
 			const result = await createWorkout({ workout: workoutInput });
 
-			if (result.success && result.workout) {
-				router.push("/workouts");
-				showWorkoutSavedToast(result.workout.name);
-			} else {
-				console.log(result);
-			}
+			router.push("/workouts");
+			showWorkoutSavedToast(result.workout.name);
 		} catch (error) {
-			console.log("Failed to submit workout", error);
+			// zod validation error (server)
+			if (error instanceof ConvexError) {
+				// display the first zod error message
+				const errorData = error.data as {
+					issues?: Array<{ message?: string }>;
+				};
+				const firstMessage = errorData.issues?.[0]?.message ?? "Invalid workout data";
+
+				showErrorToast(firstMessage);
+				return;
+			}
+
+			// convex schema validation error
+			if (error instanceof Error && error.message.includes("ArgumentValidationError")) {
+				showErrorToast("Invalid workout data");
+				return;
+			}
+
+			// unknown error
+			showErrorToast("Unexpected workout submit error");
+			console.error(error);
 		}
 	};
 

@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 export const GlobalExerciseInputSchema = z.object({
-	name: z.string().trim().min(2, "Enter an exercise"),
+	name: z.string().trim().min(2, "Enter a real exercise"),
 	muscleGroups: z.array(z.string()).optional(),
 });
 

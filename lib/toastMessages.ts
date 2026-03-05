@@ -77,3 +77,12 @@ export const showExerciseSearchFailedToast = () => {
 		actionButtonStyle,
 	});
 };
+
+export const showErrorToast = (message: string) => {
+	toast.error(message, {
+		position: toastPosition,
+		style: topMargin,
+		action: dismissAction,
+		actionButtonStyle,
+	});
+};
