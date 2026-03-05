@@ -32,11 +32,7 @@ export const useWorkoutSubmit = ({
 			// zod validation error (server)
 			if (error instanceof ConvexError) {
 				// display the first zod error message
-				const errorData = error.data as {
-					issues?: Array<{ message?: string }>;
-				};
-				const firstMessage = errorData.issues?.[0]?.message ?? "Invalid workout data";
-
+				const firstMessage = error.data.issues?.[0]?.message ?? "Invalid workout data";
 				showErrorToast(firstMessage);
 				return;
 			}

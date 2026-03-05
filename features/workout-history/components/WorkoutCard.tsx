@@ -8,8 +8,9 @@ import { ShineBorder } from "@/components/ui/shine-border";
 import WorkoutCardStats from "./WorkoutCardStats";
 import WorkoutCardOptions from "./WorkoutCardOptions";
 import { Badge } from "@/components/ui/badge";
-import { showWorkoutDeletedToast } from "@/lib/toastMessages";
+import { showErrorToast, showWorkoutDeletedToast } from "@/lib/toastMessages";
 import { useMutation } from "convex/react";
+import { ConvexError } from "convex/values";
 
 interface WorkoutCardProps {
 	workout: WorkoutHistoryItem;
@@ -33,7 +34,14 @@ export default function WorkoutCard({
 			deleteLocalWorkout(workout._id);
 			showWorkoutDeletedToast(deletedWorkout.deletedWorkoutName);
 		} catch (error) {
-			console.log("Delete failed", error);
+			if (error instanceof ConvexError) {
+				showErrorToast("Workout not found");
+				console.error("Couldn't find ID: ", error.data)
+				return;
+			}
+
+			showErrorToast("Unknown error deleting workout");
+			console.error(error);
 		}
 	};
 

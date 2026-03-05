@@ -77,7 +77,9 @@ export const deleteWorkout = mutation({
 	},
 	handler: async (ctx, args) => {
 		const workout = await ctx.db.get(args.workoutId);
-		if (!workout) throw new Error("Workout not found");
+		if (!workout) {
+			throw new ConvexError({ workoutId: args.workoutId });
+		}
 
 		await ctx.db.delete(args.workoutId);
 
