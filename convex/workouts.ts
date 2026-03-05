@@ -8,7 +8,6 @@ import { calculateWorkoutVolume } from "../lib/workout/calculateStatVolume";
 import { calculateTotalPrSets } from "../lib/workout/calculateStatPr";
 import { paginationOptsValidator } from "convex/server";
 import { getWorkoutMuscleGroups } from "../lib/workout/getWorkoutMuscleGroups";
-import { fromZodError } from "zod-validation-error";
 
 export const createWorkout = mutation({
 	args: {
@@ -40,12 +39,10 @@ export const createWorkout = mutation({
 		const parsedWorkout = parseWorkout(args.workout as WorkoutFormData);
 
 		const validationResult = validateWorkout(parsedWorkout);
+
 		if (!validationResult.success) {
 			throw new ConvexError({
-				type: "INVALID_WORKOUT",
-				message: fromZodError(validationResult.error).message,
 				issues: validationResult.error.issues.map((issue) => ({
-					path: issue.path.join("."),
 					message: issue.message,
 				})),
 			});
@@ -69,7 +66,6 @@ export const createWorkout = mutation({
 		});
 
 		return {
-			success: true,
 			workout: validationResult.data,
 		};
 	},
