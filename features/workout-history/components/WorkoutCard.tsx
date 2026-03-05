@@ -34,13 +34,19 @@ export default function WorkoutCard({
 			deleteLocalWorkout(workout._id);
 			showWorkoutDeletedToast(deletedWorkout.deletedWorkoutName);
 		} catch (error) {
-			if (error instanceof ConvexError) {
-				showErrorToast("Workout not found");
-				console.error("Couldn't find ID: ", error.data)
+			if (error instanceof ConvexError && error.data?.code === "NO_WORKOUT_FOUND") {
+				showErrorToast("Couldn't find workout in the database.");
+				console.error("Missing ID: ", error.data?.workoutId ?? workout._id);
 				return;
 			}
 
-			showErrorToast("Unknown error deleting workout");
+			if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
+				showErrorToast("Couldn't access the database. Please try again.");
+				console.error(error);
+				return;
+			}
+
+			showErrorToast("Failed to delete workout.");
 			console.error(error);
 		}
 	};

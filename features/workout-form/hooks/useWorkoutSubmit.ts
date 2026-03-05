@@ -30,21 +30,25 @@ export const useWorkoutSubmit = ({
 			showWorkoutSavedToast(result.workout.name);
 		} catch (error) {
 			// zod validation error (server)
-			if (error instanceof ConvexError) {
-				// display the first zod error message
-				const firstMessage = error.data.issues?.[0]?.message ?? "Invalid workout data";
+			if (error instanceof ConvexError && error.data?.code === "INVALID_WORKOUT_DATA") {
+				// get first error message
+				const firstMessage = error.data.issues?.[0]?.message ?? "Invalid workout data.";
 				showErrorToast(firstMessage);
+				return;
+			}
+
+			if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
+				showErrorToast("Couldn't access the database. Please try again.");
 				return;
 			}
 
 			// convex schema validation error
 			if (error instanceof Error && error.message.includes("ArgumentValidationError")) {
-				showErrorToast("Invalid workout data");
+				showErrorToast("Invalid workout data.");
 				return;
 			}
 
-			// unknown error
-			showErrorToast("Unexpected workout submit error");
+			showErrorToast("Failed to save workout.");
 			console.error(error);
 		}
 	};
