@@ -117,3 +117,30 @@ export const listWorkouts = query({
 		};
 	},
 });
+
+export const deleteWorkout = mutation({
+	args: {
+		workoutId: v.id("workouts"),
+	},
+	handler: async (ctx, args) => {
+		try {
+			const workout = await ctx.db.get(args.workoutId);
+			if (!workout) {
+				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
+			}
+
+			await ctx.db.delete(args.workoutId);
+
+			return {
+				success: true,
+				deletedWorkoutId: args.workoutId,
+				deletedWorkoutName: workout.name,
+			};
+		} catch (error) {
+			// passes NO_WORKOUT_FOUND error if that throws
+			if (error instanceof ConvexError) throw error;
+
+			throw new ConvexError({ code: "DB_QUERY_FAILED" });
+		}
+	},
+});

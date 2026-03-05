@@ -32,6 +32,15 @@ export const showWorkoutDeletedToast = (workoutName: string) => {
 	});
 };
 
+export const showWorkoutsDeletedToast = (deletedCount: number) => {
+	toast.success(`Deleted ${deletedCount} workout${deletedCount === 1 ? "" : "s"}`, {
+		position: toastPosition,
+		style: topMargin,
+		action: dismissAction,
+		actionButtonStyle,
+	});
+};
+
 export const showExerciseDeletedToast = () => {
 	toast.info("Exercise deleted", {
 		position: toastPosition,
