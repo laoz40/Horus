@@ -9,31 +9,33 @@ import { calculateTotalPrSets } from "../lib/workout/calculateStatPr";
 import { paginationOptsValidator } from "convex/server";
 import { getWorkoutMuscleGroups } from "../lib/workout/getWorkoutMuscleGroups";
 
-export const createWorkout = mutation({
-	args: {
-		workout: v.object({
-			durationSeconds: v.union(v.float64(), v.null()),
-			exercises: v.array(
+const workoutObject = v.object({
+	durationSeconds: v.union(v.float64(), v.null()),
+	exercises: v.array(
+		v.object({
+			global: v.object({
+				muscleGroups: v.optional(v.array(v.string())),
+				name: v.string(),
+			}),
+			difficulty: v.optional(v.float64()),
+			id: v.string(),
+			notes: v.optional(v.string()),
+			sets: v.array(
 				v.object({
-					global: v.object({
-						muscleGroups: v.optional(v.array(v.string())),
-						name: v.string(),
-					}),
-					difficulty: v.optional(v.float64()),
+					completed: v.boolean(),
 					id: v.string(),
-					notes: v.optional(v.string()),
-					sets: v.array(
-						v.object({
-							completed: v.boolean(),
-							id: v.string(),
-							reps: v.float64(),
-							weight: v.float64(),
-						}),
-					),
+					reps: v.float64(),
+					weight: v.float64(),
 				}),
 			),
-			name: v.string(),
 		}),
+	),
+	name: v.string(),
+});
+
+export const createWorkout = mutation({
+	args: {
+		workout: workoutObject,
 	},
 	handler: async (ctx, args) => {
 		try {
@@ -70,6 +72,57 @@ export const createWorkout = mutation({
 			return { workout: validationResult.data };
 		} catch (error) {
 			// passes INVALID_WORKOUT_DATA error if that throws
+			if (error instanceof ConvexError) throw error;
+
+			throw new ConvexError({ code: "DB_QUERY_FAILED" });
+		}
+	},
+});
+
+export const updateWorkout = mutation({
+	args: {
+		workoutId: v.id("workouts"),
+		workout: workoutObject,
+	},
+	handler: async (ctx, args) => {
+		try {
+			const workout = await ctx.db.get(args.workoutId);
+			if (!workout) {
+				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
+			}
+
+			const parsedWorkout = parseWorkout(args.workout as WorkoutFormData);
+			const validationResult = validateWorkout(parsedWorkout);
+
+			if (!validationResult.success) {
+				throw new ConvexError({
+					code: "INVALID_WORKOUT_DATA",
+					issues: validationResult.error.issues.map((issue) => ({
+						message: issue.message,
+					})),
+				});
+			}
+
+			const exercisesWithGlobalExerciseIds = await mapExercisesWithGlobalExerciseIds(
+				ctx,
+				parsedWorkout.exercises,
+			);
+			const totalPrSets = await calculateTotalPrSets(ctx, exercisesWithGlobalExerciseIds);
+			const muscleGroups = getWorkoutMuscleGroups(parsedWorkout);
+			const totalVolume = calculateWorkoutVolume(parsedWorkout);
+
+			await ctx.db.patch(args.workoutId, {
+				name: parsedWorkout.name,
+				durationSeconds: parsedWorkout.durationSeconds,
+				muscleGroups,
+				exercises: exercisesWithGlobalExerciseIds,
+				totalPrSets,
+				totalVolume,
+			});
+
+			return { workout: validationResult.data, workoutId: args.workoutId };
+		} catch (error) {
+			// passes NO_WORKOUT_FOUND and INVALID_WORKOUT_DATA error if those throw
 			if (error instanceof ConvexError) throw error;
 
 			throw new ConvexError({ code: "DB_QUERY_FAILED" });

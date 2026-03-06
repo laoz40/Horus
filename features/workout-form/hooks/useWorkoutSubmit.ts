@@ -1,4 +1,5 @@
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { showErrorToast, showWorkoutSavedToast } from "@/lib/toastMessages";
 import { useMutation } from "convex/react";
@@ -7,6 +8,7 @@ import { useRouter } from "next/navigation";
 
 interface UseWorkoutSubmitProps {
 	durationSeconds: number;
+	workoutId?: string;
 }
 
 interface UseWorkoutSubmitReturn {
@@ -15,16 +17,23 @@ interface UseWorkoutSubmitReturn {
 
 export const useWorkoutSubmit = ({
 	durationSeconds,
+	workoutId,
 }: UseWorkoutSubmitProps): UseWorkoutSubmitReturn => {
 	const router = useRouter();
 	const createWorkout = useMutation(api.workouts.createWorkout);
+	const updateWorkout = useMutation(api.workouts.updateWorkout);
 
 	const submitWorkout = async (data: Workout) => {
 		const finalData = { ...data, durationSeconds };
 		const workoutInput = JSON.parse(JSON.stringify(finalData));
 
 		try {
-			const result = await createWorkout({ workout: workoutInput });
+			const result = workoutId
+				? await updateWorkout({
+						workoutId: workoutId as Id<"workouts">,
+						workout: workoutInput,
+					})
+				: await createWorkout({ workout: workoutInput });
 
 			router.push("/workouts");
 			showWorkoutSavedToast(result.workout.name);
@@ -39,6 +48,12 @@ export const useWorkoutSubmit = ({
 
 			if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
 				showErrorToast("Couldn't access the database. Please try again.");
+				return;
+			}
+
+			if (error instanceof ConvexError && error.data?.code === "NO_WORKOUT_FOUND") {
+				showErrorToast("Couldn't find workout in the database.");
+				router.push("/workouts");
 				return;
 			}
 

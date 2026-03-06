@@ -21,13 +21,13 @@ import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
 	workoutId?: string;
-	missing?: number;
+	missingGlobalExercisesCount?: number;
 }
 
 export default function WorkoutForm({
 	initialData,
 	workoutId,
-	missing = 0,
+	missingGlobalExercisesCount = 0,
 }: WorkoutFormProps): ReactElement {
 	const methods = useForm<Workout>({
 		resolver: zodResolver(WorkoutSchema),
@@ -52,13 +52,13 @@ export default function WorkoutForm({
 	}, [initialData, reset]);
 
 	useEffect(() => {
-		if (missing <= 0) return;
+		if (missingGlobalExercisesCount <= 0) return;
 
-		const s = missing === 1 ? "" : "s";
+		const s = missingGlobalExercisesCount === 1 ? "" : "s";
 		showErrorToast(
-			`Some exercises in this workout no longer exist. Skipped ${missing} exercise${s}.`,
+			`Some exercises in this workout no longer exist. Skipped ${missingGlobalExercisesCount} exercise${s}.`,
 		);
-	}, [missing]);
+	}, [missingGlobalExercisesCount]);
 
 	const { durationSeconds } = useWorkoutTimer({
 		initialSeconds: initialData?.durationSeconds ?? 0,
@@ -81,7 +81,7 @@ export default function WorkoutForm({
 		showExerciseDeletedToast();
 	};
 
-	const { submitWorkout } = useWorkoutSubmit({ durationSeconds });
+	const { submitWorkout } = useWorkoutSubmit({ durationSeconds, workoutId });
 
 	const watchedExercises = watch("exercises");
 	const exerciseIds = exercises.map((exercise) => exercise.id);
