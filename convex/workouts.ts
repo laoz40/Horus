@@ -81,9 +81,9 @@ export const deleteWorkout = mutation({
 	args: {
 		workoutId: v.id("workouts"),
 	},
-	handler: async (ctx, args) => {
-		try {
-			const workout = await ctx.db.get(args.workoutId);
+		handler: async (ctx, args) => {
+			try {
+				const workout = await ctx.db.get(args.workoutId);
 			if (!workout) {
 				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
 			}
@@ -135,41 +135,41 @@ export const getWorkoutById = query({
 				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
 			}
 
-			const exercises = await Promise.all(
-				workout.exercises.map(async (exercise) => {
-					const globalExercise = await ctx.db.get(exercise.globalExerciseId);
+			const exercisesWithId = [];
+			let missingGlobalExercises = 0;
 
-					if (!globalExercise) {
-						throw new ConvexError({
-							code: "NO_GLOBAL_EXERCISE_FOUND",
-							globalExerciseId: exercise.globalExerciseId,
-						});
-					}
+			for (const exercise of workout.exercises) {
+				const globalExercise = await ctx.db.get(exercise.globalExerciseId);
 
-					return {
-						id: exercise.id,
-						global: {
-							name: globalExercise.name,
-							...(globalExercise.muscleGroups !== undefined
-								? { muscleGroups: globalExercise.muscleGroups }
-								: {}),
-						},
-						...(exercise.difficulty !== undefined ? { difficulty: exercise.difficulty } : {}),
-						...(exercise.notes !== undefined ? { notes: exercise.notes } : {}),
-						sets: exercise.sets,
-					};
-				}),
-			);
+				if (!globalExercise) {
+					missingGlobalExercises += 1;
+					continue;
+				}
+
+				exercisesWithId.push({
+					id: exercise.id,
+					global: {
+						name: globalExercise.name,
+						...(globalExercise.muscleGroups !== undefined
+							? { muscleGroups: globalExercise.muscleGroups }
+							: {}),
+					},
+					...(exercise.difficulty !== undefined ? { difficulty: exercise.difficulty } : {}),
+					...(exercise.notes !== undefined ? { notes: exercise.notes } : {}),
+					sets: exercise.sets,
+				});
+			}
 
 			return {
 				_id: workout._id,
 				_creationTime: workout._creationTime,
 				name: workout.name,
 				durationSeconds: workout.durationSeconds,
-				exercises,
+				exercises: exercisesWithId,
+				missingGlobalExercisesCount: missingGlobalExercises,
 			};
 		} catch (error) {
-			// passes NO_WORKOUT_FOUND  and NO_GLOBAL_EXERCISE_FOUND errors if they throw
+			// passes NO_WORKOUT_FOUND error if that throws
 			if (error instanceof ConvexError) throw error;
 
 			throw new ConvexError({ code: "DB_QUERY_FAILED" });

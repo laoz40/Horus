@@ -10,7 +10,7 @@ import { useWorkoutTimer } from "@/features/workout-form/hooks/useWorkoutTimer";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, type ReactElement } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
-import { showExerciseDeletedToast } from "@/lib/toastMessages";
+import { showErrorToast, showExerciseDeletedToast } from "@/lib/toastMessages";
 import ExerciseForm from "./ExerciseForm";
 import WorkoutFormTopBar from "./WorkoutFormTopBar";
 import WorkoutFormBottomBar from "./WorkoutFormBottomBar";
@@ -21,9 +21,14 @@ import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
 	workoutId?: string;
+	missing?: number;
 }
 
-export default function WorkoutForm({ initialData, workoutId }: WorkoutFormProps): ReactElement {
+export default function WorkoutForm({
+	initialData,
+	workoutId,
+	missing = 0,
+}: WorkoutFormProps): ReactElement {
 	const methods = useForm<Workout>({
 		resolver: zodResolver(WorkoutSchema),
 		mode: "onSubmit",
@@ -45,6 +50,15 @@ export default function WorkoutForm({ initialData, workoutId }: WorkoutFormProps
 		if (!initialData) return;
 		reset(initialData);
 	}, [initialData, reset]);
+
+	useEffect(() => {
+		if (missing <= 0) return;
+
+		const s = missing === 1 ? "" : "s";
+		showErrorToast(
+			`Some exercises in this workout no longer exist. Skipped ${missing} exercise${s}.`,
+		);
+	}, [missing]);
 
 	const { durationSeconds } = useWorkoutTimer({
 		initialSeconds: initialData?.durationSeconds ?? 0,

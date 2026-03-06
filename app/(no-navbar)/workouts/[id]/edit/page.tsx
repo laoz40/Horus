@@ -36,6 +36,7 @@ export default async function EditWorkoutPage({ params }: { params: Promise<{ id
 				<WorkoutForm
 					initialData={formData}
 					workoutId={id}
+					missingGlobalExercisesCount={workout.missingGlobalExercisesCount}
 				/>
 			</>
 		);
@@ -43,13 +44,6 @@ export default async function EditWorkoutPage({ params }: { params: Promise<{ id
 		if (error instanceof ConvexError && error.data?.code === "NO_WORKOUT_FOUND") {
 			redirect("/workouts?toast=edit_not_found");
 		}
-
-		// TODO: this should skip the exercises it can't find and return the valid ones to the formData
-		// if (error instanceof ConvexError && error.data?.code === "NO_GLOBAL_EXERCISE_FOUND") {
-		// 	return showErrorToast(
-		// 		"Couldn't load full workout because a linked exercise no longer exists.",
-		// 	);
-		// }
 
 		if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
 			redirect("/workouts?toast=edit_db_failed");
