@@ -1,6 +1,5 @@
 import { createSuggestionObject } from "./convertWorkoutData";
 import { DEFAULT_EXERCISES } from "./defaultExercises";
-import { db } from "@/lib/prisma";
 import { normalizeExerciseName } from "@/lib/workout/normalizeExerciseName";
 
 export const fetchDefaultExercises = async (query: string) => {
@@ -8,34 +7,6 @@ export const fetchDefaultExercises = async (query: string) => {
 		normalizeExerciseName(exercise.name).includes(normalizeExerciseName(query)),
 	);
 	return matchedDefaultExercises.map(createSuggestionObject);
-};
-
-export const fetchDbExercises = async (query: string) => {
-	const matchedDbExercises = await db.globalExercise.findMany({
-		where: {
-			name: {
-				contains: query,
-			},
-		},
-		take: 10,
-		orderBy: {
-			name: "asc",
-		},
-	});
-	return matchedDbExercises.map((exercise) => {
-		const muscleGroups = Array.isArray(exercise.muscleGroups)
-			? exercise.muscleGroups.filter(
-					(value: unknown): value is string => typeof value === "string",
-				)
-			: undefined;
-
-		return createSuggestionObject({
-			id: exercise.id,
-			name: exercise.name,
-			normalizedName: exercise.normalizedName,
-			muscleGroups,
-		});
-	});
 };
 
 export const fetchApiExercises = async (query: string) => {

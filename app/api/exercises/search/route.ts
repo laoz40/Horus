@@ -1,30 +1,13 @@
-import { deduplicateExercises } from "@/features/workout-form/lib/convertWorkoutData";
 import { NextResponse } from "next/server";
-import {
-	fetchApiExercises,
-	fetchDbExercises,
-	fetchDefaultExercises,
-} from "@/features/workout-form/lib/fetchExercises";
+import { fetchApiExercises } from "@/features/workout-form/lib/fetchExercises";
 
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
 	const query = searchParams.get("query");
-	const source = searchParams.get("source");
 
+	// might not need nextresponse
 	if (!query) {
 		return NextResponse.json({ success: false, error: "query is required" });
-	}
-
-	if (source !== "api") {
-		const defaultExercises = await fetchDefaultExercises(query);
-		const dbExercises = await fetchDbExercises(query);
-		const mergedExercises = deduplicateExercises(dbExercises, defaultExercises);
-
-		return NextResponse.json({
-			success: mergedExercises.length > 0,
-			exercises: mergedExercises,
-			error: mergedExercises.length === 0 ? "Query not found" : undefined,
-		});
 	}
 
 	try {
@@ -35,6 +18,7 @@ export async function GET(request: Request) {
 			exercises: apiExercises,
 		});
 	} catch (error) {
+		// TODO: redo error handling
 		const message =
 			error instanceof Error ? error.message : "Failed to fetch exercises";
 

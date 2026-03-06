@@ -53,7 +53,7 @@ export function useExerciseSuggestions(query: string) {
 
 		try {
 			const response = await fetch(
-				`/api/exercises/search?query=${encodeURIComponent(query)}&source=api`,
+				`/api/exercises/search?query=${encodeURIComponent(query)}`,
 			);
 
 			if (response.status === 429) {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import WorkoutCard from "./WorkoutCard";
-import { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
+import type { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
 
 export default function HistoryList({
 	workouts,

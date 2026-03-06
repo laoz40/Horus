@@ -1,7 +1,7 @@
 import Card from "@/components/Card";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
+import type { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
 import { toTitleCase } from "@/features/workout-form/lib/convertWorkoutData";
 import { getRelativeTime } from "@/lib/date";
 import { ShineBorder } from "@/components/ui/shine-border";

@@ -1,39 +1,4 @@
-import { WorkoutDbData } from "@/features/workout-history/lib/types";
 import { normalizeExerciseName } from "@/lib/workout/normalizeExerciseName";
-import { WorkoutFormData } from "./types";
-
-const toArray = (value: any): string[] | undefined => {
-	if (!Array.isArray(value)) return undefined;
-	const strings = value.filter(
-		(item) => typeof item === "string" && item.length > 0,
-	);
-	return strings.length > 0 ? strings : undefined;
-};
-
-export const convertDbToFormData = (
-	workout: WorkoutDbData,
-): WorkoutFormData => {
-	return {
-		name: workout.name,
-		durationSeconds: workout.durationSeconds,
-		exercises: workout.exercises.map((exercise) => ({
-			id: exercise.id,
-			global: {
-				name: toTitleCase(exercise.globalExercise.name),
-				muscleGroups: toArray(exercise.globalExercise.muscleGroups),
-			},
-			difficulty:
-				exercise.difficulty === null ? undefined : exercise.difficulty,
-			notes: exercise.notes === null ? undefined : exercise.notes,
-			sets: exercise.sets.map((set) => ({
-				id: set.id,
-				weight: set.weight,
-				reps: set.reps,
-				completed: set.completed,
-			})),
-		})),
-	};
-};
 
 interface fetchedExercise {
 	id: string;
