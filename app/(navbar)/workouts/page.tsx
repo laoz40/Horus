@@ -1,5 +1,5 @@
 import SearchBar from "@/features/workout-history/components/SearchBar";
-import HistoryFeed from "@/features/workout-history/components/HistoryFeed";
+import HistoryFeedErrorBoundary from "@/features/workout-history/components/HistoryFeedErrorBoundary";
 import WorkoutRedirectToast from "@/features/workout-history/components/WorkoutRedirectToast";
 
 const WORKOUTS_PER_PAGE = 7;
@@ -10,7 +10,7 @@ export default function HistoryPage() {
 			<WorkoutRedirectToast />
 			<div className="mx-auto flex w-full max-w-3xl flex-col gap-6 md:gap-8">
 				<SearchBar />
-				<HistoryFeed WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE} />
+				<HistoryFeedErrorBoundary WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE} />
 			</div>
 		</div>
 	);
