@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useConvex } from "convex/react";
 import {
 	showExerciseSearchFailedToast,
 	showExerciseSearchRateLimitToast,
 } from "@/lib/toastMessages";
 import { deduplicateExercises } from "@/features/workout-form/lib/convertWorkoutData";
+import { api } from "@/convex/_generated/api";
 
 interface Exercise {
 	id: string;
@@ -17,21 +19,19 @@ interface Exercise {
 export function useExerciseSuggestions(query: string) {
 	const [suggestions, setSuggestions] = useState<Exercise[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
+	const convex = useConvex();
 
 	useEffect(() => {
-		if (query && query.trim().length === 0) return;
+		if (query.trim().length === 0) return;
 
 		setIsLoading(true);
 
 		const timeout = setTimeout(async () => {
 			try {
-				const response = await fetch(
-					`/api/exercises/search?query=${encodeURIComponent(query)}`,
-				);
-				const dataFromDb = await response.json();
-				const dbExercises = Array.isArray(dataFromDb.exercises)
-					? dataFromDb.exercises
-					: [];
+				const dataFromDb = await convex.query(api.exercises.searchGlobalExercises, {
+					query,
+				});
+				const dbExercises = Array.isArray(dataFromDb) ? dataFromDb : [];
 				setSuggestions(dbExercises);
 			} catch (error) {
 				console.log("Query not found", error);
@@ -44,7 +44,7 @@ export function useExerciseSuggestions(query: string) {
 		return () => {
 			clearTimeout(timeout);
 		};
-	}, [query]);
+	}, [convex, query]);
 
 	const fetchMoreSuggestions = async () => {
 		if (query && query.trim().length === 0) return;
@@ -67,9 +67,7 @@ export function useExerciseSuggestions(query: string) {
 
 			const dataFromApi = await response.json();
 			if (dataFromApi.success && dataFromApi.exercises.length > 0) {
-				setSuggestions((prev) =>
-					deduplicateExercises(prev, dataFromApi.exercises),
-				);
+				setSuggestions((prev) => deduplicateExercises(prev, dataFromApi.exercises));
 			}
 		} catch (error) {
 			console.error("Error fetching from API:", error);
