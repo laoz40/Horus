@@ -7,10 +7,15 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Link from "next/link";
 import { EllipsisVertical } from "lucide-react";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { showErrorToast } from "@/lib/toastMessages";
+import { useConvex } from "convex/react";
+import { ConvexError } from "convex/values";
+import { useRouter } from "next/navigation";
 
 interface WorkoutCardOptionsProps {
 	handleDelete: () => void;
@@ -23,24 +28,55 @@ export default function WorkoutCardOptions({
 	workoutId,
 	workoutName,
 }: WorkoutCardOptionsProps): ReactElement {
+	const router = useRouter();
+	const convex = useConvex();
+
+	const handleEdit = async () => {
+		try {
+			await convex.query(api.workouts.getWorkoutById, {
+				workoutId: workoutId as Id<"workouts">,
+			});
+
+			router.push(`/workouts/${workoutId}/edit`);
+		} catch (error) {
+			if (error instanceof ConvexError && error.data?.code === "NO_WORKOUT_FOUND") {
+				showErrorToast("Couldn't find workout in the database.");
+				return;
+			}
+
+			if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
+				showErrorToast("Couldn't access the database. Please try again.");
+				return;
+			}
+
+			showErrorToast("Unexpected error opening workout editor.");
+			console.error("Unexpected error opening workout editor:", error);
+		}
+	};
+
 	return (
 		<>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					className="mt-0.5 border border-transparent text-muted-foreground transition-colors hover:border-border/70 hover:text-foreground"
-					aria-label="Workout options">
-					<EllipsisVertical className="size-5" />
-				</Button>
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						className="mt-0.5 border border-transparent text-muted-foreground transition-colors hover:border-border/70 hover:text-foreground"
+						aria-label="Workout options">
+						<EllipsisVertical className="size-5" />
+					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
 					align="end"
 					className="w-34">
 					<DropdownMenuGroup>
-						<DropdownMenuItem className="h-10" asChild>
-							<Link href={`/workouts/${workoutId}/edit`}>Edit</Link>
+						<DropdownMenuItem
+							className="h-10"
+							onSelect={(e) => {
+								e.preventDefault();
+								handleEdit();
+							}}>
+							Edit
 						</DropdownMenuItem>
 
 						<DropdownMenuItem className="h-10">Share</DropdownMenuItem>

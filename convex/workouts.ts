@@ -123,6 +123,60 @@ export const deleteAllWorkouts = mutation({
 	},
 });
 
+export const getWorkoutById = query({
+	args: {
+		workoutId: v.id("workouts"),
+	},
+	handler: async (ctx, args) => {
+		try {
+			const workout = await ctx.db.get(args.workoutId);
+
+			if (!workout) {
+				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
+			}
+
+			const exercises = await Promise.all(
+				workout.exercises.map(async (exercise) => {
+					const globalExercise = await ctx.db.get(exercise.globalExerciseId);
+
+					if (!globalExercise) {
+						throw new ConvexError({
+							code: "NO_GLOBAL_EXERCISE_FOUND",
+							globalExerciseId: exercise.globalExerciseId,
+						});
+					}
+
+					return {
+						id: exercise.id,
+						global: {
+							name: globalExercise.name,
+							...(globalExercise.muscleGroups !== undefined
+								? { muscleGroups: globalExercise.muscleGroups }
+								: {}),
+						},
+						...(exercise.difficulty !== undefined ? { difficulty: exercise.difficulty } : {}),
+						...(exercise.notes !== undefined ? { notes: exercise.notes } : {}),
+						sets: exercise.sets,
+					};
+				}),
+			);
+
+			return {
+				_id: workout._id,
+				_creationTime: workout._creationTime,
+				name: workout.name,
+				durationSeconds: workout.durationSeconds,
+				exercises,
+			};
+		} catch (error) {
+			// passes NO_WORKOUT_FOUND  and NO_GLOBAL_EXERCISE_FOUND errors if they throw
+			if (error instanceof ConvexError) throw error;
+
+			throw new ConvexError({ code: "DB_QUERY_FAILED" });
+		}
+	},
+});
+
 export const listWorkouts = query({
 	args: {
 		paginationOpts: paginationOptsValidator,
