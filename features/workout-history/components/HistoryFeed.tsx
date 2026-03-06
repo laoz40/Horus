@@ -1,17 +1,15 @@
 "use client";
 
-import { type Preloaded, usePaginatedQuery, usePreloadedQuery } from "convex/react";
+import { usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import HistoryList from "./HistoryList";
 import HistoryPagination from "./HistoryPagination";
 
 interface HistoryFeedProps {
-	preloaded: Preloaded<typeof api.workouts.listWorkouts>;
 	WORKOUTS_PER_PAGE: number;
 }
 
-export default function HistoryFeed({ preloaded, WORKOUTS_PER_PAGE }: HistoryFeedProps) {
-	const preloadedWorkouts = usePreloadedQuery(preloaded);
+export default function HistoryFeed({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 	const { results, status, loadMore } = usePaginatedQuery(
 		api.workouts.listWorkouts,
 		{},
@@ -19,20 +17,13 @@ export default function HistoryFeed({ preloaded, WORKOUTS_PER_PAGE }: HistoryFee
 	);
 
 	const isLoadingFirstPage = status === "LoadingFirstPage";
-	// if loading first page, use preloaded workouts
-	// if loading with pagination, use fetched results
-	const workouts = isLoadingFirstPage ? preloadedWorkouts.page : results;
-	// if loading first page, determine end based on preloaded results
-	// if loading with pagination, check using client hook
-	const hasNextPage = isLoadingFirstPage
-		? !preloadedWorkouts.isDone
-		: status === "CanLoadMore";
+	const hasNextPage = status === "CanLoadMore";
 	const isLoading = status === "LoadingMore" || isLoadingFirstPage;
 
 	return (
 		<>
 			<HistoryList
-				workouts={workouts}
+				workouts={results}
 				isLoading={isLoadingFirstPage}
 			/>
 			<HistoryPagination
