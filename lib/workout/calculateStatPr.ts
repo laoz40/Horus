@@ -84,7 +84,7 @@ const getExercisePrReferences = (previousSets: PrBaselineSet[]): Map<ExerciseKey
 	return exercisePrs;
 };
 
-export const countTotalPrSetsInWorkout = (
+const countTotalPrSetsInWorkout = (
 	workout: CurrentWorkoutForPr,
 	previousSets: PrBaselineSet[],
 ): number => {

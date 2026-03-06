@@ -12,7 +12,7 @@ import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { ExerciseNameInputDropdown } from "./ExerciseNameInputDropdown";
 import { createDefaultSet } from "../lib/WorkoutFormDefaults";
 
-export interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
+interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
 	exerciseIndex: number;
 	handleDeleteExercise: () => void;
 }

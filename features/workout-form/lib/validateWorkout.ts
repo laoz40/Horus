@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-export const GlobalExerciseInputSchema = z.object({
+const GlobalExerciseInputSchema = z.object({
 	name: z.string().trim().min(2, "Enter a real exercise"),
 	muscleGroups: z.array(z.string()).optional(),
 });
@@ -35,12 +35,6 @@ export const WorkoutSchema = z.object({
 		.min(1, "No exercises, silly. Go do your workout."),
 });
 
-export const validateSet = (set: Set) => {
-	return SetSchema.safeParse(set);
-};
-export const validateExercise = (exercise: Exercise) => {
-	return ExerciseSchema.safeParse(exercise);
-};
 export const validateWorkout = (workout: Workout) => {
 	return WorkoutSchema.safeParse(workout);
 };

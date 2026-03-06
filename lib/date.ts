@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
 // e.g. "Sunday, 23 Nov 2025"
-export const currentDateFull = dayjs().format("dddd, D MMM YYYY");
+// export const currentDateFull = dayjs().format("dddd, D MMM YYYY");
 
 // e.g. "Sunday"
 export const currentDay = dayjs().format("dddd");
