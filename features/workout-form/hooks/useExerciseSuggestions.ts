@@ -7,6 +7,7 @@ import {
 	showExerciseSearchRateLimitToast,
 } from "@/lib/toastMessages";
 import { deduplicateExercises } from "@/features/workout-form/lib/convertWorkoutData";
+import { fetchDefaultExercises } from "@/features/workout-form/lib/fetchExercises";
 import { api } from "@/convex/_generated/api";
 
 interface Exercise {
@@ -24,30 +25,42 @@ export function useExerciseSuggestions(query: string) {
 	useEffect(() => {
 		if (query.trim().length === 0) return;
 
-		setIsLoading(true);
+		// ignore late async results after query changes/unmount.
+		let isCurrent = true;
+		let timeout: ReturnType<typeof setTimeout> | undefined;
 
-		const timeout = setTimeout(async () => {
-			try {
-				const dataFromDb = await convex.query(api.exercises.searchGlobalExercises, {
-					query,
-				});
-				const dbExercises = Array.isArray(dataFromDb) ? dataFromDb : [];
-				setSuggestions(dbExercises);
-			} catch (error) {
-				console.log("Query not found", error);
-				setSuggestions([]);
-			} finally {
-				setIsLoading(false);
-			}
-		}, 300);
+		const loadSuggestions = async () => {
+			const defaultExercises = await fetchDefaultExercises(query);
+			if (!isCurrent) return;
+
+			setSuggestions(defaultExercises);
+			setIsLoading(true);
+
+			timeout = setTimeout(async () => {
+				try {
+					const dataFromDb = await convex.query(api.exercises.searchGlobalExercises, {
+						query,
+					});
+					const dbExercises = Array.isArray(dataFromDb) ? dataFromDb : [];
+					setSuggestions(deduplicateExercises(defaultExercises, dbExercises));
+				} catch (error) {
+					console.log("Query not found", error);
+					setSuggestions(defaultExercises);
+				} finally {
+					setIsLoading(false);
+				}
+			}, 300);
+		};
+		loadSuggestions();
 
 		return () => {
+			isCurrent = false;
 			clearTimeout(timeout);
 		};
 	}, [convex, query]);
 
 	const fetchMoreSuggestions = async () => {
-		if (query && query.trim().length === 0) return;
+		if (query.trim().length === 0) return;
 
 		setIsLoading(true);
 
