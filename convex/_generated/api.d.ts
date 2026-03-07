@@ -8,9 +8,7 @@
  * @module
  */
 
-import type * as auth from "../auth.js";
 import type * as exercises from "../exercises.js";
-import type * as http from "../http.js";
 import type * as workouts from "../workouts.js";
 
 import type {
@@ -20,9 +18,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  auth: typeof auth;
   exercises: typeof exercises;
-  http: typeof http;
   workouts: typeof workouts;
 }>;
 
