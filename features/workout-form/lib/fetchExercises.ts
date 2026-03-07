@@ -2,7 +2,7 @@ import { createSuggestionObject } from "./convertWorkoutData";
 import { DEFAULT_EXERCISES } from "./defaultExercises";
 import { normalizeExerciseName } from "@/lib/workout/normalizeExerciseName";
 
-export const fetchDefaultExercises = async (query: string) => {
+export const fetchDefaultExercises = (query: string) => {
 	const matchedDefaultExercises = DEFAULT_EXERCISES.filter((exercise) =>
 		normalizeExerciseName(exercise.name).includes(normalizeExerciseName(query)),
 	);
