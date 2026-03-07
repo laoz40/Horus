@@ -3,7 +3,8 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Oxanium } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
-import { ConvexClientProvider } from "./ConvexClientProvider";
+import ConvexClientProvider from "./ConvexClientProvider";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
 	title: "V3 Workout Tracker",
@@ -50,7 +51,9 @@ export default function RootLayout({
 					}}
 					enableSystem
 					disableTransitionOnChange>
-					<ConvexClientProvider>{children}</ConvexClientProvider>
+					<ClerkProvider>
+						<ConvexClientProvider>{children}</ConvexClientProvider>
+					</ClerkProvider>
 				</ThemeProvider>
 			</body>
 		</html>
