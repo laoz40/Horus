@@ -5,6 +5,7 @@ import { Oxanium } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import ConvexClientProvider from "./ConvexClientProvider";
 import { ClerkProvider } from "@clerk/nextjs";
+import { shadcn } from "@clerk/ui/themes";
 
 export const metadata: Metadata = {
 	title: "V3 Workout Tracker",
@@ -51,7 +52,10 @@ export default function RootLayout({
 					}}
 					enableSystem
 					disableTransitionOnChange>
-					<ClerkProvider>
+					<ClerkProvider
+						appearance={{
+							theme: shadcn,
+						}}>
 						<ConvexClientProvider>{children}</ConvexClientProvider>
 					</ClerkProvider>
 				</ThemeProvider>
