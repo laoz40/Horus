@@ -14,7 +14,6 @@ export default function DashboardPage() {
 				<UserButton
 					appearance={{
 						elements: {
-							userButtonBox: "size-10",
 							userButtonAvatarBox: "size-10!",
 						},
 					}}

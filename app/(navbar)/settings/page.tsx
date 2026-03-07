@@ -6,9 +6,10 @@ import { ModeToggle } from "@/components/ModeToggle";
 import SectionCard from "@/components/SectionCard";
 import { Button } from "@/components/ui/button";
 import { showErrorToast, showWorkoutsDeletedToast } from "@/lib/toastMessages";
-import { SignOutButton } from "@clerk/nextjs";
+import { SignOutButton, UserButton } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
+import { ChevronDown } from "lucide-react";
 
 export default function SettingsPage() {
 	const deleteAllWorkouts = useMutation(api.workouts.deleteAllWorkouts);
@@ -37,33 +38,48 @@ export default function SettingsPage() {
 			<div className="p-4">
 				<h1>Settings</h1>
 			</div>
-			<SectionCard header="Appearance">
-				<div className="flex flex-row items-center justify-between">
-					<span>Theme</span>
-					<ModeToggle />
-				</div>
-			</SectionCard>
 
-			<SectionCard header="Data">
-				<div className="flex flex-row items-center justify-between">
-					<span>Workouts</span>
-					<AlertDialogDestructive
-						title="Delete all workouts?"
-						description="This will permanently delete all workouts."
-						handleDelete={() => handleClick()}>
-						<Button variant="destructive">Delete all workouts</Button>
-					</AlertDialogDestructive>
-				</div>
-			</SectionCard>
+			<div className="flex flex-col gap-3">
+				<SectionCard header="Account" className="p-0">
+					<div className="flex flex-row w-full items-center justify-between">
+						<UserButton
+							showName
+							appearance={{
+								elements: {
+									rootBox: "flex-1! px-1!",
+									userButtonBox: "flex! flex-row-reverse!",
+									userButtonTrigger: "flex! flex-1! py-2! justify-start!",
+									userButtonAvatarBox: "size-10!",
+									userButtonOuterIdentifier: "text-base!",
+								},
+							}}
+						/>
+					</div>
+				</SectionCard>
 
-			<SectionCard header="Account">
-				<div className="flex flex-row items-center justify-between">
-					<span>Session</span>
-					<SignOutButton>
-						<Button variant="destructive">Sign out</Button>
-					</SignOutButton>
-				</div>
-			</SectionCard>
+				<SectionCard header="Appearance">
+					<div className="flex flex-row items-center justify-between">
+						<span>Theme</span>
+						<ModeToggle />
+					</div>
+				</SectionCard>
+
+				<SectionCard header="Data">
+					<div className="flex flex-row items-center justify-between">
+						<span>Workouts</span>
+						<AlertDialogDestructive
+							title="Delete all workouts?"
+							description="This will permanently delete all workouts."
+							handleDelete={() => handleClick()}>
+							<Button
+								variant="destructive"
+								size="sm">
+								Delete all workouts
+							</Button>
+						</AlertDialogDestructive>
+					</div>
+				</SectionCard>
+			</div>
 		</>
 	);
 }
