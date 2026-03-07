@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { showErrorToast } from "@/lib/toastMessages";
 
@@ -11,20 +11,22 @@ const toastMessages = {
 	edit_unexpected: "Unexpected error loading workout.",
 } as const;
 
-export default function WorkoutRedirectToast() {
+interface WorkoutRedirectToastProps {
+	toast?: string;
+}
+
+export default function WorkoutRedirectToast({ toast }: WorkoutRedirectToastProps) {
 	const pathname = usePathname();
 	const router = useRouter();
-	const searchParams = useSearchParams();
 
 	useEffect(() => {
-		const toastCode = searchParams.get("toast");
-		if (!toastCode || !(toastCode in toastMessages)) return;
+		if (!toast || !(toast in toastMessages)) return;
 
-		showErrorToast(toastMessages[toastCode as keyof typeof toastMessages]);
+		showErrorToast(toastMessages[toast as keyof typeof toastMessages]);
 
 		// remove toast from url
 		router.replace(pathname);
-	}, [pathname, router, searchParams]);
+	}, [pathname, router, toast]);
 
 	return null;
 }
