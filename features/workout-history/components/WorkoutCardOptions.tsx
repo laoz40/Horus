@@ -49,7 +49,7 @@ function Content({
 
 	const handleEdit = async () => {
 		try {
-			await convex.query(api.workouts.getWorkoutById, {
+			await convex.query(api.workouts.canEditWorkout, {
 				workoutId: workoutId as Id<"workouts">,
 			});
 

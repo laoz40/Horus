@@ -192,6 +192,29 @@ export const deleteAllWorkouts = mutation({
 	},
 });
 
+export const canEditWorkout = query({
+	args: {
+		workoutId: v.id("workouts"),
+	},
+	handler: async (ctx, args) => {
+		try {
+			const identity = await ctx.auth.getUserIdentity();
+			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
+
+			const workout = await ctx.db.get(args.workoutId);
+			if (!workout || workout.userId !== identity.subject) {
+				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
+			}
+
+			return { ok: true };
+		} catch (error) {
+			if (error instanceof ConvexError) throw error;
+
+			throw new ConvexError({ code: "DB_QUERY_FAILED" });
+		}
+	},
+});
+
 export const getWorkoutById = query({
 	args: {
 		workoutId: v.id("workouts"),
