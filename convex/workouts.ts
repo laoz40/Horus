@@ -207,18 +207,31 @@ export const getWorkoutById = query({
 				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
 			}
 
-			const exercisesWithId = [];
+			const workoutsWithGlobalExercises = await Promise.all(
+				workout.exercises.map(async (exercise) => {
+					const globalExercise = await ctx.db.get(exercise.globalExerciseId);
+
+					if (!globalExercise) {
+						return null;
+					}
+
+					return {
+						exercise,
+						globalExercise,
+					};
+				}),
+			);
+
 			let missingGlobalExercises = 0;
-
-			for (const exercise of workout.exercises) {
-				const globalExercise = await ctx.db.get(exercise.globalExerciseId);
-
-				if (!globalExercise) {
+			const exercisesWithId = workoutsWithGlobalExercises.flatMap((entry) => {
+				if (!entry) {
 					missingGlobalExercises += 1;
-					continue;
+					return [];
 				}
 
-				exercisesWithId.push({
+				const { exercise, globalExercise } = entry;
+
+				return {
 					id: exercise.id,
 					global: {
 						name: globalExercise.name,
@@ -229,8 +242,8 @@ export const getWorkoutById = query({
 					...(exercise.difficulty !== undefined ? { difficulty: exercise.difficulty } : {}),
 					...(exercise.notes !== undefined ? { notes: exercise.notes } : {}),
 					sets: exercise.sets,
-				});
-			}
+				};
+			});
 
 			return {
 				_id: workout._id,

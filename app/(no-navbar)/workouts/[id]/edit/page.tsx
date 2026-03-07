@@ -9,9 +9,8 @@ import WorkoutForm from "@/features/workout-form/components/WorkoutForm";
 import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 
 export default async function EditWorkoutPage({ params }: { params: Promise<{ id: string }> }) {
-	const { id } = await params;
+	const [{ id }, { getToken }] = await Promise.all([params, auth()]);
 	const workoutId = id as Id<"workouts">;
-	const { getToken } = await auth();
 	const token = await getToken({ template: "convex" });
 
 	if (token === null) {
