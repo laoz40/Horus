@@ -6,6 +6,7 @@ import { ModeToggle } from "@/components/ModeToggle";
 import SectionCard from "@/components/SectionCard";
 import { Button } from "@/components/ui/button";
 import { showErrorToast, showWorkoutsDeletedToast } from "@/lib/toastMessages";
+import { SignOutButton } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 
@@ -43,15 +44,24 @@ export default function SettingsPage() {
 				</div>
 			</SectionCard>
 
-			<SectionCard header="Workouts">
+			<SectionCard header="Data">
 				<div className="flex flex-row items-center justify-between">
-					<span>Reset Data</span>
+					<span>Workouts</span>
 					<AlertDialogDestructive
 						title="Delete all workouts?"
 						description="This will permanently delete all workouts."
 						handleDelete={() => handleClick()}>
 						<Button variant="destructive">Delete all workouts</Button>
 					</AlertDialogDestructive>
+				</div>
+			</SectionCard>
+
+			<SectionCard header="Account">
+				<div className="flex flex-row items-center justify-between">
+					<span>Session</span>
+					<SignOutButton>
+						<Button variant="destructive">Sign out</Button>
+					</SignOutButton>
 				</div>
 			</SectionCard>
 		</>
