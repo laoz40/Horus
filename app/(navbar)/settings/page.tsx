@@ -40,10 +40,13 @@ export default function SettingsPage() {
 			</div>
 
 			<div className="flex flex-col gap-3">
-				<SectionCard header="Account" className="p-0">
+				<SectionCard
+					header="Account"
+					className="p-0">
 					<div className="flex flex-row w-full items-center justify-between">
 						<UserButton
 							showName
+							userProfileMode="modal"
 							appearance={{
 								elements: {
 									rootBox: "flex-1! px-1!",
@@ -51,6 +54,9 @@ export default function SettingsPage() {
 									userButtonTrigger: "flex! flex-1! py-2! justify-start!",
 									userButtonAvatarBox: "size-10!",
 									userButtonOuterIdentifier: "text-base!",
+								},
+								options: {
+									shimmer: false,
 								},
 							}}
 						/>

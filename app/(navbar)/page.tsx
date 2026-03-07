@@ -12,9 +12,13 @@ export default function DashboardPage() {
 					<h1 className="text-2xl leading-tight font-semibold tracking-tight">Leo Zhou</h1>
 				</div>
 				<UserButton
+					userProfileMode="modal"
 					appearance={{
 						elements: {
 							userButtonAvatarBox: "size-10!",
+						},
+						options: {
+							shimmer: false,
 						},
 					}}
 				/>
