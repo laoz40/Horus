@@ -54,7 +54,11 @@ export default function RootLayout({
 					disableTransitionOnChange>
 					<ClerkProvider
 						appearance={{
+							cssLayerName: "clerk",
 							theme: shadcn,
+							variables: {
+								borderRadius: "var(--radius)",
+							},
 						}}>
 						<ConvexClientProvider>{children}</ConvexClientProvider>
 					</ClerkProvider>

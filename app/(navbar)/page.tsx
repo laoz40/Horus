@@ -1,20 +1,24 @@
 import Section from "@/components/Section";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 
 export default function DashboardPage() {
 	return (
 		<div className="flex flex-col gap-3 pt-2 pb-5">
 			<div className="flex flex-row items-start justify-between px-4 pt-2">
-				<div className="space-y-0.5">
+				<div className="flex flex-col">
 					<h2 className="text-sm font-normal text-muted-foreground">Welcome back,</h2>
 					<h1 className="text-2xl leading-tight font-semibold tracking-tight">Leo Zhou</h1>
 				</div>
-				<Avatar className="mt-0.5 size-10 shrink-0">
-					<AvatarImage src="" />
-					<AvatarFallback>LZ</AvatarFallback>
-				</Avatar>
+				<UserButton
+					appearance={{
+						elements: {
+							userButtonBox: "size-10",
+							userButtonAvatarBox: "size-10!",
+						},
+					}}
+				/>
 			</div>
 
 			<Section header="Start">
