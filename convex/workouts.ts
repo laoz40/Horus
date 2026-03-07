@@ -59,7 +59,11 @@ export const createWorkout = mutation({
 				ctx,
 				parsedWorkout.exercises,
 			);
-			const totalPrSets = await calculateTotalPrSets(ctx, exercisesWithGlobalExerciseIds);
+			const totalPrSets = await calculateTotalPrSets(
+				ctx,
+				identity.subject,
+				exercisesWithGlobalExerciseIds,
+			);
 			const muscleGroups = getWorkoutMuscleGroups(parsedWorkout);
 			const totalVolume = calculateWorkoutVolume(parsedWorkout);
 
@@ -114,7 +118,11 @@ export const updateWorkout = mutation({
 				ctx,
 				parsedWorkout.exercises,
 			);
-			const totalPrSets = await calculateTotalPrSets(ctx, exercisesWithGlobalExerciseIds);
+			const totalPrSets = await calculateTotalPrSets(
+				ctx,
+				identity.subject,
+				exercisesWithGlobalExerciseIds,
+			);
 			const muscleGroups = getWorkoutMuscleGroups(parsedWorkout);
 			const totalVolume = calculateWorkoutVolume(parsedWorkout);
 

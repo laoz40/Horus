@@ -110,9 +110,13 @@ const countTotalPrSetsInWorkout = (
 
 export const calculateTotalPrSets = async (
 	ctx: MutationCtx,
+	userId: string,
 	exercises: WorkoutForPrCalculation[],
 ): Promise<number> => {
-	const previousWorkouts = await ctx.db.query("workouts").collect();
+	const previousWorkouts = await ctx.db
+		.query("workouts")
+		.withIndex("by_userId", (q) => q.eq("userId", userId))
+		.collect();
 	// use ids from the current workout only
 	const targetGlobalExerciseIds = new Set(exercises.map((exercise) => exercise.globalExerciseId));
 
