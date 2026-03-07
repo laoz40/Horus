@@ -3,7 +3,7 @@
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { Trash } from "lucide-react";
 import { type ReactElement } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 import NumberInput from "./NumberInput";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -25,13 +25,14 @@ export default function SetRow({
 	const {
 		register,
 		control,
-		watch,
 		formState: { errors },
 	} = useFormContext<Workout>();
 
-	const isChecked = watch(
-		`exercises.${exerciseIndex}.sets.${setIndex}.completed`,
-	);
+	const completedFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.completed` as const;
+	const weightFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.weight` as const;
+	const repsFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.reps` as const;
+
+	const isChecked = useWatch({ control, name: completedFieldName, defaultValue: false });
 
 	return (
 		<>
@@ -45,9 +46,7 @@ export default function SetRow({
 						variant="decimal"
 						placeholder="kg"
 						className="text-2xl h-11"
-						{...register(`exercises.${exerciseIndex}.sets.${setIndex}.weight`, {
-							valueAsNumber: true,
-						})}
+						{...register(weightFieldName, { valueAsNumber: true })}
 					/>
 					<span
 						className={`text-muted-foreground text-sm ${isChecked ? "text-primary" : "text-muted-foreground"}`}>
@@ -57,9 +56,7 @@ export default function SetRow({
 						variant="integer"
 						placeholder="reps"
 						className="text-2xl h-11"
-						{...register(`exercises.${exerciseIndex}.sets.${setIndex}.reps`, {
-							valueAsNumber: true,
-						})}
+						{...register(repsFieldName, { valueAsNumber: true })}
 					/>
 					{isEditing ? (
 						<div className="h-6 w-6 ml-4 flex items-center justify-center text-destructive">
@@ -73,7 +70,7 @@ export default function SetRow({
 						</div>
 					) : (
 						<Controller
-							name={`exercises.${exerciseIndex}.sets.${setIndex}.completed`}
+							name={completedFieldName}
 							control={control}
 							defaultValue={false}
 							render={({ field }) => (
@@ -81,9 +78,7 @@ export default function SetRow({
 									className="h-6 w-6 ml-4"
 									aria-label="Color success"
 									checked={field.value}
-									onCheckedChange={(value) => {
-										field.onChange(!!value);
-									}}
+									onCheckedChange={(value) => field.onChange(!!value)}
 								/>
 							)}
 						/>
