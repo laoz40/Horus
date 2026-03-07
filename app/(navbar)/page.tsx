@@ -15,7 +15,7 @@ export default function DashboardPage() {
 					userProfileMode="modal"
 					appearance={{
 						elements: {
-							userButtonAvatarBox: "size-10!",
+							userButtonAvatarBox: "size-10! rounded-full border-2 border-muted",
 						},
 						options: {
 							shimmer: false,

@@ -52,8 +52,8 @@ export default function SettingsPage() {
 									rootBox: "flex-1! px-1!",
 									userButtonBox: "flex! flex-row-reverse!",
 									userButtonTrigger: "flex! flex-1! py-2! justify-start!",
-									userButtonAvatarBox: "size-10!",
-									userButtonOuterIdentifier: "text-base!",
+									userButtonAvatarBox: "size-12! rounded-full border-2 border-muted",
+									userButtonOuterIdentifier: "text-base! font-semibold!",
 								},
 								options: {
 									shimmer: false,
