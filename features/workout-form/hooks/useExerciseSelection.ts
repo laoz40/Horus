@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 interface UseExerciseSelectionProps {
 	exerciseIds: string[];
-	watchedExercises: Workout["exercises"] | undefined;
+	watchedExerciseNames: Array<string | undefined>;
 }
 
 interface UseExerciseSelectionReturn {
@@ -15,14 +14,14 @@ interface UseExerciseSelectionReturn {
 
 export const useExerciseSelection = ({
 	exerciseIds,
-	watchedExercises,
+	watchedExerciseNames,
 }: UseExerciseSelectionProps): UseExerciseSelectionReturn => {
 	const [selectedExerciseId, setSelectedExerciseId] = useState<string | undefined>(
 		() => exerciseIds[0] ?? "",
 	);
 
 	const getExerciseLabel = (exerciseIndex: number) => {
-		const selectLabel = watchedExercises?.[exerciseIndex]?.global?.name?.trim();
+		const selectLabel = watchedExerciseNames[exerciseIndex]?.trim();
 		return selectLabel ? selectLabel : "No exercise added";
 	};
 
@@ -33,7 +32,7 @@ export const useExerciseSelection = ({
 	// if index exists, return exercise name. use "" if not found so select placeholder shows
 	const currentExerciseName =
 		currentExerciseIndex >= 0
-			? watchedExercises?.[currentExerciseIndex]?.global?.name?.trim() || ""
+			? watchedExerciseNames[currentExerciseIndex]?.trim() || ""
 			: "";
 
 	return {

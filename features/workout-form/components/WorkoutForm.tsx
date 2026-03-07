@@ -9,7 +9,7 @@ import {
 import { useWorkoutTimer } from "@/features/workout-form/hooks/useWorkoutTimer";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, type ReactElement } from "react";
-import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { showErrorToast, showExerciseDeletedToast } from "@/lib/toastMessages";
 import ExerciseForm from "./ExerciseForm";
 import WorkoutFormTopBar from "./WorkoutFormTopBar";
@@ -55,7 +55,6 @@ function Content({
 
 	const {
 		control,
-		watch,
 		handleSubmit,
 		formState: { isSubmitting },
 		reset,
@@ -100,11 +99,14 @@ function Content({
 
 	const { submitWorkout } = useWorkoutSubmit({ durationSeconds, workoutId });
 
-	const watchedExercises = watch("exercises");
 	const exerciseIds = exercises.map((exercise) => exercise.id);
+	const watchedExerciseNames = useWatch({
+		control,
+		name: exercises.map((_, exerciseIndex) => `exercises.${exerciseIndex}.global.name` as const),
+	});
 
 	const { selectedExerciseId, setSelectedExerciseId, getExerciseLabel, currentExerciseName } =
-		useExerciseSelection({ exerciseIds, watchedExercises });
+		useExerciseSelection({ exerciseIds, watchedExerciseNames });
 
 	const { exerciseListRef, registerExerciseRef, setScrollTargetId } = useExerciseNavigation({
 		exerciseIds,
