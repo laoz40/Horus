@@ -16,6 +16,7 @@ import { currentDay } from "@/lib/date";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
+import { Authenticated } from "convex/react";
 
 interface WorkoutNameDialogProps {
 	children: React.ReactNode;
@@ -50,12 +51,14 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 					<DialogClose asChild>
 						<Button variant="secondary">Cancel</Button>
 					</DialogClose>
-					<Button
-						type="submit"
-						form="workout-form"
-						onClick={() => setOpen(false)}>
-						Save
-					</Button>
+					<Authenticated>
+						<Button
+							type="submit"
+							form="workout-form"
+							onClick={() => setOpen(false)}>
+							Save
+						</Button>
+					</Authenticated>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

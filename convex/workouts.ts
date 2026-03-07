@@ -39,6 +39,9 @@ export const createWorkout = mutation({
 	},
 	handler: async (ctx, args) => {
 		try {
+			const identity = await ctx.auth.getUserIdentity();
+			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
+
 			const parsedWorkout = parseWorkout(args.workout as WorkoutFormData);
 
 			const validationResult = validateWorkout(parsedWorkout);
@@ -67,6 +70,7 @@ export const createWorkout = mutation({
 				exercises: exercisesWithGlobalExerciseIds,
 				totalPrSets,
 				totalVolume,
+				userId: identity.subject,
 			});
 
 			return { workout: validationResult.data };
@@ -134,9 +138,9 @@ export const deleteWorkout = mutation({
 	args: {
 		workoutId: v.id("workouts"),
 	},
-		handler: async (ctx, args) => {
-			try {
-				const workout = await ctx.db.get(args.workoutId);
+	handler: async (ctx, args) => {
+		try {
+			const workout = await ctx.db.get(args.workoutId);
 			if (!workout) {
 				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
 			}
