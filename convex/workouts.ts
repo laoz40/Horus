@@ -188,7 +188,11 @@ export const deleteAllWorkouts = mutation({
 				.collect();
 			if (workouts.length === 0) throw new ConvexError({ code: "NO_WORKOUTS" });
 
-			for (const workout of workouts) await ctx.db.delete(workout._id);
+			const DELETE_BATCH_SIZE = 25;
+			for (let index = 0; index < workouts.length; index += DELETE_BATCH_SIZE) {
+				const batch = workouts.slice(index, index + DELETE_BATCH_SIZE);
+				await Promise.all(batch.map((workout) => ctx.db.delete(workout._id)));
+			}
 
 			return { success: true, deletedCount: workouts.length };
 		} catch (error) {
