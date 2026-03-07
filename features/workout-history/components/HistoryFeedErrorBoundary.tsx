@@ -33,6 +33,10 @@ const getHistoryFeedErrorMessage = (error: unknown) => {
 		return "Couldn't access the database. Please try again later.";
 	}
 
+	if (code === "UNAUTHORIZED") {
+		return "You must be signed in to view workout history.";
+	}
+
 	return fallbackMessage;
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { usePaginatedQuery } from "convex/react";
+import { Authenticated, usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import HistoryList from "./HistoryList";
 import HistoryPagination from "./HistoryPagination";
@@ -10,6 +10,14 @@ interface HistoryFeedProps {
 }
 
 export default function HistoryFeed({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
+	return (
+		<Authenticated>
+			<Content WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE} />
+		</Authenticated>
+	);
+}
+
+function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 	const { results, status, loadMore } = usePaginatedQuery(
 		api.workouts.listWorkouts,
 		{},

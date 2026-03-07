@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { showErrorToast } from "@/lib/toastMessages";
-import { useConvex } from "convex/react";
+import { Authenticated, useConvex } from "convex/react";
 import { ConvexError } from "convex/values";
 import { useRouter } from "next/navigation";
 
@@ -24,6 +24,22 @@ interface WorkoutCardOptionsProps {
 }
 
 export default function WorkoutCardOptions({
+	handleDelete,
+	workoutId,
+	workoutName,
+}: WorkoutCardOptionsProps): ReactElement {
+	return (
+		<Authenticated>
+			<Content
+				handleDelete={handleDelete}
+				workoutId={workoutId}
+				workoutName={workoutName}
+			/>
+		</Authenticated>
+	);
+}
+
+function Content({
 	handleDelete,
 	workoutId,
 	workoutName,
@@ -46,6 +62,11 @@ export default function WorkoutCardOptions({
 
 			if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
 				showErrorToast("Couldn't access the database. Please try again.");
+				return;
+			}
+
+			if (error instanceof ConvexError && error.data?.code === "UNAUTHORIZED") {
+				showErrorToast("You must be signed in to edit workouts.");
 				return;
 			}
 

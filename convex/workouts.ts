@@ -90,8 +90,11 @@ export const updateWorkout = mutation({
 	},
 	handler: async (ctx, args) => {
 		try {
+			const identity = await ctx.auth.getUserIdentity();
+			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
+
 			const workout = await ctx.db.get(args.workoutId);
-			if (!workout) {
+			if (!workout || workout.userId !== identity.subject) {
 				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
 			}
 
@@ -140,8 +143,11 @@ export const deleteWorkout = mutation({
 	},
 	handler: async (ctx, args) => {
 		try {
+			const identity = await ctx.auth.getUserIdentity();
+			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
+
 			const workout = await ctx.db.get(args.workoutId);
-			if (!workout) {
+			if (!workout || workout.userId !== identity.subject) {
 				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
 			}
 
@@ -165,7 +171,13 @@ export const deleteAllWorkouts = mutation({
 	args: {},
 	handler: async (ctx) => {
 		try {
-			const workouts = await ctx.db.query("workouts").collect();
+			const identity = await ctx.auth.getUserIdentity();
+			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
+
+			const workouts = await ctx.db
+				.query("workouts")
+				.withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+				.collect();
 			if (workouts.length === 0) throw new ConvexError({ code: "NO_WORKOUTS" });
 
 			for (const workout of workouts) await ctx.db.delete(workout._id);
@@ -186,9 +198,12 @@ export const getWorkoutById = query({
 	},
 	handler: async (ctx, args) => {
 		try {
+			const identity = await ctx.auth.getUserIdentity();
+			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
+
 			const workout = await ctx.db.get(args.workoutId);
 
-			if (!workout) {
+			if (!workout || workout.userId !== identity.subject) {
 				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
 			}
 
@@ -240,9 +255,12 @@ export const listWorkouts = query({
 	},
 	handler: async (ctx, args) => {
 		try {
+			const identity = await ctx.auth.getUserIdentity();
+			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
+
 			const results = await ctx.db
 				.query("workouts")
-				.withIndex("by_creation_time")
+				.withIndex("by_userId", (q) => q.eq("userId", identity.subject))
 				.order("desc")
 				.paginate(args.paginationOpts);
 

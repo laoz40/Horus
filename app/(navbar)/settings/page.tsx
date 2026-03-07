@@ -6,12 +6,19 @@ import { ModeToggle } from "@/components/ModeToggle";
 import SectionCard from "@/components/SectionCard";
 import { Button } from "@/components/ui/button";
 import { showErrorToast, showWorkoutsDeletedToast } from "@/lib/toastMessages";
-import { SignOutButton, UserButton } from "@clerk/nextjs";
-import { useMutation } from "convex/react";
+import { UserButton } from "@clerk/nextjs";
+import { Authenticated, useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
-import { ChevronDown } from "lucide-react";
 
 export default function SettingsPage() {
+	return (
+		<Authenticated>
+			<Content />
+		</Authenticated>
+	);
+}
+
+function Content() {
 	const deleteAllWorkouts = useMutation(api.workouts.deleteAllWorkouts);
 
 	const handleClick = async () => {
@@ -26,6 +33,11 @@ export default function SettingsPage() {
 
 			if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
 				showErrorToast("Couldn't reach the database. Please try again.");
+				return;
+			}
+
+			if (error instanceof ConvexError && error.data?.code === "UNAUTHORIZED") {
+				showErrorToast("You must be signed in to delete workouts.");
 				return;
 			}
 

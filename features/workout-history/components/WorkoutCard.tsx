@@ -9,7 +9,7 @@ import WorkoutCardStats from "./WorkoutCardStats";
 import WorkoutCardOptions from "./WorkoutCardOptions";
 import { Badge } from "@/components/ui/badge";
 import { showErrorToast, showWorkoutDeletedToast } from "@/lib/toastMessages";
-import { useMutation } from "convex/react";
+import { Authenticated, useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 
 interface WorkoutCardProps {
@@ -19,6 +19,22 @@ interface WorkoutCardProps {
 }
 
 export default function WorkoutCard({
+	workout,
+	deleteLocalWorkout,
+	workoutIndex,
+}: WorkoutCardProps) {
+	return (
+		<Authenticated>
+			<Content
+				workout={workout}
+				deleteLocalWorkout={deleteLocalWorkout}
+				workoutIndex={workoutIndex}
+			/>
+		</Authenticated>
+	);
+}
+
+function Content({
 	workout,
 	deleteLocalWorkout,
 	workoutIndex,
@@ -43,6 +59,11 @@ export default function WorkoutCard({
 			if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
 				showErrorToast("Couldn't access the database. Please try again.");
 				console.error(error);
+				return;
+			}
+
+			if (error instanceof ConvexError && error.data?.code === "UNAUTHORIZED") {
+				showErrorToast("You must be signed in to delete workouts.");
 				return;
 			}
 

@@ -1,5 +1,6 @@
 import { fetchQuery } from "convex/nextjs";
 import { ConvexError } from "convex/values";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { api } from "@/convex/_generated/api";
@@ -10,11 +11,17 @@ import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 export default async function EditWorkoutPage({ params }: { params: Promise<{ id: string }> }) {
 	const { id } = await params;
 	const workoutId = id as Id<"workouts">;
+	const { getToken } = await auth();
+	const token = await getToken({ template: "convex" });
+
+	if (token === null) {
+		redirect("/sign-in");
+	}
 
 	try {
 		const workout = await fetchQuery(api.workouts.getWorkoutById, {
 			workoutId,
-		});
+		}, { token });
 
 		const formData: WorkoutFormData = {
 			name: workout.name,
@@ -47,6 +54,10 @@ export default async function EditWorkoutPage({ params }: { params: Promise<{ id
 
 		if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
 			redirect("/workouts?toast=edit_db_failed");
+		}
+
+		if (error instanceof ConvexError && error.data?.code === "UNAUTHORIZED") {
+			redirect("/sign-in");
 		}
 
 		console.error("Unexpected error loading workout for edit page:", error);

@@ -51,6 +51,12 @@ export const useWorkoutSubmit = ({
 				return;
 			}
 
+			if (error instanceof ConvexError && error.data?.code === "UNAUTHORIZED") {
+				showErrorToast("You must be signed in to save workouts.");
+				router.push("/sign-in");
+				return;
+			}
+
 			if (error instanceof ConvexError && error.data?.code === "NO_WORKOUT_FOUND") {
 				showErrorToast("Couldn't find workout in the database.");
 				router.push("/workouts");
