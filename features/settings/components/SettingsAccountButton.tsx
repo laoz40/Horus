@@ -16,6 +16,7 @@ export default function SettingsAccountButton() {
 						userButtonTrigger: "flex flex-1 max-w-full! py-2! pr-10! justify-start!",
 						userButtonAvatarBox: "size-12! rounded-full border-2 border-muted",
 						userButtonOuterIdentifier: "text-base! font-semibold! truncate!",
+						userButtonPopoverMain: "glass:bg-background/100!"
 					},
 					options: {
 						shimmer: false,

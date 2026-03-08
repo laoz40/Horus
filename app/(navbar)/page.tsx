@@ -16,6 +16,7 @@ export default function DashboardPage() {
 					appearance={{
 						elements: {
 							userButtonAvatarBox: "size-10! rounded-full border-2 border-muted",
+							userButtonPopoverMain: "glass:bg-background/100!",
 						},
 						options: {
 							shimmer: false,
