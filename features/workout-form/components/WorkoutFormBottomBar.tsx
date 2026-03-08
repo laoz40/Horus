@@ -9,7 +9,6 @@ interface WorkoutFormBottomBarProps {
 	show: boolean;
 	exercises: { id: string }[];
 	selectedExerciseId?: string;
-	getExerciseLabel: (exerciseIndex: number) => string;
 	onSelectExercise: (value: string) => void;
 	onAddExercise: () => void;
 }
@@ -18,7 +17,6 @@ export default function WorkoutFormBottomBar({
 	show,
 	exercises,
 	selectedExerciseId,
-	getExerciseLabel,
 	onSelectExercise,
 	onAddExercise,
 }: WorkoutFormBottomBarProps): ReactElement | null {
@@ -31,7 +29,6 @@ export default function WorkoutFormBottomBar({
 					<ExerciseSelector
 						exercises={exercises}
 						selectedExerciseId={selectedExerciseId}
-						getExerciseLabel={getExerciseLabel}
 						onValueChange={onSelectExercise}
 					/>
 				</div>

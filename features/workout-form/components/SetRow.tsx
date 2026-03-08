@@ -2,25 +2,24 @@
 
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { Trash } from "lucide-react";
-import { type ReactElement } from "react";
+import { memo, type ReactElement, useCallback } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import NumberInput from "./NumberInput";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 
 interface SetRowProps {
-	key: string;
 	exerciseIndex: number;
 	setIndex: number;
 	isEditing: boolean;
-	handleDeleteSet: () => void;
+	onDeleteSet: (setIndex: number) => void;
 }
 
-export default function SetRow({
+function SetRow({
 	exerciseIndex,
 	setIndex,
 	isEditing,
-	handleDeleteSet,
+	onDeleteSet,
 }: SetRowProps): ReactElement {
 	const {
 		register,
@@ -33,6 +32,10 @@ export default function SetRow({
 	const repsFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.reps` as const;
 
 	const isChecked = useWatch({ control, name: completedFieldName, defaultValue: false });
+
+	const handleDeleteSet = useCallback(() => {
+		onDeleteSet(setIndex);
+	}, [onDeleteSet, setIndex]);
 
 	return (
 		<>
@@ -93,3 +96,5 @@ export default function SetRow({
 		</>
 	);
 }
+
+export default memo(SetRow);

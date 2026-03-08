@@ -75,28 +75,29 @@ export default function WorkoutForm({
 		if (exercises.length === 0) handleAddExercise();
 	}, [exercises.length, handleAddExercise]);
 
-	const handleDeleteExercise = (exerciseIndex: number) => {
+	const handleDeleteExercise = useCallback((exerciseIndex: number) => {
 		remove(exerciseIndex);
 		showExerciseDeletedToast();
-	};
+	}, [remove]);
 
 	const { submitWorkout } = useWorkoutSubmit({ durationSeconds, workoutId });
 
 	const exerciseIds = exercises.map((exercise) => exercise.id);
-	const watchedExerciseNames = useWatch({
-		control,
-		name: exercises.map((_, exerciseIndex) => `exercises.${exerciseIndex}.global.name` as const),
-	});
+	const { selectedExerciseId, setSelectedExerciseId, selectedExerciseIndex } =
+		useExerciseSelection({ exerciseIds });
+	const selectedExerciseIndexForWatch = selectedExerciseIndex >= 0 ? selectedExerciseIndex : 0;
 
-	const { selectedExerciseId, setSelectedExerciseId, getExerciseLabel, currentExerciseName } =
-		useExerciseSelection({ exerciseIds, watchedExerciseNames });
+	const selectedExerciseName = useWatch({
+		control,
+		name: `exercises.${selectedExerciseIndexForWatch}.global.name` as const,
+	}) as string | undefined;
 
 	const { exerciseListRef, registerExerciseRef, setScrollTargetId } = useExerciseNavigation({
 		exerciseIds,
 		setSelectedExerciseId,
 	});
 
-	const showBottomActions = currentExerciseName.length > 0 || exercises.length > 1;
+	const showBottomActions = (selectedExerciseName?.trim().length ?? 0) > 0 || exercises.length > 1;
 
 	return (
 		<div className="flex flex-col h-svh">
@@ -123,7 +124,7 @@ export default function WorkoutForm({
 									registerExerciseRef(exercise.id, exerciseFormElement);
 								}}
 								className="snap-start min-h-full h-full"
-								handleDeleteExercise={() => handleDeleteExercise(exerciseIndex)}
+								onDeleteExercise={handleDeleteExercise}
 							/>
 						))}
 					</section>
@@ -133,7 +134,6 @@ export default function WorkoutForm({
 					show={showBottomActions}
 					exercises={exercises}
 					selectedExerciseId={selectedExerciseId}
-					getExerciseLabel={getExerciseLabel}
 					onSelectExercise={(value) => {
 						setSelectedExerciseId(value);
 						setScrollTargetId(value);

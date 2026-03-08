@@ -2,8 +2,8 @@
 
 import { cn } from "@/lib/utils";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
-import { forwardRef, useCallback, useEffect, useState } from "react";
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { forwardRef, memo, useCallback, useEffect, useState } from "react";
+import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { showSetDeletedToast } from "@/lib/toastMessages";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import SetRow from "./SetRow";
@@ -14,15 +14,14 @@ import { createDefaultSet } from "../lib/WorkoutFormDefaults";
 
 interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
 	exerciseIndex: number;
-	handleDeleteExercise: () => void;
+	onDeleteExercise: (exerciseIndex: number) => void;
 }
 
-const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
-	({ className, exerciseIndex, handleDeleteExercise }, ref) => {
+const ExerciseForm = memo(forwardRef<HTMLDivElement, ExerciseFormProps>(
+	({ className, exerciseIndex, onDeleteExercise }, ref) => {
 		const {
-			getValues,
+			control,
 			trigger,
-			// watch,
 			formState: { errors },
 		} = useFormContext<Workout>();
 
@@ -46,12 +45,19 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		}, [sets.length, handleAddSet]);
 
 		// BUG: when loading a workout to edit, adding new sets after deleting sets loads previous data
-		const handleDeleteSet = (setIndex: number) => {
+		const handleDeleteSet = useCallback((setIndex: number) => {
 			remove(setIndex);
 			showSetDeletedToast();
-		};
+		}, [remove]);
 
-		const getExerciseName = getValues(`exercises.${exerciseIndex}.global.name`);
+		const handleDeleteExercise = useCallback(() => {
+			onDeleteExercise(exerciseIndex);
+		}, [exerciseIndex, onDeleteExercise]);
+
+		const exerciseName = useWatch({
+			control,
+			name: `exercises.${exerciseIndex}.global.name` as const,
+		}) as string | undefined;
 
 		const [isEditing, setIsEditing] = useState(false);
 
@@ -69,7 +75,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 					)}
 				</div>
 
-				{getExerciseName && (
+				{exerciseName && (
 					<div className="h-full flex flex-col gap-2">
 						{/* Recent + Edit Buttons */}
 						<div className="flex flex-row justify-between text-xs">
@@ -114,7 +120,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 										setIndex={setIndex}
 										exerciseIndex={exerciseIndex}
 										isEditing={isEditing}
-										handleDeleteSet={() => handleDeleteSet(setIndex)}
+										onDeleteSet={handleDeleteSet}
 									/>
 								))}
 							</div>
@@ -162,7 +168,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			</section>
 		);
 	},
-);
+));
 
 ExerciseForm.displayName = "ExerciseForm";
 

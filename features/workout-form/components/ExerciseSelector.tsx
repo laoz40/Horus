@@ -7,26 +7,32 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import { useFormContext, useWatch } from "react-hook-form";
 
 interface ExerciseSelectorProps {
 	exercises: { id: string }[];
 	selectedExerciseId?: string;
 	onValueChange: (value: string) => void;
-	getExerciseLabel: (exerciseIndex: number) => string;
 }
 
 export default function ExerciseSelector({
 	exercises,
 	selectedExerciseId,
 	onValueChange,
-	getExerciseLabel,
 }: ExerciseSelectorProps) {
+	const { control } = useFormContext<Workout>();
+	const exerciseNames = useWatch({
+		control,
+		name: exercises.map((_, exerciseIndex) => `exercises.${exerciseIndex}.global.name` as const),
+	}) as Array<string | undefined>;
+
 	return (
 		<Select
 			value={selectedExerciseId}
 			onValueChange={onValueChange}>
 			<SelectTrigger className="w-full">
-				<SelectValue placeholder="No Exercise Added" />
+				<SelectValue />
 			</SelectTrigger>
 			<SelectContent position="popper">
 				<SelectGroup>
@@ -35,7 +41,7 @@ export default function ExerciseSelector({
 						<SelectItem
 							key={exercise.id}
 							value={exercise.id}>
-							{exerciseIndex + 1}: {getExerciseLabel(exerciseIndex)}
+							{exerciseIndex + 1}: {exerciseNames[exerciseIndex]?.trim() || "No exercise added"}
 						</SelectItem>
 					))}
 				</SelectGroup>

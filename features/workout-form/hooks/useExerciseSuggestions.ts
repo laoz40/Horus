@@ -30,7 +30,7 @@ export function useExerciseSuggestions(query: string) {
 		let timeout: ReturnType<typeof setTimeout> | undefined;
 
 		const loadSuggestions = async () => {
-			const defaultExercises = await fetchDefaultExercises(query);
+			const defaultExercises = fetchDefaultExercises(query);
 			if (!isCurrent) return;
 
 			setSuggestions(defaultExercises);
