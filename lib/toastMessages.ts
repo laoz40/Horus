@@ -94,3 +94,12 @@ export const showErrorToast = (message: string) => {
 		actionButtonStyle,
 	});
 };
+
+export const showInfoToast = (message: string) => {
+	toast.info(message, {
+		position: toastPosition,
+		style: topMargin,
+		action: dismissAction,
+		actionButtonStyle,
+	});
+};
