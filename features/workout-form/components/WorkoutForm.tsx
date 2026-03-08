@@ -100,7 +100,7 @@ export default function WorkoutForm({
 	const showBottomActions = (selectedExerciseName?.trim().length ?? 0) > 0 || exercises.length > 1;
 
 	return (
-		<div className="flex flex-col h-dvh">
+		<div className="flex flex-col h-full">
 			<FormProvider {...methods}>
 				<WorkoutFormTopBar
 					workoutId={workoutId}
