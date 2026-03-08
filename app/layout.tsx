@@ -10,9 +10,6 @@ import { shadcn } from "@clerk/ui/themes";
 export const metadata: Metadata = {
 	title: "Horus",
 	description: "A web app to track gym workouts and show cool stats.",
-	icons: {
-		icon: "/favicon.ico",
-	},
 };
 
 const oxanium = Oxanium({
