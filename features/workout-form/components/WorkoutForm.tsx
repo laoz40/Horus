@@ -17,7 +17,6 @@ import WorkoutFormBottomBar from "./WorkoutFormBottomBar";
 import { useExerciseNavigation } from "@/features/workout-form/hooks/useExerciseNavigation";
 import { useExerciseSelection } from "@/features/workout-form/hooks/useExerciseSelection";
 import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit";
-import { Authenticated } from "convex/react";
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
@@ -26,22 +25,6 @@ interface WorkoutFormProps {
 }
 
 export default function WorkoutForm({
-	initialData,
-	workoutId,
-	missingGlobalExercisesCount = 0,
-}: WorkoutFormProps): ReactElement {
-	return (
-		<Authenticated>
-			<Content
-				initialData={initialData}
-				workoutId={workoutId}
-				missingGlobalExercisesCount={missingGlobalExercisesCount}
-			/>
-		</Authenticated>
-	);
-}
-
-function Content({
 	initialData,
 	workoutId,
 	missingGlobalExercisesCount = 0,

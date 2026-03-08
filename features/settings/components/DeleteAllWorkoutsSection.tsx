@@ -1,13 +1,14 @@
 "use client";
 
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
+import SectionCard from "@/components/SectionCard";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { showErrorToast, showWorkoutsDeletedToast } from "@/lib/toastMessages";
-import { useMutation } from "convex/react";
+import { Authenticated, useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 
-export default function DeleteAllWorkoutsAction() {
+export default function DeleteAllWorkoutsSection() {
 	const deleteAllWorkouts = useMutation(api.workouts.deleteAllWorkouts);
 
 	const handleDelete = async () => {
@@ -35,15 +36,25 @@ export default function DeleteAllWorkoutsAction() {
 	};
 
 	return (
-		<AlertDialogDestructive
-			title="Delete all workouts?"
-			description="This will permanently delete all workouts."
-			handleDelete={handleDelete}>
-			<Button
-				variant="destructive"
-				size="sm">
-				Delete all workouts
-			</Button>
-		</AlertDialogDestructive>
+		<>
+			<Authenticated>
+				<SectionCard header="Data">
+					<div className="flex flex-row items-center justify-between">
+						<span>Workouts</span>
+						<AlertDialogDestructive
+							title="Delete all workouts?"
+							description="This will permanently delete all workouts."
+							handleDelete={handleDelete}>
+							<Button
+								variant="destructive"
+								size="sm"
+								className="text-sm">
+								Delete all workouts
+							</Button>
+						</AlertDialogDestructive>
+					</div>
+				</SectionCard>
+			</Authenticated>
+		</>
 	);
 }

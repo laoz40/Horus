@@ -1,9 +1,11 @@
 "use client";
 
-import { Authenticated, usePaginatedQuery } from "convex/react";
+import { Authenticated, Unauthenticated, usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import HistoryList from "./HistoryList";
 import HistoryPagination from "./HistoryPagination";
+import { SignUpButton } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 
 interface HistoryFeedProps {
 	WORKOUTS_PER_PAGE: number;
@@ -11,9 +13,21 @@ interface HistoryFeedProps {
 
 export default function HistoryFeed({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 	return (
-		<Authenticated>
-			<Content WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE} />
-		</Authenticated>
+		<>
+			<Authenticated>
+				<Content WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE} />
+			</Authenticated>
+			<Unauthenticated>
+				<div className="flex flex-col items-center justify-center gap-3 rounded-md border border-border/80 bg-card/50 px-5 py-6 text-center">
+					<p className="text-sm text-muted-foreground">
+						You need an account to save workouts.
+					</p>
+					<SignUpButton>
+						<Button>Sign in</Button>
+					</SignUpButton>
+				</div>
+			</Unauthenticated>
+		</>
 	);
 }
 

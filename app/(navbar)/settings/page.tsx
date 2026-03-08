@@ -1,7 +1,7 @@
 import { ModeToggle } from "@/components/ModeToggle";
 import SectionCard from "@/components/SectionCard";
-import DeleteAllWorkoutsAction from "@/features/settings/components/DeleteAllWorkoutsAction";
-import SettingsAccountButton from "@/features/settings/components/SettingsAccountButton";
+import SettingsAccountButton from "@/features/auth/components/SettingsAccountButton";
+import DeleteAllWorkoutsSection from "@/features/settings/components/DeleteAllWorkoutsSection";
 
 export default function SettingsPage() {
 	return (
@@ -13,7 +13,7 @@ export default function SettingsPage() {
 			<div className="flex flex-col gap-3">
 				<SectionCard
 					header="Account"
-					className="p-0">
+					className="p-0 min-h-19">
 					<SettingsAccountButton />
 				</SectionCard>
 
@@ -24,12 +24,7 @@ export default function SettingsPage() {
 					</div>
 				</SectionCard>
 
-				<SectionCard header="Data">
-					<div className="flex flex-row items-center justify-between">
-						<span>Workouts</span>
-						<DeleteAllWorkoutsAction />
-					</div>
-				</SectionCard>
+				<DeleteAllWorkoutsSection />
 			</div>
 		</>
 	);

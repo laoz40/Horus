@@ -1,6 +1,6 @@
 import Section from "@/components/Section";
 import { Button } from "@/components/ui/button";
-import { UserButton } from "@clerk/nextjs";
+import DashboardAccountButton from "@/features/auth/components/DashboardAccountButton";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -11,18 +11,7 @@ export default function DashboardPage() {
 					<h2 className="text-sm font-normal text-muted-foreground">Welcome back,</h2>
 					<h1 className="text-2xl leading-tight font-semibold tracking-tight">Leo Zhou</h1>
 				</div>
-				<UserButton
-					userProfileMode="modal"
-					appearance={{
-						elements: {
-							userButtonAvatarBox: "size-10! rounded-full border-2 border-muted",
-							userButtonPopoverMain: "glass:bg-background/100!",
-						},
-						options: {
-							shimmer: false,
-						},
-					}}
-				/>
+				<DashboardAccountButton />
 			</div>
 
 			<Section header="Start">

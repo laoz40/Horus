@@ -16,7 +16,8 @@ import { currentDay } from "@/lib/date";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { Authenticated } from "convex/react";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { SignInButton } from "@clerk/nextjs";
 
 interface WorkoutNameDialogProps {
 	children: React.ReactNode;
@@ -36,7 +37,6 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 				<DialogHeader>
 					<DialogTitle>Save Workout</DialogTitle>
 				</DialogHeader>
-				<DialogDescription />
 				<FieldGroup>
 					<Field>
 						<Label htmlFor="name-1">Enter workout name</Label>
@@ -47,11 +47,16 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 						/>
 					</Field>
 				</FieldGroup>
+				<Unauthenticated>
+					<DialogDescription className="text-destructive">
+						You need an account to create and save workouts.
+					</DialogDescription>
+				</Unauthenticated>
 				<DialogFooter className="flex flex-row justify-between gap-2">
-					<DialogClose asChild>
-						<Button variant="secondary">Cancel</Button>
-					</DialogClose>
 					<Authenticated>
+						<DialogClose asChild>
+							<Button variant="secondary">Cancel</Button>
+						</DialogClose>
 						<Button
 							type="submit"
 							form="workout-form"
@@ -59,6 +64,14 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 							Save
 						</Button>
 					</Authenticated>
+					<Unauthenticated>
+						<DialogClose asChild>
+							<Button variant="secondary">Close</Button>
+						</DialogClose>
+						<SignInButton>
+							<Button>Sign in</Button>
+						</SignInButton>
+					</Unauthenticated>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
