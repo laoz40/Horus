@@ -33,7 +33,7 @@ export default function SettingsAccountButton() {
 				<SignUpButton>
 					<div className="cursor-pointer flex flex-row justify-between items-center">
 						<div className="flex flex-row items-center justify-start gap-2 py-2 px-1">
-							<div className="bg-neutral-600 rounded-full p-2">
+							<div className="bg-muted rounded-full p-2">
 								<UserIcon className="size-10!"></UserIcon>
 							</div>
 							Guest
