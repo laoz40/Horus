@@ -1,9 +1,10 @@
 "use client";
 
-import { Authenticated, Unauthenticated, usePaginatedQuery } from "convex/react";
+import { useConvexAuth, usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import HistoryList from "./HistoryList";
 import HistoryPagination from "./HistoryPagination";
+import { WorkoutCardSkeletonList } from "./HistoryWorkoutCardSkeleton";
 import { SignUpButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 
@@ -12,22 +13,18 @@ interface HistoryFeedProps {
 }
 
 export default function HistoryFeed({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
+	const { isAuthenticated, isLoading } = useConvexAuth();
+
+	if (isLoading) {
+		return <WorkoutCardSkeletonList count={WORKOUTS_PER_PAGE} />;
+	}
+
+	if (!isAuthenticated) {
+		return <SignInPrompt />;
+	}
+
 	return (
-		<>
-			<Authenticated>
-				<Content WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE} />
-			</Authenticated>
-			<Unauthenticated>
-				<div className="flex flex-col items-center justify-center gap-3 rounded-md border border-border/80 bg-card/50 px-5 py-6 text-center">
-					<p className="text-sm text-muted-foreground">
-						You need an account to save workouts.
-					</p>
-					<SignUpButton>
-						<Button>Sign in</Button>
-					</SignUpButton>
-				</div>
-			</Unauthenticated>
-		</>
+		<Content WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE} />
 	);
 }
 
@@ -47,6 +44,7 @@ function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 			<HistoryList
 				workouts={results}
 				isLoading={isLoadingFirstPage}
+				WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE}
 			/>
 			<HistoryPagination
 				hasNextPage={hasNextPage}
@@ -55,5 +53,16 @@ function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 				className="mt-1"
 			/>
 		</>
+	);
+}
+
+function SignInPrompt() {
+	return (
+		<div className="flex flex-col items-center justify-center gap-3 rounded-md border border-border/80 bg-card/50 px-5 py-6 text-center">
+			<p className="text-sm text-muted-foreground">You need an account to save workouts.</p>
+			<SignUpButton>
+				<Button>Sign in</Button>
+			</SignUpButton>
+		</div>
 	);
 }

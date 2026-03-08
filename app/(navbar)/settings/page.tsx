@@ -1,20 +1,20 @@
 import { ModeToggle } from "@/components/ModeToggle";
 import SectionCard from "@/components/SectionCard";
-import SettingsAccountButton from "@/features/auth/components/SettingsAccountButton";
+import SettingsAccountBar from "@/features/auth/components/SettingsAccountBar";
 import DeleteAllWorkoutsSection from "@/features/settings/components/DeleteAllWorkoutsSection";
 
 export default function SettingsPage() {
 	return (
 		<>
 			<div className="p-4">
-				<h1>Settings</h1>
+				<h1 className="text-2xl font-semibold">Settings</h1>
 			</div>
 
 			<div className="flex flex-col gap-3">
 				<SectionCard
-					header="Account"
-					className="p-0 min-h-19">
-					<SettingsAccountButton />
+					header=""
+					className="p-0">
+					<SettingsAccountBar />
 				</SectionCard>
 
 				<SectionCard header="Appearance">
