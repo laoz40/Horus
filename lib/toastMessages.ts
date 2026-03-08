@@ -9,13 +9,12 @@ const actionButtonStyle = {
 	color: "var(--muted-foreground)",
 };
 
-const undoAction = {
-	// TODO: undo delete
-	label: "Undo",
-	onClick: () => {
-		toast.dismiss();
-	},
-};
+// const undoAction = {
+// 	label: "Undo",
+// 	onClick: () => {
+// 		toast.dismiss();
+// 	},
+// };
 const dismissAction = {
 	label: "dismiss",
 	onClick: () => {
@@ -27,7 +26,7 @@ export const showWorkoutDeletedToast = (workoutName: string) => {
 	toast.info(`Deleted ${workoutName}`, {
 		position: toastPosition,
 		style: topMargin,
-		action: undoAction,
+		action: dismissAction,
 		actionButtonStyle,
 	});
 };
@@ -46,7 +45,7 @@ export const showExerciseDeletedToast = () => {
 		position: toastPosition,
 		style: topMargin,
 		duration: 2000,
-		action: undoAction,
+		action: dismissAction,
 		actionButtonStyle,
 	});
 };
@@ -56,7 +55,7 @@ export const showSetDeletedToast = () => {
 		position: toastPosition,
 		style: topMargin,
 		duration: 2000,
-		action: undoAction,
+		action: dismissAction,
 		actionButtonStyle,
 	});
 };
