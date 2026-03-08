@@ -47,17 +47,17 @@ const normalizeSet = (set: ComparableSet): ComparableSet => ({
 	completed: set.completed,
 });
 
-const isPrSet = (set: ComparableSet, currentExercise: ExercisePrs): boolean => {
-	if (!set.completed) return false;
+const isPrSet = (currentSet: ComparableSet, currentExercisePr: ExercisePrs): boolean => {
+	if (!currentSet.completed) return false;
 
 	// if true, then bodyweight reps pr
-	if (set.weight === 0) {
-		return set.reps > currentExercise.bodyweightRepsPr;
+	if (currentSet.weight === 0) {
+		return currentSet.reps > currentExercisePr.bodyweightRepsPr;
 	}
 
 	// if true, then weight pr or volume pr
-	const volume = set.weight * set.reps;
-	return set.weight > currentExercise.weightPr || volume > currentExercise.volumePr;
+	const volume = currentSet.weight * currentSet.reps;
+	return currentSet.weight > currentExercisePr.weightPr || volume > currentExercisePr.volumePr;
 };
 
 const updateExercisePrs = (set: ComparableSet, currentExercise: ExercisePrs): ExercisePrs => {
@@ -76,9 +76,9 @@ const getExercisePrReferences = (previousSets: PrBaselineSet[]): Map<ExerciseKey
 
 	for (const previousSet of previousSets) {
 		const set = normalizeSet(previousSet);
-		const currentExercisePrs = exercisePrs.get(previousSet.globalExerciseId) ?? emptyExercisePrs();
+		const prsForCurrentExercise = exercisePrs.get(previousSet.globalExerciseId) ?? emptyExercisePrs();
 
-		exercisePrs.set(previousSet.globalExerciseId, updateExercisePrs(set, currentExercisePrs));
+		exercisePrs.set(previousSet.globalExerciseId, updateExercisePrs(set, prsForCurrentExercise));
 	}
 
 	return exercisePrs;
@@ -89,21 +89,30 @@ const countTotalPrSetsInWorkout = (
 	previousSets: PrBaselineSet[],
 ): number => {
 	const exercisePrs = getExercisePrReferences(previousSets);
+	// map for exercises that have at least one completed set in previous workouts
+	const exercisesWithHistory = new Set(previousSets.map((set) => set.globalExerciseId));
 	let totalPrSets = 0;
 
 	for (const exercise of workout.exercises) {
-		// get prs for exercise
-		let currentExercisePrs = exercisePrs.get(exercise.globalExerciseId) ?? emptyExercisePrs();
+		// get prs for current exercise
+		let prsForCurrentExercise = exercisePrs.get(exercise.globalExerciseId) ?? emptyExercisePrs();
+		// if false, then baseline for current exercise is set to 0
+		let isPreviousExercise = exercisesWithHistory.has(exercise.globalExerciseId);
+
 		// count for each set in exercise
 		for (const set of exercise.sets) {
-			const normalizedSet = normalizeSet(set);
-			if (isPrSet(normalizedSet, currentExercisePrs)) {
+			const currentSet = normalizeSet(set);
+			if (isPreviousExercise && isPrSet(currentSet, prsForCurrentExercise)) {
 				totalPrSets += 1;
 			}
-			currentExercisePrs = updateExercisePrs(normalizedSet, currentExercisePrs);
+			prsForCurrentExercise = updateExercisePrs(currentSet, prsForCurrentExercise);
+			// first completed set in a new exercise creates baseline for later sets
+			if (!isPreviousExercise && currentSet.completed) {
+				isPreviousExercise = true;
+			}
 		}
 		// update for each exercise
-		exercisePrs.set(exercise.globalExerciseId, currentExercisePrs);
+		exercisePrs.set(exercise.globalExerciseId, prsForCurrentExercise);
 	}
 	return totalPrSets;
 };
