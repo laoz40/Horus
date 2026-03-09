@@ -4,8 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { Oxanium } from "next/font/google";
 import DeferredToaster from "@/components/DeferredToaster";
 import ConvexClientProvider from "./ConvexClientProvider";
-import { ClerkProvider } from "@clerk/nextjs";
-import { shadcn } from "@clerk/ui/themes";
+import { getToken } from "@/lib/auth-server";
 
 export const metadata: Metadata = {
 	title: "Horus",
@@ -16,11 +15,13 @@ const oxanium = Oxanium({
 	subsets: ["latin"],
 });
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const initialToken = await getToken();
+
 	return (
 		<html
 			lang="en"
@@ -52,16 +53,7 @@ export default function RootLayout({
 					}}
 					enableSystem
 					disableTransitionOnChange>
-					<ClerkProvider
-						appearance={{
-							cssLayerName: "clerk",
-							theme: shadcn,
-							variables: {
-								borderRadius: "var(--radius)",
-							},
-						}}>
-						<ConvexClientProvider>{children}</ConvexClientProvider>
-					</ClerkProvider>
+					<ConvexClientProvider initialToken={initialToken}>{children}</ConvexClientProvider>
 				</ThemeProvider>
 			</body>
 		</html>

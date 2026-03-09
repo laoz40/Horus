@@ -2,6 +2,5 @@ ignoredBuiltDependencies:
   - esbuild
 
 onlyBuiltDependencies:
-  - '@clerk/shared'
   - sharp
   - unrs-resolver

@@ -1,7 +1,7 @@
 import { fetchQuery } from "convex/nextjs";
 import { ConvexError } from "convex/values";
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { getToken } from "@/lib/auth-server";
 
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -9,9 +9,9 @@ import WorkoutForm from "@/features/workout-form/components/WorkoutForm";
 import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 
 export default async function EditWorkoutPage({ params }: { params: Promise<{ id: string }> }) {
-	const [{ id }, { getToken }] = await Promise.all([params, auth()]);
+	const { id } = await params;
 	const workoutId = id as Id<"workouts">;
-	const token = await getToken({ template: "convex" });
+	const token = await getToken();
 
 	if (token === null) {
 		redirect("/sign-in");

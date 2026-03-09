@@ -5,8 +5,8 @@ import { api } from "@/convex/_generated/api";
 import HistoryList from "./HistoryList";
 import HistoryPagination from "./HistoryPagination";
 import { WorkoutCardSkeletonList } from "./HistoryWorkoutCardSkeleton";
-import { SignUpButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface HistoryFeedProps {
 	WORKOUTS_PER_PAGE: number;
@@ -60,9 +60,9 @@ function SignInPrompt() {
 	return (
 		<div className="flex flex-col items-center justify-center gap-3 rounded-md border border-border/80 bg-card/50 px-5 py-6 text-center">
 			<p className="text-sm text-muted-foreground">You need an account to save workouts.</p>
-			<SignUpButton>
-				<Button>Sign in</Button>
-			</SignUpButton>
+			<Button asChild>
+				<Link href="/sign-in">Sign in</Link>
+			</Button>
 		</div>
 	);
 }

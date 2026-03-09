@@ -14,10 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { currentDay } from "@/lib/date";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import Link from "next/link";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { Authenticated, Unauthenticated } from "convex/react";
-import { SignInButton } from "@clerk/nextjs";
 
 interface WorkoutNameDialogProps {
 	children: React.ReactNode;
@@ -68,9 +68,9 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 						<DialogClose asChild>
 							<Button variant="secondary">Close</Button>
 						</DialogClose>
-						<SignInButton>
-							<Button>Sign in</Button>
-						</SignInButton>
+						<Button asChild>
+							<Link href="/sign-in">Sign in</Link>
+						</Button>
 					</Unauthenticated>
 				</DialogFooter>
 			</DialogContent>

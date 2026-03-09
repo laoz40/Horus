@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { showErrorToast } from "@/lib/toastMessages";
-import { SignInButton } from "@clerk/nextjs";
 import { Unauthenticated } from "convex/react";
+import Link from "next/link";
 import { type ReactElement } from "react";
 
 export default function SignUpDialog(): ReactElement {
@@ -34,9 +34,9 @@ export default function SignUpDialog(): ReactElement {
 						</AlertDialogHeader>
 						<AlertDialogFooter>
 							<AlertDialogCancel variant="secondary" onClick={handleClick}>Let me test</AlertDialogCancel>
-							<SignInButton>
-								<Button>Sign in</Button>
-							</SignInButton>
+							<Button asChild>
+								<Link href="/sign-in">Sign in</Link>
+							</Button>
 						</AlertDialogFooter>
 					</AlertDialogContent>
 				</AlertDialog>
