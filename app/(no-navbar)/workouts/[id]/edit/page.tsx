@@ -14,7 +14,7 @@ export default async function EditWorkoutPage({ params }: { params: Promise<{ id
 	const token = await getToken();
 
 	if (token === null) {
-		redirect("/sign-in");
+		redirect("/login");
 	}
 
 	try {
@@ -56,7 +56,7 @@ export default async function EditWorkoutPage({ params }: { params: Promise<{ id
 		}
 
 		if (error instanceof ConvexError && error.data?.code === "UNAUTHORIZED") {
-			redirect("/sign-in");
+			redirect("/login");
 		}
 
 		console.error("Unexpected error loading workout for edit page:", error);

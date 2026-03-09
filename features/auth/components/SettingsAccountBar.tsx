@@ -59,7 +59,7 @@ function LoadingSkeleton() {
 
 function SignInPrompt() {
 	return (
-		<Link href="/sign-in">
+		<Link href="/login">
 			<div className="cursor-pointer flex flex-row justify-between items-center">
 				<div className="flex flex-row items-center justify-start gap-2 py-2 px-1">
 					<div className="bg-muted rounded-full p-2">

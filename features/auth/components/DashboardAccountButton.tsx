@@ -35,7 +35,7 @@ function LoadingSkeleton(): ReactElement {
 function SignInPrompt() {
 	return (
 		<Button asChild>
-			<Link href="/sign-in">Sign in</Link>
+			<Link href="/login">Sign in</Link>
 		</Button>
 	);
 }

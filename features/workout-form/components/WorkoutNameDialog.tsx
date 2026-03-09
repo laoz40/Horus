@@ -69,7 +69,7 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 							<Button variant="secondary">Close</Button>
 						</DialogClose>
 						<Button asChild>
-							<Link href="/sign-in">Sign in</Link>
+							<Link href="/login">Sign in</Link>
 						</Button>
 					</Unauthenticated>
 				</DialogFooter>

@@ -5,6 +5,7 @@ import { Oxanium } from "next/font/google";
 import DeferredToaster from "@/components/DeferredToaster";
 import ConvexClientProvider from "./ConvexClientProvider";
 import { getToken } from "@/lib/auth-server";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
 	title: "Horus",
@@ -31,7 +32,7 @@ export default async function RootLayout({
 				<DeferredToaster />
 				{/* Cosmic Nebula */}
 				<div
-					className="absolute inset-0 z-0 hidden glass:block"
+					className="absolute inset-0 -z-100 hidden glass:block"
 					style={{
 						background: `
           radial-gradient(ellipse 70% 55% at 20% 50%, rgba(50, 20, 147, 0.15), transparent 60%),
@@ -53,7 +54,9 @@ export default async function RootLayout({
 					}}
 					enableSystem
 					disableTransitionOnChange>
-					<ConvexClientProvider initialToken={initialToken}>{children}</ConvexClientProvider>
+					<ConvexClientProvider initialToken={initialToken}>
+						<Providers>{children}</Providers>
+					</ConvexClientProvider>
 				</ThemeProvider>
 			</body>
 		</html>

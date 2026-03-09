@@ -53,7 +53,7 @@ export const useWorkoutSubmit = ({
 
 			if (error instanceof ConvexError && error.data?.code === "UNAUTHORIZED") {
 				showErrorToast("You must be signed in to save workouts.");
-				router.push("/sign-in");
+				router.push("/login");
 				return;
 			}
 
