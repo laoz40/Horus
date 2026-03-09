@@ -17,7 +17,7 @@ export default function DashboardStartSection() {
 					asChild
 					size="lg"
 					className="flex-1">
-					<Link href="/workouts/new">Create Workout</Link>
+					<Link href="/workouts/new">Start Workout</Link>
 				</Button>
 
 				<Button
