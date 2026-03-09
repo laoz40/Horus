@@ -20,8 +20,8 @@ export default function SettingsAccountBar() {
 	}
 
 	return (
-		<div className="relative flex flex-row w-full items-center justify-between">
-			<div className="flex flex-row items-center gap-3 px-1 py-2">
+		<div className="relative flex flex-row w-full items-center justify-between px-2 py-2">
+			<div className="flex flex-row items-center gap-3">
 				<div className="bg-muted rounded-full p-2">
 					<UserIcon className="size-8" />
 				</div>
@@ -31,7 +31,7 @@ export default function SettingsAccountBar() {
 				</div>
 			</div>
 			<Button
-				variant="outline"
+				variant="secondary"
 				size="sm"
 				onClick={async () => {
 					await authClient.signOut();
@@ -47,9 +47,12 @@ function LoadingSkeleton() {
 		<div className="flex flex-row items-center justify-between px-2 py-2">
 			<div className="flex flex-row items-center gap-3">
 				<div className="size-12 rounded-full border-2 border-muted bg-muted animate-pulse" />
-				<div className="h-4 w-28 rounded bg-muted animate-pulse" />
+				<div className="flex flex-col gap-2">
+					<div className="h-4 w-28 rounded bg-muted animate-pulse" />
+					<div className="h-3 w-28 rounded bg-muted animate-pulse" />
+				</div>
 			</div>
-			<div className="h-4 w-4 rounded bg-muted animate-pulse" />
+			<div className="h-8 w-18 rounded bg-muted animate-pulse" />
 		</div>
 	);
 }

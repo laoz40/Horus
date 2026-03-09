@@ -29,7 +29,7 @@ export default function DashboardAccountButton(): ReactElement {
 }
 
 function LoadingSkeleton(): ReactElement {
-	return <div className="size-10 rounded-full border-2 border-muted bg-muted animate-pulse" />;
+	return <div className="h-9 w-20 bg-muted animate-pulse" />;
 }
 
 function SignInPrompt() {
