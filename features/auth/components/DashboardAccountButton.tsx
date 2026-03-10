@@ -1,15 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
+import { UserButton } from "@daveyplate/better-auth-ui";
 import { useConvexAuth } from "convex/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { type ReactElement } from "react";
 
 export default function DashboardAccountButton(): ReactElement {
 	const { isAuthenticated, isLoading } = useConvexAuth();
-	const router = useRouter();
 
 	if (isLoading) {
 		return <LoadingSkeleton />;
@@ -20,19 +18,29 @@ export default function DashboardAccountButton(): ReactElement {
 	}
 
 	return (
-		<Button
-			variant="outline"
-			onClick={async () => {
-				await authClient.signOut();
-				router.refresh();
-			}}>
-			Sign out
-		</Button>
+		<UserButton
+			size="icon"
+			className="size-10"
+			classNames={{
+				trigger: {
+					avatar: {
+						fallback: "bg-primary text-primary-foreground",
+					},
+				},
+				content: {
+					user: {
+						avatar: {
+							fallback: "bg-primary text-primary-foreground",
+						},
+					},
+				},
+			}}
+		/>
 	);
 }
 
 function LoadingSkeleton(): ReactElement {
-	return <div className="h-9 w-20 bg-muted animate-pulse" />;
+	return <div className="size-10 rounded-full bg-muted animate-pulse" />;
 }
 
 function SignInPrompt() {
