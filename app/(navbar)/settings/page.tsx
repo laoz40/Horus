@@ -1,9 +1,13 @@
 import { ModeToggle } from "@/components/ModeToggle";
 import SectionCard from "@/components/SectionCard";
+import { api } from "@/convex/_generated/api";
 import SettingsAccountBar from "@/features/auth/components/SettingsAccountBar";
 import DeleteAllWorkoutsSection from "@/features/settings/components/DeleteAllWorkoutsSection";
+import { fetchAuthQuery } from "@/lib/auth-server";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+	const user = await fetchAuthQuery(api.auth.getCurrentUser);
+
 	return (
 		<>
 			<div className="p-4">
@@ -14,7 +18,7 @@ export default function SettingsPage() {
 				<SectionCard
 					header=""
 					className="p-0">
-					<SettingsAccountBar />
+					<SettingsAccountBar initialUser={user} />
 				</SectionCard>
 
 				<SectionCard header="Appearance">
@@ -24,7 +28,7 @@ export default function SettingsPage() {
 					</div>
 				</SectionCard>
 
-				<DeleteAllWorkoutsSection />
+				{user ? <DeleteAllWorkoutsSection /> : null}
 			</div>
 		</>
 	);

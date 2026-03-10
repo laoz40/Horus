@@ -22,7 +22,7 @@ export default async function DashboardPage() {
 					<h2 className="text-sm font-normal text-muted-foreground">{headingText}</h2>
 					<h1 className="text-2xl leading-tight font-semibold tracking-tight">{displayName}</h1>
 				</div>
-				<DashboardAccountButton />
+				<DashboardAccountButton initialUser={user} />
 			</div>
 
 			<DashboardStartSection />

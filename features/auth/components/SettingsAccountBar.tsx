@@ -1,23 +1,27 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { api } from "@/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { UserAvatar } from "@daveyplate/better-auth-ui";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-export default function SettingsAccountBar() {
-	const { isAuthenticated, isLoading } = useConvexAuth();
-	const user = useQuery(api.auth.getCurrentUser);
+interface SettingsAccountBarUser {
+	name?: string | null;
+	email?: string | null;
+	image?: string | null;
+}
+
+interface SettingsAccountBarProps {
+	initialUser: SettingsAccountBarUser | null;
+}
+
+export default function SettingsAccountBar({ initialUser }: SettingsAccountBarProps) {
+	const user = initialUser;
 	const router = useRouter();
 
-	if (isLoading) {
-		return <LoadingSkeleton />;
-	}
-
-	if (!isAuthenticated) {
+	if (!user) {
 		return <SignInPrompt />;
 	}
 
@@ -44,21 +48,6 @@ export default function SettingsAccountBar() {
 				}}>
 				Sign out
 			</Button>
-		</div>
-	);
-}
-
-function LoadingSkeleton() {
-	return (
-		<div className="flex flex-row items-center justify-between px-2 py-2">
-			<div className="flex flex-row items-center gap-3">
-				<div className="size-12 rounded-full border-2 border-muted bg-muted animate-pulse" />
-				<div className="flex flex-col gap-2">
-					<div className="h-4 w-28 rounded bg-muted animate-pulse" />
-					<div className="h-3 w-28 rounded bg-muted animate-pulse" />
-				</div>
-			</div>
-			<div className="h-8 w-18 rounded bg-muted animate-pulse" />
 		</div>
 	);
 }

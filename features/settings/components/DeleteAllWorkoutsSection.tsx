@@ -5,7 +5,7 @@ import SectionCard from "@/components/SectionCard";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { showErrorToast, showWorkoutsDeletedToast } from "@/lib/toastMessages";
-import { Authenticated, useMutation } from "convex/react";
+import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 
 export default function DeleteAllWorkoutsSection() {
@@ -36,25 +36,21 @@ export default function DeleteAllWorkoutsSection() {
 	};
 
 	return (
-		<>
-			<Authenticated>
-				<SectionCard header="Data">
-					<div className="flex flex-row items-center justify-between">
-						<span>Workouts</span>
-						<AlertDialogDestructive
-							title="Delete all workouts?"
-							description="This will permanently delete all workouts."
-							handleDelete={handleDelete}>
-							<Button
-								variant="destructive"
-								size="sm"
-								className="text-sm">
-								Delete all workouts
-							</Button>
-						</AlertDialogDestructive>
-					</div>
-				</SectionCard>
-			</Authenticated>
-		</>
+		<SectionCard header="Data">
+			<div className="flex flex-row items-center justify-between">
+				<span>Workouts</span>
+				<AlertDialogDestructive
+					title="Delete all workouts?"
+					description="This will permanently delete all workouts."
+					handleDelete={handleDelete}>
+					<Button
+						variant="destructive"
+						size="sm"
+						className="text-sm">
+						Delete all workouts
+					</Button>
+				</AlertDialogDestructive>
+			</div>
+		</SectionCard>
 	);
 }

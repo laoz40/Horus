@@ -2,18 +2,21 @@
 
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@daveyplate/better-auth-ui";
-import { useConvexAuth } from "convex/react";
 import Link from "next/link";
 import { type ReactElement } from "react";
 
-export default function DashboardAccountButton(): ReactElement {
-	const { isAuthenticated, isLoading } = useConvexAuth();
+interface DashboardAccountButtonUser {
+	name?: string | null;
+	email?: string | null;
+	image?: string | null;
+}
 
-	if (isLoading) {
-		return <LoadingSkeleton />;
-	}
+interface DashboardAccountButtonProps {
+	initialUser: DashboardAccountButtonUser | null;
+}
 
-	if (!isAuthenticated) {
+export default function DashboardAccountButton({ initialUser }: DashboardAccountButtonProps): ReactElement {
+	if (!initialUser) {
 		return <SignInPrompt />;
 	}
 
@@ -39,13 +42,9 @@ export default function DashboardAccountButton(): ReactElement {
 	);
 }
 
-function LoadingSkeleton(): ReactElement {
-	return <div className="size-10 rounded-full bg-muted animate-pulse" />;
-}
-
 function SignInPrompt() {
 	return (
-		<Button asChild>
+		<Button size="sm" asChild>
 			<Link href="/login">Sign in</Link>
 		</Button>
 	);
