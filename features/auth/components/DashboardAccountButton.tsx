@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { useConvexAuth } from "convex/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type ReactElement } from "react";
 
 export default function DashboardAccountButton(): ReactElement {
 	const { isAuthenticated, isLoading } = useConvexAuth();
+	const router = useRouter();
 
 	if (isLoading) {
 		return <LoadingSkeleton />;
@@ -22,6 +24,7 @@ export default function DashboardAccountButton(): ReactElement {
 			variant="outline"
 			onClick={async () => {
 				await authClient.signOut();
+				router.refresh();
 			}}>
 			Sign out
 		</Button>

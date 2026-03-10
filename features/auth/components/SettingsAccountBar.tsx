@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { useConvexAuth, useQuery } from "convex/react";
-import { ChevronDown, ChevronRight, UserIcon } from "lucide-react";
+import { ChevronRight, UserIcon } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function SettingsAccountBar() {
 	const { isAuthenticated, isLoading } = useConvexAuth();
 	const user = useQuery(api.auth.getCurrentUser);
+	const router = useRouter();
 
 	if (isLoading) {
 		return <LoadingSkeleton />;
@@ -35,6 +37,8 @@ export default function SettingsAccountBar() {
 				size="sm"
 				onClick={async () => {
 					await authClient.signOut();
+					router.refresh();
+					router.replace("/");
 				}}>
 				Sign out
 			</Button>
