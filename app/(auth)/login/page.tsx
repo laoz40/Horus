@@ -4,7 +4,7 @@ export default function SignInPage() {
 	return (
 		<div className="flex min-h-dvh items-center justify-center px-4">
 			<AuthView
-				view="SIGN_IN"
+				view="EMAIL_OTP"
 				redirectTo="/welcome"
 				cardFooter="Thanks for using my app!"
 				cardHeader="Log in to Horus"
