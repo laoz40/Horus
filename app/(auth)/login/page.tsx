@@ -1,16 +1,17 @@
 import { AuthView } from "@daveyplate/better-auth-ui";
 
-export default function SignUpPage() {
+export default function SignInPage() {
 	return (
 		<div className="flex min-h-dvh items-center justify-center px-4">
 			<AuthView
-				path="/register"
-				view="SIGN_UP"
-				cardHeader="Create Horus account"
+				view="SIGN_IN"
+				redirectTo="/welcome"
+				cardFooter="Thanks for using my app!"
+				cardHeader="Log in to Horus"
 				classNames={{
 					base: "rounded-none bg-transparent border-none shadow-none",
 					header: "text-center text-xl font-semibold",
-					title: "text-xl font-semibold",
+					footer: "text-center text-xs text-muted-foreground"
 				}}
 			/>
 		</div>

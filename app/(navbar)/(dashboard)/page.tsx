@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import DashboardAccountButton from "@/features/auth/components/DashboardAccountButton";
 import DashboardPresetsSection from "@/features/dashboard/components/DashboardPresetsSection";
 import DashboardStartSection from "@/features/dashboard/components/DashboardStartSection";
@@ -6,8 +7,12 @@ import { api } from "@/convex/_generated/api";
 
 export default async function DashboardPage() {
 	const user = await fetchAuthQuery(api.auth.getCurrentUser);
+	if (user && !user.name) {
+		redirect("/welcome");
+	}
+
 	const isSignedIn = user !== null;
-	const displayName = isSignedIn ? user.name ?? "Friend" : "Legend";
+	const displayName = isSignedIn ? user.name ?? "Legend" : "Legend";
 	const headingText = isSignedIn ? "Welcome back," : "Welcome,";
 
 	return (
