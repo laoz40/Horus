@@ -81,9 +81,7 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 							to: email,
 							subject: "Your Horus sign-in code",
 							text: `Your Horus sign-in code:\n\n${otp}\n\nThis code expires in ${Math.floor(expiresIn / 60)} minutes.\n\nThank you for using my app! Would love to hear any feedback, ideas or questions. You can reach me at ${personalEmail}. Enjoy your workout!`,
-							html: `
-								<p>Your Horus sign-in code:</p>
-
+							html: `<p>Your Horus sign-in code:</p>
 								<p style="
 									font-size:32px;
 									font-weight:700;
@@ -92,9 +90,7 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 								">
 									${otp}
 								</p>
-
 								<p>This code expires in ${Math.floor(expiresIn / 60)} minutes.</p>
-
 								<p>Thank you for using my app! Would love to hear any feedback, ideas or questions. You can reach me at <a href="mailto:${personalEmail}">${personalEmail}</a>. Enjoy your workout!</p>`,
 						},
 						{
