@@ -6,6 +6,7 @@ import { query } from "./_generated/server";
 import { betterAuth } from "better-auth/minimal";
 import { emailOTP } from "better-auth/plugins";
 import { Resend } from "resend";
+import { Redis } from "@upstash/redis";
 import authConfig from "./auth.config";
 import { shortHash } from "../lib/shortHash";
 
@@ -13,6 +14,10 @@ const siteUrl = process.env.SITE_URL!;
 const resend = new Resend(process.env.RESEND_API_KEY);
 const resendFromEmail = process.env.RESEND_FROM_EMAIL!;
 const personalEmail = process.env.PERSONAL_EMAIL!;
+const redis = Redis.fromEnv();
+
+const keyPrefix = "better-auth:";
+const prefixKey = (key: string) => `${keyPrefix}${key}`;
 
 const expiresIn = 300;
 
@@ -21,10 +26,37 @@ const expiresIn = 300;
 export const authComponent = createClient<DataModel>(components.betterAuth);
 
 export const createAuth = (ctx: GenericCtx<DataModel>) => {
+	const secondaryStorage = {
+		get: async (key: string) => {
+			return await redis.get<string>(prefixKey(key));
+		},
+		set: async (key: string, value: string, ttl?: number) => {
+			const prefixedKey = prefixKey(key);
+			if (ttl !== undefined && ttl > 0) {
+				await redis.set(prefixedKey, value, { ex: ttl });
+				return;
+			}
+
+			await redis.set(prefixedKey, value);
+		},
+		delete: async (key: string) => {
+			await redis.del(prefixKey(key));
+		},
+	};
+
 	return betterAuth({
 		baseURL: siteUrl,
 		database: authComponent.adapter(ctx),
-		// Configure simple, non-verified email/password to get started
+		secondaryStorage,
+		session: {
+			storeSessionInDatabase: true,
+		},
+		rateLimit: {
+			enabled: true,
+			storage: "secondary-storage",
+			window: 60,
+			max: 100,
+		},
 		emailAndPassword: {
 			enabled: false,
 		},
