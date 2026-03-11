@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
 import { UserAvatar } from "@daveyplate/better-auth-ui";
-import { Loader2, LogOut, Settings } from "lucide-react";
+import { Loader2, LogOut, Settings, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -26,7 +26,9 @@ interface DashboardAccountButtonProps {
 	initialUser: DashboardAccountButtonUser | null;
 }
 
-export default function DashboardAccountButton({ initialUser }: DashboardAccountButtonProps): ReactElement {
+export default function DashboardAccountButton({
+	initialUser,
+}: DashboardAccountButtonProps): ReactElement {
 	const router = useRouter();
 	const [isSigningOut, setIsSigningOut] = useState<boolean>(false);
 
@@ -67,24 +69,41 @@ export default function DashboardAccountButton({ initialUser }: DashboardAccount
 				align="end"
 				className="w-42">
 				<DropdownMenuLabel className="pointer-events-none select-none">
-					<div className="truncate text-sm font-medium">{initialUser.name ?? "Legend"}</div>
-					<div className="truncate text-xs text-muted-foreground">{initialUser.email ?? "No email"}</div>
+					<div className="truncate text-base font-medium sm:text-sm">
+						{initialUser.name ?? "Legend"}
+					</div>
+					<div className="truncate text-xs text-muted-foreground">
+						{initialUser.email ?? "No email"}
+					</div>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem onSelect={() => router.push("/settings")}>
-					<Settings className="size-4" />
-					Settings
+				<DropdownMenuItem
+					className="min-h-11 text-base sm:min-h-8 sm:text-sm"
+					onSelect={() => router.push("/account")}>
+					<User className="size-5 sm:size-4" />
+					<span className="leading-0">Account</span>
+				</DropdownMenuItem>
+				<DropdownMenuItem
+					className="min-h-11 text-base sm:min-h-8 sm:text-sm"
+					onSelect={() => router.push("/settings")}>
+					<Settings className="size-5 sm:size-4" />
+					<span className="leading-0">Settings</span>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem
+					className="min-h-11 text-base sm:min-h-8 sm:text-sm"
 					variant="destructive"
 					disabled={isSigningOut}
 					onSelect={(event) => {
 						event.preventDefault();
 						void handleSignOut();
 					}}>
-					{isSigningOut ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4" />}
-					{isSigningOut ? "Signing out..." : "Sign out"}
+					{isSigningOut ? (
+						<Loader2 className="size-5 animate-spin sm:size-4" />
+					) : (
+						<LogOut className="size-5 sm:size-4" />
+					)}
+					<span className="leading-0">{isSigningOut ? "Signing out..." : "Sign out"}</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
@@ -93,7 +112,9 @@ export default function DashboardAccountButton({ initialUser }: DashboardAccount
 
 function SignInPrompt() {
 	return (
-		<Button size="sm" asChild>
+		<Button
+			size="sm"
+			asChild>
 			<Link href="/login">Sign in</Link>
 		</Button>
 	);
