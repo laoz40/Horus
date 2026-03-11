@@ -50,6 +50,8 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 		secondaryStorage,
 		session: {
 			storeSessionInDatabase: true,
+			expiresIn: 60 * 60 * 24 * 14,
+			updateAge: 60 * 60 * 24 * 7,
 		},
 		rateLimit: {
 			enabled: true,
