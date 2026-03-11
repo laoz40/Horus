@@ -22,13 +22,11 @@ export function Providers({ children }: { children: ReactNode }) {
 			Link={Link}
 			signUp={true}
 			emailOTP={true}
-			magicLink={true}
 			credentials={false}
 			basePath="/"
 			viewPaths={{
 				SIGN_IN: "login",
 				EMAIL_OTP: "login",
-				MAGIC_LINK: "login",
 			}}>
 			{children}
 		</AuthUIProvider>
