@@ -4,4 +4,8 @@ import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
 	plugins: [convexClient(), emailOTPClient()],
+	sessionOptions: {
+		refetchOnWindowFocus: false,
+		refetchInterval: 0,
+	},
 });
