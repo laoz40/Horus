@@ -1,5 +1,9 @@
 "use client";
 
+import { useCallback, useEffect, useState, type ReactElement } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+
 import { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { Workout, WorkoutSchema } from "@/features/workout-form/lib/validateWorkout";
 import {
@@ -7,16 +11,14 @@ import {
 	createDefaultWorkoutValues,
 } from "@/features/workout-form/lib/WorkoutFormDefaults";
 import { useWorkoutTimer } from "@/features/workout-form/hooks/useWorkoutTimer";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useEffect, type ReactElement } from "react";
-import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { showErrorToast, showExerciseDeletedToast } from "@/lib/toastMessages";
+
 import ExerciseForm from "./ExerciseForm";
-import WorkoutFormTopBar from "./WorkoutFormTopBar";
 import WorkoutFormBottomBar from "./WorkoutFormBottomBar";
 import { useExerciseNavigation } from "@/features/workout-form/hooks/useExerciseNavigation";
 import { useExerciseSelection } from "@/features/workout-form/hooks/useExerciseSelection";
 import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit";
+import WorkoutFormTopBar from "./WorkoutFormTopBar";
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
@@ -37,13 +39,20 @@ export default function WorkoutForm({
 	});
 
 	const {
-		control,
 		handleSubmit,
 		formState: { isSubmitting },
 		reset,
 	} = methods;
 
-	const { fields: exercises, append, remove } = useFieldArray({ name: "exercises", control });
+	const {
+		fields: exercises,
+		append,
+		remove,
+	} = useFieldArray({
+		name: "exercises",
+		control: methods.control,
+	});
+	const [isEditingSelectedExercise, setIsEditingSelectedExercise] = useState<boolean>(false);
 
 	useEffect(() => {
 		if (!initialData) return;
@@ -75,29 +84,43 @@ export default function WorkoutForm({
 		if (exercises.length === 0) handleAddExercise();
 	}, [exercises.length, handleAddExercise]);
 
-	const handleDeleteExercise = useCallback((exerciseIndex: number) => {
-		remove(exerciseIndex);
-		showExerciseDeletedToast();
-	}, [remove]);
+	const handleDeleteExercise = useCallback(
+		(exerciseIndex: number) => {
+			remove(exerciseIndex);
+			setIsEditingSelectedExercise(false);
+			showExerciseDeletedToast();
+		},
+		[remove],
+	);
 
 	const { submitWorkout } = useWorkoutSubmit({ durationSeconds, workoutId });
 
 	const exerciseIds = exercises.map((exercise) => exercise.id);
-	const { selectedExerciseId, setSelectedExerciseId, selectedExerciseIndex } =
-		useExerciseSelection({ exerciseIds });
-	const selectedExerciseIndexForWatch = selectedExerciseIndex >= 0 ? selectedExerciseIndex : 0;
+	const { selectedExerciseId, setSelectedExerciseId, selectedExerciseIndex } = useExerciseSelection(
+		{ exerciseIds },
+	);
 
-	const selectedExerciseName = useWatch({
-		control,
-		name: `exercises.${selectedExerciseIndexForWatch}.global.name` as const,
-	}) as string | undefined;
+	useEffect(() => {
+		setIsEditingSelectedExercise(false);
+	}, [selectedExerciseId]);
+
+	const handleToggleEdit = useCallback(() => {
+		if (!selectedExerciseId) return;
+
+		setIsEditingSelectedExercise(
+			(currentIsEditingSelectedExercise) => !currentIsEditingSelectedExercise,
+		);
+	}, [selectedExerciseId]);
+
+	const handleDeleteSelectedExercise = useCallback(() => {
+		if (selectedExerciseIndex < 0) return;
+		handleDeleteExercise(selectedExerciseIndex);
+	}, [handleDeleteExercise, selectedExerciseIndex]);
 
 	const { exerciseListRef, registerExerciseRef, setScrollTargetId } = useExerciseNavigation({
 		exerciseIds,
 		setSelectedExerciseId,
 	});
-
-	const showBottomActions = (selectedExerciseName?.trim().length ?? 0) > 0 || exercises.length > 1;
 
 	return (
 		<div className="flex flex-col h-dvh">
@@ -124,21 +147,24 @@ export default function WorkoutForm({
 									registerExerciseRef(exercise.id, exerciseFormElement);
 								}}
 								className="snap-start min-h-full h-full"
-								onDeleteExercise={handleDeleteExercise}
+								isEditing={isEditingSelectedExercise && selectedExerciseId === exercise.id}
 							/>
 						))}
 					</section>
 				</form>
 
 				<WorkoutFormBottomBar
-					show={showBottomActions}
+					show={exercises.length > 0}
 					exercises={exercises}
 					selectedExerciseId={selectedExerciseId}
+					isEditingSelectedExercise={isEditingSelectedExercise}
 					onSelectExercise={(value) => {
 						setSelectedExerciseId(value);
 						setScrollTargetId(value);
 					}}
 					onAddExercise={handleAddExercise}
+					onDeleteExercise={handleDeleteSelectedExercise}
+					onToggleEdit={handleToggleEdit}
 				/>
 			</FormProvider>
 		</div>

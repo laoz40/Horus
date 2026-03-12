@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface UseExerciseSelectionProps {
 	exerciseIds: string[];
@@ -14,8 +14,13 @@ export const useExerciseSelection = ({
 	exerciseIds,
 }: UseExerciseSelectionProps): UseExerciseSelectionReturn => {
 	const [selectedExerciseId, setSelectedExerciseId] = useState<string | undefined>(
-		() => exerciseIds[0] ?? "",
+		() => exerciseIds[0],
 	);
+
+	useEffect(() => {
+		if (selectedExerciseId && exerciseIds.includes(selectedExerciseId)) return;
+		setSelectedExerciseId(exerciseIds[0]);
+	}, [exerciseIds, selectedExerciseId]);
 
 	const selectedExerciseIndex = exerciseIds.findIndex(
 		(exerciseId) => exerciseId === selectedExerciseId,

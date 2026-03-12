@@ -1,24 +1,26 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
-import { forwardRef, memo, useCallback, useEffect, useState } from "react";
-import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
-import { showSetDeletedToast } from "@/lib/toastMessages";
-import ExerciseCollapsibles from "./ExerciseCollapsibles";
-import SetRow from "./SetRow";
+import { HistoryIcon } from "lucide-react";
+import { forwardRef, memo, useCallback, useEffect } from "react";
+
 import { Button } from "@/components/ui/button";
-import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
-import { ExerciseNameInputDropdown } from "./ExerciseNameInputDropdown";
+import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import { showSetDeletedToast } from "@/lib/toastMessages";
+import { cn } from "@/lib/utils";
+import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+
 import { createDefaultSet } from "../lib/WorkoutFormDefaults";
+import ExerciseCollapsibles from "./ExerciseCollapsibles";
+import { ExerciseNameInputDropdown } from "./ExerciseNameInputDropdown";
+import SetRow from "./SetRow";
 
 interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
 	exerciseIndex: number;
-	onDeleteExercise: (exerciseIndex: number) => void;
+	isEditing: boolean;
 }
 
-const ExerciseForm = memo(forwardRef<HTMLDivElement, ExerciseFormProps>(
-	({ className, exerciseIndex, onDeleteExercise }, ref) => {
+const ExerciseForm = memo(
+	forwardRef<HTMLDivElement, ExerciseFormProps>(({ className, exerciseIndex, isEditing }, ref) => {
 		const {
 			control,
 			trigger,
@@ -45,21 +47,19 @@ const ExerciseForm = memo(forwardRef<HTMLDivElement, ExerciseFormProps>(
 		}, [sets.length, handleAddSet]);
 
 		// BUG: when loading a workout to edit, adding new sets after deleting sets loads previous data
-		const handleDeleteSet = useCallback((setIndex: number) => {
-			remove(setIndex);
-			showSetDeletedToast();
-		}, [remove]);
-
-		const handleDeleteExercise = useCallback(() => {
-			onDeleteExercise(exerciseIndex);
-		}, [exerciseIndex, onDeleteExercise]);
+		const handleDeleteSet = useCallback(
+			(setIndex: number) => {
+				remove(setIndex);
+				showSetDeletedToast();
+			},
+			[remove],
+		);
 
 		const exerciseName = useWatch({
 			control,
 			name: `exercises.${exerciseIndex}.global.name` as const,
 		}) as string | undefined;
-
-		const [isEditing, setIsEditing] = useState(false);
+		const hasExerciseName = Boolean(exerciseName?.trim());
 
 		return (
 			<section
@@ -67,7 +67,19 @@ const ExerciseForm = memo(forwardRef<HTMLDivElement, ExerciseFormProps>(
 				className={cn("h-full flex flex-col gap-5 p-4", className)}>
 				{/* Exercise Name */}
 				<div className="flex flex-col gap-2">
-					<ExerciseNameInputDropdown exerciseIndex={exerciseIndex} />
+					<div className="flex items-center gap-2">
+						<div className="flex-1">
+							<ExerciseNameInputDropdown exerciseIndex={exerciseIndex} />
+						</div>
+						<Button
+							variant="outline"
+							size="default"
+							type="button"
+							className="h-11 w-11 shrink-0 px-0 text-muted-foreground"
+							aria-label="Recent exercises">
+							<HistoryIcon className="size-5" />
+						</Button>
+					</div>
 					{errors.exercises?.[exerciseIndex]?.global?.name && (
 						<span className="text-red-500 text-sm">
 							{errors.exercises?.[exerciseIndex]?.global?.name?.message}
@@ -75,42 +87,8 @@ const ExerciseForm = memo(forwardRef<HTMLDivElement, ExerciseFormProps>(
 					)}
 				</div>
 
-				{exerciseName && (
+				{hasExerciseName && (
 					<div className="h-full flex flex-col gap-2">
-						{/* Recent + Edit Buttons */}
-						<div className="flex flex-row justify-between text-xs">
-							<Button
-								variant="outline"
-								size="xs"
-								type="button"
-								className="text-muted-foreground text-xs">
-								Recent
-							</Button>
-							{isEditing ? (
-								<Button
-									variant="default"
-									size="xs"
-									type="button"
-									className="text-muted-foreground w-12"
-									onClick={() => setIsEditing(!isEditing)}>
-									<div className="flex flex-row items-center justify-center gap-1 text-xs text-primary-foreground">
-										Done
-									</div>
-								</Button>
-							) : (
-								<Button
-									variant="outline"
-									size="xs"
-									type="button"
-									className="text-muted-foreground w-12"
-									onClick={() => setIsEditing(!isEditing)}>
-									<div className="flex flex-row items-center justify-center gap-1 text-xs">
-										Edit
-									</div>
-								</Button>
-							)}
-						</div>
-
 						{/* Set Rows */}
 						<div className="flex flex-col overflow-y-auto no-scrollbar grow gap-3">
 							<div className="flex flex-col gap-3 pt-0.5">
@@ -138,37 +116,14 @@ const ExerciseForm = memo(forwardRef<HTMLDivElement, ExerciseFormProps>(
 							)}
 						</div>
 
-						{/* Add Set Button */}
-						{isEditing ? (
-							<AlertDialogDestructive
-								handleDelete={handleDeleteExercise}
-								title="Delete exercise?"
-								description="This will permanently delete the exercise.">
-								<Button
-									variant="destructive"
-									className="w-full"
-									type="button">
-									Delete Exercise
-								</Button>
-							</AlertDialogDestructive>
-						) : (
-							<Button
-								variant="secondary"
-								className="w-full"
-								type="button"
-								onClick={handleAddSet}>
-								Add Set
-							</Button>
-						)}
-
 						{/* Difficulty and Notes */}
 						<ExerciseCollapsibles exerciseIndex={exerciseIndex} />
 					</div>
 				)}
 			</section>
 		);
-	},
-));
+	}),
+);
 
 ExerciseForm.displayName = "ExerciseForm";
 

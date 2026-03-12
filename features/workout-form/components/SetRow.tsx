@@ -62,13 +62,13 @@ function SetRow({
 						{...register(repsFieldName, { valueAsNumber: true })}
 					/>
 					{isEditing ? (
-						<div className="h-6 w-6 ml-4 flex items-center justify-center text-destructive">
+						<div className="ml-4 flex items-center justify-center text-destructive">
 							<Button
 								variant="ghost"
-								size="icon"
+								size="icon-sm"
 								type="button"
 								onClick={handleDeleteSet}>
-								<Trash />
+								<Trash className="size-5"/>
 							</Button>
 						</div>
 					) : (
@@ -78,7 +78,7 @@ function SetRow({
 							defaultValue={false}
 							render={({ field }) => (
 								<Checkbox
-									className="h-6 w-6 ml-4"
+									className="size-8 ml-4"
 									aria-label="Color success"
 									checked={field.value}
 									onCheckedChange={(value) => field.onChange(!!value)}
