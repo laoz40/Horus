@@ -20,8 +20,6 @@ export function Providers({ children }: { children: ReactNode }) {
 				router.refresh();
 			}}
 			Link={Link}
-			signUp={true}
-			emailOTP={true}
 			credentials={false}
 			emailOTP
 			avatar
