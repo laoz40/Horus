@@ -39,7 +39,7 @@ export function ModeToggle() {
 					className="flex items-center gap-2"
 					variant="secondary"
 					size="sm">
-					<span className="text-xs">{label}</span>
+					<span className="text-sm">{label}</span>
 					<span className="sr-only">Toggle theme</span>
 				</Button>
 			</DropdownMenuTrigger>
