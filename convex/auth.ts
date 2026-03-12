@@ -10,7 +10,6 @@ import { Redis } from "@upstash/redis";
 import authConfig from "./auth.config";
 import { shortHash } from "../lib/shortHash";
 
-const siteUrl = process.env.SITE_URL!;
 const resend = new Resend(process.env.RESEND_API_KEY);
 const resendFromEmail = process.env.RESEND_FROM_EMAIL!;
 const personalEmail = process.env.PERSONAL_EMAIL!;
@@ -45,7 +44,7 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 	};
 
 	return betterAuth({
-		baseURL: siteUrl,
+		baseURL: process.env.SITE_URL!,
 		database: authComponent.adapter(ctx),
 		secondaryStorage,
 		session: {
@@ -62,10 +61,24 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 		emailAndPassword: {
 			enabled: false,
 		},
+		socialProviders: {
+			google: {
+				clientId: process.env.GOOGLE_CLIENT_ID as string,
+				clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+			},
+			facebook: {
+				clientId: process.env.FACEBOOK_CLIENT_ID as string,
+				clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
+			},
+			github: {
+				clientId: process.env.GITHUB_CLIENT_ID as string,
+				clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+			},
+		},
 		user: {
 			deleteUser: {
 				enabled: true,
-			}
+			},
 		},
 		// The Convex plugin is required for Convex compatibility
 		plugins: [

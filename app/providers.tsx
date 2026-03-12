@@ -36,9 +36,9 @@ export function Providers({ children }: { children: ReactNode }) {
 				basePath: "/account",
 				fields: ["image", "name", "weight"],
 			}}
-			// social={{
-			// 	providers: ["google", "facebook", "apple", "github"],
-			// }}
+			social={{
+				providers: ["google", "facebook", "github"],
+			}}
 			basePath="/"
 			viewPaths={{
 				SIGN_IN: "login",
