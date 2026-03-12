@@ -79,7 +79,7 @@ export default function DashboardAccountButton({
 				<DropdownMenuSeparator />
 				<DropdownMenuItem
 					className="min-h-11 text-base sm:min-h-8 sm:text-sm"
-					onSelect={() => router.push("/account")}>
+					onSelect={() => router.push("/settings/account")}>
 					<User className="size-5 sm:size-4" />
 					<span className="leading-0">Account</span>
 				</DropdownMenuItem>

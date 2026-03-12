@@ -33,7 +33,7 @@ export function Providers({ children }: { children: ReactNode }) {
 				},
 			}}
 			account={{
-				basePath: "/account",
+				basePath: "/settings",
 				fields: ["image", "name", "weight"],
 			}}
 			social={{

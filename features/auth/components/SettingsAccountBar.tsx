@@ -22,7 +22,7 @@ export default function SettingsAccountBar({ initialUser }: SettingsAccountBarPr
 	}
 
 	return (
-		<Link href="/account">
+		<Link href="/settings/account">
 			<div className="relative flex w-full flex-row items-center justify-between px-2 py-2">
 				<div className="flex flex-row items-center gap-2">
 					<UserAvatar
