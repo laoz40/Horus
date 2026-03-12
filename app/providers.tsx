@@ -23,6 +23,24 @@ export function Providers({ children }: { children: ReactNode }) {
 			signUp={true}
 			emailOTP={true}
 			credentials={false}
+			emailOTP
+			avatar
+			additionalFields={{
+				weight: {
+					label: "Weight",
+					placeholder: "This doesn't do anything yet",
+					description: "Please enter your weight",
+					required: false,
+					type: "number",
+				},
+			}}
+			account={{
+				basePath: "/account",
+				fields: ["image", "name", "weight"],
+			}}
+			// social={{
+			// 	providers: ["google", "facebook", "apple", "github"],
+			// }}
 			basePath="/"
 			viewPaths={{
 				SIGN_IN: "login",

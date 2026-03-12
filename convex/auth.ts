@@ -62,6 +62,11 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 		emailAndPassword: {
 			enabled: false,
 		},
+		user: {
+			deleteUser: {
+				enabled: true,
+			}
+		},
 		// The Convex plugin is required for Convex compatibility
 		plugins: [
 			convex({ authConfig }),
