@@ -1,11 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
 import { UserAvatar } from "@daveyplate/better-auth-ui";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 interface SettingsAccountBarUser {
 	name?: string | null;
@@ -19,36 +16,33 @@ interface SettingsAccountBarProps {
 
 export default function SettingsAccountBar({ initialUser }: SettingsAccountBarProps) {
 	const user = initialUser;
-	const router = useRouter();
 
 	if (!user) {
 		return <SignInPrompt />;
 	}
 
 	return (
-		<div className="relative flex flex-row w-full items-center justify-between px-2 py-2">
-			<div className="flex flex-row items-center gap-2">
-				<UserAvatar
-					user={user ?? null}
-					className="size-10"
-					classNames={{ fallback: "bg-primary text-primary-foreground" }}
-				/>
-				<div className="flex flex-col">
-					<span className="text-base font-semibold leading-tight">{user?.name ?? "Legend"}</span>
-					<span className="text-sm text-muted-foreground">{user?.email ?? "Signed in"}</span>
+		<Link href="/account">
+			<div className="relative flex w-full flex-row items-center justify-between px-2 py-2">
+				<div className="flex flex-row items-center gap-2">
+					<UserAvatar
+						user={user ?? null}
+						className="size-10"
+						classNames={{ fallback: "bg-primary text-primary-foreground" }}
+					/>
+					<div className="flex flex-col">
+						<span className="text-base font-semibold leading-tight">
+							{user?.name ?? "Legend"}
+						</span>
+						<span className="text-sm text-muted-foreground">{user?.email ?? "Signed in"}</span>
+					</div>
+				</div>
+				<div className="flex flex-row items-center gap-1">
+					<span>Account</span>
+					<ChevronRight className="mr-2 size-6" />
 				</div>
 			</div>
-			<Button
-				variant="secondary"
-				size="sm"
-				onClick={async () => {
-					await authClient.signOut();
-					router.refresh();
-					router.replace("/");
-				}}>
-				Sign out
-			</Button>
-		</div>
+		</Link>
 	);
 }
 

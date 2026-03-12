@@ -2,6 +2,7 @@ import { ModeToggle } from "@/components/ModeToggle";
 import SectionCard from "@/components/SectionCard";
 import { api } from "@/convex/_generated/api";
 import SettingsAccountBar from "@/features/auth/components/SettingsAccountBar";
+import SignOutButton from "@/features/auth/components/SignOutButton";
 import DeleteAllWorkoutsSection from "@/features/settings/components/DeleteAllWorkoutsSection";
 import { fetchAuthQuery } from "@/lib/auth-server";
 
@@ -29,6 +30,8 @@ export default async function SettingsPage() {
 				</SectionCard>
 
 				{user ? <DeleteAllWorkoutsSection /> : null}
+
+				<SignOutButton className="mx-4"/>
 			</div>
 		</>
 	);

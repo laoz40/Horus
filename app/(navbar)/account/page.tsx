@@ -1,3 +1,4 @@
+import SignOutButton from "@/features/auth/components/SignOutButton";
 import {
 	AccountSettingsCards,
 	SecuritySettingsCards,
@@ -26,6 +27,16 @@ export default function AccountPage() {
 						},
 					}}
 				/>
+
+				<div className="w-full rounded-none border border-border bg-card p-5">
+					<div className="mb-4 flex flex-col gap-1">
+						<h3 className="text-lg font-semibold md:text-xl">Sign out</h3>
+						<p className="text-sm text-muted-foreground">End this session on this device.</p>
+					</div>
+					<div className="-mx-5 -mb-5 flex flex-col items-start border-t border-border bg-background p-4 md:items-end">
+						<SignOutButton />
+					</div>
+				</div>
 
 				<DeleteAccountCard
 					className="mt-4 rounded-none"
