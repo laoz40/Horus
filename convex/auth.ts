@@ -61,6 +61,12 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 		emailAndPassword: {
 			enabled: false,
 		},
+		account: {
+			accountLinking: {
+				enabled: true,
+				trustedProviders: ["facebook"],
+			},
+		},
 		socialProviders: {
 			google: {
 				clientId: process.env.GOOGLE_CLIENT_ID as string,
