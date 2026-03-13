@@ -9,9 +9,8 @@ import WorkoutForm from "@/features/workout-form/components/WorkoutForm";
 import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 
 export default async function EditWorkoutPage({ params }: { params: Promise<{ id: string }> }) {
-	const { id } = await params;
+	const [{ id }, token] = await Promise.all([params, getToken()]);
 	const workoutId = id as Id<"workouts">;
-	const token = await getToken();
 
 	if (token === null) {
 		redirect("/login");

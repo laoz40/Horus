@@ -1,5 +1,7 @@
 import { convexBetterAuthNextJs } from "@convex-dev/better-auth/nextjs";
 
+import { isConvexUnauthorizedError } from "@/lib/auth-errors";
+
 export const {
 	handler,
 	preloadAuthQuery,
@@ -11,4 +13,9 @@ export const {
 } = convexBetterAuthNextJs({
 	convexUrl: process.env.NEXT_PUBLIC_CONVEX_URL!,
 	convexSiteUrl: process.env.NEXT_PUBLIC_CONVEX_SITE_URL!,
+	jwtCache: {
+		enabled: true,
+		expirationToleranceSeconds: 60,
+		isAuthError: isConvexUnauthorizedError,
+	},
 });

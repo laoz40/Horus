@@ -4,7 +4,6 @@ import { ThemeProvider } from "next-themes";
 import { Oxanium } from "next/font/google";
 import DeferredToaster from "@/components/DeferredToaster";
 import ConvexClientProvider from "./ConvexClientProvider";
-import { getToken } from "@/lib/auth-server";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
@@ -16,13 +15,11 @@ const oxanium = Oxanium({
 	subsets: ["latin"],
 });
 
-export default async function RootLayout({
+export default function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	const initialToken = await getToken();
-
 	return (
 		<html
 			lang="en"
@@ -54,7 +51,7 @@ export default async function RootLayout({
 					}}
 					enableSystem
 					disableTransitionOnChange>
-					<ConvexClientProvider initialToken={initialToken}>
+					<ConvexClientProvider>
 						<Providers>{children}</Providers>
 					</ConvexClientProvider>
 				</ThemeProvider>
