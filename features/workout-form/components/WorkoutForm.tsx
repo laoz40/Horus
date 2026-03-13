@@ -84,15 +84,6 @@ export default function WorkoutForm({
 		if (exercises.length === 0) handleAddExercise();
 	}, [exercises.length, handleAddExercise]);
 
-	const handleDeleteExercise = useCallback(
-		(exerciseIndex: number) => {
-			remove(exerciseIndex);
-			setIsEditingSelectedExercise(false);
-			showExerciseDeletedToast();
-		},
-		[remove],
-	);
-
 	const { submitWorkout } = useWorkoutSubmit({ durationSeconds, workoutId });
 
 	const exerciseIds = exercises.map((exercise) => exercise.id);
@@ -100,9 +91,12 @@ export default function WorkoutForm({
 		{ exerciseIds },
 	);
 
-	useEffect(() => {
-		setIsEditingSelectedExercise(false);
-	}, [selectedExerciseId]);
+	const handleDeleteExercise = useCallback(() => {
+		if (selectedExerciseIndex < 0) return;
+
+		remove(selectedExerciseIndex);
+		showExerciseDeletedToast();
+	}, [remove, selectedExerciseIndex]);
 
 	const handleToggleEdit = useCallback(() => {
 		if (!selectedExerciseId) return;
@@ -111,11 +105,6 @@ export default function WorkoutForm({
 			(currentIsEditingSelectedExercise) => !currentIsEditingSelectedExercise,
 		);
 	}, [selectedExerciseId]);
-
-	const handleDeleteSelectedExercise = useCallback(() => {
-		if (selectedExerciseIndex < 0) return;
-		handleDeleteExercise(selectedExerciseIndex);
-	}, [handleDeleteExercise, selectedExerciseIndex]);
 
 	const { exerciseListRef, registerExerciseRef, setScrollTargetId } = useExerciseNavigation({
 		exerciseIds,
@@ -163,7 +152,7 @@ export default function WorkoutForm({
 						setScrollTargetId(value);
 					}}
 					onAddExercise={handleAddExercise}
-					onDeleteExercise={handleDeleteSelectedExercise}
+					onDeleteExercise={handleDeleteExercise}
 					onToggleEdit={handleToggleEdit}
 				/>
 			</FormProvider>
