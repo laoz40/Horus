@@ -78,16 +78,22 @@ export default function DashboardAccountButton({
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem
+					asChild
 					className="min-h-11 text-base sm:min-h-8 sm:text-sm"
-					onSelect={() => router.push("/settings/account")}>
-					<User className="size-5 sm:size-4" />
-					<span className="leading-0">Account</span>
+				>
+					<Link href="/settings/account">
+						<User className="size-5 sm:size-4" />
+						<span className="leading-0">Account</span>
+					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuItem
+					asChild
 					className="min-h-11 text-base sm:min-h-8 sm:text-sm"
-					onSelect={() => router.push("/settings")}>
-					<Settings className="size-5 sm:size-4" />
-					<span className="leading-0">Settings</span>
+				>
+					<Link href="/settings">
+						<Settings className="size-5 sm:size-4" />
+						<span className="leading-0">Settings</span>
+					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem

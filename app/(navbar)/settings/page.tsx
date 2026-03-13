@@ -1,14 +1,8 @@
 import { ModeToggle } from "@/components/ModeToggle";
-import SectionCard from "@/components/SectionCard";
-import { api } from "@/convex/_generated/api";
-import SettingsAccountBar from "@/features/auth/components/SettingsAccountBar";
-import SignOutButton from "@/features/auth/components/SignOutButton";
-import DeleteAllWorkoutsSection from "@/features/settings/components/DeleteAllWorkoutsSection";
-import { fetchAuthQuery } from "@/lib/auth-server";
+import SettingsAccountSection from "@/features/auth/components/SettingsAccountSection";
+import SettingsDataSection from "@/features/settings/components/SettingsDataSection";
 
-export default async function SettingsPage() {
-	const user = await fetchAuthQuery(api.auth.getCurrentUser);
-
+export default function SettingsPage() {
 	return (
 		<>
 			<div className="p-4">
@@ -16,22 +10,19 @@ export default async function SettingsPage() {
 			</div>
 
 			<div className="flex flex-col gap-3">
-				<SectionCard
-					header=""
-					className="p-0">
-					<SettingsAccountBar initialUser={user} />
-				</SectionCard>
+				<SettingsAccountSection />
 
-				<SectionCard header="Appearance">
-					<div className="flex flex-row items-center justify-between">
-						<span>Theme</span>
-						<ModeToggle />
+				<section className="flex flex-col pr-4 pl-4 mb-3">
+					<h2 className="text-muted-foreground mb-1 text-sm">Appearance</h2>
+					<div className="p-2 border rounded-md bg-card">
+						<div className="flex flex-row items-center justify-between">
+							<span>Theme</span>
+							<ModeToggle />
+						</div>
 					</div>
-				</SectionCard>
+				</section>
 
-				{user ? <DeleteAllWorkoutsSection /> : null}
-
-				<SignOutButton className="mx-4"/>
+				<SettingsDataSection />
 			</div>
 		</>
 	);
