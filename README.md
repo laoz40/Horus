@@ -9,8 +9,8 @@ inefficient and doesn't scale well.
 **[Link](horus-workout.vercel.app)**
 
 <div align="center">
-    <img src="image1.png" style="width:49%;" />
-    <img src="image2.png" style="width:49%;" />
+    <img src="image1.webp" style="width:49%;" />
+    <img src="image2.webp" style="width:49%;" />
 </div>
 
 ## Features
