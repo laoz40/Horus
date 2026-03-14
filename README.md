@@ -2,9 +2,9 @@
 
 > Project WIP
 
-A web app to track my gym workouts. I created my own because I don't enjoy
-existing solutions and my current method of tracking workouts (excel sheet) is
-inefficient and doesn't scale well.
+A web app to track my gym workouts. I created my own because I didn't enjoy
+existing solutions and my previous method of tracking workouts (excel spreadsheet) is
+super inefficient, laggy and doesn't scale well.
 
 **[Link](horus-workout.vercel.app)**
 
