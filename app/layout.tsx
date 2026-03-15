@@ -9,6 +9,12 @@ import { Providers } from "./providers";
 export const metadata: Metadata = {
 	title: "Horus",
 	description: "A web app to track gym workouts and show cool stats.",
+	manifest: "/manifest.webmanifest",
+	appleWebApp: {
+		capable: true,
+		statusBarStyle: "black-translucent",
+		title: "Horus",
+	},
 };
 
 const oxanium = Oxanium({

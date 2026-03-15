@@ -1,0 +1,26 @@
+{
+	"id": "/",
+	"name": "Horus",
+	"short_name": "Horus",
+	"description": "A web app to track gym workouts and show cool stats.",
+	"start_url": "/",
+	"scope": "/",
+	"display": "standalone",
+	"orientation": "portrait",
+	"background_color": "#000000",
+	"theme_color": "#000000",
+	"icons": [
+		{
+			"src": "/apple-icon.png",
+			"sizes": "180x180",
+			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "/icon.png",
+			"sizes": "16x16",
+			"type": "image/png",
+			"purpose": "any"
+		}
+	]
+}
