@@ -64,9 +64,9 @@ const ExerciseForm = memo(
 		return (
 			<section
 				ref={ref}
-				className={cn("h-full flex flex-col gap-5 p-4", className)}>
+				className={cn("flex min-h-full flex-col gap-5 p-4", className)}>
 				{/* Exercise Name */}
-				<div className="flex flex-col gap-2">
+				<div className="shrink-0 flex flex-col gap-2">
 					<div className="flex items-center gap-2">
 						<div className="flex-1">
 							<ExerciseNameInputDropdown exerciseIndex={exerciseIndex} />
@@ -88,9 +88,9 @@ const ExerciseForm = memo(
 				</div>
 
 				{hasExerciseName && (
-					<div className="h-full flex flex-col gap-2">
+					<div className="flex min-h-0 flex-1 flex-col gap-2">
 						{/* Set Rows */}
-						<div className="flex flex-col overflow-y-auto no-scrollbar grow gap-3">
+						<div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto no-scrollbar">
 							<div className="flex flex-col gap-3 pt-0.5">
 								{sets.map((set, setIndex) => (
 									<SetRow
@@ -104,7 +104,7 @@ const ExerciseForm = memo(
 							</div>
 							<Button
 								variant="ghost"
-								className="w-full text-muted-foreground text-sm"
+								className="w-full shrink-0 text-muted-foreground text-sm"
 								type="button"
 								onClick={handleAddSet}>
 								Add Set
@@ -117,7 +117,9 @@ const ExerciseForm = memo(
 						</div>
 
 						{/* Difficulty and Notes */}
-						<ExerciseCollapsibles exerciseIndex={exerciseIndex} />
+						<div className="shrink-0">
+							<ExerciseCollapsibles exerciseIndex={exerciseIndex} />
+						</div>
 					</div>
 				)}
 			</section>

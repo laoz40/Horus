@@ -34,7 +34,7 @@ export const useExerciseNavigation = ({
 		const scrollTarget = exerciseFormRefs.current[scrollTargetId];
 		scrollTarget?.scrollIntoView({
 			behavior: "smooth",
-			block: "end",
+			block: "nearest",
 		});
 	}, [scrollTargetId]);
 

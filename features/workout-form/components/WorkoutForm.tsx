@@ -112,7 +112,7 @@ export default function WorkoutForm({
 	});
 
 	return (
-		<div className="flex flex-col h-dvh">
+		<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 			<FormProvider {...methods}>
 				<WorkoutFormTopBar
 					workoutId={workoutId}
@@ -121,13 +121,13 @@ export default function WorkoutForm({
 				/>
 
 				<form
-					className="flex flex-col h-full overflow-y-auto"
+					className="flex min-h-0 flex-1 flex-col overflow-hidden"
 					id="workout-form"
 					onSubmit={handleSubmit(submitWorkout)}>
 					{/* Exercise Form */}
 					<section
 						ref={exerciseListRef}
-						className="flex flex-col flex-1 overflow-y-auto snap-y snap-mandatory">
+						className="flex min-h-0 flex-1 flex-col overflow-y-auto snap-y snap-mandatory">
 						{exercises.map((exercise, exerciseIndex) => (
 							<ExerciseForm
 								key={exercise.id}
@@ -135,7 +135,7 @@ export default function WorkoutForm({
 								ref={(exerciseFormElement) => {
 									registerExerciseRef(exercise.id, exerciseFormElement);
 								}}
-								className="snap-start min-h-full h-full"
+								className="snap-start min-h-full"
 								isEditing={isEditingSelectedExercise && selectedExerciseId === exercise.id}
 							/>
 						))}
