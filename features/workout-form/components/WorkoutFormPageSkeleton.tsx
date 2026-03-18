@@ -1,7 +1,7 @@
 export default function WorkoutFormPageSkeleton() {
 	return (
 		<div className="flex flex-col h-dvh">
-			<div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen bg-sidebar dark:bg-sidebar border-b">
+			<div className="ios-safe-area-top relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen bg-sidebar dark:bg-sidebar border-b">
 				<div className="max-w-5xl mx-auto px-4 flex items-center justify-between py-4">
 					<div className="h-9 w-16 animate-pulse rounded-md bg-muted" />
 					<div className="h-5 w-20 animate-pulse rounded bg-muted" />
@@ -26,7 +26,7 @@ export default function WorkoutFormPageSkeleton() {
 				</div>
 			</div>
 
-			<div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-t bg-sidebar dark:bg-sidebar">
+			<div className="ios-safe-area-bottom relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-t bg-sidebar dark:bg-sidebar">
 				<div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-4">
 					<div className="h-10 w-full animate-pulse rounded-md bg-muted" />
 					<div className="flex gap-3">

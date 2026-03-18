@@ -54,7 +54,7 @@ export default function WorkoutFormBottomBar({
 	);
 
 	return (
-		<div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-t bg-sidebar dark:bg-sidebar glass:backdrop-blur-xs">
+		<div className="ios-safe-area-bottom relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-t bg-sidebar dark:bg-sidebar glass:backdrop-blur-xs">
 			<div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-4">
 				<div className="flex items-center justify-start">
 					<ExerciseSelector

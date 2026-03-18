@@ -237,6 +237,10 @@ body {
 }
 
 @media (display-mode: standalone) {
+	.ios-safe-area-top {
+		padding-top: env(safe-area-inset-top);
+	}
+
 	.ios-safe-area-bottom {
 		padding-bottom: env(safe-area-inset-bottom);
 	}
