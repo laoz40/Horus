@@ -1,15 +1,14 @@
-import { redirect } from "next/navigation";
+"use client";
+
+import { type ReactElement } from "react";
 import DashboardAccountButton from "@/features/auth/components/DashboardAccountButton";
 import DashboardPresetsSection from "@/features/dashboard/components/DashboardPresetsSection";
 import DashboardStartSection from "@/features/dashboard/components/DashboardStartSection";
-import { fetchAuthQuery } from "@/lib/auth-server";
-import { api } from "@/convex/_generated/api";
+import { authClient } from "@/lib/auth-client";
 
-export default async function DashboardPage() {
-	const user = await fetchAuthQuery(api.auth.getCurrentUser);
-	if (user && !user.name) {
-		redirect("/welcome");
-	}
+export default function DashboardPage(): ReactElement {
+	const { data: sessionData } = authClient.useSession();
+	const user = sessionData?.user ?? null;
 
 	const isSignedIn = user !== null;
 	const displayName = isSignedIn ? user.name ?? "Legend" : "Legend";
