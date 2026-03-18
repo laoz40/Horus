@@ -16,7 +16,7 @@ const actionButtonStyle = {
 // 	},
 // };
 const dismissAction = {
-	label: "dismiss",
+	label: "Dismiss",
 	onClick: () => {
 		toast.dismiss();
 	},
