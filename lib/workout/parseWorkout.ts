@@ -1,9 +1,9 @@
-import { currentDay } from "../date";
+import { getCurrentDay } from "../date";
 import type { WorkoutFormData } from "../../features/workout-form/lib/types";
 
 export const parseWorkout = (workout: WorkoutFormData) => {
 	return {
-		name: workout.name.trim() || `${currentDay} Workout`,
+		name: workout.name.trim() || `${getCurrentDay()} Workout`,
 		durationSeconds: workout.durationSeconds,
 		exercises: workout.exercises.map((exercise) => {
 			const global = {

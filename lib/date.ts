@@ -5,7 +5,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 // export const currentDateFull = dayjs().format("dddd, D MMM YYYY");
 
 // e.g. "Sunday"
-export const currentDay = dayjs().format("dddd");
+export const getCurrentDay = (): string => dayjs().format("dddd");
 
 // relative time
 dayjs.extend(relativeTime);

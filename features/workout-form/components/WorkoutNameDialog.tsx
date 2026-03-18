@@ -12,7 +12,7 @@ import {
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { currentDay } from "@/lib/date";
+import { getCurrentDay } from "@/lib/date";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
 import Link from "next/link";
 import { useState } from "react";
@@ -42,7 +42,7 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 						<Label htmlFor="name-1">Enter workout name</Label>
 						<Input
 							id="name-1"
-							placeholder={`${currentDay} Workout`}
+							placeholder={`${getCurrentDay()} Workout`}
 							{...register("name")}
 						/>
 					</Field>
