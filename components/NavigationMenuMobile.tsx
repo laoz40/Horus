@@ -29,7 +29,7 @@ export default function NavigationMenuMobile() {
 	return (
 		<NavigationMenu
 			className={cn(
-				"w-full max-w-full bg-sidebar dark:bg-sidebar",
+				"w-full max-w-full bg-sidebar dark:bg-sidebar ios-safe-area-bottom",
 				// bottom bar
 				"border-t order-2",
 				// left sidebar

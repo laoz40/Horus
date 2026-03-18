@@ -235,3 +235,9 @@ body {
 	-ms-overflow-style: none;
 	scrollbar-width: none;
 }
+
+@media (display-mode: standalone) {
+	.ios-safe-area-bottom {
+		padding-bottom: env(safe-area-inset-bottom);
+	}
+}

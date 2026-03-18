@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Oxanium } from "next/font/google";
@@ -15,6 +15,12 @@ export const metadata: Metadata = {
 		statusBarStyle: "black-translucent",
 		title: "Horus",
 	},
+};
+
+export const viewport: Viewport = {
+	width: "device-width",
+	initialScale: 1,
+	viewportFit: "cover",
 };
 
 const oxanium = Oxanium({
