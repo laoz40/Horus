@@ -48,6 +48,7 @@
 		"@types/node": "^24.10.1",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
+		"babel-plugin-react-compiler": "^1.0.0",
 		"baseline-browser-mapping": "^2.9.19",
 		"oxfmt": "^0.35.0",
 		"oxlint": "^1.50.0",

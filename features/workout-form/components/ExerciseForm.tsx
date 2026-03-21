@@ -1,7 +1,7 @@
 "use client";
 
 import { HistoryIcon } from "lucide-react";
-import { forwardRef, memo, useCallback, useEffect } from "react";
+import { forwardRef, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
@@ -19,8 +19,9 @@ interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
 	isEditing: boolean;
 }
 
-const ExerciseForm = memo(
-	forwardRef<HTMLDivElement, ExerciseFormProps>(({ className, exerciseIndex, isEditing }, ref) => {
+const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
+	({ className, exerciseIndex, isEditing }, ref) => {
+
 		const {
 			control,
 			trigger,
@@ -35,25 +36,23 @@ const ExerciseForm = memo(
 			name: `exercises.${exerciseIndex}.sets`,
 		});
 
-		const handleAddSet = useCallback(() => {
+		const handleAddSet = () => {
 			append(createDefaultSet());
 			trigger(`exercises.${exerciseIndex}.sets`);
-		}, [append, exerciseIndex, trigger]);
+		};
 
 		useEffect(() => {
-			if (sets.length === 0) {
-				handleAddSet();
-			}
-		}, [sets.length, handleAddSet]);
+			if (sets.length > 0) return;
+
+			append(createDefaultSet());
+			trigger(`exercises.${exerciseIndex}.sets`);
+		}, [append, exerciseIndex, sets.length, trigger]);
 
 		// BUG: when loading a workout to edit, adding new sets after deleting sets loads previous data
-		const handleDeleteSet = useCallback(
-			(setIndex: number) => {
-				remove(setIndex);
-				showSetDeletedToast();
-			},
-			[remove],
-		);
+		const handleDeleteSet = (setIndex: number) => {
+			remove(setIndex);
+			showSetDeletedToast();
+		};
 
 		const exerciseName = useWatch({
 			control,
@@ -124,7 +123,7 @@ const ExerciseForm = memo(
 				)}
 			</section>
 		);
-	}),
+	},
 );
 
 ExerciseForm.displayName = "ExerciseForm";

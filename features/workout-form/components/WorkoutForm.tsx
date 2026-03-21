@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactElement } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 
@@ -75,13 +75,13 @@ export default function WorkoutForm({
 		);
 	}, [missingGlobalExercisesCount]);
 
-	const handleAddExercise = useCallback(() => {
+	const handleAddExercise = () => {
 		append(
 			createDefaultExercise(),
 			// prevent insta scrolling
 			{ shouldFocus: false },
 		);
-	}, [append]);
+	};
 
 	const getDurationSeconds = useCallback(
 		() => Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000)),
@@ -89,35 +89,46 @@ export default function WorkoutForm({
 	);
 
 	useEffect(() => {
-		if (exercises.length === 0) handleAddExercise();
-	}, [exercises.length, handleAddExercise]);
+		if (exercises.length > 0) return;
+
+		append(
+			createDefaultExercise(),
+			// prevent insta scrolling
+			{ shouldFocus: false },
+		);
+	}, [append, exercises.length]);
 
 	const { submitWorkout } = useWorkoutSubmit({ getDurationSeconds, workoutId });
 
-	const exerciseIds = exercises.map((exercise) => exercise.id);
+	const exerciseIds = useMemo(() => exercises.map((exercise) => exercise.id), [exercises]);
 	const { selectedExerciseId, setSelectedExerciseId, selectedExerciseIndex } = useExerciseSelection(
 		{ exerciseIds },
 	);
 
-	const handleDeleteExercise = useCallback(() => {
+	const handleDeleteExercise = () => {
 		if (selectedExerciseIndex < 0) return;
 
 		remove(selectedExerciseIndex);
 		showExerciseDeletedToast();
-	}, [remove, selectedExerciseIndex]);
+	};
 
-	const handleToggleEdit = useCallback(() => {
+	const handleToggleEdit = () => {
 		if (!selectedExerciseId) return;
 
 		setIsEditingSelectedExercise(
 			(currentIsEditingSelectedExercise) => !currentIsEditingSelectedExercise,
 		);
-	}, [selectedExerciseId]);
+	};
 
 	const { exerciseListRef, registerExerciseRef, setScrollTargetId } = useExerciseNavigation({
 		exerciseIds,
 		setSelectedExerciseId,
 	});
+	const handleSelectExercise = (value: string) => {
+		setSelectedExerciseId(value);
+		setScrollTargetId(value);
+	};
+
 	return (
 		<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 			<FormProvider {...methods}>
@@ -154,10 +165,7 @@ export default function WorkoutForm({
 					exercises={exercises}
 					selectedExerciseId={selectedExerciseId}
 					isEditingSelectedExercise={isEditingSelectedExercise}
-					onSelectExercise={(value) => {
-						setSelectedExerciseId(value);
-						setScrollTargetId(value);
-					}}
+					onSelectExercise={handleSelectExercise}
 					onAddExercise={handleAddExercise}
 					onDeleteExercise={handleDeleteExercise}
 					onToggleEdit={handleToggleEdit}
