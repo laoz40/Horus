@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface UseWorkoutTimerOptions {
-	initialSeconds?: number;
+	startedAtMs: number;
 }
 
 interface UseWorkoutTimerReturn {
@@ -9,27 +9,29 @@ interface UseWorkoutTimerReturn {
 }
 
 export const useWorkoutTimer = ({
-	initialSeconds = 0,
+	startedAtMs,
 }: UseWorkoutTimerOptions): UseWorkoutTimerReturn => {
-	const [durationSeconds, setDurationSeconds] = useState(initialSeconds);
-	const startTimeMs = useRef<number>(Date.now() - initialSeconds * 1000);
+	const getElapsedSeconds = useCallback(
+		() => Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000)),
+		[startedAtMs],
+	);
+	const [durationSeconds, setDurationSeconds] = useState<number>(() => getElapsedSeconds());
 
 	useEffect(() => {
 		const updateDuration = () => {
-			const elapsedSeconds = Math.floor((Date.now() - startTimeMs.current) / 1000);
-			setDurationSeconds(elapsedSeconds);
+			setDurationSeconds(getElapsedSeconds());
 		};
 
 		updateDuration();
 
-		const interval = setInterval(() => {
+		const interval = window.setInterval(() => {
 			updateDuration();
 		}, 1000);
 
 		return () => {
-			clearInterval(interval);
+			window.clearInterval(interval);
 		};
-	}, []);
+	}, [getElapsedSeconds]);
 
 	return { durationSeconds };
 };

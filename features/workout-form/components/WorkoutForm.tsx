@@ -10,7 +10,6 @@ import {
 	createDefaultExercise,
 	createDefaultWorkoutValues,
 } from "@/features/workout-form/lib/WorkoutFormDefaults";
-import { useWorkoutTimer } from "@/features/workout-form/hooks/useWorkoutTimer";
 import { showErrorToast, showExerciseDeletedToast } from "@/lib/toastMessages";
 
 import ExerciseForm from "./ExerciseForm";
@@ -53,11 +52,19 @@ export default function WorkoutForm({
 		control: methods.control,
 	});
 	const [isEditingSelectedExercise, setIsEditingSelectedExercise] = useState<boolean>(false);
+	const [startedAtMs, setStartedAtMs] = useState<number>(
+		() => Date.now() - (initialData?.durationSeconds ?? 0) * 1000,
+	);
+	const initialDurationSeconds = initialData?.durationSeconds ?? 0;
 
 	useEffect(() => {
 		if (!initialData) return;
 		reset(initialData);
 	}, [initialData, reset]);
+
+	useEffect(() => {
+		setStartedAtMs(Date.now() - initialDurationSeconds * 1000);
+	}, [initialDurationSeconds]);
 
 	useEffect(() => {
 		if (missingGlobalExercisesCount <= 0) return;
@@ -68,10 +75,6 @@ export default function WorkoutForm({
 		);
 	}, [missingGlobalExercisesCount]);
 
-	const { durationSeconds } = useWorkoutTimer({
-		initialSeconds: initialData?.durationSeconds ?? 0,
-	});
-
 	const handleAddExercise = useCallback(() => {
 		append(
 			createDefaultExercise(),
@@ -80,11 +83,16 @@ export default function WorkoutForm({
 		);
 	}, [append]);
 
+	const getDurationSeconds = useCallback(
+		() => Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000)),
+		[startedAtMs],
+	);
+
 	useEffect(() => {
 		if (exercises.length === 0) handleAddExercise();
 	}, [exercises.length, handleAddExercise]);
 
-	const { submitWorkout } = useWorkoutSubmit({ durationSeconds, workoutId });
+	const { submitWorkout } = useWorkoutSubmit({ getDurationSeconds, workoutId });
 
 	const exerciseIds = exercises.map((exercise) => exercise.id);
 	const { selectedExerciseId, setSelectedExerciseId, selectedExerciseIndex } = useExerciseSelection(
@@ -110,13 +118,12 @@ export default function WorkoutForm({
 		exerciseIds,
 		setSelectedExerciseId,
 	});
-
 	return (
 		<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 			<FormProvider {...methods}>
 				<WorkoutFormTopBar
 					workoutId={workoutId}
-					durationSeconds={durationSeconds}
+					startedAtMs={startedAtMs}
 					isSubmitting={isSubmitting}
 				/>
 
