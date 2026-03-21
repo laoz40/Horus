@@ -7,21 +7,35 @@ import DashboardStartSection from "@/features/dashboard/components/DashboardStar
 import { authClient } from "@/lib/auth-client";
 
 export default function DashboardPage(): ReactElement {
-	const { data: sessionData } = authClient.useSession();
+	const { data: sessionData, isPending } = authClient.useSession();
 	const user = sessionData?.user ?? null;
 
 	const isSignedIn = user !== null;
 	const displayName = isSignedIn ? user.name ?? "Legend" : "Legend";
 	const headingText = isSignedIn ? "Welcome back," : "Welcome,";
+	const shouldShowSkeleton = isPending && sessionData === null;
 
 	return (
 		<div className="flex flex-col gap-3 pt-2 pb-5">
 			<div className="flex flex-row items-start justify-between px-4 pt-2">
 				<div className="flex flex-col">
-					<h2 className="text-sm font-normal text-muted-foreground">{headingText}</h2>
-					<h1 className="text-2xl leading-tight font-semibold tracking-tight">{displayName}</h1>
+					{shouldShowSkeleton ? (
+						<>
+							<div className="mb-1 h-4 w-22 animate-pulse rounded bg-muted" />
+							<div className="h-8 w-32 animate-pulse rounded bg-muted" />
+						</>
+					) : (
+						<>
+							<h2 className="text-sm font-normal text-muted-foreground">{headingText}</h2>
+							<h1 className="text-2xl leading-tight font-semibold tracking-tight">{displayName}</h1>
+						</>
+					)}
 				</div>
-				<DashboardAccountButton initialUser={user} />
+				{shouldShowSkeleton ? (
+					<div className="size-10 animate-pulse rounded-full bg-muted" />
+				) : (
+					<DashboardAccountButton initialUser={user} />
+				)}
 			</div>
 
 			<DashboardStartSection />
