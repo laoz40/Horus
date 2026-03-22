@@ -1,21 +1,25 @@
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
+
+import {
+	selectScrollTargetId,
+	useWorkoutFormUiStore,
+} from "@/features/workout-form/stores/workoutFormUiStore";
 
 interface UseExerciseNavigationProps {
 	exerciseIds: string[];
-	setSelectedExerciseId: (exerciseId: string) => void;
 }
 
 interface UseExerciseNavigationReturn {
 	exerciseListRef: RefObject<HTMLDivElement | null>;
 	registerExerciseRef: (exerciseId: string, exerciseFormElement: HTMLDivElement | null) => void;
-	setScrollTargetId: (exerciseId: string) => void;
 }
 
 export const useExerciseNavigation = ({
 	exerciseIds,
-	setSelectedExerciseId,
 }: UseExerciseNavigationProps): UseExerciseNavigationReturn => {
-	const [scrollTargetId, setScrollTargetId] = useState<string | null>(null);
+	const scrollTargetId = useWorkoutFormUiStore(selectScrollTargetId);
+	const selectExercise = useWorkoutFormUiStore((state) => state.selectExercise);
+	const setScrollTarget = useWorkoutFormUiStore((state) => state.setScrollTarget);
 	const exerciseListRef = useRef<HTMLDivElement | null>(null);
 	const exerciseFormRefs = useRef<Record<string, HTMLDivElement | null>>({});
 	const previousExerciseCount = useRef(exerciseIds.length);
@@ -36,7 +40,8 @@ export const useExerciseNavigation = ({
 			behavior: "smooth",
 			block: "nearest",
 		});
-	}, [scrollTargetId]);
+		setScrollTarget(null);
+	}, [scrollTargetId, setScrollTarget]);
 
 	useEffect(() => {
 		const newExerciseAdded =
@@ -45,12 +50,12 @@ export const useExerciseNavigation = ({
 		if (newExerciseAdded) {
 			const latestExerciseId = exerciseIds[exerciseIds.length - 1];
 			if (latestExerciseId) {
-				setScrollTargetId(latestExerciseId);
+				setScrollTarget(latestExerciseId);
 			}
 		}
 
 		previousExerciseCount.current = exerciseIds.length;
-	}, [exerciseIds]);
+	}, [exerciseIds, setScrollTarget]);
 
 	useEffect(() => {
 		const scrollContainer = exerciseListRef.current;
@@ -67,7 +72,7 @@ export const useExerciseNavigation = ({
 				const exerciseId = (mostVisible.target as HTMLElement).dataset.exerciseId;
 
 				if (exerciseId) {
-					setSelectedExerciseId(exerciseId);
+					selectExercise(exerciseId);
 				}
 			},
 			{
@@ -84,11 +89,10 @@ export const useExerciseNavigation = ({
 		});
 
 		return () => observer.disconnect();
-	}, [exerciseIds.length, setSelectedExerciseId]);
+	}, [exerciseIds.length, selectExercise]);
 
 	return {
 		exerciseListRef,
 		registerExerciseRef,
-		setScrollTargetId,
 	};
 };

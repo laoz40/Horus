@@ -7,7 +7,7 @@ import { ConvexError } from "convex/values";
 import { useRouter } from "next/navigation";
 
 interface UseWorkoutSubmitProps {
-	getDurationSeconds: () => number;
+	startedAtMs: number;
 	workoutId?: string;
 }
 
@@ -16,7 +16,7 @@ interface UseWorkoutSubmitReturn {
 }
 
 export const useWorkoutSubmit = ({
-	getDurationSeconds,
+	startedAtMs,
 	workoutId,
 }: UseWorkoutSubmitProps): UseWorkoutSubmitReturn => {
 	const router = useRouter();
@@ -24,7 +24,8 @@ export const useWorkoutSubmit = ({
 	const updateWorkout = useMutation(api.workouts.updateWorkout);
 
 	const submitWorkout = async (data: Workout) => {
-		const finalData = { ...data, durationSeconds: getDurationSeconds() };
+		const durationSeconds = Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000));
+		const finalData = { ...data, durationSeconds };
 		const workoutInput = JSON.parse(JSON.stringify(finalData));
 
 		try {

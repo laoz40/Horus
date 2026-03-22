@@ -2,30 +2,28 @@ import { type ReactElement } from "react";
 
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { Button } from "@/components/ui/button";
+import { useWorkoutFormUiStore } from "@/features/workout-form/stores/workoutFormUiStore";
 
 import ExerciseSelector from "./ExerciseSelector";
 
 interface WorkoutFormBottomBarProps {
-	show: boolean;
-	exercises: { id: string }[];
-	selectedExerciseId?: string;
-	isEditingSelectedExercise: boolean;
-	onSelectExercise: (value: string) => void;
+	exerciseIds: string[];
 	onAddExercise: () => void;
 	onDeleteExercise: () => void;
-	onToggleEdit: () => void;
 }
 
 export default function WorkoutFormBottomBar({
-	show,
-	exercises,
-	selectedExerciseId,
-	isEditingSelectedExercise,
-	onSelectExercise,
+	exerciseIds,
 	onAddExercise,
 	onDeleteExercise,
-	onToggleEdit,
 }: WorkoutFormBottomBarProps): ReactElement | null {
+	const selectedExerciseId = useWorkoutFormUiStore((state) => state.selectedExerciseId);
+	const isEditingSelectedExercise = useWorkoutFormUiStore(
+		(state) => state.isEditingSelectedExercise,
+	);
+	const toggleExerciseEdit = useWorkoutFormUiStore((state) => state.toggleExerciseEdit);
+
+	const show = exerciseIds.length > 0;
 	if (!show) return null;
 
 	const canToggleEdit = Boolean(selectedExerciseId);
@@ -57,11 +55,7 @@ export default function WorkoutFormBottomBar({
 		<div className="ios-safe-area-bottom relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-t bg-sidebar dark:bg-sidebar glass:backdrop-blur-xs">
 			<div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-4">
 				<div className="flex items-center justify-start">
-					<ExerciseSelector
-						exercises={exercises}
-						selectedExerciseId={selectedExerciseId}
-						onValueChange={onSelectExercise}
-					/>
+					<ExerciseSelector exerciseIds={exerciseIds} />
 				</div>
 				<div className="flex items-center gap-3">
 					<Button
@@ -69,7 +63,7 @@ export default function WorkoutFormBottomBar({
 						className={isEditingSelectedExercise ? "flex-1" : "flex-1 text-muted-foreground"}
 						type="button"
 						disabled={!canToggleEdit}
-						onClick={onToggleEdit}>
+						onClick={toggleExerciseEdit}>
 						{isEditingSelectedExercise ? "Done" : "Edit"}
 					</Button>
 					{addOrDelete}

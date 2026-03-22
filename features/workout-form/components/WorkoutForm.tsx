@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
+import { useEffect, useMemo, type ReactElement } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 
@@ -11,6 +11,7 @@ import {
 	createDefaultWorkoutValues,
 } from "@/features/workout-form/lib/WorkoutFormDefaults";
 import { showErrorToast, showExerciseDeletedToast } from "@/lib/toastMessages";
+import { useWorkoutFormUiStore } from "@/features/workout-form/stores/workoutFormUiStore";
 
 import ExerciseForm from "./ExerciseForm";
 import WorkoutFormBottomBar from "./WorkoutFormBottomBar";
@@ -30,6 +31,14 @@ export default function WorkoutForm({
 	workoutId,
 	missingGlobalExercisesCount = 0,
 }: WorkoutFormProps): ReactElement {
+	const initializeWorkoutSession = useWorkoutFormUiStore((state) => state.initializeWorkoutSession);
+	const resetWorkoutFormUi = useWorkoutFormUiStore((state) => state.resetWorkoutFormUi);
+	const setExerciseEdit = useWorkoutFormUiStore((state) => state.setExerciseEdit);
+	const isEditingSelectedExercise = useWorkoutFormUiStore(
+		(state) => state.isEditingSelectedExercise,
+	);
+	const startedAtMs = useWorkoutFormUiStore((state) => state.startedAtMs);
+
 	const methods = useForm<Workout>({
 		resolver: zodResolver(WorkoutSchema),
 		mode: "onSubmit",
@@ -51,10 +60,6 @@ export default function WorkoutForm({
 		name: "exercises",
 		control: methods.control,
 	});
-	const [isEditingSelectedExercise, setIsEditingSelectedExercise] = useState<boolean>(false);
-	const [startedAtMs, setStartedAtMs] = useState<number>(
-		() => Date.now() - (initialData?.durationSeconds ?? 0) * 1000,
-	);
 	const initialDurationSeconds = initialData?.durationSeconds ?? 0;
 
 	useEffect(() => {
@@ -63,8 +68,12 @@ export default function WorkoutForm({
 	}, [initialData, reset]);
 
 	useEffect(() => {
-		setStartedAtMs(Date.now() - initialDurationSeconds * 1000);
-	}, [initialDurationSeconds]);
+		initializeWorkoutSession(initialDurationSeconds);
+
+		return () => {
+			resetWorkoutFormUi();
+		};
+	}, [initialDurationSeconds, initializeWorkoutSession, resetWorkoutFormUi]);
 
 	useEffect(() => {
 		if (missingGlobalExercisesCount <= 0) return;
@@ -83,11 +92,6 @@ export default function WorkoutForm({
 		);
 	};
 
-	const getDurationSeconds = useCallback(
-		() => Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000)),
-		[startedAtMs],
-	);
-
 	useEffect(() => {
 		if (exercises.length > 0) return;
 
@@ -98,12 +102,11 @@ export default function WorkoutForm({
 		);
 	}, [append, exercises.length]);
 
-	const { submitWorkout } = useWorkoutSubmit({ getDurationSeconds, workoutId });
+	const { submitWorkout } = useWorkoutSubmit({ startedAtMs, workoutId });
 
+	// exercise ids to pass to the exercise selector
 	const exerciseIds = useMemo(() => exercises.map((exercise) => exercise.id), [exercises]);
-	const { selectedExerciseId, setSelectedExerciseId, selectedExerciseIndex } = useExerciseSelection(
-		{ exerciseIds },
-	);
+	const { selectedExerciseId, selectedExerciseIndex } = useExerciseSelection({ exerciseIds });
 
 	const handleDeleteExercise = () => {
 		if (selectedExerciseIndex < 0) return;
@@ -112,29 +115,18 @@ export default function WorkoutForm({
 		showExerciseDeletedToast();
 	};
 
-	const handleToggleEdit = () => {
-		if (!selectedExerciseId) return;
+	useEffect(() => {
+		if (exercises.length > 0) return;
+		setExerciseEdit(false);
+	}, [exercises.length, setExerciseEdit]);
 
-		setIsEditingSelectedExercise(
-			(currentIsEditingSelectedExercise) => !currentIsEditingSelectedExercise,
-		);
-	};
-
-	const { exerciseListRef, registerExerciseRef, setScrollTargetId } = useExerciseNavigation({
-		exerciseIds,
-		setSelectedExerciseId,
-	});
-	const handleSelectExercise = (value: string) => {
-		setSelectedExerciseId(value);
-		setScrollTargetId(value);
-	};
+	const { exerciseListRef, registerExerciseRef } = useExerciseNavigation({ exerciseIds });
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 			<FormProvider {...methods}>
 				<WorkoutFormTopBar
 					workoutId={workoutId}
-					startedAtMs={startedAtMs}
 					isSubmitting={isSubmitting}
 				/>
 
@@ -161,14 +153,9 @@ export default function WorkoutForm({
 				</form>
 
 				<WorkoutFormBottomBar
-					show={exercises.length > 0}
-					exercises={exercises}
-					selectedExerciseId={selectedExerciseId}
-					isEditingSelectedExercise={isEditingSelectedExercise}
-					onSelectExercise={handleSelectExercise}
+					exerciseIds={exerciseIds}
 					onAddExercise={handleAddExercise}
 					onDeleteExercise={handleDeleteExercise}
-					onToggleEdit={handleToggleEdit}
 				/>
 			</FormProvider>
 		</div>

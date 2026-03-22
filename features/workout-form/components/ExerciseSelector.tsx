@@ -8,39 +8,51 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import { useWorkoutFormUiStore } from "@/features/workout-form/stores/workoutFormUiStore";
 import { useFormContext, useWatch } from "react-hook-form";
 
 interface ExerciseSelectorProps {
-	exercises: { id: string }[];
-	selectedExerciseId?: string;
-	onValueChange: (value: string) => void;
+	exerciseIds: string[];
 }
 
-export default function ExerciseSelector({
-	exercises,
-	selectedExerciseId,
-	onValueChange,
-}: ExerciseSelectorProps) {
+export default function ExerciseSelector({ exerciseIds }: ExerciseSelectorProps) {
 	const { control } = useFormContext<Workout>();
+	const selectedExerciseId = useWorkoutFormUiStore((state) => state.selectedExerciseId);
+	const selectExercise = useWorkoutFormUiStore((state) => state.selectExercise);
+	const setScrollTarget = useWorkoutFormUiStore((state) => state.setScrollTarget);
+
+	// map names of exercises from the form
 	const exerciseNames = useWatch({
 		control,
-		name: exercises.map((_, exerciseIndex) => `exercises.${exerciseIndex}.global.name` as const),
+		name: exerciseIds.map((_, exerciseIndex) => `exercises.${exerciseIndex}.global.name` as const),
 	}) as Array<string | undefined>;
+
+	// match selected id to get index and name
+	const selectedExerciseIndex = exerciseIds.findIndex((exerciseId) => exerciseId === selectedExerciseId);
+	const selectedExerciseLabel =
+		selectedExerciseIndex >= 0
+			? `${selectedExerciseIndex + 1}: ${
+					exerciseNames[selectedExerciseIndex]?.trim() || "No exercise added"
+				}`
+			: "Select exercise";
 
 	return (
 		<Select
-			value={selectedExerciseId}
-			onValueChange={onValueChange}>
+			value={selectedExerciseId ?? undefined}
+			onValueChange={(value) => {
+				selectExercise(value);
+				setScrollTarget(value);
+			}}>
 			<SelectTrigger className="w-full">
-				<SelectValue />
+				<SelectValue>{selectedExerciseLabel}</SelectValue>
 			</SelectTrigger>
 			<SelectContent position="popper">
 				<SelectGroup>
 					<SelectLabel>Exercises</SelectLabel>
-					{exercises.map((exercise, exerciseIndex) => (
+					{exerciseIds.map((exerciseId, exerciseIndex) => (
 						<SelectItem
-							key={exercise.id}
-							value={exercise.id}>
+							key={exerciseId}
+							value={exerciseId}>
 							{exerciseIndex + 1}: {exerciseNames[exerciseIndex]?.trim() || "No exercise added"}
 						</SelectItem>
 					))}

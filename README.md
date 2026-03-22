@@ -43,6 +43,17 @@ super inefficient, laggy and doesn't scale well.
 - Tailwindcss
 - shadcn/ui
 
+## State management
+
+Use each state tool for one job:
+
+- `useState` for private component state
+- Zustand for shared client UI state across sibling components or feature flows
+- `react-hook-form` for form values, validation, and submission state
+- Convex for server data and mutations
+
+Avoid putting fetched records or full form payloads into Zustand, and avoid one giant global client store.
+
 ## Why Next.js?
 
 I used Next.js simply because I wanted to learn it. I wanted to learn how to

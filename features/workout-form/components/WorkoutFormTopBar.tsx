@@ -5,19 +5,18 @@ import { type ReactElement } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useWorkoutTimer } from "@/features/workout-form/hooks/useWorkoutTimer";
+import { useWorkoutFormUiStore } from "@/features/workout-form/stores/workoutFormUiStore";
 import { formatDurationFull } from "@/lib/time";
 
 import { WorkoutNameDialog } from "./WorkoutNameDialog";
 
 interface WorkoutFormTopBarProps {
 	workoutId?: string;
-	startedAtMs: number;
 	isSubmitting: boolean;
 }
 
-function WorkoutDuration({
-	startedAtMs,
-}: Pick<WorkoutFormTopBarProps, "startedAtMs">): ReactElement {
+function WorkoutDuration(): ReactElement {
+	const startedAtMs = useWorkoutFormUiStore((state) => state.startedAtMs);
 	const { durationSeconds } = useWorkoutTimer({ startedAtMs });
 
 	return <span>{formatDurationFull(durationSeconds)}</span>;
@@ -25,7 +24,6 @@ function WorkoutDuration({
 
 export default function WorkoutFormTopBar({
 	workoutId,
-	startedAtMs,
 	isSubmitting,
 }: WorkoutFormTopBarProps): ReactElement {
 
@@ -38,7 +36,7 @@ export default function WorkoutFormTopBar({
 					size="sm">
 					<Link href={workoutId ? "/workouts" : "/"}>Back</Link>
 				</Button>
-				<WorkoutDuration startedAtMs={startedAtMs} />
+				<WorkoutDuration />
 				<WorkoutNameDialog>
 					<Button
 						disabled={isSubmitting}

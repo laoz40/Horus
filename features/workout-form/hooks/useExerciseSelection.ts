@@ -1,4 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
+
+import {
+	selectSelectedExerciseId,
+	useWorkoutFormUiStore,
+} from "@/features/workout-form/stores/workoutFormUiStore";
 
 interface UseExerciseSelectionProps {
 	exerciseIds: string[];
@@ -13,22 +18,35 @@ interface UseExerciseSelectionReturn {
 export const useExerciseSelection = ({
 	exerciseIds,
 }: UseExerciseSelectionProps): UseExerciseSelectionReturn => {
-	const [selectedExerciseId, setSelectedExerciseId] = useState<string | undefined>(
-		() => exerciseIds[0],
-	);
+	const selectedExerciseId = useWorkoutFormUiStore(selectSelectedExerciseId);
+	const selectExercise = useWorkoutFormUiStore((state) => state.selectExercise);
+	const lastKnownSelectedIndexRef = useRef<number>(0);
+
+	const selectedExerciseIndex = selectedExerciseId
+		? exerciseIds.findIndex((exerciseId) => exerciseId === selectedExerciseId)
+		: -1;
+
+	useEffect(() => {
+		if (selectedExerciseIndex < 0) return;
+		lastKnownSelectedIndexRef.current = selectedExerciseIndex;
+	}, [selectedExerciseIndex]);
 
 	useEffect(() => {
 		if (selectedExerciseId && exerciseIds.includes(selectedExerciseId)) return;
-		setSelectedExerciseId(exerciseIds[0]);
-	}, [exerciseIds, selectedExerciseId]);
+		if (exerciseIds.length === 0) {
+			selectExercise(null);
+			return;
+		}
 
-	const selectedExerciseIndex = exerciseIds.findIndex(
-		(exerciseId) => exerciseId === selectedExerciseId,
-	);
+		const nextIndex = Math.min(lastKnownSelectedIndexRef.current, exerciseIds.length - 1);
+		selectExercise(exerciseIds[nextIndex] ?? null);
+	}, [exerciseIds, selectedExerciseId, selectExercise]);
 
 	return {
-		selectedExerciseId,
-		setSelectedExerciseId,
+		selectedExerciseId: selectedExerciseId ?? undefined,
+		setSelectedExerciseId: (exerciseId) => {
+			selectExercise(exerciseId);
+		},
 		selectedExerciseIndex,
 	};
 };
