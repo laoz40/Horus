@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
+
+import type { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
+import { selectDeletedWorkoutIds, useHistoryUiStore } from "@/features/workout-history/stores/historyUiStore";
+
 import WorkoutCard from "./WorkoutCard";
 import { WorkoutCardSkeletonList } from "./HistoryWorkoutCardSkeleton";
-import type { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
 
 export default function HistoryList({
 	workouts,
@@ -14,13 +17,18 @@ export default function HistoryList({
 	isLoading: boolean;
 	WORKOUTS_PER_PAGE: number;
 }) {
-	const [deletedWorkoutIds, setDeletedWorkoutIds] = useState<Set<string>>(new Set());
+	const deletedWorkoutIds = useHistoryUiStore(selectDeletedWorkoutIds);
+	const clearDeletedWorkoutIds = useHistoryUiStore((state) => state.clearDeletedWorkoutIds);
+
+	useEffect(() => {
+		clearDeletedWorkoutIds();
+
+		return () => {
+			clearDeletedWorkoutIds();
+		};
+	}, [clearDeletedWorkoutIds]);
 
 	const visibleWorkouts = workouts.filter((workout) => !deletedWorkoutIds.has(workout._id));
-
-	const deleteLocalWorkout = (deleteId: string) => {
-		setDeletedWorkoutIds((prev) => new Set(prev).add(deleteId));
-	};
 
 	if (visibleWorkouts.length === 0) {
 		if (isLoading) {
@@ -42,7 +50,6 @@ export default function HistoryList({
 				<WorkoutCard
 					key={workout._id}
 					workout={workout}
-					deleteLocalWorkout={deleteLocalWorkout}
 					workoutIndex={visibleWorkouts.length - index}
 				/>
 			))}

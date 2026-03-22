@@ -2,6 +2,7 @@ import Card from "@/components/Card";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
+import { useHistoryUiStore } from "@/features/workout-history/stores/historyUiStore";
 import { toTitleCase } from "@/features/workout-form/lib/convertWorkoutData";
 import { getRelativeTime } from "@/lib/date";
 import { ShineBorder } from "@/components/ui/shine-border";
@@ -14,32 +15,23 @@ import { ConvexError } from "convex/values";
 
 interface WorkoutCardProps {
 	workout: WorkoutHistoryItem;
-	deleteLocalWorkout: (deleteId: string) => void;
 	workoutIndex: number;
 }
 
-export default function WorkoutCard({
-	workout,
-	deleteLocalWorkout,
-	workoutIndex,
-}: WorkoutCardProps) {
+export default function WorkoutCard({ workout, workoutIndex }: WorkoutCardProps) {
 	return (
 		<Authenticated>
 			<Content
 				workout={workout}
-				deleteLocalWorkout={deleteLocalWorkout}
 				workoutIndex={workoutIndex}
 			/>
 		</Authenticated>
 	);
 }
 
-function Content({
-	workout,
-	deleteLocalWorkout,
-	workoutIndex,
-}: WorkoutCardProps) {
+function Content({ workout, workoutIndex }: WorkoutCardProps) {
 	const deleteWorkout = useMutation(api.workouts.deleteWorkout);
+	const markWorkoutDeleted = useHistoryUiStore((state) => state.markWorkoutDeleted);
 
 	const handleDelete = async () => {
 		try {
@@ -47,7 +39,7 @@ function Content({
 				workoutId: workout._id as Id<"workouts">,
 			});
 
-			deleteLocalWorkout(workout._id);
+			markWorkoutDeleted(workout._id);
 			showWorkoutDeletedToast(deletedWorkout.deletedWorkoutName);
 		} catch (error) {
 			if (error instanceof ConvexError && error.data?.code === "NO_WORKOUT_FOUND") {
