@@ -126,6 +126,7 @@ export default function WorkoutForm({
 		<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 			<FormProvider {...methods}>
 				<WorkoutFormTopBar
+					initialDurationSeconds={initialDurationSeconds}
 					workoutId={workoutId}
 					isSubmitting={isSubmitting}
 				/>
