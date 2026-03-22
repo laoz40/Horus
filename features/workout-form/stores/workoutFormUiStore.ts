@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 export interface WorkoutFormUiState {
 	selectedExerciseId: string | null;
-	isEditingSelectedExercise: boolean;
+	isEditing: boolean;
 	scrollTargetId: string | null;
 	startedAtMs: number;
 }
@@ -20,14 +20,13 @@ export type WorkoutFormUiStore = WorkoutFormUiState & WorkoutFormUiActions;
 
 const createInitialWorkoutFormUiState = (): WorkoutFormUiState => ({
 	selectedExerciseId: null,
-	isEditingSelectedExercise: false,
+	isEditing: false,
 	scrollTargetId: null,
 	startedAtMs: Date.now(),
 });
 
 export const selectSelectedExerciseId = (state: WorkoutFormUiStore) => state.selectedExerciseId;
-export const selectIsEditingSelectedExercise = (state: WorkoutFormUiStore) =>
-	state.isEditingSelectedExercise;
+export const selectIsEditing = (state: WorkoutFormUiStore) => state.isEditing;
 export const selectScrollTargetId = (state: WorkoutFormUiStore) => state.scrollTargetId;
 export const selectStartedAtMs = (state: WorkoutFormUiStore) => state.startedAtMs;
 
@@ -42,7 +41,7 @@ export const useWorkoutFormUiStore = create<WorkoutFormUiStore>()((set) => ({
 	selectExercise: (exerciseId) => {
 		set((state) => ({
 			selectedExerciseId: exerciseId,
-			isEditingSelectedExercise: exerciseId ? state.isEditingSelectedExercise : false,
+			isEditing: exerciseId ? state.isEditing : false,
 		}));
 	},
 	toggleExerciseEdit: () => {
@@ -52,13 +51,13 @@ export const useWorkoutFormUiStore = create<WorkoutFormUiStore>()((set) => ({
 			}
 
 			return {
-				isEditingSelectedExercise: !state.isEditingSelectedExercise,
+				isEditing: !state.isEditing,
 			};
 		});
 	},
 	setExerciseEdit: (value) => {
 		set((state) => ({
-			isEditingSelectedExercise: state.selectedExerciseId ? value : false,
+			isEditing: state.selectedExerciseId ? value : false,
 		}));
 	},
 	setScrollTarget: (exerciseId) => {

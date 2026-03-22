@@ -18,16 +18,14 @@ export default function WorkoutFormBottomBar({
 	onDeleteExercise,
 }: WorkoutFormBottomBarProps): ReactElement | null {
 	const selectedExerciseId = useWorkoutFormUiStore((state) => state.selectedExerciseId);
-	const isEditingSelectedExercise = useWorkoutFormUiStore(
-		(state) => state.isEditingSelectedExercise,
-	);
+	const isEditing = useWorkoutFormUiStore((state) => state.isEditing);
 	const toggleExerciseEdit = useWorkoutFormUiStore((state) => state.toggleExerciseEdit);
 
 	const show = exerciseIds.length > 0;
 	if (!show) return null;
 
 	const canToggleEdit = Boolean(selectedExerciseId);
-	const addOrDelete = isEditingSelectedExercise ? (
+	const addOrDelete = isEditing ? (
 		<div className="flex-1">
 			<AlertDialogDestructive
 				handleDelete={onDeleteExercise}
@@ -59,12 +57,12 @@ export default function WorkoutFormBottomBar({
 				</div>
 				<div className="flex items-center gap-3">
 					<Button
-						variant={isEditingSelectedExercise ? "default" : "outline"}
-						className={isEditingSelectedExercise ? "flex-1" : "flex-1 text-muted-foreground"}
+						variant={isEditing ? "default" : "outline"}
+						className={isEditing ? "flex-1" : "flex-1 text-muted-foreground"}
 						type="button"
 						disabled={!canToggleEdit}
 						onClick={toggleExerciseEdit}>
-						{isEditingSelectedExercise ? "Done" : "Edit"}
+						{isEditing ? "Done" : "Edit"}
 					</Button>
 					{addOrDelete}
 				</div>

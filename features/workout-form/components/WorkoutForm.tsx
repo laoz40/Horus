@@ -33,10 +33,7 @@ export default function WorkoutForm({
 }: WorkoutFormProps): ReactElement {
 	const initializeWorkoutSession = useWorkoutFormUiStore((state) => state.initializeWorkoutSession);
 	const resetWorkoutFormUi = useWorkoutFormUiStore((state) => state.resetWorkoutFormUi);
-	const setExerciseEdit = useWorkoutFormUiStore((state) => state.setExerciseEdit);
-	const isEditingSelectedExercise = useWorkoutFormUiStore(
-		(state) => state.isEditingSelectedExercise,
-	);
+	const isEditing = useWorkoutFormUiStore((state) => state.isEditing);
 	const startedAtMs = useWorkoutFormUiStore((state) => state.startedAtMs);
 
 	const methods = useForm<Workout>({
@@ -115,11 +112,6 @@ export default function WorkoutForm({
 		showExerciseDeletedToast();
 	};
 
-	useEffect(() => {
-		if (exercises.length > 0) return;
-		setExerciseEdit(false);
-	}, [exercises.length, setExerciseEdit]);
-
 	const { exerciseListRef, registerExerciseRef } = useExerciseNavigation({ exerciseIds });
 
 	return (
@@ -147,7 +139,7 @@ export default function WorkoutForm({
 									registerExerciseRef(exercise.id, exerciseFormElement);
 								}}
 								className="snap-start min-h-full"
-								isEditing={isEditingSelectedExercise && selectedExerciseId === exercise.id}
+								isEditing={isEditing && selectedExerciseId === exercise.id}
 							/>
 						))}
 					</section>
