@@ -38,10 +38,11 @@ export default function ExerciseSelector({ exerciseIds }: ExerciseSelectorProps)
 
 	return (
 		<Select
-			value={selectedExerciseId ?? undefined}
+			value={selectedExerciseId ?? ""}
 			onValueChange={(value) => {
-				selectExercise(value);
-				setScrollTarget(value);
+				const nextExerciseId = value || null;
+				selectExercise(nextExerciseId);
+				setScrollTarget(nextExerciseId);
 			}}>
 			<SelectTrigger className="w-full">
 				<SelectValue>{selectedExerciseLabel}</SelectValue>
