@@ -21,7 +21,6 @@ interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 	({ className, exerciseIndex, isEditing }, ref) => {
-
 		const {
 			control,
 			trigger,
@@ -70,14 +69,16 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 						<div className="flex-1">
 							<ExerciseNameInputDropdown exerciseIndex={exerciseIndex} />
 						</div>
-						<Button
-							variant="outline"
-							size="default"
-							type="button"
-							className="h-11 w-11 shrink-0 px-0 text-muted-foreground"
-							aria-label="Recent exercises">
-							<HistoryIcon className="size-5" />
-						</Button>
+						{hasExerciseName && (
+							<Button
+								variant="outline"
+								size="default"
+								type="button"
+								className="h-11 w-11 shrink-0 px-0 text-muted-foreground"
+								aria-label="Recent exercises">
+								<HistoryIcon className="size-5" />
+							</Button>
+						)}
 					</div>
 					{errors.exercises?.[exerciseIndex]?.global?.name && (
 						<span className="text-red-500 text-sm">
