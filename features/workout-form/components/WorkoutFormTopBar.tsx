@@ -47,7 +47,7 @@ export default function WorkoutFormTopBar({
 					<Button
 						disabled={isSubmitting}
 						size="sm">
-						{isSubmitting ? "Saving" : "Done"}
+						{isSubmitting ? "Saving" : "Finish"}
 					</Button>
 				</WorkoutNameDialog>
 			</div>
