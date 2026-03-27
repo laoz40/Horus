@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { sanitizeWorkoutForSubmit } from "@/features/workout-form/lib/workoutSanitizers";
+import { sanitizeWorkoutForSubmit } from "./workoutSanitizers";
 
 const GlobalExerciseInputSchema = z.object({
 	name: z.string().trim().min(2, "Enter a real exercise"),
