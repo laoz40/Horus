@@ -36,6 +36,9 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 			<DialogContent className="sm:max-w-sm">
 				<DialogHeader>
 					<DialogTitle>Save Workout</DialogTitle>
+					<DialogDescription>
+						Add a name to your workout before saving.
+					</DialogDescription>
 				</DialogHeader>
 				<FieldGroup>
 					<Field>
@@ -48,9 +51,9 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 					</Field>
 				</FieldGroup>
 				<Unauthenticated>
-					<DialogDescription className="text-destructive">
+					<p className="text-sm text-destructive">
 						You need an account to create and save workouts.
-					</DialogDescription>
+					</p>
 				</Unauthenticated>
 				<DialogFooter className="flex flex-row justify-between gap-2">
 					<Authenticated>
