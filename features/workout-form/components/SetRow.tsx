@@ -15,6 +15,21 @@ interface SetRowProps {
 	onDeleteSet: (setIndex: number) => void;
 }
 
+// Convert blank inputs to undefined instead of nan, so empty fields stay empty in RHF
+const parseOptionalNumber = (value: unknown): number | undefined => {
+	if (typeof value === "number") {
+		return Number.isFinite(value) ? value : undefined;
+	}
+
+	if (typeof value !== "string") return undefined;
+
+	const trimmed = value.trim();
+	if (trimmed === "") return undefined;
+
+	const parsedValue = Number(trimmed);
+	return Number.isFinite(parsedValue) ? parsedValue : undefined;
+};
+
 export default function SetRow({
 	exerciseIndex,
 	setIndex,
@@ -50,7 +65,7 @@ export default function SetRow({
 						variant="decimal"
 						placeholder="kg"
 						className="text-2xl h-11"
-						{...register(weightFieldName, { valueAsNumber: true })}
+						{...register(weightFieldName, { setValueAs: parseOptionalNumber })}
 					/>
 					<span
 						className={`text-muted-foreground text-sm ${isChecked ? "text-primary" : "text-muted-foreground"}`}>
@@ -60,7 +75,7 @@ export default function SetRow({
 						variant="integer"
 						placeholder="reps"
 						className="text-2xl h-11"
-						{...register(repsFieldName, { valueAsNumber: true })}
+						{...register(repsFieldName, { setValueAs: parseOptionalNumber })}
 					/>
 					{isEditing ? (
 						<div className="ml-4 flex items-center justify-center text-destructive">

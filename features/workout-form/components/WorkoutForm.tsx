@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, type ReactElement } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { FormProvider, useFieldArray, useForm, type Resolver } from "react-hook-form";
 
 import { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { Workout, WorkoutSchema } from "@/features/workout-form/lib/validateWorkout";
@@ -10,6 +10,7 @@ import {
 	createDefaultExercise,
 	createDefaultWorkoutValues,
 } from "@/features/workout-form/lib/WorkoutFormDefaults";
+import { sanitizeWorkoutForSubmit } from "@/features/workout-form/lib/workoutSanitizers";
 import { showErrorToast, showExerciseDeletedToast } from "@/lib/toastMessages";
 import {
 	useWorkoutFormUiStore,
@@ -52,8 +53,13 @@ export default function WorkoutForm({
 		(state) => state.setRecentSetsDialogOpen,
 	);
 
+	// Strip fully empty sets/exercises before RHF validation so blank rows don't block submit.
+	const baseResolver = zodResolver(WorkoutSchema);
+	const resolver: Resolver<Workout> = async (values, context, options) =>
+		baseResolver(sanitizeWorkoutForSubmit(values) as Workout, context, options);
+
 	const methods = useForm<Workout>({
-		resolver: zodResolver(WorkoutSchema),
+		resolver,
 		mode: "onSubmit",
 		reValidateMode: "onChange",
 		defaultValues: createDefaultWorkoutValues(),

@@ -54,22 +54,23 @@ export const createWorkout = mutation({
 					})),
 				});
 			}
+			const workoutData = validationResult.data;
 
 			const exercisesWithGlobalExerciseIds = await mapExercisesWithGlobalExerciseIds(
 				ctx,
-				parsedWorkout.exercises,
+				workoutData.exercises as WorkoutFormData["exercises"],
 			);
 			const totalPrSets = await calculateTotalPrSets(
 				ctx,
 				identity.subject,
 				exercisesWithGlobalExerciseIds,
 			);
-			const muscleGroups = getWorkoutMuscleGroups(parsedWorkout);
-			const totalVolume = calculateWorkoutVolume(parsedWorkout);
+			const muscleGroups = getWorkoutMuscleGroups(workoutData);
+			const totalVolume = calculateWorkoutVolume(workoutData);
 
 			await ctx.db.insert("workouts", {
-				name: parsedWorkout.name,
-				durationSeconds: parsedWorkout.durationSeconds,
+				name: workoutData.name,
+				durationSeconds: workoutData.durationSeconds,
 				muscleGroups,
 				exercises: exercisesWithGlobalExerciseIds,
 				totalPrSets,
@@ -113,22 +114,23 @@ export const updateWorkout = mutation({
 					})),
 				});
 			}
+			const workoutData = validationResult.data;
 
 			const exercisesWithGlobalExerciseIds = await mapExercisesWithGlobalExerciseIds(
 				ctx,
-				parsedWorkout.exercises,
+				workoutData.exercises as WorkoutFormData["exercises"],
 			);
 			const totalPrSets = await calculateTotalPrSets(
 				ctx,
 				identity.subject,
 				exercisesWithGlobalExerciseIds,
 			);
-			const muscleGroups = getWorkoutMuscleGroups(parsedWorkout);
-			const totalVolume = calculateWorkoutVolume(parsedWorkout);
+			const muscleGroups = getWorkoutMuscleGroups(workoutData);
+			const totalVolume = calculateWorkoutVolume(workoutData);
 
 			await ctx.db.patch(args.workoutId, {
-				name: parsedWorkout.name,
-				durationSeconds: parsedWorkout.durationSeconds,
+				name: workoutData.name,
+				durationSeconds: workoutData.durationSeconds,
 				muscleGroups,
 				exercises: exercisesWithGlobalExerciseIds,
 				totalPrSets,
