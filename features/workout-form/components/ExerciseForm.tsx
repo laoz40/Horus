@@ -4,9 +4,12 @@ import { HistoryIcon } from "lucide-react";
 import { forwardRef, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import { useWorkoutFormUiStore } from "@/features/workout-form/stores/workoutFormUiStore";
 import { showSetDeletedToast } from "@/lib/toastMessages";
 import { cn } from "@/lib/utils";
+import { useConvex } from "convex/react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
 import { createDefaultSet } from "../lib/WorkoutFormDefaults";
@@ -26,6 +29,19 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			trigger,
 			formState: { errors },
 		} = useFormContext<Workout>();
+		const convex = useConvex();
+		const openRecentSetsDialog = useWorkoutFormUiStore(
+			(state) => state.openRecentSetsDialog,
+		);
+		const setRecentSetsLoading = useWorkoutFormUiStore(
+			(state) => state.setRecentSetsLoading,
+		);
+		const setRecentSetsError = useWorkoutFormUiStore(
+			(state) => state.setRecentSetsError,
+		);
+		const setRecentCompletedSets = useWorkoutFormUiStore(
+			(state) => state.setRecentCompletedSets,
+		);
 
 		const {
 			fields: sets,
@@ -59,6 +75,29 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		}) as string | undefined;
 		const hasExerciseName = Boolean(exerciseName?.trim());
 
+		const handleRecentClick = async () => {
+			const trimmedName = exerciseName?.trim();
+			if (!trimmedName) return;
+
+			openRecentSetsDialog(trimmedName);
+
+			try {
+				const fetchedSets = await convex.query(
+					api.exercises.getRecentCompletedSetsByExerciseName,
+					{
+						exerciseName: trimmedName,
+					},
+				);
+
+				setRecentCompletedSets(fetchedSets);
+			} catch (error) {
+				console.error("Failed to fetch recent completed sets:", error);
+				setRecentSetsError("Couldn't load recent completed sets.");
+			} finally {
+				setRecentSetsLoading(false);
+			}
+		};
+
 		return (
 			<section
 				ref={ref}
@@ -75,6 +114,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 								size="default"
 								type="button"
 								className="h-11 w-11 shrink-0 px-0 text-muted-foreground"
+								onClick={handleRecentClick}
 								aria-label="Recent exercises">
 								<HistoryIcon className="size-5" />
 							</Button>

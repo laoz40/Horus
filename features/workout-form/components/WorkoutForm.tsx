@@ -11,7 +11,14 @@ import {
 	createDefaultWorkoutValues,
 } from "@/features/workout-form/lib/WorkoutFormDefaults";
 import { showErrorToast, showExerciseDeletedToast } from "@/lib/toastMessages";
-import { useWorkoutFormUiStore } from "@/features/workout-form/stores/workoutFormUiStore";
+import {
+	useWorkoutFormUiStore,
+	selectIsRecentSetsDialogOpen,
+	selectRecentSetsExerciseName,
+	selectIsRecentSetsLoading,
+	selectRecentSetsError,
+	selectRecentCompletedSets,
+} from "@/features/workout-form/stores/workoutFormUiStore";
 
 import ExerciseForm from "./ExerciseForm";
 import WorkoutFormBottomBar from "./WorkoutFormBottomBar";
@@ -19,6 +26,7 @@ import { useExerciseNavigation } from "@/features/workout-form/hooks/useExercise
 import { useExerciseSelection } from "@/features/workout-form/hooks/useExerciseSelection";
 import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit";
 import WorkoutFormTopBar from "./WorkoutFormTopBar";
+import RecentCompletedSetsDialog from "./RecentCompletedSetsDialog";
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
@@ -35,6 +43,14 @@ export default function WorkoutForm({
 	const resetWorkoutFormUi = useWorkoutFormUiStore((state) => state.resetWorkoutFormUi);
 	const isEditing = useWorkoutFormUiStore((state) => state.isEditing);
 	const startedAtMs = useWorkoutFormUiStore((state) => state.startedAtMs);
+	const isRecentSetsDialogOpen = useWorkoutFormUiStore(selectIsRecentSetsDialogOpen);
+	const recentSetsExerciseName = useWorkoutFormUiStore(selectRecentSetsExerciseName);
+	const isRecentSetsLoading = useWorkoutFormUiStore(selectIsRecentSetsLoading);
+	const recentSetsError = useWorkoutFormUiStore(selectRecentSetsError);
+	const recentCompletedSets = useWorkoutFormUiStore(selectRecentCompletedSets);
+	const setRecentSetsDialogOpen = useWorkoutFormUiStore(
+		(state) => state.setRecentSetsDialogOpen,
+	);
 
 	const methods = useForm<Workout>({
 		resolver: zodResolver(WorkoutSchema),
@@ -149,6 +165,14 @@ export default function WorkoutForm({
 					exerciseIds={exerciseIds}
 					onAddExercise={handleAddExercise}
 					onDeleteExercise={handleDeleteExercise}
+				/>
+				<RecentCompletedSetsDialog
+					open={isRecentSetsDialogOpen}
+					onOpenChange={setRecentSetsDialogOpen}
+					exerciseName={recentSetsExerciseName}
+					isLoading={isRecentSetsLoading}
+					error={recentSetsError}
+					sets={recentCompletedSets}
 				/>
 			</FormProvider>
 		</div>

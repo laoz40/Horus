@@ -1,10 +1,21 @@
 import { create } from "zustand";
 
+export interface RecentCompletedSet {
+	weight: number;
+	reps: number;
+	time: string;
+}
+
 export interface WorkoutFormUiState {
 	selectedExerciseId: string | null;
 	isEditing: boolean;
 	scrollTargetId: string | null;
 	startedAtMs: number;
+	isRecentSetsDialogOpen: boolean;
+	recentSetsExerciseName: string;
+	isRecentSetsLoading: boolean;
+	recentSetsError: string | null;
+	recentCompletedSets: RecentCompletedSet[];
 }
 
 export interface WorkoutFormUiActions {
@@ -13,6 +24,12 @@ export interface WorkoutFormUiActions {
 	toggleExerciseEdit: () => void;
 	setExerciseEdit: (value: boolean) => void;
 	setScrollTarget: (exerciseId: string | null) => void;
+	openRecentSetsDialog: (exerciseName: string) => void;
+	setRecentSetsDialogOpen: (open: boolean) => void;
+	setRecentSetsLoading: (loading: boolean) => void;
+	setRecentSetsError: (error: string | null) => void;
+	setRecentCompletedSets: (sets: RecentCompletedSet[]) => void;
+	resetRecentSetsDialog: () => void;
 	resetWorkoutFormUi: () => void;
 }
 
@@ -23,12 +40,26 @@ const createInitialWorkoutFormUiState = (): WorkoutFormUiState => ({
 	isEditing: false,
 	scrollTargetId: null,
 	startedAtMs: Date.now(),
+	isRecentSetsDialogOpen: false,
+	recentSetsExerciseName: "",
+	isRecentSetsLoading: false,
+	recentSetsError: null,
+	recentCompletedSets: [],
 });
 
 export const selectSelectedExerciseId = (state: WorkoutFormUiStore) => state.selectedExerciseId;
 export const selectIsEditing = (state: WorkoutFormUiStore) => state.isEditing;
 export const selectScrollTargetId = (state: WorkoutFormUiStore) => state.scrollTargetId;
 export const selectStartedAtMs = (state: WorkoutFormUiStore) => state.startedAtMs;
+export const selectIsRecentSetsDialogOpen = (state: WorkoutFormUiStore) =>
+	state.isRecentSetsDialogOpen;
+export const selectRecentSetsExerciseName = (state: WorkoutFormUiStore) =>
+	state.recentSetsExerciseName;
+export const selectIsRecentSetsLoading = (state: WorkoutFormUiStore) =>
+	state.isRecentSetsLoading;
+export const selectRecentSetsError = (state: WorkoutFormUiStore) => state.recentSetsError;
+export const selectRecentCompletedSets = (state: WorkoutFormUiStore) =>
+	state.recentCompletedSets;
 
 export const useWorkoutFormUiStore = create<WorkoutFormUiStore>()((set) => ({
 	...createInitialWorkoutFormUiState(),
@@ -62,6 +93,36 @@ export const useWorkoutFormUiStore = create<WorkoutFormUiStore>()((set) => ({
 	},
 	setScrollTarget: (exerciseId) => {
 		set({ scrollTargetId: exerciseId });
+	},
+	openRecentSetsDialog: (exerciseName) => {
+		set({
+			isRecentSetsDialogOpen: true,
+			recentSetsExerciseName: exerciseName,
+			isRecentSetsLoading: true,
+			recentSetsError: null,
+			recentCompletedSets: [],
+		});
+	},
+	setRecentSetsDialogOpen: (open) => {
+		set({ isRecentSetsDialogOpen: open });
+	},
+	setRecentSetsLoading: (loading) => {
+		set({ isRecentSetsLoading: loading });
+	},
+	setRecentSetsError: (error) => {
+		set({ recentSetsError: error });
+	},
+	setRecentCompletedSets: (sets) => {
+		set({ recentCompletedSets: sets });
+	},
+	resetRecentSetsDialog: () => {
+		set({
+			isRecentSetsDialogOpen: false,
+			recentSetsExerciseName: "",
+			isRecentSetsLoading: false,
+			recentSetsError: null,
+			recentCompletedSets: [],
+		});
 	},
 	resetWorkoutFormUi: () => {
 		set(createInitialWorkoutFormUiState());
