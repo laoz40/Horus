@@ -73,7 +73,7 @@ export const getRecentCompletedSetsByExerciseName = query({
 							time: getRelativeTime(new Date(workout._creationTime)),
 						});
 
-						if (recentCompletedSets.length === 5) {
+						if (recentCompletedSets.length === 6) {
 							return recentCompletedSets;
 						}
 					}

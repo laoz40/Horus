@@ -58,7 +58,7 @@ export default function RecentCompletedSetsDialog({
 
 					{isLoading ? (
 						<div className="flex flex-col">
-							{Array.from({ length: 5 }).map((_, index) => (
+							{Array.from({ length: 6 }).map((_, index) => (
 								<div
 									key={index}
 									className="grid grid-cols-[64px_64px_minmax(140px,1fr)] gap-2 border-b py-2 last:border-b-0">
