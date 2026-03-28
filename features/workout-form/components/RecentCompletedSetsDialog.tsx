@@ -62,9 +62,9 @@ export default function RecentCompletedSetsDialog({
 								<div
 									key={index}
 									className="grid grid-cols-[64px_64px_minmax(140px,1fr)] gap-2 border-b py-2 last:border-b-0">
-									<div className="bg-muted h-4 w-8 animate-pulse rounded" />
-									<div className="bg-muted h-4 w-8 animate-pulse rounded" />
-									<div className="ml-auto bg-muted h-4 w-24 animate-pulse rounded" />
+									<div className="bg-muted h-4 w-8 animate-pulse" />
+									<div className="bg-muted h-4 w-8 animate-pulse" />
+									<div className="ml-auto bg-muted h-4 w-24 animate-pulse" />
 								</div>
 							))}
 						</div>
