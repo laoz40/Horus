@@ -105,48 +105,47 @@ const getWorkoutChildrenForUi = async (ctx: QueryCtx, workoutId: Id<"workouts">)
 		.order("asc")
 		.collect();
 
-	const setsByWorkoutExerciseId = new Map<
-		Id<"workoutExercises">,
-		{
-			id: string;
-			weight: number;
-			reps: number;
-			completed: boolean;
-		}[]
-	>();
+	// load all rows in the workoutSets table for the workout
+	const workoutSets = await ctx.db
+		.query("workoutSets")
+		.withIndex("by_workoutId", (q) => q.eq("workoutId", workoutId))
+		.collect();
 
-	// load all sets from the workoutSets table for each workoutExercise
-	await Promise.all(
-		workoutExercises.map(async (workoutExercise) => {
-			const workoutSets = await ctx.db
-				.query("workoutSets")
-				.withIndex("by_workoutExerciseId_order", (q) =>
-					q.eq("workoutExerciseId", workoutExercise._id),
-				)
-				.order("asc")
-				.collect();
+	type WorkoutSetForUi = {
+		id: string;
+		weight: number;
+		reps: number;
+		completed: boolean;
+	};
 
-			// store the sets in a map keyed by workoutExerciseId
-			setsByWorkoutExerciseId.set(
-				workoutExercise._id,
-				workoutSets.map((set) => ({
-					id: set.clientSetId,
-					weight: set.weight,
-					reps: set.reps,
-					completed: set.completed,
-				})),
-			);
-		}),
-	);
+	// sort the workoutSets
+	const sortedWorkoutSets = [...workoutSets].sort((a, b) => {
+		// if the workoutExerciseIds are the same, sort by order
+		if (a.workoutExerciseId === b.workoutExerciseId) return a.order - b.order;
+		// otherwise sort by workoutExerciseId
+		return a.workoutExerciseId < b.workoutExerciseId ? -1 : 1;
+	});
+
+	// loop through sortedWorkoutSets and group the sets by workoutExerciseId
+	const setsByWorkoutExerciseId = new Map<Id<"workoutExercises">, WorkoutSetForUi[]>();
+	for (const workoutSet of sortedWorkoutSets) {
+		// initialize setsForExercise with an empty array if it doesn't exist
+		const setsForExercise = setsByWorkoutExerciseId.get(workoutSet.workoutExerciseId) ?? [];
+		// push the set to the array for the workoutExerciseId
+		setsForExercise.push({
+			id: workoutSet.clientSetId,
+			weight: workoutSet.weight,
+			reps: workoutSet.reps,
+			completed: workoutSet.completed,
+		});
+		setsByWorkoutExerciseId.set(workoutSet.workoutExerciseId, setsForExercise);
+	}
 
 	// get all unique global exercise ids from the workoutExercises table
 	const globalExerciseIds = new Set(workoutExercises.map((exercise) => exercise.globalExerciseId));
 	const globalExercisesMap = new Map<
 		Id<"globalExercises">,
-		{
-			name: string;
-			muscleGroups?: string[];
-		}
+		{ name: string; muscleGroups?: string[] }
 	>();
 
 	// check if each global exercise id in the workoutExercises table exists in the globalExercises table
