@@ -57,6 +57,7 @@ const insertWorkoutChildren = async (
 		// create set rows in the workoutSets table
 		for (const [setIndex, set] of exercise.sets.entries()) {
 			await ctx.db.insert("workoutSets", {
+				workoutId: args.workoutId,
 				workoutExerciseId,
 				order: setIndex,
 				clientSetId: set.id,
@@ -75,17 +76,24 @@ const deleteWorkoutChildren = async (ctx: MutationCtx, workoutId: Id<"workouts">
 		.withIndex("by_workoutId", (q) => q.eq("workoutId", workoutId))
 		.collect();
 
-	for (const workoutExercise of workoutExercises) {
-		const workoutSets = await ctx.db
-			.query("workoutSets")
-			.withIndex("by_workoutExerciseId", (q) => q.eq("workoutExerciseId", workoutExercise._id))
-			.collect();
+	const workoutSets = await ctx.db
+		.query("workoutSets")
+		.withIndex("by_workoutId", (q) => q.eq("workoutId", workoutId))
+		.collect();
 
-		for (const workoutSet of workoutSets) {
-			await ctx.db.delete(workoutSet._id);
-		}
+	// delete in batches of 50 to avoid hitting limits on the number of rows that can be deleted in a single query
+	const DELETE_BATCH_SIZE = 50;
 
-		await ctx.db.delete(workoutExercise._id);
+	// loop through the workoutSets and delete them in batches
+	for (let index = 0; index < workoutSets.length; index += DELETE_BATCH_SIZE) {
+		const batch = workoutSets.slice(index, index + DELETE_BATCH_SIZE);
+		await Promise.all(batch.map((workoutSet) => ctx.db.delete(workoutSet._id)));
+	}
+
+	// loop through the workoutExercises and delete them in batches
+	for (let index = 0; index < workoutExercises.length; index += DELETE_BATCH_SIZE) {
+		const batch = workoutExercises.slice(index, index + DELETE_BATCH_SIZE);
+		await Promise.all(batch.map((workoutExercise) => ctx.db.delete(workoutExercise._id)));
 	}
 };
 
