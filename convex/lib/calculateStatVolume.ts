@@ -4,11 +4,11 @@ interface VolumeSet {
 	completed: boolean;
 }
 
-export const calculateWorkoutVolume = (workout: {
+export function calculateWorkoutVolume(workout: {
 	exercises: {
 		sets: VolumeSet[];
 	}[];
-}): number => {
+}): number {
 	let total = 0;
 	for (const exercise of workout.exercises) {
 		for (const set of exercise.sets) {
@@ -18,5 +18,6 @@ export const calculateWorkoutVolume = (workout: {
 			total += weight * reps;
 		}
 	}
+
 	return total;
-};
+}

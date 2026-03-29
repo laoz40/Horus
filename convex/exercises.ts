@@ -1,7 +1,7 @@
 import { v } from "convex/values";
-import { errorHandlerWrapper, requireIdentity } from "../lib/convex-server";
+import { errorHandlerWrapper, requireIdentity } from "./lib/server";
 import { getRelativeTime } from "../lib/date";
-import { normalizeExerciseName } from "../lib/workout/normalizeExerciseName";
+import { normalizeName } from "../lib/normalizeName";
 import { query } from "./_generated/server";
 
 export const searchGlobalExercises = query({
@@ -9,7 +9,7 @@ export const searchGlobalExercises = query({
 		query: v.string(),
 	},
 	handler: async (ctx, args) => {
-		const query = normalizeExerciseName(args.query);
+		const query = normalizeName(args.query);
 		if (query.length === 0) return [];
 
 		const exercises = await ctx.db.query("globalExercises").collect();
@@ -35,7 +35,7 @@ export const getRecentCompletedSetsByExerciseName = query({
 		errorHandlerWrapper(async () => {
 			const identity = await requireIdentity(ctx);
 
-			const exerciseName = normalizeExerciseName(args.exerciseName);
+			const exerciseName = normalizeName(args.exerciseName);
 			const globalExercise = await ctx.db
 				.query("globalExercises")
 				.withIndex("by_normalizedName", (query) => query.eq("normalizedName", exerciseName))

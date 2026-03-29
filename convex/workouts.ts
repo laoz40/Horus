@@ -1,18 +1,14 @@
 import { paginationOptsValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import type { WorkoutFormData } from "../features/workout-form/lib/types";
-import { errorHandlerWrapper, requireIdentity } from "../lib/convex-server";
-import { calculateTotalPrSets } from "../lib/workout/calculateStatPr";
-import { calculateWorkoutVolume } from "../lib/workout/calculateStatVolume";
-import { mapExercisesWithGlobalExerciseIds } from "../lib/workout/globalExerciseLookup";
-import { getWorkoutMuscleGroups } from "../lib/workout/getWorkoutMuscleGroups";
-import { parseAndValidateWorkout } from "../lib/workout/validateWorkoutInput";
-import {
-	deleteWorkoutChildren,
-	getWorkout,
-	insertWorkoutChildren,
-} from "../lib/workout/workoutActions";
-import { getWorkoutChildrenForUi } from "../lib/workout/workoutQueryData";
+import { calculateTotalPrSets } from "./lib/calculateStatPr";
+import { calculateWorkoutVolume } from "./lib/calculateStatVolume";
+import { getWorkoutMuscleGroups } from "./lib/getWorkoutMuscleGroups";
+import { mapExercisesWithGlobalExerciseIds } from "./lib/globalExerciseLookup";
+import { parseAndValidateWorkout } from "./lib/validateWorkoutInput";
+import { getWorkoutChildrenForUi } from "./lib/workoutChildrenForUi";
+import { deleteWorkoutChildren, getWorkout, insertWorkoutChildren } from "./lib/workoutActions";
+import { errorHandlerWrapper, requireIdentity } from "./lib/server";
 import { mutation, query } from "./_generated/server";
 
 const workoutObject = v.object({
@@ -50,7 +46,7 @@ export const createWorkout = mutation({
 
 			const exercisesWithGlobalExerciseIds = await mapExercisesWithGlobalExerciseIds(
 				ctx,
-				workoutData.exercises as WorkoutFormData["exercises"],
+				workoutData.exercises,
 			);
 			const totalPrSets = await calculateTotalPrSets(
 				ctx,
@@ -96,7 +92,7 @@ export const updateWorkout = mutation({
 
 			const exercisesWithGlobalExerciseIds = await mapExercisesWithGlobalExerciseIds(
 				ctx,
-				workoutData.exercises as WorkoutFormData["exercises"],
+				workoutData.exercises,
 			);
 			const totalPrSets = await calculateTotalPrSets(
 				ctx,

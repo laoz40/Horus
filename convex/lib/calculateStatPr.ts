@@ -1,5 +1,5 @@
-import type { MutationCtx } from "../../convex/_generated/server";
-import type { Id } from "../../convex/_generated/dataModel";
+import type { Id } from "../_generated/dataModel";
+import type { MutationCtx } from "../_generated/server";
 
 type ExerciseKey = string | Id<"globalExercises">;
 
@@ -35,32 +35,34 @@ interface CurrentWorkoutForPr {
 	}[];
 }
 
-const emptyExercisePrs = (): ExercisePrs => ({
-	weightPr: 0,
-	volumePr: 0,
-	bodyweightRepsPr: 0,
-});
+function emptyExercisePrs(): ExercisePrs {
+	return {
+		weightPr: 0,
+		volumePr: 0,
+		bodyweightRepsPr: 0,
+	};
+}
 
-const normalizeSet = (set: ComparableSet): ComparableSet => ({
-	weight: set.weight || 0,
-	reps: set.reps || 0,
-	completed: set.completed,
-});
+function normalizeSet(set: ComparableSet): ComparableSet {
+	return {
+		weight: set.weight || 0,
+		reps: set.reps || 0,
+		completed: set.completed,
+	};
+}
 
-const isPrSet = (currentSet: ComparableSet, currentExercisePr: ExercisePrs): boolean => {
+function isPrSet(currentSet: ComparableSet, currentExercisePr: ExercisePrs): boolean {
 	if (!currentSet.completed) return false;
 
-	// if true, then bodyweight reps pr
 	if (currentSet.weight === 0) {
 		return currentSet.reps > currentExercisePr.bodyweightRepsPr;
 	}
 
-	// if true, then weight pr or volume pr
 	const volume = currentSet.weight * currentSet.reps;
 	return currentSet.weight > currentExercisePr.weightPr || volume > currentExercisePr.volumePr;
-};
+}
 
-const updateExercisePrs = (set: ComparableSet, currentExercise: ExercisePrs): ExercisePrs => {
+function updateExercisePrs(set: ComparableSet, currentExercise: ExercisePrs): ExercisePrs {
 	if (!set.completed) return currentExercise;
 
 	return {
@@ -68,10 +70,9 @@ const updateExercisePrs = (set: ComparableSet, currentExercise: ExercisePrs): Ex
 		volumePr: Math.max(currentExercise.volumePr, set.weight * set.reps),
 		bodyweightRepsPr: Math.max(currentExercise.bodyweightRepsPr, set.weight === 0 ? set.reps : 0),
 	};
-};
+}
 
-// build a reference map of exercise prs from previous workouts
-const getExercisePrReferences = (previousSets: PrBaselineSet[]): Map<ExerciseKey, ExercisePrs> => {
+function getExercisePrReferences(previousSets: PrBaselineSet[]): Map<ExerciseKey, ExercisePrs> {
 	const exercisePrs = new Map<ExerciseKey, ExercisePrs>();
 
 	for (const previousSet of previousSets) {
@@ -83,46 +84,42 @@ const getExercisePrReferences = (previousSets: PrBaselineSet[]): Map<ExerciseKey
 	}
 
 	return exercisePrs;
-};
+}
 
-const countTotalPrSetsInWorkout = (
+function countTotalPrSetsInWorkout(
 	workout: CurrentWorkoutForPr,
 	previousSets: PrBaselineSet[],
-): number => {
+): number {
 	const exercisePrs = getExercisePrReferences(previousSets);
-	// map for exercises that have at least one completed set in previous workouts
 	const exercisesWithHistory = new Set(previousSets.map((set) => set.globalExerciseId));
 	let totalPrSets = 0;
 
 	for (const exercise of workout.exercises) {
-		// get prs for current exercise
 		let prsForCurrentExercise = exercisePrs.get(exercise.globalExerciseId) ?? emptyExercisePrs();
-		// if false, then baseline for current exercise is set to 0
 		let isPreviousExercise = exercisesWithHistory.has(exercise.globalExerciseId);
 
-		// count for each set in exercise
 		for (const set of exercise.sets) {
 			const currentSet = normalizeSet(set);
 			if (isPreviousExercise && isPrSet(currentSet, prsForCurrentExercise)) {
 				totalPrSets += 1;
 			}
 			prsForCurrentExercise = updateExercisePrs(currentSet, prsForCurrentExercise);
-			// first completed set in a new exercise creates baseline for later sets
 			if (!isPreviousExercise && currentSet.completed) {
 				isPreviousExercise = true;
 			}
 		}
-		// update for each exercise
+
 		exercisePrs.set(exercise.globalExerciseId, prsForCurrentExercise);
 	}
-	return totalPrSets;
-};
 
-export const calculateTotalPrSets = async (
+	return totalPrSets;
+}
+
+export async function calculateTotalPrSets(
 	ctx: MutationCtx,
 	userId: string,
 	exercises: WorkoutForPrCalculation[],
-): Promise<number> => {
+): Promise<number> {
 	const targetGlobalExerciseIds = new Set(exercises.map((exercise) => exercise.globalExerciseId));
 	const targetGlobalExerciseIdsList = [...targetGlobalExerciseIds];
 
@@ -147,10 +144,8 @@ export const calculateTotalPrSets = async (
 			completed: set.completed,
 		}));
 
-	// return the number of PR sets in the current workout
 	return countTotalPrSetsInWorkout(
 		{
-			// Normalize current workout set values before running PR detection
 			exercises: exercises.map((exercise) => ({
 				globalExerciseId: exercise.globalExerciseId,
 				sets: exercise.sets.map((set) => ({
@@ -162,4 +157,4 @@ export const calculateTotalPrSets = async (
 		},
 		previousSets,
 	);
-};
+}

@@ -6,7 +6,7 @@ type WorkoutLike = {
 	}[];
 };
 
-export const getWorkoutMuscleGroups = (workout: WorkoutLike): string[] => {
+export function getWorkoutMuscleGroups(workout: WorkoutLike): string[] {
 	const seen = new Set<string>();
 	const unique: string[] = [];
 
@@ -15,13 +15,13 @@ export const getWorkoutMuscleGroups = (workout: WorkoutLike): string[] => {
 		if (!Array.isArray(groups)) continue;
 
 		for (const group of groups) {
-			const normalized = group.trim().toLowerCase();
-			if (normalized.length === 0) continue;
-			if (seen.has(normalized)) continue;
-			seen.add(normalized);
-			unique.push(normalized);
+			const trimmedGroup = group.trim().toLowerCase();
+			if (trimmedGroup.length === 0) continue;
+			if (seen.has(trimmedGroup)) continue;
+			seen.add(trimmedGroup);
+			unique.push(trimmedGroup);
 		}
 	}
 
 	return unique;
-};
+}

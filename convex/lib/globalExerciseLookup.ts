@@ -1,6 +1,6 @@
-import type { MutationCtx } from "../../convex/_generated/server";
-import type { Id } from "../../convex/_generated/dataModel";
-import { normalizeExerciseName } from "./normalizeExerciseName";
+import type { Id } from "../_generated/dataModel";
+import type { MutationCtx } from "../_generated/server";
+import { normalizeName } from "../../lib/normalizeName";
 
 interface ExerciseWithGlobal {
 	id: string;
@@ -18,14 +18,12 @@ interface ExerciseWithGlobal {
 	};
 }
 
-const getOrCreateGlobalExerciseId = async (
+async function getOrCreateGlobalExerciseId(
 	ctx: MutationCtx,
 	global: ExerciseWithGlobal["global"],
 	globalExerciseIdCache: Map<string, Id<"globalExercises">>,
-): Promise<Id<"globalExercises">> => {
-	const globalExerciseIdKey = normalizeExerciseName(global.name);
-	// avoid duplicate DB calls for repeated exercises in the same mutation
-	// if ID exists in cache, reuse it
+): Promise<Id<"globalExercises">> {
+	const globalExerciseIdKey = normalizeName(global.name);
 	const cachedId = globalExerciseIdCache.get(globalExerciseIdKey);
 	if (cachedId) return cachedId;
 
@@ -34,30 +32,34 @@ const getOrCreateGlobalExerciseId = async (
 		.withIndex("by_normalizedName", (q) => q.eq("normalizedName", globalExerciseIdKey))
 		.first();
 
-	// if existing exercise, cache and reuse existing ID
 	if (existingExercise) {
 		globalExerciseIdCache.set(globalExerciseIdKey, existingExercise._id);
 		return existingExercise._id;
 	}
 
-	// if not found, create a new lookup record
 	const globalExerciseId = await ctx.db.insert("globalExercises", {
 		name: global.name,
 		normalizedName: globalExerciseIdKey,
 		muscleGroups: global.muscleGroups,
 	});
 
-	// cache created ID for later exercises in the same request
 	globalExerciseIdCache.set(globalExerciseIdKey, globalExerciseId);
 
-	// only the _id is returned because convex
 	return globalExerciseId;
-};
+}
 
-export const mapExercisesWithGlobalExerciseIds = async (
+export async function mapExercisesWithGlobalExerciseIds(
 	ctx: MutationCtx,
 	exercises: ExerciseWithGlobal[],
-) => {
+): Promise<
+	Array<{
+		id: string;
+		globalExerciseId: Id<"globalExercises">;
+		difficulty?: number;
+		notes?: string;
+		sets: ExerciseWithGlobal["sets"];
+	}>
+> {
 	const globalExerciseIds = new Map<string, Id<"globalExercises">>();
 
 	return Promise.all(
@@ -68,7 +70,6 @@ export const mapExercisesWithGlobalExerciseIds = async (
 				globalExerciseIds,
 			);
 
-			// return exercise payload linked by ID
 			return {
 				id: exercise.id,
 				globalExerciseId,
@@ -78,4 +79,4 @@ export const mapExercisesWithGlobalExerciseIds = async (
 			};
 		}),
 	);
-};
+}

@@ -1,4 +1,4 @@
-import { normalizeExerciseName } from "@/lib/workout/normalizeExerciseName";
+import { normalizeName } from "@/lib/normalizeName";
 
 interface fetchedExercise {
 	id: string;
@@ -52,7 +52,7 @@ export const createSuggestionObject = (exercise: {
 	id: exercise.id,
 	name: toTitleCase(exercise.name),
 	normalizedName:
-		exercise.normalizedName ?? normalizeExerciseName(exercise.name),
+		exercise.normalizedName ?? normalizeName(exercise.name),
 	// muscleGroups if from DB, targetMuscles if from form api
 	muscleGroups: exercise.muscleGroups ?? exercise.targetMuscles,
 });

@@ -46,15 +46,16 @@ export const WorkoutSchema = z.object({
 	exercises: z.array(ExerciseSchema).min(1, "No exercises, silly. Go do your workout."),
 });
 
-const WorkoutSubmitSchema = z.preprocess(
+const SanitizedWorkoutSchema = z.preprocess(
 	sanitizeWorkoutForSubmit,
 	WorkoutSchema,
-) as z.ZodType<Workout>;
+);
 
 export const validateWorkout = (workout: Workout) => {
-	return WorkoutSubmitSchema.safeParse(workout);
+	return SanitizedWorkoutSchema.safeParse(workout);
 };
 
 export type Set = z.infer<typeof SetSchema>;
 export type Exercise = z.infer<typeof ExerciseSchema>;
 export type Workout = z.infer<typeof WorkoutSchema>;
+

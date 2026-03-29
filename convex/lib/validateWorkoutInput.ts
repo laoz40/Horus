@@ -1,9 +1,9 @@
 import { ConvexError } from "convex/values";
-import type { WorkoutFormData } from "../../features/workout-form/lib/types";
+import type { WorkoutFormData, WorkoutForSave } from "../../features/workout-form/lib/types";
 import { validateWorkout } from "../../features/workout-form/lib/validateWorkout";
 import { parseWorkout } from "./parseWorkout";
 
-export function parseAndValidateWorkout(rawWorkout: WorkoutFormData): WorkoutFormData {
+export function parseAndValidateWorkout(rawWorkout: WorkoutFormData): WorkoutForSave {
 	const parsedWorkout = parseWorkout(rawWorkout);
 	const validationResult = validateWorkout(parsedWorkout);
 
@@ -16,5 +16,5 @@ export function parseAndValidateWorkout(rawWorkout: WorkoutFormData): WorkoutFor
 		});
 	}
 
-	return validationResult.data;
+	return parsedWorkout;
 }

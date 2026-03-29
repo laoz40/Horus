@@ -1,7 +1,7 @@
-import { getCurrentDay } from "../date";
-import type { WorkoutFormData } from "../../features/workout-form/lib/types";
+import type { WorkoutFormData, WorkoutForSave } from "../../features/workout-form/lib/types";
+import { getCurrentDay } from "../../lib/date";
 
-export const parseWorkout = (workout: WorkoutFormData) => {
+export function parseWorkout(workout: WorkoutFormData): WorkoutForSave {
 	return {
 		name: workout.name.trim() || `${getCurrentDay()} Workout`,
 		durationSeconds: workout.durationSeconds,
@@ -29,4 +29,4 @@ export const parseWorkout = (workout: WorkoutFormData) => {
 			};
 		}),
 	};
-};
+}

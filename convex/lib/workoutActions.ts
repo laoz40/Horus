@@ -1,6 +1,6 @@
 import { ConvexError } from "convex/values";
-import type { Doc, Id } from "../../convex/_generated/dataModel";
-import type { MutationCtx, QueryCtx } from "../../convex/_generated/server";
+import type { Doc, Id } from "../_generated/dataModel";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { mapExercisesWithGlobalExerciseIds } from "./globalExerciseLookup";
 
 type WorkoutCtx = MutationCtx | QueryCtx;

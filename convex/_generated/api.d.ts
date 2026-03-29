@@ -11,6 +11,15 @@
 import type * as auth from "../auth.js";
 import type * as exercises from "../exercises.js";
 import type * as http from "../http.js";
+import type * as lib_calculateStatPr from "../lib/calculateStatPr.js";
+import type * as lib_calculateStatVolume from "../lib/calculateStatVolume.js";
+import type * as lib_getWorkoutMuscleGroups from "../lib/getWorkoutMuscleGroups.js";
+import type * as lib_globalExerciseLookup from "../lib/globalExerciseLookup.js";
+import type * as lib_parseWorkout from "../lib/parseWorkout.js";
+import type * as lib_server from "../lib/server.js";
+import type * as lib_validateWorkoutInput from "../lib/validateWorkoutInput.js";
+import type * as lib_workoutActions from "../lib/workoutActions.js";
+import type * as lib_workoutChildrenForUi from "../lib/workoutChildrenForUi.js";
 import type * as migrations_migration_1_nested_workouts_to_split_table_schema from "../migrations/migration_1_nested_workouts_to_split_table_schema.js";
 import type * as workouts from "../workouts.js";
 
@@ -24,6 +33,15 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   exercises: typeof exercises;
   http: typeof http;
+  "lib/calculateStatPr": typeof lib_calculateStatPr;
+  "lib/calculateStatVolume": typeof lib_calculateStatVolume;
+  "lib/getWorkoutMuscleGroups": typeof lib_getWorkoutMuscleGroups;
+  "lib/globalExerciseLookup": typeof lib_globalExerciseLookup;
+  "lib/parseWorkout": typeof lib_parseWorkout;
+  "lib/server": typeof lib_server;
+  "lib/validateWorkoutInput": typeof lib_validateWorkoutInput;
+  "lib/workoutActions": typeof lib_workoutActions;
+  "lib/workoutChildrenForUi": typeof lib_workoutChildrenForUi;
   "migrations/migration_1_nested_workouts_to_split_table_schema": typeof migrations_migration_1_nested_workouts_to_split_table_schema;
   workouts: typeof workouts;
 }>;
