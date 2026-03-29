@@ -1,7 +1,7 @@
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
-import { normalizeWorkoutForMutation } from "@/features/workout-form/lib/workoutMutationInput";
+import type { WorkoutFormData } from "@/features/workout-form/lib/types";
+import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
 import { showErrorToast, showWorkoutSavedToast } from "@/lib/toastMessages";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
@@ -13,7 +13,7 @@ interface UseWorkoutSubmitProps {
 }
 
 interface UseWorkoutSubmitReturn {
-	submitWorkout: (data: Workout) => Promise<void>;
+	submitWorkout: (data: WorkoutFormData) => Promise<void>;
 }
 
 export const useWorkoutSubmit = ({
@@ -24,10 +24,12 @@ export const useWorkoutSubmit = ({
 	const createWorkout = useMutation(api.workouts.createWorkout);
 	const updateWorkout = useMutation(api.workouts.updateWorkout);
 
-	const submitWorkout = async (data: Workout) => {
+	const submitWorkout = async (data: WorkoutFormData) => {
 		const durationSeconds = Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000));
-		const finalData = normalizeWorkoutForMutation({ ...data, durationSeconds });
-		const workoutInput = JSON.parse(JSON.stringify(finalData));
+		const workoutInput = stripEmptyWorkoutEntries({
+			...data,
+			durationSeconds,
+		}) as WorkoutFormData;
 
 		try {
 			const result = workoutId

@@ -26,8 +26,8 @@ const workoutObject = v.object({
 				v.object({
 					completed: v.boolean(),
 					id: v.string(),
-					reps: v.float64(),
-					weight: v.float64(),
+					reps: v.optional(v.float64()),
+					weight: v.optional(v.float64()),
 				}),
 			),
 		}),

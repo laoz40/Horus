@@ -10,7 +10,7 @@ const isEmptySet = (set: unknown): boolean => {
 };
 
 // Strip fully empty sets/exercises before validation.
-export const sanitizeWorkoutForSubmit = (workout: unknown): unknown => {
+export const stripEmptyWorkoutEntries = (workout: unknown): unknown => {
 	if (!workout || typeof workout !== "object") return workout;
 
 	const data = workout as {

@@ -10,7 +10,7 @@ import {
 	createDefaultExercise,
 	createDefaultWorkoutValues,
 } from "@/features/workout-form/lib/WorkoutFormDefaults";
-import { sanitizeWorkoutForSubmit } from "@/features/workout-form/lib/workoutSanitizers";
+import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
 import { showErrorToast, showExerciseDeletedToast } from "@/lib/toastMessages";
 import {
 	useWorkoutFormUiStore,
@@ -56,7 +56,7 @@ export default function WorkoutForm({
 	// Strip fully empty sets/exercises before RHF validation so blank rows don't block submit.
 	const baseResolver = zodResolver(WorkoutSchema);
 	const resolver: Resolver<Workout> = async (values, context, options) =>
-		baseResolver(sanitizeWorkoutForSubmit(values) as Workout, context, options);
+		baseResolver(stripEmptyWorkoutEntries(values) as Workout, context, options);
 
 	const methods = useForm<Workout>({
 		resolver,

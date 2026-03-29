@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { sanitizeWorkoutForSubmit } from "./workoutSanitizers";
+import { stripEmptyWorkoutEntries } from "./stripEmptyWorkoutEntries";
 
 const GlobalExerciseInputSchema = z.object({
 	name: z.string().trim().min(2, "Enter a real exercise"),
@@ -47,7 +47,7 @@ export const WorkoutSchema = z.object({
 });
 
 const SanitizedWorkoutSchema = z.preprocess(
-	sanitizeWorkoutForSubmit,
+	stripEmptyWorkoutEntries,
 	WorkoutSchema,
 );
 
@@ -58,4 +58,3 @@ export const validateWorkout = (workout: Workout) => {
 export type Set = z.infer<typeof SetSchema>;
 export type Exercise = z.infer<typeof ExerciseSchema>;
 export type Workout = z.infer<typeof WorkoutSchema>;
-
