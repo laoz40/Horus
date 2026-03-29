@@ -226,6 +226,7 @@ export const createWorkout = mutation({
 			const workoutId = await ctx.db.insert("workouts", {
 				name: workoutData.name,
 				durationSeconds: workoutData.durationSeconds,
+				exerciseCount: exercisesWithGlobalExerciseIds.length,
 				muscleGroups,
 				totalPrSets,
 				totalVolume,
@@ -292,6 +293,7 @@ export const updateWorkout = mutation({
 			await ctx.db.patch(args.workoutId, {
 				name: workoutData.name,
 				durationSeconds: workoutData.durationSeconds,
+				exerciseCount: exercisesWithGlobalExerciseIds.length,
 				muscleGroups,
 				totalPrSets,
 				totalVolume,
@@ -454,18 +456,6 @@ export const listWorkouts = query({
 				.order("desc")
 				.paginate(args.paginationOpts);
 
-			// count the number of exercises for each workout
-			const exerciseCounts = new Map<Id<"workouts">, number>();
-			await Promise.all(
-				results.page.map(async (workout) => {
-					const exercises = await ctx.db
-						.query("workoutExercises")
-						.withIndex("by_workoutId", (q) => q.eq("workoutId", workout._id))
-						.collect();
-					exerciseCounts.set(workout._id, exercises.length);
-				}),
-			);
-
 			return {
 				...results,
 				page: results.page.map((workout) => ({
@@ -475,7 +465,7 @@ export const listWorkouts = query({
 					durationSeconds: workout.durationSeconds,
 					totalVolume: workout.totalVolume,
 					totalPrSets: workout.totalPrSets,
-					exerciseCount: exerciseCounts.get(workout._id) ?? 0,
+					exerciseCount: workout.exerciseCount ?? 0,
 					muscleGroups: workout.muscleGroups ?? [],
 				})),
 			};

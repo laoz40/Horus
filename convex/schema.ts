@@ -9,6 +9,7 @@ export default defineSchema({
   }).index("by_normalizedName", ["normalizedName"]),
   workouts: defineTable({
     durationSeconds: v.union(v.float64(), v.null()),
+    exerciseCount: v.optional(v.float64()),
     muscleGroups: v.optional(v.array(v.string())),
     exercises: v.optional(
       v.array(

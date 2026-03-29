@@ -79,25 +79,41 @@ export const migrateLegacyWorkouts = mutation({
 				const existingChildren = await ctx.db
 					.query("workoutExercises")
 					.withIndex("by_workoutId", (q) => q.eq("workoutId", workout._id))
-					.take(1);
+					.collect();
 				// if workout already has rows in workoutExercises:
+				//   patch denormalized exercise count
 				//   if old nested exercises field still exists, remove it
 				//   skip inserting to avoid duplicate child rows
 				if (existingChildren.length > 0) {
 					if (legacyWorkout.exercises !== undefined) {
-						await ctx.db.patch(workout._id, { exercises: undefined });
+						await ctx.db.patch(workout._id, {
+							exerciseCount: existingChildren.length,
+							exercises: undefined,
+						});
 						cleanedLegacyWorkouts += 1;
+					} else {
+						await ctx.db.patch(workout._id, {
+							exerciseCount: existingChildren.length,
+						});
 					}
 					continue;
 				}
 
 				// if there are no legacy nested exercises to migrate:
+				//   set denormalized exercise count to zero
 				//   if old nested field exists, remove it for cleanup
 				//   continue to next workout
 				if (legacyExercises.length === 0) {
 					if (legacyWorkout.exercises !== undefined) {
-						await ctx.db.patch(workout._id, { exercises: undefined });
+						await ctx.db.patch(workout._id, {
+							exerciseCount: 0,
+							exercises: undefined,
+						});
 						cleanedLegacyWorkouts += 1;
+					} else {
+						await ctx.db.patch(workout._id, {
+							exerciseCount: 0,
+						});
 					}
 					continue;
 				}
@@ -132,8 +148,11 @@ export const migrateLegacyWorkouts = mutation({
 					}
 				}
 
-				// remove legacy nested field after successful insert
-				await ctx.db.patch(workout._id, { exercises: undefined });
+				// remove legacy nested field and patch denormalized exercise count after successful insert
+				await ctx.db.patch(workout._id, {
+					exerciseCount: legacyExercises.length,
+					exercises: undefined,
+				});
 				cleanedLegacyWorkouts += 1;
 				migratedWorkouts += 1;
 			}
