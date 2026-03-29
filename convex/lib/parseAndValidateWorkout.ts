@@ -1,7 +1,9 @@
+import { ConvexError } from "convex/values";
 import type { WorkoutFormData, WorkoutForSave } from "../../features/workout-form/lib/types";
+import { validateWorkout } from "../../features/workout-form/lib/validateWorkout";
 import { getCurrentDay } from "../../lib/date";
 
-export function parseWorkout(workout: WorkoutFormData): WorkoutForSave {
+function parseWorkout(workout: WorkoutFormData): WorkoutForSave {
 	return {
 		name: workout.name.trim() || `${getCurrentDay()} Workout`,
 		durationSeconds: workout.durationSeconds,
@@ -29,4 +31,20 @@ export function parseWorkout(workout: WorkoutFormData): WorkoutForSave {
 			};
 		}),
 	};
+}
+
+export function parseAndValidateWorkout(rawWorkout: WorkoutFormData): WorkoutForSave {
+	const parsedWorkout = parseWorkout(rawWorkout);
+	const validationResult = validateWorkout(parsedWorkout);
+
+	if (!validationResult.success) {
+		throw new ConvexError({
+			code: "INVALID_WORKOUT_DATA",
+			issues: validationResult.error.issues.map((issue) => ({
+				message: issue.message,
+			})),
+		});
+	}
+
+	return parsedWorkout;
 }

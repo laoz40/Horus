@@ -5,7 +5,7 @@ import { calculateTotalPrSets } from "./lib/calculateStatPr";
 import { calculateWorkoutVolume } from "./lib/calculateStatVolume";
 import { getWorkoutMuscleGroups } from "./lib/getWorkoutMuscleGroups";
 import { mapExercisesWithGlobalExerciseIds } from "./lib/globalExerciseLookup";
-import { parseAndValidateWorkout } from "./lib/validateWorkoutInput";
+import { parseAndValidateWorkout } from "./lib/parseAndValidateWorkout";
 import { getWorkoutChildrenForUi } from "./lib/workoutChildrenForUi";
 import { deleteWorkoutChildren, getWorkout, insertWorkoutChildren } from "./lib/workoutActions";
 import { errorHandlerWrapper, requireIdentity } from "./lib/server";
