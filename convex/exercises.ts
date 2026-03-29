@@ -1,23 +1,8 @@
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
+import { errorHandlerWrapper, requireIdentity } from "../lib/convex-server";
 import { getRelativeTime } from "../lib/date";
 import { normalizeExerciseName } from "../lib/workout/normalizeExerciseName";
-import { query, type QueryCtx } from "./_generated/server";
-
-const requireIdentity = async (ctx: QueryCtx) => {
-	const identity = await ctx.auth.getUserIdentity();
-	if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
-
-	return identity;
-};
-
-const errorHandlerWrapper = async <T>(operation: () => Promise<T>): Promise<T> => {
-	try {
-		return await operation();
-	} catch (error) {
-		if (error instanceof ConvexError) throw error;
-		throw new ConvexError({ code: "DB_QUERY_FAILED" });
-	}
-};
+import { query } from "./_generated/server";
 
 export const searchGlobalExercises = query({
 	args: {
@@ -37,9 +22,7 @@ export const searchGlobalExercises = query({
 				id: exercise._id,
 				name: exercise.name,
 				normalizedName: exercise.normalizedName,
-				...(exercise.muscleGroups !== undefined
-					? { muscleGroups: exercise.muscleGroups }
-					: {}),
+				...(exercise.muscleGroups !== undefined ? { muscleGroups: exercise.muscleGroups } : {}),
 			}));
 	},
 });
@@ -55,9 +38,7 @@ export const getRecentCompletedSetsByExerciseName = query({
 			const exerciseName = normalizeExerciseName(args.exerciseName);
 			const globalExercise = await ctx.db
 				.query("globalExercises")
-				.withIndex("by_normalizedName", (query) =>
-					query.eq("normalizedName", exerciseName),
-				)
+				.withIndex("by_normalizedName", (query) => query.eq("normalizedName", exerciseName))
 				.first();
 			if (!globalExercise) return [];
 

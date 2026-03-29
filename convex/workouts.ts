@@ -1,14 +1,19 @@
 import { paginationOptsValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import type { WorkoutFormData } from "../features/workout-form/lib/types";
-import { validateWorkout } from "../features/workout-form/lib/validateWorkout";
+import { errorHandlerWrapper, requireIdentity } from "../lib/convex-server";
 import { calculateTotalPrSets } from "../lib/workout/calculateStatPr";
 import { calculateWorkoutVolume } from "../lib/workout/calculateStatVolume";
 import { mapExercisesWithGlobalExerciseIds } from "../lib/workout/globalExerciseLookup";
 import { getWorkoutMuscleGroups } from "../lib/workout/getWorkoutMuscleGroups";
-import { parseWorkout } from "../lib/workout/parseWorkout";
-import type { Id } from "./_generated/dataModel";
-import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
+import { parseAndValidateWorkout } from "../lib/workout/validateWorkoutInput";
+import {
+	deleteWorkoutChildren,
+	getWorkout,
+	insertWorkoutChildren,
+} from "../lib/workout/workoutActions";
+import { getWorkoutChildrenForUi } from "../lib/workout/workoutQueryData";
+import { mutation, query } from "./_generated/server";
 
 const workoutObject = v.object({
 	durationSeconds: v.union(v.float64(), v.null()),
@@ -33,223 +38,6 @@ const workoutObject = v.object({
 	),
 	name: v.string(),
 });
-
-const requireIdentity = async (ctx: MutationCtx | QueryCtx) => {
-	const identity = await ctx.auth.getUserIdentity();
-	if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
-
-	return identity;
-};
-
-const getWorkout = async (
-	ctx: MutationCtx | QueryCtx,
-	workoutId: Id<"workouts">,
-	userId: string,
-) => {
-	const workout = await ctx.db.get(workoutId);
-	// check if the workout exists and belongs to the user
-	if (!workout || workout.userId !== userId) {
-		throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId });
-	}
-
-	return workout;
-};
-
-const parseAndValidateWorkout = (rawWorkout: WorkoutFormData) => {
-	const parsedWorkout = parseWorkout(rawWorkout);
-	const validationResult = validateWorkout(parsedWorkout);
-
-	if (!validationResult.success) {
-		throw new ConvexError({
-			code: "INVALID_WORKOUT_DATA",
-			issues: validationResult.error.issues.map((issue) => ({
-				message: issue.message,
-			})),
-		});
-	}
-
-	return validationResult.data;
-};
-
-const errorHandlerWrapper = async <T>(operation: () => Promise<T>): Promise<T> => {
-	try {
-		return await operation();
-	} catch (error) {
-		// catch any ConvexError and rethrow it
-		if (error instanceof ConvexError) throw error;
-		// else throw a generic DB query failed error
-		throw new ConvexError({ code: "DB_QUERY_FAILED" });
-	}
-};
-
-const insertWorkoutChildren = async (
-	ctx: MutationCtx,
-	args: {
-		workoutId: Id<"workouts">;
-		userId: string;
-		workoutCreationTime: number;
-		exercises: Awaited<ReturnType<typeof mapExercisesWithGlobalExerciseIds>>;
-	},
-) => {
-	// create exercise rows in the workoutExercises table
-	for (const [exerciseIndex, exercise] of args.exercises.entries()) {
-		const workoutExerciseId = await ctx.db.insert("workoutExercises", {
-			workoutId: args.workoutId,
-			userId: args.userId,
-			order: exerciseIndex,
-			clientExerciseId: exercise.id,
-			globalExerciseId: exercise.globalExerciseId,
-			...(exercise.difficulty !== undefined ? { difficulty: exercise.difficulty } : {}),
-			...(exercise.notes !== undefined ? { notes: exercise.notes } : {}),
-		});
-
-		// create set rows in the workoutSets table
-		for (const [setIndex, set] of exercise.sets.entries()) {
-			await ctx.db.insert("workoutSets", {
-				userId: args.userId,
-				globalExerciseId: exercise.globalExerciseId,
-				workoutCreationTime: args.workoutCreationTime,
-				workoutId: args.workoutId,
-				workoutExerciseId,
-				order: setIndex,
-				clientSetId: set.id,
-				weight: set.weight,
-				reps: set.reps,
-				completed: set.completed,
-			});
-		}
-	}
-};
-
-const deleteRowsInBatches = async (
-	ctx: MutationCtx,
-	rowIds: Array<Id<"workoutSets"> | Id<"workoutExercises">>,
-	batchSize: number,
-) => {
-	for (let index = 0; index < rowIds.length; index += batchSize) {
-		const batch = rowIds.slice(index, index + batchSize);
-		await Promise.all(batch.map((rowId) => ctx.db.delete(rowId)));
-	}
-};
-
-const deleteWorkoutChildren = async (ctx: MutationCtx, workoutId: Id<"workouts">) => {
-	// load all rows in the workoutExercises and workoutSets tables for the workout
-	const [workoutExercises, workoutSets] = await Promise.all([
-		ctx.db
-			.query("workoutExercises")
-			.withIndex("by_workoutId", (q) => q.eq("workoutId", workoutId))
-			.collect(),
-		ctx.db
-			.query("workoutSets")
-			.withIndex("by_workoutId", (q) => q.eq("workoutId", workoutId))
-			.collect(),
-	]);
-
-	const DELETE_BATCH_SIZE = 50;
-
-	// loop through the workoutSets and workoutExercises and delete them in batches
-	await deleteRowsInBatches(
-		ctx,
-		workoutSets.map((workoutSet) => workoutSet._id),
-		DELETE_BATCH_SIZE,
-	);
-	await deleteRowsInBatches(
-		ctx,
-		workoutExercises.map((workoutExercise) => workoutExercise._id),
-		DELETE_BATCH_SIZE,
-	);
-};
-
-const getWorkoutChildrenForUi = async (ctx: QueryCtx, workoutId: Id<"workouts">) => {
-	// load all rows in the workoutExercises and workoutSets tables for the workout
-	const [workoutExercises, workoutSets] = await Promise.all([
-		ctx.db
-			.query("workoutExercises")
-			.withIndex("by_workoutId_order", (q) => q.eq("workoutId", workoutId))
-			.order("asc")
-			.collect(),
-		ctx.db
-			.query("workoutSets")
-			.withIndex("by_workoutId", (q) => q.eq("workoutId", workoutId))
-			.collect(),
-	]);
-
-	type WorkoutSetForUi = {
-		id: string;
-		weight: number;
-		reps: number;
-		completed: boolean;
-		order: number;
-	};
-
-	const setsByWorkoutExerciseId = new Map<Id<"workoutExercises">, WorkoutSetForUi[]>();
-	// loop through workoutSets and group the sets by workoutExerciseId
-	for (const workoutSet of workoutSets) {
-		// initialize setsForExercise with an empty array if it doesn't exist
-		const setsForExercise = setsByWorkoutExerciseId.get(workoutSet.workoutExerciseId) ?? [];
-		// push the set to the array for the workoutExerciseId
-		setsForExercise.push({
-			id: workoutSet.clientSetId,
-			weight: workoutSet.weight,
-			reps: workoutSet.reps,
-			completed: workoutSet.completed,
-			order: workoutSet.order,
-		});
-		setsByWorkoutExerciseId.set(workoutSet.workoutExerciseId, setsForExercise);
-	}
-
-	// sort the sets within each workoutExercise by order
-	for (const setsForExercise of setsByWorkoutExerciseId.values()) {
-		setsForExercise.sort((a, b) => a.order - b.order);
-	}
-
-	// get all unique global exercise ids from the workoutExercises table
-	const globalExerciseIds = new Set(workoutExercises.map((exercise) => exercise.globalExerciseId));
-	const globalExercisesMap = new Map<
-		Id<"globalExercises">,
-		{ name: string; muscleGroups?: string[] }
-	>();
-
-	// check if each id in the workoutExercises table exists in the globalExercises table
-	await Promise.all(
-		[...globalExerciseIds].map(async (globalExerciseId) => {
-			const globalExercise = await ctx.db.get(globalExerciseId);
-			if (!globalExercise) return;
-
-			// if so, store the global exercise data in the map keyed by global exercise id
-			globalExercisesMap.set(globalExerciseId, {
-				name: globalExercise.name,
-				...(globalExercise.muscleGroups !== undefined
-					? { muscleGroups: globalExercise.muscleGroups }
-					: {}),
-			});
-		}),
-	);
-
-	// count the number of missing global exercises
-	let missingGlobalExercisesCount = 0;
-	const exercises = workoutExercises.flatMap((workoutExercise) => {
-		const globalExercise = globalExercisesMap.get(workoutExercise.globalExerciseId);
-		if (!globalExercise) {
-			missingGlobalExercisesCount += 1;
-			return [];
-		}
-
-		// return object with the workout exercise data and the sets
-		return {
-			id: workoutExercise.clientExerciseId,
-			global: globalExercise,
-			...(workoutExercise.difficulty !== undefined
-				? { difficulty: workoutExercise.difficulty }
-				: {}),
-			...(workoutExercise.notes !== undefined ? { notes: workoutExercise.notes } : {}),
-			sets:
-				setsByWorkoutExerciseId.get(workoutExercise._id)?.map(({ order: _, ...set }) => set) ?? [],
-		};
-	});
-
-	return { exercises, missingGlobalExercisesCount };
-};
 
 export const createWorkout = mutation({
 	args: {
