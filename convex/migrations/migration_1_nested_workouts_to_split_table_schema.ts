@@ -136,6 +136,9 @@ export const migrateLegacyWorkouts = mutation({
 					// insert one workout set row per legacy set
 					for (const [setIndex, legacySet] of legacyExercise.sets.entries()) {
 						await ctx.db.insert("workoutSets", {
+							userId: workout.userId,
+							globalExerciseId: legacyExercise.globalExerciseId,
+							workoutCreationTime: workout._creationTime,
 							workoutId: workout._id,
 							workoutExerciseId,
 							order: setIndex,

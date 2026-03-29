@@ -1,7 +1,5 @@
-import { ConvexError, v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
-import type { Id } from "./_generated/dataModel";
-import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
+import { ConvexError, v } from "convex/values";
 import type { WorkoutFormData } from "../features/workout-form/lib/types";
 import { validateWorkout } from "../features/workout-form/lib/validateWorkout";
 import { calculateTotalPrSets } from "../lib/workout/calculateStatPr";
@@ -9,6 +7,8 @@ import { calculateWorkoutVolume } from "../lib/workout/calculateStatVolume";
 import { mapExercisesWithGlobalExerciseIds } from "../lib/workout/globalExerciseLookup";
 import { getWorkoutMuscleGroups } from "../lib/workout/getWorkoutMuscleGroups";
 import { parseWorkout } from "../lib/workout/parseWorkout";
+import type { Id } from "./_generated/dataModel";
+import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 
 const workoutObject = v.object({
 	durationSeconds: v.union(v.float64(), v.null()),
@@ -34,11 +34,60 @@ const workoutObject = v.object({
 	name: v.string(),
 });
 
+const requireIdentity = async (ctx: MutationCtx | QueryCtx) => {
+	const identity = await ctx.auth.getUserIdentity();
+	if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
+
+	return identity;
+};
+
+const getWorkout = async (
+	ctx: MutationCtx | QueryCtx,
+	workoutId: Id<"workouts">,
+	userId: string,
+) => {
+	const workout = await ctx.db.get(workoutId);
+	// check if the workout exists and belongs to the user
+	if (!workout || workout.userId !== userId) {
+		throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId });
+	}
+
+	return workout;
+};
+
+const parseAndValidateWorkout = (rawWorkout: WorkoutFormData) => {
+	const parsedWorkout = parseWorkout(rawWorkout);
+	const validationResult = validateWorkout(parsedWorkout);
+
+	if (!validationResult.success) {
+		throw new ConvexError({
+			code: "INVALID_WORKOUT_DATA",
+			issues: validationResult.error.issues.map((issue) => ({
+				message: issue.message,
+			})),
+		});
+	}
+
+	return validationResult.data;
+};
+
+const errorHandlerWrapper = async <T>(operation: () => Promise<T>): Promise<T> => {
+	try {
+		return await operation();
+	} catch (error) {
+		// catch any ConvexError and rethrow it
+		if (error instanceof ConvexError) throw error;
+		// else throw a generic DB query failed error
+		throw new ConvexError({ code: "DB_QUERY_FAILED" });
+	}
+};
+
 const insertWorkoutChildren = async (
 	ctx: MutationCtx,
 	args: {
 		workoutId: Id<"workouts">;
 		userId: string;
+		workoutCreationTime: number;
 		exercises: Awaited<ReturnType<typeof mapExercisesWithGlobalExerciseIds>>;
 	},
 ) => {
@@ -57,6 +106,9 @@ const insertWorkoutChildren = async (
 		// create set rows in the workoutSets table
 		for (const [setIndex, set] of exercise.sets.entries()) {
 			await ctx.db.insert("workoutSets", {
+				userId: args.userId,
+				globalExerciseId: exercise.globalExerciseId,
+				workoutCreationTime: args.workoutCreationTime,
 				workoutId: args.workoutId,
 				workoutExerciseId,
 				order: setIndex,
@@ -192,24 +244,10 @@ export const createWorkout = mutation({
 	args: {
 		workout: workoutObject,
 	},
-	handler: async (ctx, args) => {
-		try {
-			const identity = await ctx.auth.getUserIdentity();
-			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
-
-			const parsedWorkout = parseWorkout(args.workout as WorkoutFormData);
-
-			const validationResult = validateWorkout(parsedWorkout);
-
-			if (!validationResult.success) {
-				throw new ConvexError({
-					code: "INVALID_WORKOUT_DATA",
-					issues: validationResult.error.issues.map((issue) => ({
-						message: issue.message,
-					})),
-				});
-			}
-			const workoutData = validationResult.data;
+	handler: async (ctx, args) =>
+		errorHandlerWrapper(async () => {
+			const identity = await requireIdentity(ctx);
+			const workoutData = parseAndValidateWorkout(args.workout as WorkoutFormData);
 
 			const exercisesWithGlobalExerciseIds = await mapExercisesWithGlobalExerciseIds(
 				ctx,
@@ -232,21 +270,18 @@ export const createWorkout = mutation({
 				totalVolume,
 				userId: identity.subject,
 			});
+			const workout = await ctx.db.get(workoutId);
+			if (!workout) throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId });
 
 			await insertWorkoutChildren(ctx, {
 				workoutId,
 				userId: identity.subject,
+				workoutCreationTime: workout._creationTime,
 				exercises: exercisesWithGlobalExerciseIds,
 			});
 
-			return { workout: validationResult.data };
-		} catch (error) {
-			// passes INVALID_WORKOUT_DATA error if that throws
-			if (error instanceof ConvexError) throw error;
-
-			throw new ConvexError({ code: "DB_QUERY_FAILED" });
-		}
-	},
+			return { workout: workoutData };
+		}),
 });
 
 export const updateWorkout = mutation({
@@ -254,28 +289,11 @@ export const updateWorkout = mutation({
 		workoutId: v.id("workouts"),
 		workout: workoutObject,
 	},
-	handler: async (ctx, args) => {
-		try {
-			const identity = await ctx.auth.getUserIdentity();
-			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
-
-			const workout = await ctx.db.get(args.workoutId);
-			if (!workout || workout.userId !== identity.subject) {
-				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
-			}
-
-			const parsedWorkout = parseWorkout(args.workout as WorkoutFormData);
-			const validationResult = validateWorkout(parsedWorkout);
-
-			if (!validationResult.success) {
-				throw new ConvexError({
-					code: "INVALID_WORKOUT_DATA",
-					issues: validationResult.error.issues.map((issue) => ({
-						message: issue.message,
-					})),
-				});
-			}
-			const workoutData = validationResult.data;
+	handler: async (ctx, args) =>
+		errorHandlerWrapper(async () => {
+			const identity = await requireIdentity(ctx);
+			const workout = await getWorkout(ctx, args.workoutId, identity.subject);
+			const workoutData = parseAndValidateWorkout(args.workout as WorkoutFormData);
 
 			const exercisesWithGlobalExerciseIds = await mapExercisesWithGlobalExerciseIds(
 				ctx,
@@ -304,32 +322,22 @@ export const updateWorkout = mutation({
 			await insertWorkoutChildren(ctx, {
 				workoutId: args.workoutId,
 				userId: identity.subject,
+				workoutCreationTime: workout._creationTime,
 				exercises: exercisesWithGlobalExerciseIds,
 			});
 
-			return { workout: validationResult.data, workoutId: args.workoutId };
-		} catch (error) {
-			// passes NO_WORKOUT_FOUND and INVALID_WORKOUT_DATA error if those throw
-			if (error instanceof ConvexError) throw error;
-
-			throw new ConvexError({ code: "DB_QUERY_FAILED" });
-		}
-	},
+			return { workout: workoutData, workoutId: args.workoutId };
+		}),
 });
 
 export const deleteWorkout = mutation({
 	args: {
 		workoutId: v.id("workouts"),
 	},
-	handler: async (ctx, args) => {
-		try {
-			const identity = await ctx.auth.getUserIdentity();
-			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
-
-			const workout = await ctx.db.get(args.workoutId);
-			if (!workout || workout.userId !== identity.subject) {
-				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
-			}
+	handler: async (ctx, args) =>
+		errorHandlerWrapper(async () => {
+			const identity = await requireIdentity(ctx);
+			const workout = await getWorkout(ctx, args.workoutId, identity.subject);
 
 			await deleteWorkoutChildren(ctx, args.workoutId);
 			await ctx.db.delete(args.workoutId);
@@ -339,21 +347,14 @@ export const deleteWorkout = mutation({
 				deletedWorkoutId: args.workoutId,
 				deletedWorkoutName: workout.name,
 			};
-		} catch (error) {
-			// passes NO_WORKOUT_FOUND error if that throws
-			if (error instanceof ConvexError) throw error;
-
-			throw new ConvexError({ code: "DB_QUERY_FAILED" });
-		}
-	},
+		}),
 });
 
 export const deleteAllWorkouts = mutation({
 	args: {},
-	handler: async (ctx) => {
-		try {
-			const identity = await ctx.auth.getUserIdentity();
-			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
+	handler: async (ctx) =>
+		errorHandlerWrapper(async () => {
+			const identity = await requireIdentity(ctx);
 
 			const workouts = await ctx.db
 				.query("workouts")
@@ -361,7 +362,6 @@ export const deleteAllWorkouts = mutation({
 				.collect();
 			if (workouts.length === 0) throw new ConvexError({ code: "NO_WORKOUTS" });
 
-			// delete in batches of 25 to avoid hitting limits on the number of rows that can be deleted in a single query
 			const DELETE_BATCH_SIZE = 25;
 			for (let index = 0; index < workouts.length; index += DELETE_BATCH_SIZE) {
 				const batch = workouts.slice(index, index + DELETE_BATCH_SIZE);
@@ -372,53 +372,30 @@ export const deleteAllWorkouts = mutation({
 			}
 
 			return { success: true, deletedCount: workouts.length };
-		} catch (error) {
-			// passes NO_WORKOUTS error if that throws
-			if (error instanceof ConvexError) throw error;
-
-			throw new ConvexError({ code: "DB_QUERY_FAILED" });
-		}
-	},
+		}),
 });
 
 export const canEditWorkout = query({
 	args: {
 		workoutId: v.id("workouts"),
 	},
-	handler: async (ctx, args) => {
-		try {
-			const identity = await ctx.auth.getUserIdentity();
-			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
-
-			const workout = await ctx.db.get(args.workoutId);
-			if (!workout || workout.userId !== identity.subject) {
-				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
-			}
+	handler: async (ctx, args) =>
+		errorHandlerWrapper(async () => {
+			const identity = await requireIdentity(ctx);
+			await getWorkout(ctx, args.workoutId, identity.subject);
 
 			return { ok: true };
-		} catch (error) {
-			if (error instanceof ConvexError) throw error;
-
-			throw new ConvexError({ code: "DB_QUERY_FAILED" });
-		}
-	},
+		}),
 });
 
 export const getWorkoutById = query({
 	args: {
 		workoutId: v.id("workouts"),
 	},
-	handler: async (ctx, args) => {
-		try {
-			const identity = await ctx.auth.getUserIdentity();
-			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
-
-			const workout = await ctx.db.get(args.workoutId);
-
-			if (!workout || workout.userId !== identity.subject) {
-				throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId: args.workoutId });
-			}
-
+	handler: async (ctx, args) =>
+		errorHandlerWrapper(async () => {
+			const identity = await requireIdentity(ctx);
+			const workout = await getWorkout(ctx, args.workoutId, identity.subject);
 			const { exercises, missingGlobalExercisesCount } = await getWorkoutChildrenForUi(
 				ctx,
 				workout._id,
@@ -432,29 +409,30 @@ export const getWorkoutById = query({
 				exercises,
 				missingGlobalExercisesCount,
 			};
-		} catch (error) {
-			// passes NO_WORKOUT_FOUND error if that throws
-			if (error instanceof ConvexError) throw error;
-
-			throw new ConvexError({ code: "DB_QUERY_FAILED" });
-		}
-	},
+		}),
 });
 
 export const listWorkouts = query({
 	args: {
 		paginationOpts: paginationOptsValidator,
 	},
-	handler: async (ctx, args) => {
-		try {
-			const identity = await ctx.auth.getUserIdentity();
-			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
+	handler: async (ctx, args) =>
+		errorHandlerWrapper(async () => {
+			const identity = await requireIdentity(ctx);
 
-			const results = await ctx.db
-				.query("workouts")
-				.withIndex("by_userId", (q) => q.eq("userId", identity.subject))
-				.order("desc")
-				.paginate(args.paginationOpts);
+			let results;
+			try {
+				results = await ctx.db
+					.query("workouts")
+					.withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+					.order("desc")
+					.paginate(args.paginationOpts);
+			} catch (error) {
+				if (error instanceof Error && error.message.includes("ArgumentValidationError")) {
+					throw new ConvexError({ code: "INVALID_PAGINATION_OPTS" });
+				}
+				throw error;
+			}
 
 			return {
 				...results,

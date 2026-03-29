@@ -123,44 +123,29 @@ export const calculateTotalPrSets = async (
 	userId: string,
 	exercises: WorkoutForPrCalculation[],
 ): Promise<number> => {
-	// fetch exercises from the current workout that exist in the global exercises table
 	const targetGlobalExerciseIds = new Set(exercises.map((exercise) => exercise.globalExerciseId));
 	const targetGlobalExerciseIdsList = [...targetGlobalExerciseIds];
 
-	// fetch workoutExercise rows for this user scoped to the target global exercises
-	const previousWorkoutExercises = (
+	const previousSets = (
 		await Promise.all(
 			targetGlobalExerciseIdsList.map((globalExerciseId) =>
 				ctx.db
-					.query("workoutExercises")
-					.withIndex("by_userId_globalExerciseId", (q) =>
-						q.eq("userId", userId).eq("globalExerciseId", globalExerciseId),
+					.query("workoutSets")
+					.withIndex("by_userId_globalExerciseId_completed_workoutCreationTime_order", (q) =>
+						q.eq("userId", userId).eq("globalExerciseId", globalExerciseId).eq("completed", true),
 					)
 					.collect(),
 			),
 		)
-	).flat();
-
-	// fetch sets for each workoutExercise row
-	const previousSetsByExercise = await Promise.all(
-		previousWorkoutExercises.map(async (exercise) => {
-			const exerciseSets = await ctx.db
-				.query("workoutSets")
-				.withIndex("by_workoutExerciseId", (q) => q.eq("workoutExerciseId", exercise._id))
-				.collect();
-
-			// return only completed sets
-			return exerciseSets
-				.filter((set) => set.completed)
-				.map((set) => ({
-					globalExerciseId: exercise.globalExerciseId,
-					weight: set.weight,
-					reps: set.reps,
-					completed: set.completed,
-				}));
-		}),
-	);
-	const previousSets = previousSetsByExercise.flat();
+	)
+		.flat()
+		.filter((set) => set.globalExerciseId !== undefined)
+		.map((set) => ({
+			globalExerciseId: set.globalExerciseId as Id<"globalExercises">,
+			weight: set.weight,
+			reps: set.reps,
+			completed: set.completed,
+		}));
 
 	// return the number of PR sets in the current workout
 	return countTotalPrSetsInWorkout(

@@ -1,7 +1,23 @@
-import { query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { getRelativeTime } from "../lib/date";
 import { normalizeExerciseName } from "../lib/workout/normalizeExerciseName";
+import { query, type QueryCtx } from "./_generated/server";
+
+const requireIdentity = async (ctx: QueryCtx) => {
+	const identity = await ctx.auth.getUserIdentity();
+	if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
+
+	return identity;
+};
+
+const errorHandlerWrapper = async <T>(operation: () => Promise<T>): Promise<T> => {
+	try {
+		return await operation();
+	} catch (error) {
+		if (error instanceof ConvexError) throw error;
+		throw new ConvexError({ code: "DB_QUERY_FAILED" });
+	}
+};
 
 export const searchGlobalExercises = query({
 	args: {
@@ -9,6 +25,7 @@ export const searchGlobalExercises = query({
 	},
 	handler: async (ctx, args) => {
 		const query = normalizeExerciseName(args.query);
+		if (query.length === 0) return [];
 
 		const exercises = await ctx.db.query("globalExercises").collect();
 
@@ -31,70 +48,36 @@ export const getRecentCompletedSetsByExerciseName = query({
 	args: {
 		exerciseName: v.string(),
 	},
-	handler: async (ctx, args) => {
-		try {
-			const identity = await ctx.auth.getUserIdentity();
-			if (identity === null) throw new ConvexError({ code: "UNAUTHORIZED" });
+	handler: async (ctx, args) =>
+		errorHandlerWrapper(async () => {
+			const identity = await requireIdentity(ctx);
 
-			const normalizedExerciseName = normalizeExerciseName(args.exerciseName);
+			const exerciseName = normalizeExerciseName(args.exerciseName);
 			const globalExercise = await ctx.db
 				.query("globalExercises")
 				.withIndex("by_normalizedName", (query) =>
-					query.eq("normalizedName", normalizedExerciseName),
+					query.eq("normalizedName", exerciseName),
 				)
 				.first();
-
 			if (!globalExercise) return [];
 
-			const workouts = await ctx.db
-				.query("workouts")
-				.withIndex("by_userId", (query) => query.eq("userId", identity.subject))
+			const recentCompletedSets = await ctx.db
+				.query("workoutSets")
+				.withIndex("by_userId_globalExerciseId_completed_workoutCreationTime_order", (query) =>
+					query
+						.eq("userId", identity.subject)
+						.eq("globalExerciseId", globalExercise._id)
+						.eq("completed", true),
+				)
 				.order("desc")
-				.collect();
+				.take(6);
 
-			const recentCompletedSets: Array<{
-				weight: number;
-				reps: number;
-				time: string;
-			}> = [];
-
-			for (const workout of workouts) {
-				const matchingExercises = await ctx.db
-					.query("workoutExercises")
-					.withIndex("by_workoutId", (query) => query.eq("workoutId", workout._id))
-					.collect();
-
-				for (const exercise of matchingExercises) {
-					if (exercise.globalExerciseId !== globalExercise._id) continue;
-
-					const workoutSets = await ctx.db
-						.query("workoutSets")
-						.withIndex("by_workoutExerciseId_order", (query) =>
-							query.eq("workoutExerciseId", exercise._id),
-						)
-						.order("asc")
-						.collect();
-
-					for (const set of workoutSets) {
-						if (!set.completed) continue;
-						recentCompletedSets.push({
-							weight: set.weight,
-							reps: set.reps,
-							time: getRelativeTime(new Date(workout._creationTime)),
-						});
-
-						if (recentCompletedSets.length === 6) {
-							return recentCompletedSets;
-						}
-					}
-				}
-			}
-
-			return recentCompletedSets;
-		} catch (error) {
-			if (error instanceof ConvexError) throw error;
-
-			throw new ConvexError({ code: "DB_QUERY_FAILED" });
-		}
-	},
+			return recentCompletedSets
+				.filter((set) => set.workoutCreationTime !== undefined)
+				.map((set) => ({
+					weight: set.weight,
+					reps: set.reps,
+					time: getRelativeTime(new Date(set.workoutCreationTime as number)),
+				}));
+		}),
 });

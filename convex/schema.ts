@@ -47,6 +47,9 @@ export default defineSchema({
     .index("by_workoutId_order", ["workoutId", "order"])
     .index("by_userId_globalExerciseId", ["userId", "globalExerciseId"]),
   workoutSets: defineTable({
+    userId: v.optional(v.string()),
+    globalExerciseId: v.optional(v.id("globalExercises")),
+    workoutCreationTime: v.optional(v.float64()),
     workoutId: v.optional(v.id("workouts")),
     workoutExerciseId: v.id("workoutExercises"),
     order: v.float64(),
@@ -55,6 +58,13 @@ export default defineSchema({
     reps: v.float64(),
     completed: v.boolean(),
   })
+    .index("by_userId_globalExerciseId_completed_workoutCreationTime_order", [
+      "userId",
+      "globalExerciseId",
+      "completed",
+      "workoutCreationTime",
+      "order",
+    ])
     .index("by_workoutId", ["workoutId"])
     .index("by_workoutExerciseId", ["workoutExerciseId"])
     .index("by_workoutExerciseId_order", ["workoutExerciseId", "order"]),
