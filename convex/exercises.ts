@@ -59,14 +59,24 @@ export const getRecentCompletedSetsByExerciseName = query({
 			}> = [];
 
 			for (const workout of workouts) {
-				const matchingExercises = workout.exercises.filter(
-					(exercise) => exercise.globalExerciseId === globalExercise._id,
-				);
+				const matchingExercises = await ctx.db
+					.query("workoutExercises")
+					.withIndex("by_workoutId", (query) => query.eq("workoutId", workout._id))
+					.collect();
 
 				for (const exercise of matchingExercises) {
-					const completedSets = exercise.sets.filter((set) => set.completed);
+					if (exercise.globalExerciseId !== globalExercise._id) continue;
 
-					for (const set of completedSets) {
+					const workoutSets = await ctx.db
+						.query("workoutSets")
+						.withIndex("by_workoutExerciseId_order", (query) =>
+							query.eq("workoutExerciseId", exercise._id),
+						)
+						.order("asc")
+						.collect();
+
+					for (const set of workoutSets) {
+						if (!set.completed) continue;
 						recentCompletedSets.push({
 							weight: set.weight,
 							reps: set.reps,

@@ -76,7 +76,8 @@ const getExercisePrReferences = (previousSets: PrBaselineSet[]): Map<ExerciseKey
 
 	for (const previousSet of previousSets) {
 		const set = normalizeSet(previousSet);
-		const prsForCurrentExercise = exercisePrs.get(previousSet.globalExerciseId) ?? emptyExercisePrs();
+		const prsForCurrentExercise =
+			exercisePrs.get(previousSet.globalExerciseId) ?? emptyExercisePrs();
 
 		exercisePrs.set(previousSet.globalExerciseId, updateExercisePrs(set, prsForCurrentExercise));
 	}
@@ -122,33 +123,49 @@ export const calculateTotalPrSets = async (
 	userId: string,
 	exercises: WorkoutForPrCalculation[],
 ): Promise<number> => {
-	const previousWorkouts = await ctx.db
-		.query("workouts")
-		.withIndex("by_userId", (q) => q.eq("userId", userId))
-		.collect();
-	// use ids from the current workout only
+	// fetch exercises from the current workout that exist in the global exercises table
 	const targetGlobalExerciseIds = new Set(exercises.map((exercise) => exercise.globalExerciseId));
+	const targetGlobalExerciseIdsList = [...targetGlobalExerciseIds];
 
-	// make list of completed old sets for matching exercises
-	const previousSets = previousWorkouts.flatMap((previousWorkout) =>
-		previousWorkout.exercises.flatMap((exercise) =>
-			// if exercise is in current workout, keep completed sets, else skip
-			targetGlobalExerciseIds.has(exercise.globalExerciseId)
-				? exercise.sets
-						.filter((set) => set.completed)
-						.map((set) => ({
-							globalExerciseId: exercise.globalExerciseId,
-							weight: set.weight,
-							reps: set.reps,
-							completed: set.completed,
-						}))
-				: [],
-		),
+	// fetch workoutExercise rows for this user scoped to the target global exercises
+	const previousWorkoutExercises = (
+		await Promise.all(
+			targetGlobalExerciseIdsList.map((globalExerciseId) =>
+				ctx.db
+					.query("workoutExercises")
+					.withIndex("by_userId_globalExerciseId", (q) =>
+						q.eq("userId", userId).eq("globalExerciseId", globalExerciseId),
+					)
+					.collect(),
+			),
+		)
+	).flat();
+
+	// fetch sets for each workoutExercise row
+	const previousSetsByExercise = await Promise.all(
+		previousWorkoutExercises.map(async (exercise) => {
+			const exerciseSets = await ctx.db
+				.query("workoutSets")
+				.withIndex("by_workoutExerciseId", (q) => q.eq("workoutExerciseId", exercise._id))
+				.collect();
+
+			// return only completed sets
+			return exerciseSets
+				.filter((set) => set.completed)
+				.map((set) => ({
+					globalExerciseId: exercise.globalExerciseId,
+					weight: set.weight,
+					reps: set.reps,
+					completed: set.completed,
+				}));
+		}),
 	);
+	const previousSets = previousSetsByExercise.flat();
 
+	// return the number of PR sets in the current workout
 	return countTotalPrSetsInWorkout(
 		{
-			// current workout
+			// Normalize current workout set values before running PR detection
 			exercises: exercises.map((exercise) => ({
 				globalExerciseId: exercise.globalExerciseId,
 				sets: exercise.sets.map((set) => ({
