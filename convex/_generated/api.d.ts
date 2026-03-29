@@ -11,6 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as exercises from "../exercises.js";
 import type * as http from "../http.js";
+import type * as migrations_migration_1_nested_workouts_to_split_table_schema from "../migrations/migration_1_nested_workouts_to_split_table_schema.js";
 import type * as workouts from "../workouts.js";
 
 import type {
@@ -23,6 +24,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   exercises: typeof exercises;
   http: typeof http;
+  "migrations/migration_1_nested_workouts_to_split_table_schema": typeof migrations_migration_1_nested_workouts_to_split_table_schema;
   workouts: typeof workouts;
 }>;
 

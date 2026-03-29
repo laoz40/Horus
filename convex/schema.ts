@@ -10,25 +10,49 @@ export default defineSchema({
   workouts: defineTable({
     durationSeconds: v.union(v.float64(), v.null()),
     muscleGroups: v.optional(v.array(v.string())),
-    exercises: v.array(
-      v.object({
-        difficulty: v.optional(v.float64()),
-        globalExerciseId: v.id("globalExercises"),
-        id: v.string(),
-        notes: v.optional(v.string()),
-        sets: v.array(
-          v.object({
-            completed: v.boolean(),
-            id: v.string(),
-            reps: v.float64(),
-            weight: v.float64(),
-          })
-        ),
-      })
+    exercises: v.optional(
+      v.array(
+        v.object({
+          difficulty: v.optional(v.float64()),
+          globalExerciseId: v.id("globalExercises"),
+          id: v.string(),
+          notes: v.optional(v.string()),
+          sets: v.array(
+            v.object({
+              completed: v.boolean(),
+              id: v.string(),
+              reps: v.float64(),
+              weight: v.float64(),
+            })
+          ),
+        })
+      )
     ),
     name: v.string(),
     totalPrSets: v.float64(),
     totalVolume: v.float64(),
     userId: v.string(),
   }).index("by_userId", ["userId"]),
+  workoutExercises: defineTable({
+    workoutId: v.id("workouts"),
+    userId: v.string(),
+    order: v.float64(),
+    clientExerciseId: v.string(),
+    globalExerciseId: v.id("globalExercises"),
+    difficulty: v.optional(v.float64()),
+    notes: v.optional(v.string()),
+  })
+    .index("by_workoutId", ["workoutId"])
+    .index("by_workoutId_order", ["workoutId", "order"])
+    .index("by_userId_globalExerciseId", ["userId", "globalExerciseId"]),
+  workoutSets: defineTable({
+    workoutExerciseId: v.id("workoutExercises"),
+    order: v.float64(),
+    clientSetId: v.string(),
+    weight: v.float64(),
+    reps: v.float64(),
+    completed: v.boolean(),
+  })
+    .index("by_workoutExerciseId", ["workoutExerciseId"])
+    .index("by_workoutExerciseId_order", ["workoutExerciseId", "order"]),
 });
