@@ -121,66 +121,70 @@ const insertWorkoutChildren = async (
 	}
 };
 
-// cascade deletes all rows in the workoutExercises and workoutSets tables
-const deleteWorkoutChildren = async (ctx: MutationCtx, workoutId: Id<"workouts">) => {
-	const workoutExercises = await ctx.db
-		.query("workoutExercises")
-		.withIndex("by_workoutId", (q) => q.eq("workoutId", workoutId))
-		.collect();
-
-	const workoutSets = await ctx.db
-		.query("workoutSets")
-		.withIndex("by_workoutId", (q) => q.eq("workoutId", workoutId))
-		.collect();
-
-	// delete in batches of 50 to avoid hitting limits on the number of rows that can be deleted in a single query
-	const DELETE_BATCH_SIZE = 50;
-
-	// loop through the workoutSets and delete them in batches
-	for (let index = 0; index < workoutSets.length; index += DELETE_BATCH_SIZE) {
-		const batch = workoutSets.slice(index, index + DELETE_BATCH_SIZE);
-		await Promise.all(batch.map((workoutSet) => ctx.db.delete(workoutSet._id)));
-	}
-
-	// loop through the workoutExercises and delete them in batches
-	for (let index = 0; index < workoutExercises.length; index += DELETE_BATCH_SIZE) {
-		const batch = workoutExercises.slice(index, index + DELETE_BATCH_SIZE);
-		await Promise.all(batch.map((workoutExercise) => ctx.db.delete(workoutExercise._id)));
+const deleteRowsInBatches = async (
+	ctx: MutationCtx,
+	rowIds: Array<Id<"workoutSets"> | Id<"workoutExercises">>,
+	batchSize: number,
+) => {
+	for (let index = 0; index < rowIds.length; index += batchSize) {
+		const batch = rowIds.slice(index, index + batchSize);
+		await Promise.all(batch.map((rowId) => ctx.db.delete(rowId)));
 	}
 };
 
-const getWorkoutChildrenForUi = async (ctx: QueryCtx, workoutId: Id<"workouts">) => {
-	// load all rows in the workoutExercises table for the workout
-	const workoutExercises = await ctx.db
-		.query("workoutExercises")
-		.withIndex("by_workoutId_order", (q) => q.eq("workoutId", workoutId))
-		.order("asc")
-		.collect();
+const deleteWorkoutChildren = async (ctx: MutationCtx, workoutId: Id<"workouts">) => {
+	// load all rows in the workoutExercises and workoutSets tables for the workout
+	const [workoutExercises, workoutSets] = await Promise.all([
+		ctx.db
+			.query("workoutExercises")
+			.withIndex("by_workoutId", (q) => q.eq("workoutId", workoutId))
+			.collect(),
+		ctx.db
+			.query("workoutSets")
+			.withIndex("by_workoutId", (q) => q.eq("workoutId", workoutId))
+			.collect(),
+	]);
 
-	// load all rows in the workoutSets table for the workout
-	const workoutSets = await ctx.db
-		.query("workoutSets")
-		.withIndex("by_workoutId", (q) => q.eq("workoutId", workoutId))
-		.collect();
+	const DELETE_BATCH_SIZE = 50;
+
+	// loop through the workoutSets and workoutExercises and delete them in batches
+	await deleteRowsInBatches(
+		ctx,
+		workoutSets.map((workoutSet) => workoutSet._id),
+		DELETE_BATCH_SIZE,
+	);
+	await deleteRowsInBatches(
+		ctx,
+		workoutExercises.map((workoutExercise) => workoutExercise._id),
+		DELETE_BATCH_SIZE,
+	);
+};
+
+const getWorkoutChildrenForUi = async (ctx: QueryCtx, workoutId: Id<"workouts">) => {
+	// load all rows in the workoutExercises and workoutSets tables for the workout
+	const [workoutExercises, workoutSets] = await Promise.all([
+		ctx.db
+			.query("workoutExercises")
+			.withIndex("by_workoutId_order", (q) => q.eq("workoutId", workoutId))
+			.order("asc")
+			.collect(),
+		ctx.db
+			.query("workoutSets")
+			.withIndex("by_workoutId", (q) => q.eq("workoutId", workoutId))
+			.collect(),
+	]);
 
 	type WorkoutSetForUi = {
 		id: string;
 		weight: number;
 		reps: number;
 		completed: boolean;
+		order: number;
 	};
 
-	// sort the workoutSets
-	const sortedWorkoutSets = [...workoutSets].sort((a, b) => {
-		// if the workoutExerciseIds are the same, sort by order
-		if (a.workoutExerciseId === b.workoutExerciseId) return a.order - b.order;
-		// otherwise sort by workoutExerciseId
-		return a.workoutExerciseId < b.workoutExerciseId ? -1 : 1;
-	});
-
-	// loop through sortedWorkoutSets and group the sets by workoutExerciseId
 	const setsByWorkoutExerciseId = new Map<Id<"workoutExercises">, WorkoutSetForUi[]>();
-	for (const workoutSet of sortedWorkoutSets) {
+	// loop through workoutSets and group the sets by workoutExerciseId
+	for (const workoutSet of workoutSets) {
 		// initialize setsForExercise with an empty array if it doesn't exist
 		const setsForExercise = setsByWorkoutExerciseId.get(workoutSet.workoutExerciseId) ?? [];
 		// push the set to the array for the workoutExerciseId
@@ -189,8 +193,14 @@ const getWorkoutChildrenForUi = async (ctx: QueryCtx, workoutId: Id<"workouts">)
 			weight: workoutSet.weight,
 			reps: workoutSet.reps,
 			completed: workoutSet.completed,
+			order: workoutSet.order,
 		});
 		setsByWorkoutExerciseId.set(workoutSet.workoutExerciseId, setsForExercise);
+	}
+
+	// sort the sets within each workoutExercise by order
+	for (const setsForExercise of setsByWorkoutExerciseId.values()) {
+		setsForExercise.sort((a, b) => a.order - b.order);
 	}
 
 	// get all unique global exercise ids from the workoutExercises table
@@ -200,13 +210,13 @@ const getWorkoutChildrenForUi = async (ctx: QueryCtx, workoutId: Id<"workouts">)
 		{ name: string; muscleGroups?: string[] }
 	>();
 
-	// check if each global exercise id in the workoutExercises table exists in the globalExercises table
+	// check if each id in the workoutExercises table exists in the globalExercises table
 	await Promise.all(
 		[...globalExerciseIds].map(async (globalExerciseId) => {
 			const globalExercise = await ctx.db.get(globalExerciseId);
 			if (!globalExercise) return;
 
-			// if so, store the global exercise data in a map keyed by global exercise id
+			// if so, store the global exercise data in the map keyed by global exercise id
 			globalExercisesMap.set(globalExerciseId, {
 				name: globalExercise.name,
 				...(globalExercise.muscleGroups !== undefined
@@ -233,7 +243,8 @@ const getWorkoutChildrenForUi = async (ctx: QueryCtx, workoutId: Id<"workouts">)
 				? { difficulty: workoutExercise.difficulty }
 				: {}),
 			...(workoutExercise.notes !== undefined ? { notes: workoutExercise.notes } : {}),
-			sets: setsByWorkoutExerciseId.get(workoutExercise._id) ?? [],
+			sets:
+				setsByWorkoutExerciseId.get(workoutExercise._id)?.map(({ order: _, ...set }) => set) ?? [],
 		};
 	});
 
@@ -447,12 +458,5 @@ export const listWorkouts = query({
 					muscleGroups: workout.muscleGroups ?? [],
 				})),
 			};
-		} catch (error) {
-			if (error instanceof Error && error.message.includes("ArgumentValidationError")) {
-				throw new ConvexError({ code: "INVALID_PAGINATION_OPTS" });
-			}
-
-			throw new ConvexError({ code: "DB_QUERY_FAILED" });
-		}
-	},
+		}),
 });
