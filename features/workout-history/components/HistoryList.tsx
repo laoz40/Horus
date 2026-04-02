@@ -46,11 +46,10 @@ export default function HistoryList({
 
 	return (
 		<div className="space-y-4 md:space-y-5">
-			{visibleWorkouts.map((workout, index) => (
+			{visibleWorkouts.map((workout) => (
 				<WorkoutCard
 					key={workout._id}
 					workout={workout}
-					workoutIndex={visibleWorkouts.length - index}
 				/>
 			))}
 		</div>

@@ -15,21 +15,17 @@ import { ConvexError } from "convex/values";
 
 interface WorkoutCardProps {
 	workout: WorkoutHistoryItem;
-	workoutIndex: number;
 }
 
-export default function WorkoutCard({ workout, workoutIndex }: WorkoutCardProps) {
+export default function WorkoutCard({ workout }: WorkoutCardProps) {
 	return (
 		<Authenticated>
-			<Content
-				workout={workout}
-				workoutIndex={workoutIndex}
-			/>
+			<Content workout={workout} />
 		</Authenticated>
 	);
 }
 
-function Content({ workout, workoutIndex }: WorkoutCardProps) {
+function Content({ workout }: WorkoutCardProps) {
 	const deleteWorkout = useMutation(api.workouts.deleteWorkout);
 	const markWorkoutDeleted = useHistoryUiStore((state) => state.markWorkoutDeleted);
 
@@ -111,7 +107,6 @@ function Content({ workout, workoutIndex }: WorkoutCardProps) {
 					duration={workout.durationSeconds ?? 0}
 					workoutVolume={workout.totalVolume}
 					exerciseCount={workout.exerciseCount}
-					workoutIndex={workoutIndex}
 				/>
 			</Card>
 		</>
