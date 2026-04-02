@@ -9,9 +9,10 @@ import {
 } from "@/lib/toastMessages";
 import { deduplicateExercises } from "@/features/workout-form/lib/convertWorkoutData";
 import { fetchDefaultExercises } from "@/features/workout-form/lib/fetchExercises";
+import { sortExercisesAlphabetically } from "@/features/workout-form/lib/sortExercises";
 import { api } from "@/convex/_generated/api";
 
-interface ExerciseSuggestion {
+export interface ExerciseSuggestion {
 	id: string;
 	name: string;
 	normalizedName: string;
@@ -66,7 +67,7 @@ const fetchOnlineExerciseSuggestions = async (
 
 export function useExerciseSuggestions(rawQuery: string) {
 	const [suggestions, setSuggestions] = useState<ExerciseSuggestion[]>([]);
-	const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false);
+	const [isDbSearchLoading, setIsDbSearchLoading] = useState(false);
 	const [isOnlineSearchLoading, setIsOnlineSearchLoading] = useState(false);
 	const convex = useConvex();
 	const queryClient = useQueryClient();
@@ -76,7 +77,7 @@ export function useExerciseSuggestions(rawQuery: string) {
 	useEffect(() => {
 		if (query.length === 0) {
 			setSuggestions([]);
-			setIsSuggestionsLoading(false);
+			setIsDbSearchLoading(false);
 			return;
 		}
 
@@ -84,9 +85,11 @@ export function useExerciseSuggestions(rawQuery: string) {
 		let isCurrent = true;
 
 		// use default exercises for instant results
-		const defaultExercises = fetchDefaultExercises(query);
+		const defaultExercises = sortExercisesAlphabetically(
+			fetchDefaultExercises(query),
+		);
 		setSuggestions(defaultExercises);
-		setIsSuggestionsLoading(true);
+		setIsDbSearchLoading(true);
 
 		// debounce the query by 300ms
 		const timeout = setTimeout(async () => {
@@ -97,14 +100,18 @@ export function useExerciseSuggestions(rawQuery: string) {
 				if (!isCurrent) return;
 
 				const dbExercises = Array.isArray(dataFromDb) ? dataFromDb : [];
-				setSuggestions(deduplicateExercises(defaultExercises, dbExercises));
+				setSuggestions(
+					sortExercisesAlphabetically(
+						deduplicateExercises(defaultExercises, dbExercises),
+					),
+				);
 			} catch (error) {
 				if (!isCurrent) return;
 				console.log("Query not found", error);
 				setSuggestions(defaultExercises);
 			} finally {
 				if (isCurrent) {
-					setIsSuggestionsLoading(false);
+					setIsDbSearchLoading(false);
 				}
 			}
 		}, 300);
@@ -112,7 +119,7 @@ export function useExerciseSuggestions(rawQuery: string) {
 		// cleanup: cancel the timeout
 		return () => {
 			isCurrent = false;
-			setIsSuggestionsLoading(false);
+			setIsDbSearchLoading(false);
 			clearTimeout(timeout);
 		};
 	}, [convex, query]);
@@ -132,7 +139,11 @@ export function useExerciseSuggestions(rawQuery: string) {
 			});
 
 			if (dataFromApi.exercises.length > 0) {
-				setSuggestions((prev) => deduplicateExercises(prev, dataFromApi.exercises));
+				setSuggestions((prev) =>
+					sortExercisesAlphabetically(
+						deduplicateExercises(prev, dataFromApi.exercises),
+					),
+				);
 			}
 		} catch (error) {
 			if (error instanceof ExerciseSearchError && error.code === "RATE_LIMITED") {
@@ -145,10 +156,11 @@ export function useExerciseSuggestions(rawQuery: string) {
 		}
 	};
 
-	const isLoading = isSuggestionsLoading || isOnlineSearchLoading;
+	const isLoading = isDbSearchLoading || isOnlineSearchLoading;
 
 	return {
 		suggestions,
+		isDbSearchLoading,
 		isLoading,
 		isOnlineSearchLoading,
 		fetchMoreSuggestions,

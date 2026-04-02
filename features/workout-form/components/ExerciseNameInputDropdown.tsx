@@ -18,8 +18,12 @@ export function ExerciseNameInputDropdown({
 	const { control, getValues, setValue } = useFormContext<Workout>();
 	const getExerciseName = getValues(`exercises.${exerciseIndex}.global.name`);
 	const [query, setQuery] = useState<string>(getExerciseName ?? "");
-	const { suggestions, isOnlineSearchLoading, fetchMoreSuggestions } =
-		useExerciseSuggestions(query);
+	const {
+		suggestions,
+		isDbSearchLoading,
+		isOnlineSearchLoading,
+		fetchMoreSuggestions,
+	} = useExerciseSuggestions(query);
 
 	const filteredSuggestions = query.trim() ? suggestions : [];
 
@@ -67,8 +71,13 @@ export function ExerciseNameInputDropdown({
 							{query.trim() && (
 								<button
 									className="text-base text-muted-foreground underline w-full flex justify-start align-center p-2"
+									disabled={isDbSearchLoading || isOnlineSearchLoading}
 									onClick={fetchMoreSuggestions}>
-									{isOnlineSearchLoading ? "Loading..." : "Search Online"}
+									{isDbSearchLoading
+										? "Searching database..."
+										: isOnlineSearchLoading
+											? "Loading..."
+											: "Search Online"}
 								</button>
 							)}
 						</ComboboxList>
