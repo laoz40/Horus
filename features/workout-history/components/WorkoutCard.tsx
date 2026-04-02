@@ -71,10 +71,10 @@ function Content({ workout, workoutIndex }: WorkoutCardProps) {
 	return (
 		<>
 			<Card>
-				{workout.totalPrSets > 0 && (
+				{workout.totalPrSets > 2 && (
 					<ShineBorder
 						shineColor="#34e1c9"
-						duration={20}
+						duration={12}
 					/>
 				)}
 				<div className="grid grid-cols-[1fr_min-content] items-start gap-x-2">
