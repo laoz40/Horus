@@ -29,6 +29,9 @@ export const fetchApiExercises = async (query: string) => {
 			"x-rapidapi-key": apiKey,
 			"x-rapidapi-host": "exercisedb.p.rapidapi.com",
 		},
+		next: {
+			revalidate: 60 * 60 * 24 * 30, // cache for 30 days
+		},
 	});
 
 	if (response.status === 429) {

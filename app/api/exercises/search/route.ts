@@ -5,7 +5,6 @@ export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
 	const query = searchParams.get("query");
 
-	// might not need nextresponse
 	if (!query) {
 		return NextResponse.json({ success: false, error: "query is required" });
 	}
