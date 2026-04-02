@@ -12,13 +12,13 @@ export function WorkoutCardSkeleton() {
 				</div>
 			</div>
 
-			<div className="mt-3 flex flex-row flex-wrap gap-2">
+			<div className="mt-3 flex min-h-6 flex-row flex-wrap gap-2">
 				<div className="h-5 w-16 animate-pulse bg-muted" />
 				<div className="h-5 w-20 animate-pulse bg-muted" />
 				<div className="h-5 w-14 animate-pulse bg-muted" />
 			</div>
 
-			<div className="mt-3 grid grid-cols-4 gap-6">
+			<div className="mt-3 grid min-h-7 grid-cols-4 gap-6">
 				<div className="h-5 animate-pulse bg-muted" />
 				<div className="h-5 animate-pulse bg-muted" />
 				<div className="h-5 animate-pulse bg-muted" />

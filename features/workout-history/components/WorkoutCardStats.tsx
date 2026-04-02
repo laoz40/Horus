@@ -17,35 +17,35 @@ export default function WorkoutCardStats({
 	exerciseCount,
 }: WorkoutCardStatsProps): ReactElement {
 	return (
-		<div className="grid grid-cols-4 items-center gap-x-24 mt-4 pt-1 border-t">
-			{/* Number of exercises */}
+		<div className="mt-2 grid grid-cols-4 items-center gap-x-24 border-t pt-1">
+			{/* Workout Duration */}
 			<div className="flex items-center justify-start gap-1.5">
-				<Dumbbell className="size-4 shrink-0" />
-				<span className="text-sm font-medium whitespace-nowrap">
-					{exerciseCount}
+				<Clock className="size-4 shrink-0" />
+				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
+					{formatDurationSummary(duration)}
 				</span>
 			</div>
 
 			{/* Total volume lifted */}
 			<div className="flex items-center justify-center gap-1.5">
 				<Weight className="size-4 shrink-0" />
-				<span className="text-sm font-medium whitespace-nowrap">
+				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
 					{workoutVolume} kg
 				</span>
 			</div>
 
-			{/* Workout Duration */}
+			{/* Number of exercises */}
 			<div className="flex items-center justify-center gap-1.5">
-				<Clock className="size-4 shrink-0" />
-				<span className="text-sm font-medium whitespace-nowrap">
-					{formatDurationSummary(duration)}
+				<Dumbbell className="size-4 shrink-0" />
+				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
+					{exerciseCount}
 				</span>
 			</div>
 
 			{/* PR Indicator */}
 			<div className="flex items-center justify-end gap-1.5">
 				{pr > 0 ? (
-					<Badge className="text-primary-foreground text-sm font-semibold">
+					<Badge className="text-xs font-semibold text-primary-foreground">
 						{pr} PRs
 					</Badge>
 				) : null}

@@ -89,13 +89,13 @@ function Content({ workout }: WorkoutCardProps) {
 					/>
 				</div>
 
-				<div className="mt-2 grid grid-cols-[1fr_min-content]">
-					<div className="flex flex-row flex-wrap justify-start gap-2">
+				<div className="mt-2 grid min-h-6 grid-cols-[1fr_min-content]">
+					<div className="flex min-h-6 flex-row flex-wrap content-start justify-start gap-2">
 						{mapMuscleGroups.map((label) => (
 							<Badge
 								key={label}
 								variant="secondary"
-								className="rounded-sm border border-border/70 bg-secondary/70 px-1.5 py-0 text-[0.62rem] font-medium uppercase tracking-[0.1em] text-secondary-foreground/95">
+								className="rounded-sm border border-border/70 bg-secondary/70 px-1.5 py-0 text-[0.62rem] font-medium uppercase tracking-wider text-secondary-foreground/95">
 								{label}
 							</Badge>
 						))}
