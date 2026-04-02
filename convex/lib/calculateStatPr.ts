@@ -119,6 +119,7 @@ export async function calculateTotalPrSets(
 	ctx: MutationCtx,
 	userId: string,
 	exercises: WorkoutForPrCalculation[],
+	options?: { excludeWorkoutId?: Id<"workouts"> },
 ): Promise<number> {
 	const targetGlobalExerciseIds = new Set(exercises.map((exercise) => exercise.globalExerciseId));
 	const targetGlobalExerciseIdsList = [...targetGlobalExerciseIds];
@@ -136,7 +137,9 @@ export async function calculateTotalPrSets(
 		)
 	)
 		.flat()
-		.filter((set) => set.globalExerciseId !== undefined)
+		.filter(
+			(set) => set.globalExerciseId !== undefined && set.workoutId !== options?.excludeWorkoutId,
+		)
 		.map((set) => ({
 			globalExerciseId: set.globalExerciseId as Id<"globalExercises">,
 			weight: set.weight,

@@ -98,6 +98,9 @@ export const updateWorkout = mutation({
 				ctx,
 				identity.subject,
 				exercisesWithGlobalExerciseIds,
+				{
+					excludeWorkoutId: args.workoutId,
+				},
 			);
 			const muscleGroups = getWorkoutMuscleGroups(workoutData);
 			const totalVolume = calculateWorkoutVolume(workoutData);
