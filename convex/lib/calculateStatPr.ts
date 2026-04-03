@@ -18,6 +18,11 @@ interface ExercisePrs {
 	bodyweightRepsPr: number;
 }
 
+export interface SetPrResult {
+	isPr: boolean;
+	prType: "weight" | "volume" | "bodyweightReps" | null;
+}
+
 interface ComparableSet {
 	weight: number;
 	reps: number;
@@ -43,7 +48,14 @@ function emptyExercisePrs(): ExercisePrs {
 	};
 }
 
-function normalizeSet(set: ComparableSet): ComparableSet {
+function emptySetPrResult(): SetPrResult {
+	return {
+		isPr: false,
+		prType: null,
+	};
+}
+
+export function normalizePrSet(set: ComparableSet): ComparableSet {
 	return {
 		weight: set.weight || 0,
 		reps: set.reps || 0,
@@ -51,18 +63,41 @@ function normalizeSet(set: ComparableSet): ComparableSet {
 	};
 }
 
-function isPrSet(currentSet: ComparableSet, currentExercisePr: ExercisePrs): boolean {
-	if (!currentSet.completed) return false;
+export function getSetPrResult(
+	currentSet: ComparableSet,
+	currentExercisePr: ExercisePrs,
+): SetPrResult {
+	if (!currentSet.completed) return emptySetPrResult();
 
 	if (currentSet.weight === 0) {
-		return currentSet.reps > currentExercisePr.bodyweightRepsPr;
+		return currentSet.reps > currentExercisePr.bodyweightRepsPr
+			? { isPr: true, prType: "bodyweightReps" }
+			: emptySetPrResult();
 	}
 
 	const volume = currentSet.weight * currentSet.reps;
-	return currentSet.weight > currentExercisePr.weightPr || volume > currentExercisePr.volumePr;
+	if (currentSet.weight > currentExercisePr.weightPr) {
+		return {
+			isPr: true,
+			prType: "weight",
+		};
+	}
+
+	if (volume > currentExercisePr.volumePr) {
+		return {
+			isPr: true,
+			prType: "volume",
+		};
+	}
+
+	return emptySetPrResult();
 }
 
-function updateExercisePrs(set: ComparableSet, currentExercise: ExercisePrs): ExercisePrs {
+export function isPrSet(currentSet: ComparableSet, currentExercisePr: ExercisePrs): boolean {
+	return getSetPrResult(currentSet, currentExercisePr).isPr;
+}
+
+export function updateExercisePrs(set: ComparableSet, currentExercise: ExercisePrs): ExercisePrs {
 	if (!set.completed) return currentExercise;
 
 	return {
@@ -72,11 +107,13 @@ function updateExercisePrs(set: ComparableSet, currentExercise: ExercisePrs): Ex
 	};
 }
 
-function getExercisePrReferences(previousSets: PrBaselineSet[]): Map<ExerciseKey, ExercisePrs> {
+export function getExercisePrReferences(
+	previousSets: PrBaselineSet[],
+): Map<ExerciseKey, ExercisePrs> {
 	const exercisePrs = new Map<ExerciseKey, ExercisePrs>();
 
 	for (const previousSet of previousSets) {
-		const set = normalizeSet(previousSet);
+		const set = normalizePrSet(previousSet);
 		const prsForCurrentExercise =
 			exercisePrs.get(previousSet.globalExerciseId) ?? emptyExercisePrs();
 
@@ -84,6 +121,36 @@ function getExercisePrReferences(previousSets: PrBaselineSet[]): Map<ExerciseKey
 	}
 
 	return exercisePrs;
+}
+
+export function calculateSetPrResult(
+	previousSets: PrBaselineSet[],
+	globalExerciseId: ExerciseKey,
+	sets: ComparableSet[],
+	targetSetIndex: number,
+): SetPrResult {
+	const targetSet = sets[targetSetIndex];
+	if (!targetSet) return emptySetPrResult();
+
+	const exercisePrs = getExercisePrReferences(previousSets);
+	let currentExercisePrs = exercisePrs.get(globalExerciseId) ?? emptyExercisePrs();
+	let hasPreviousHistory = previousSets.some((set) => set.globalExerciseId === globalExerciseId);
+
+	for (let index = 0; index <= targetSetIndex; index += 1) {
+		const set = normalizePrSet(sets[index] as ComparableSet);
+
+		if (index === targetSetIndex) {
+			if (!hasPreviousHistory) return emptySetPrResult();
+			return getSetPrResult(set, currentExercisePrs);
+		}
+
+		currentExercisePrs = updateExercisePrs(set, currentExercisePrs);
+		if (!hasPreviousHistory && set.completed) {
+			hasPreviousHistory = true;
+		}
+	}
+
+	return emptySetPrResult();
 }
 
 function countTotalPrSetsInWorkout(
@@ -99,7 +166,7 @@ function countTotalPrSetsInWorkout(
 		let isPreviousExercise = exercisesWithHistory.has(exercise.globalExerciseId);
 
 		for (const set of exercise.sets) {
-			const currentSet = normalizeSet(set);
+			const currentSet = normalizePrSet(set);
 			if (isPreviousExercise && isPrSet(currentSet, prsForCurrentExercise)) {
 				totalPrSets += 1;
 			}

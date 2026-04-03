@@ -60,6 +60,24 @@ export const showSetDeletedToast = () => {
 	});
 };
 
+export const showSetPrToast = (
+	exerciseName: string,
+	prType: "weight" | "volume" | "bodyweightReps",
+) => {
+	const messageByPrType = {
+		weight: `New weight PR for ${exerciseName}`,
+		volume: `New volume PR for ${exerciseName}`,
+		bodyweightReps: `New reps PR for ${exerciseName}`,
+	} as const;
+
+	toast.success(messageByPrType[prType], {
+		position: toastPosition,
+		style: topMargin,
+		action: dismissAction,
+		actionButtonStyle,
+	});
+};
+
 export const showWorkoutSavedToast = (workoutName: string) => {
 	toast.success(`Saved ${workoutName}`, {
 		position: toastPosition,

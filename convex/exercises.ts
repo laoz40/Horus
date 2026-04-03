@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { calculateSetPrResult } from "./lib/calculateStatPr";
 import { errorHandlerWrapper, requireIdentity } from "./lib/server";
 import { getRelativeTime } from "../lib/date";
 import { normalizeName } from "../lib/normalizeName";
@@ -60,5 +61,59 @@ export const getRecentCompletedSetsByExerciseName = query({
 					reps: set.reps,
 					time: getRelativeTime(new Date(set.workoutCreationTime as number)),
 				}));
+		}),
+});
+
+export const checkCompletedSetPrByExerciseName = query({
+	args: {
+		exerciseName: v.string(),
+		sets: v.array(
+			v.object({
+				completed: v.boolean(),
+				reps: v.optional(v.float64()),
+				weight: v.optional(v.float64()),
+			}),
+		),
+		setIndex: v.number(),
+	},
+	handler: async (ctx, args) =>
+		errorHandlerWrapper(async () => {
+			const identity = await requireIdentity(ctx);
+
+			const exerciseName = normalizeName(args.exerciseName);
+			const globalExercise = await ctx.db
+				.query("globalExercises")
+				.withIndex("by_normalizedName", (query) => query.eq("normalizedName", exerciseName))
+				.first();
+
+			if (!globalExercise) return { isPr: false, prType: null };
+
+			const previousSets = (
+				await ctx.db
+					.query("workoutSets")
+					.withIndex("by_userId_globalExerciseId_completed_workoutCreationTime_order", (query) =>
+						query
+							.eq("userId", identity.subject)
+							.eq("globalExerciseId", globalExercise._id)
+							.eq("completed", true),
+					)
+					.collect()
+			).map((set) => ({
+				globalExerciseId: globalExercise._id,
+				weight: set.weight,
+				reps: set.reps,
+				completed: set.completed,
+			}));
+
+			return calculateSetPrResult(
+				previousSets,
+				globalExercise._id,
+				args.sets.map((set) => ({
+					completed: set.completed,
+					reps: Number(set.reps) || 0,
+					weight: Number(set.weight) || 0,
+				})),
+				args.setIndex,
+			);
 		}),
 });

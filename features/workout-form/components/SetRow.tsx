@@ -1,12 +1,17 @@
 "use client";
 
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
-import { Trash } from "lucide-react";
 import { type ReactElement } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
-import NumberInput from "./NumberInput";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Trash } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import NumberInput from "./NumberInput";
+
+import { api } from "@/convex/_generated/api";
+import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import { showSetPrToast } from "@/lib/toastMessages";
+import { useConvex } from "convex/react";
 
 interface SetRowProps {
 	exerciseIndex: number;
@@ -36,16 +41,19 @@ export default function SetRow({
 	isEditing,
 	onDeleteSet,
 }: SetRowProps): ReactElement {
-
 	const {
 		register,
 		control,
+		getValues,
 		formState: { errors },
 	} = useFormContext<Workout>();
+	const convex = useConvex();
 
 	const completedFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.completed` as const;
 	const weightFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.weight` as const;
 	const repsFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.reps` as const;
+	const exerciseNameFieldName = `exercises.${exerciseIndex}.global.name` as const;
+	const exerciseSetsFieldName = `exercises.${exerciseIndex}.sets` as const;
 
 	const isChecked = useWatch({ control, name: completedFieldName, defaultValue: false });
 
@@ -97,7 +105,43 @@ export default function SetRow({
 									className="size-8 ml-4"
 									aria-label="Color success"
 									checked={field.value}
-									onCheckedChange={(value) => field.onChange(!!value)}
+									onCheckedChange={async (value) => {
+										const nextChecked = !!value;
+										const previousChecked = !!field.value;
+										field.onChange(nextChecked);
+
+										if (previousChecked || !nextChecked) return;
+
+										const exerciseName = getValues(exerciseNameFieldName)?.trim();
+										if (!exerciseName) return;
+
+										const sets = getValues(exerciseSetsFieldName);
+										const currentSet = sets?.[setIndex];
+										if (!currentSet || currentSet.reps === undefined) return;
+
+										const setsForPrCheck = sets.map((set, index) => ({
+											completed: index === setIndex ? true : set.completed,
+											reps: set.reps,
+											weight: set.weight,
+										}));
+
+										try {
+											const result = await convex.query(
+												api.exercises.checkCompletedSetPrByExerciseName,
+												{
+													exerciseName,
+													sets: setsForPrCheck,
+													setIndex,
+												},
+											);
+
+											if (result.isPr && result.prType) {
+												showSetPrToast(exerciseName, result.prType);
+											}
+										} catch {
+											// Ignore PR check failures so checkbox interaction stays responsive.
+										}
+									}}
 								/>
 							)}
 						/>
