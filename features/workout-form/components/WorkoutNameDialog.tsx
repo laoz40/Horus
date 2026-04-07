@@ -45,6 +45,7 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 						<Label htmlFor="name-1">Enter workout name</Label>
 						<Input
 							id="name-1"
+							maxLength={64}
 							placeholder={`${getCurrentDay()} Workout`}
 							{...register("name")}
 						/>

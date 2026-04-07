@@ -50,6 +50,7 @@ export function ExerciseNameInputDropdown({
 					<ComboboxInput
 						placeholder="Enter an exercise..."
 						className="text-2xl font-medium h-11"
+						maxLength={64}
 						value={query}
 						onChange={(e) => {
 							setQuery(e.target.value ?? "");

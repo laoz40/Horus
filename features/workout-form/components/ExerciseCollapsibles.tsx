@@ -10,6 +10,7 @@ import { BicepsFlexed, ChevronDown, LucideIcon, Notebook } from "lucide-react";
 import { Activity, ReactNode, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Controller, useFormContext } from "react-hook-form";
+import { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 interface ExerciseCollapsiblesProps {
 	exerciseIndex: number;
@@ -65,16 +66,26 @@ function DifficultySlider({ exerciseIndex }: ExerciseCollapsiblesProps) {
 }
 
 function ExerciseNotes({ exerciseIndex }: ExerciseCollapsiblesProps) {
-	const { register } = useFormContext();
+	const {
+		register,
+		formState: { errors },
+	} = useFormContext<Workout>();
 
 	return (
 		<CollapsibleFilter
 			title="Notes"
 			icon={Notebook}>
-			<Textarea
-				placeholder="Write a note..."
-				{...register(`exercises.${exerciseIndex}.notes`)}
-			/>
+			<div className="flex flex-col gap-1">
+				<Textarea
+					placeholder="Write a note..."
+					{...register(`exercises.${exerciseIndex}.notes`)}
+				/>
+				{errors.exercises?.[exerciseIndex]?.notes && (
+					<span className="text-red-500 text-sm">
+						{errors.exercises[exerciseIndex]?.notes?.message}
+					</span>
+				)}
+			</div>
 		</CollapsibleFilter>
 	);
 }

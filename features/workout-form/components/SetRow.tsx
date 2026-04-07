@@ -73,6 +73,7 @@ export default function SetRow({
 						variant="decimal"
 						placeholder="kg"
 						className="text-2xl h-11"
+						maxLength={6}
 						{...register(weightFieldName, { setValueAs: parseOptionalNumber })}
 					/>
 					<span
@@ -83,6 +84,7 @@ export default function SetRow({
 						variant="integer"
 						placeholder="reps"
 						className="text-2xl h-11"
+						maxLength={6}
 						{...register(repsFieldName, { setValueAs: parseOptionalNumber })}
 					/>
 					{isEditing ? (
