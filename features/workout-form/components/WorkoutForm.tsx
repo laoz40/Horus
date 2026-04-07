@@ -2,9 +2,16 @@
 
 import { useEffect, useMemo, type ReactElement } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, useFieldArray, useForm, type Resolver } from "react-hook-form";
+import {
+	FormProvider,
+	useFieldArray,
+	useForm,
+	type FieldErrors,
+	type Resolver,
+} from "react-hook-form";
 
 import { WorkoutFormData } from "@/features/workout-form/lib/types";
+import { getFirstInvalidExerciseIndex } from "@/features/workout-form/lib/checkInvalidExercise";
 import { Workout, WorkoutSchema } from "@/features/workout-form/lib/validateWorkout";
 import {
 	createDefaultExercise,
@@ -49,9 +56,8 @@ export default function WorkoutForm({
 	const isRecentSetsLoading = useWorkoutFormUiStore(selectIsRecentSetsLoading);
 	const recentSetsError = useWorkoutFormUiStore(selectRecentSetsError);
 	const recentCompletedSets = useWorkoutFormUiStore(selectRecentCompletedSets);
-	const setRecentSetsDialogOpen = useWorkoutFormUiStore(
-		(state) => state.setRecentSetsDialogOpen,
-	);
+	const setRecentSetsDialogOpen = useWorkoutFormUiStore((state) => state.setRecentSetsDialogOpen);
+	const setScrollTarget = useWorkoutFormUiStore((state) => state.setScrollTarget);
 
 	// Strip fully empty sets/exercises before RHF validation so blank rows don't block submit.
 	const baseResolver = zodResolver(WorkoutSchema);
@@ -123,6 +129,17 @@ export default function WorkoutForm({
 
 	const { submitWorkout } = useWorkoutSubmit({ startedAtMs, workoutId });
 
+	const handleInvalidSubmit = (errors: FieldErrors<Workout>) => {
+		// find the first invalid exercise
+		const firstInvalidExerciseIndex = getFirstInvalidExerciseIndex(errors);
+		if (firstInvalidExerciseIndex === null) return;
+
+		// get the first invalid exercise id and scroll to it
+		const firstInvalidExerciseId = exercises[firstInvalidExerciseIndex]?.id;
+		if (!firstInvalidExerciseId) return;
+		setScrollTarget(firstInvalidExerciseId);
+	};
+
 	// exercise ids to pass to the exercise selector
 	const exerciseIds = useMemo(() => exercises.map((exercise) => exercise.id), [exercises]);
 	const { selectedExerciseId, selectedExerciseIndex } = useExerciseSelection({ exerciseIds });
@@ -148,7 +165,7 @@ export default function WorkoutForm({
 				<form
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
 					id="workout-form"
-					onSubmit={handleSubmit(submitWorkout)}>
+					onSubmit={handleSubmit(submitWorkout, handleInvalidSubmit)}>
 					{/* Exercise Form */}
 					<section
 						ref={exerciseListRef}
