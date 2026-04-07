@@ -19,7 +19,6 @@ import type * as lib_parseAndValidateWorkout from "../lib/parseAndValidateWorkou
 import type * as lib_server from "../lib/server.js";
 import type * as lib_workoutActions from "../lib/workoutActions.js";
 import type * as lib_workoutChildrenForUi from "../lib/workoutChildrenForUi.js";
-import type * as migrations_migration_1_nested_workouts_to_split_table_schema from "../migrations/migration_1_nested_workouts_to_split_table_schema.js";
 import type * as workouts from "../workouts.js";
 
 import type {
@@ -40,7 +39,6 @@ declare const fullApi: ApiFromModules<{
   "lib/server": typeof lib_server;
   "lib/workoutActions": typeof lib_workoutActions;
   "lib/workoutChildrenForUi": typeof lib_workoutChildrenForUi;
-  "migrations/migration_1_nested_workouts_to_split_table_schema": typeof migrations_migration_1_nested_workouts_to_split_table_schema;
   workouts: typeof workouts;
 }>;
 
