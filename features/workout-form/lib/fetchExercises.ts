@@ -1,6 +1,7 @@
 import { createSuggestionObject } from "./convertWorkoutData";
 import { DEFAULT_EXERCISES } from "./defaultExercises";
 import { normalizeName } from "@/lib/normalizeName";
+import { WgerExerciseResponse } from "./wgerTypes";
 
 export const fetchDefaultExercises = (query: string) => {
 	const matchedDefaultExercises = DEFAULT_EXERCISES.filter((exercise) =>
@@ -10,25 +11,15 @@ export const fetchDefaultExercises = (query: string) => {
 };
 
 export const fetchApiExercises = async (query: string) => {
-	const apiKey = process.env.EXERCISEDB_API_KEY;
-	if (!apiKey) {
-		throw new Error("API key not set");
-	}
-
-	const url = new URL(
-		"https://exercisedb-api.vercel.app/api/v1/exercises/filter",
-	);
-	url.searchParams.set("search", query);
+	const url = new URL("https://wger.de/api/v2/exerciseinfo/");
+	url.searchParams.set("language__code", "en");
 	url.searchParams.set("limit", "10");
-	url.searchParams.set("sortBy", "name");
-	url.searchParams.set("sortOrder", "asc");
+	url.searchParams.set("name__search", query);
+
+	console.log(url.toString());
 
 	const response = await fetch(url.toString(), {
 		method: "GET",
-		headers: {
-			"x-rapidapi-key": apiKey,
-			"x-rapidapi-host": "exercisedb.p.rapidapi.com",
-		},
 		next: {
 			revalidate: 60 * 60 * 24 * 30, // cache for 30 days
 		},
@@ -42,6 +33,38 @@ export const fetchApiExercises = async (query: string) => {
 		throw new Error(`API Error: ${response.status} ${response.statusText}`);
 	}
 
-	const matchedApiExercises = await response.json();
-	return matchedApiExercises.data.map(createSuggestionObject);
+	const matchedWgerExercises = (await response.json()) as WgerExerciseResponse;
+	const results = Array.isArray(matchedWgerExercises.results) ? matchedWgerExercises.results : [];
+
+	return results.flatMap((exercise) => {
+		// get english exercise name
+		const englishTranslation = exercise.translations?.find(
+			(exercise) => exercise.language === 2 && exercise.name.trim().length > 0,
+		);
+		if (!englishTranslation) return [];
+
+		const name = englishTranslation.name;
+
+		if (!name) return [];
+
+		const muscleGroups = [...(exercise.muscles ?? []), ...(exercise.muscles_secondary ?? [])]
+			.map((muscle) => muscle.name_en ?? muscle.name)
+			.filter((muscleName): muscleName is string => Boolean(muscleName?.trim()));
+
+		const deduplicatedMuscleGroups = Array.from(new Set(muscleGroups));
+		const fallbackMuscleGroups =
+			deduplicatedMuscleGroups.length > 0
+				? deduplicatedMuscleGroups
+				: exercise.category?.name?.trim()
+					? [exercise.category.name]
+					: undefined;
+
+		return [
+			createSuggestionObject({
+				id: String(exercise.id),
+				name,
+				muscleGroups: fallbackMuscleGroups,
+			}),
+		];
+	});
 };
