@@ -16,6 +16,8 @@ export default function WorkoutCardStats({
 	workoutVolume,
 	exerciseCount,
 }: WorkoutCardStatsProps): ReactElement {
+	const displayWorkoutVolume = Math.floor(workoutVolume);
+
 	return (
 		<div className="mt-2 grid grid-cols-4 items-center gap-x-24 border-t pt-1">
 			{/* Workout Duration */}
@@ -30,7 +32,7 @@ export default function WorkoutCardStats({
 			<div className="flex items-center justify-center gap-1.5">
 				<Weight className="size-4 shrink-0" />
 				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
-					{workoutVolume} kg
+					{displayWorkoutVolume} kg
 				</span>
 			</div>
 
