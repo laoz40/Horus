@@ -24,24 +24,18 @@ interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 	({ className, exerciseIndex, isEditing }, ref) => {
+		const convex = useConvex();
+
+		const openRecentSetsDialog = useWorkoutFormUiStore((state) => state.openRecentSetsDialog);
+		const setRecentSetsLoading = useWorkoutFormUiStore((state) => state.setRecentSetsLoading);
+		const setRecentSetsError = useWorkoutFormUiStore((state) => state.setRecentSetsError);
+		const setRecentCompletedSets = useWorkoutFormUiStore((state) => state.setRecentCompletedSets);
+
 		const {
 			control,
 			trigger,
 			formState: { errors },
 		} = useFormContext<Workout>();
-		const convex = useConvex();
-		const openRecentSetsDialog = useWorkoutFormUiStore(
-			(state) => state.openRecentSetsDialog,
-		);
-		const setRecentSetsLoading = useWorkoutFormUiStore(
-			(state) => state.setRecentSetsLoading,
-		);
-		const setRecentSetsError = useWorkoutFormUiStore(
-			(state) => state.setRecentSetsError,
-		);
-		const setRecentCompletedSets = useWorkoutFormUiStore(
-			(state) => state.setRecentCompletedSets,
-		);
 
 		const {
 			fields: sets,
@@ -82,12 +76,9 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			openRecentSetsDialog(trimmedName);
 
 			try {
-				const fetchedSets = await convex.query(
-					api.exercises.getRecentCompletedSetsByExerciseName,
-					{
-						exerciseName: trimmedName,
-					},
-				);
+				const fetchedSets = await convex.query(api.exercises.getRecentCompletedSetsByExerciseName, {
+					exerciseName: trimmedName,
+				});
 
 				setRecentCompletedSets(fetchedSets);
 			} catch (error) {

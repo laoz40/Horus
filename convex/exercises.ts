@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { calculateSetPrResult } from "./lib/calculateStatPr";
+import { calculateSetPrResult, getWorkoutSetPrResults } from "./lib/calculateStatPr";
 import { errorHandlerWrapper, requireIdentity } from "./lib/server";
 import { getRelativeTime } from "../lib/date";
 import { normalizeName } from "../lib/normalizeName";
@@ -43,7 +43,7 @@ export const getRecentCompletedSetsByExerciseName = query({
 				.first();
 			if (!globalExercise) return [];
 
-			const recentCompletedSets = await ctx.db
+			const completedSets = await ctx.db
 				.query("workoutSets")
 				.withIndex("by_userId_globalExerciseId_completed_workoutCreationTime_order", (query) =>
 					query
@@ -51,16 +51,33 @@ export const getRecentCompletedSetsByExerciseName = query({
 						.eq("globalExerciseId", globalExercise._id)
 						.eq("completed", true),
 				)
-				.order("desc")
-				.take(6);
+				.order("asc")
+				.collect();
 
-			return recentCompletedSets
-				.filter((set) => set.workoutCreationTime !== undefined)
-				.map((set) => ({
+			const setPrResults = getWorkoutSetPrResults(
+				[],
+				globalExercise._id,
+				completedSets.map((set) => ({
 					weight: set.weight,
 					reps: set.reps,
-					time: getRelativeTime(new Date(set.workoutCreationTime as number)),
-				}));
+					completed: set.completed,
+				})),
+			);
+
+			return completedSets
+				.slice(-6)
+				.reverse()
+				.map((set, index) => {
+					const prResult = setPrResults[completedSets.length - 1 - index];
+
+					return {
+						weight: set.weight,
+						reps: set.reps,
+						time: getRelativeTime(new Date(set.workoutCreationTime as number)),
+						isPr: prResult?.isPr ?? false,
+						prType: prResult?.prType ?? null,
+					};
+				});
 		}),
 });
 

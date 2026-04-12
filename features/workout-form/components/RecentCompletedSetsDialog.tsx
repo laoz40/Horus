@@ -12,11 +12,9 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
-type RecentCompletedSet = {
-	weight: number;
-	reps: number;
-	time: string;
-};
+import type {
+	RecentCompletedSet,
+} from "@/features/workout-form/stores/workoutFormUiStore";
 
 interface RecentCompletedSetsDialogProps {
 	open: boolean;
@@ -80,14 +78,10 @@ export default function RecentCompletedSetsDialog({
 								<div
 									key={`${set.time}-${set.weight}-${set.reps}-${index}`}
 									className="grid grid-cols-[64px_64px_minmax(140px,1fr)] gap-2 border-b py-2 text-sm last:border-b-0">
-									<span className={cn(index === 0 && "font-semibold")}>{set.weight}</span>
-									<span className={cn(index === 0 && "font-semibold")}>{set.reps}</span>
-									<span
-										className={cn(
-											"text-right whitespace-nowrap",
-											index === 0 && "font-semibold",
-										)}>
-										{set.time}
+									<span className={cn(set.isPr && "font-semibold")}>{set.weight}</span>
+									<span className={cn(set.isPr && "font-semibold")}>{set.reps}</span>
+									<span className="flex flex-col items-end gap-1 text-right whitespace-nowrap">
+										<span className={cn(set.isPr && "font-semibold")}>{set.time}</span>
 									</span>
 								</div>
 							))}

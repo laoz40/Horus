@@ -97,6 +97,30 @@ export function isPrSet(currentSet: ComparableSet, currentExercisePr: ExercisePr
 	return getSetPrResult(currentSet, currentExercisePr).isPr;
 }
 
+export function getWorkoutSetPrResults(
+	previousSets: PrBaselineSet[],
+	globalExerciseId: ExerciseKey,
+	sets: ComparableSet[],
+): SetPrResult[] {
+	const exercisePrs = getExercisePrReferences(previousSets);
+	let currentExercisePrs = exercisePrs.get(globalExerciseId) ?? emptyExercisePrs();
+	let hasPreviousHistory = previousSets.some((set) => set.globalExerciseId === globalExerciseId);
+
+	return sets.map((set) => {
+		const currentSet = normalizePrSet(set);
+		const result = hasPreviousHistory
+			? getSetPrResult(currentSet, currentExercisePrs)
+			: emptySetPrResult();
+
+		currentExercisePrs = updateExercisePrs(currentSet, currentExercisePrs);
+		if (!hasPreviousHistory && currentSet.completed) {
+			hasPreviousHistory = true;
+		}
+
+		return result;
+	});
+}
+
 export function updateExercisePrs(set: ComparableSet, currentExercise: ExercisePrs): ExercisePrs {
 	if (!set.completed) return currentExercise;
 
@@ -129,28 +153,8 @@ export function calculateSetPrResult(
 	sets: ComparableSet[],
 	targetSetIndex: number,
 ): SetPrResult {
-	const targetSet = sets[targetSetIndex];
-	if (!targetSet) return emptySetPrResult();
-
-	const exercisePrs = getExercisePrReferences(previousSets);
-	let currentExercisePrs = exercisePrs.get(globalExerciseId) ?? emptyExercisePrs();
-	let hasPreviousHistory = previousSets.some((set) => set.globalExerciseId === globalExerciseId);
-
-	for (let index = 0; index <= targetSetIndex; index += 1) {
-		const set = normalizePrSet(sets[index] as ComparableSet);
-
-		if (index === targetSetIndex) {
-			if (!hasPreviousHistory) return emptySetPrResult();
-			return getSetPrResult(set, currentExercisePrs);
-		}
-
-		currentExercisePrs = updateExercisePrs(set, currentExercisePrs);
-		if (!hasPreviousHistory && set.completed) {
-			hasPreviousHistory = true;
-		}
-	}
-
-	return emptySetPrResult();
+	const targetSet = getWorkoutSetPrResults(previousSets, globalExerciseId, sets)[targetSetIndex];
+	return targetSet ?? emptySetPrResult();
 }
 
 function countTotalPrSetsInWorkout(

@@ -1,9 +1,13 @@
 import { create } from "zustand";
 
+export type RecentCompletedSetPrType = "weight" | "volume" | "bodyweightReps";
+
 export interface RecentCompletedSet {
 	weight: number;
 	reps: number;
 	time: string;
+	isPr: boolean;
+	prType: RecentCompletedSetPrType | null;
 }
 
 export interface WorkoutFormUiState {
