@@ -1,4 +1,5 @@
 import { normalizeName } from "@/lib/normalizeName";
+import { ExerciseSuggestion } from "./types";
 
 interface fetchedExercise {
 	id: string;
@@ -48,7 +49,7 @@ export const createSuggestionObject = (exercise: {
 	normalizedName?: string;
 	targetMuscles?: string[];
 	muscleGroups?: string[];
-}) => ({
+}): ExerciseSuggestion => ({
 	id: exercise.id,
 	name: toTitleCase(exercise.name),
 	normalizedName:

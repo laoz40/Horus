@@ -6,28 +6,39 @@ export async function GET(request: Request) {
 	const query = searchParams.get("query");
 
 	if (!query) {
-		return NextResponse.json({ success: false, error: "query is required" });
+		return NextResponse.json({ success: false, error: "query is required" }, { status: 400 });
 	}
 
-	try {
-		const apiExercises = await fetchApiExercises(query);
+	const result = await fetchApiExercises(query);
 
-		return NextResponse.json({
-			success: true,
-			exercises: apiExercises,
-		});
-	} catch (error) {
-		// TODO: redo error handling
-		const message =
-			error instanceof Error ? error.message : "Failed to fetch exercises";
+	return result.match(
+		(exercises) => {
+			return NextResponse.json({
+				success: true,
+				exercises,
+			});
+		},
+		(error) => {
+			const code = error.code;
 
-		return NextResponse.json(
-			{
-				success: false,
-				exercises: [],
-				error: message,
-			},
-			{ status: message === "Too many requests" ? 429 : 500 },
-		);
-	}
+			const returnResponseWithCode = (status: number) => {
+				return NextResponse.json(
+					{
+						success: false,
+						exercises: [],
+					},
+					{ status },
+				);
+			};
+
+			switch (code) {
+				case "RATE_LIMITED":
+					return returnResponseWithCode(429);
+				case "REQUEST_FAILED":
+					return returnResponseWithCode(500);
+				default:
+					throw new Error(`Unhandled app error code: ${code satisfies never}`);
+			}
+		},
+	);
 }

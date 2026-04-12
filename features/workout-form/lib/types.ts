@@ -45,3 +45,10 @@ export interface WorkoutForSave {
 	durationSeconds: number | null;
 	exercises: ExerciseForSave[];
 }
+
+export interface ExerciseSuggestion {
+	id: string;
+	name: string;
+	normalizedName: string;
+	muscleGroups?: string[];
+}

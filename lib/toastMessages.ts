@@ -86,24 +86,6 @@ export const showWorkoutSavedToast = (workoutName: string) => {
 	});
 };
 
-export const showExerciseSearchRateLimitToast = () => {
-	toast.error("Too many requests. Try again in a moment.", {
-		position: toastPosition,
-		style: topMargin,
-		action: dismissAction,
-		actionButtonStyle,
-	});
-};
-
-export const showExerciseSearchFailedToast = () => {
-	toast.error("Failed to fetch exercises.", {
-		position: toastPosition,
-		style: topMargin,
-		action: dismissAction,
-		actionButtonStyle,
-	});
-};
-
 export const showErrorToast = (message: string) => {
 	toast.error(message, {
 		position: toastPosition,

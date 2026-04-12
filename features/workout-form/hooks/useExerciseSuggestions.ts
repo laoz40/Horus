@@ -3,20 +3,18 @@
 import { useState, useEffect } from "react";
 import { useConvex } from "convex/react";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-	showExerciseSearchFailedToast,
-	showExerciseSearchRateLimitToast,
-} from "@/lib/toastMessages";
+import { showErrorToast } from "@/lib/toastMessages";
 import { deduplicateExercises } from "@/features/workout-form/lib/convertWorkoutData";
 import { fetchDefaultExercises } from "@/features/workout-form/lib/fetchExercises";
 import { sortExercisesAlphabetically } from "@/features/workout-form/lib/sortExercises";
 import { api } from "@/convex/_generated/api";
+import type { ExerciseSuggestion } from "@/features/workout-form/lib/types";
+import { err, ok } from "neverthrow";
 
-export interface ExerciseSuggestion {
-	id: string;
-	name: string;
-	normalizedName: string;
-	muscleGroups?: string[];
+interface ExerciseSearchErrorResponse {
+	success: false;
+	exercises: [];
+	error: string;
 }
 
 interface ExerciseSearchSuccessResponse {
@@ -24,45 +22,26 @@ interface ExerciseSearchSuccessResponse {
 	exercises: ExerciseSuggestion[];
 }
 
-type ExerciseSearchErrorCode = "RATE_LIMITED" | "REQUEST_FAILED";
-
-class ExerciseSearchError extends Error {
-	code: ExerciseSearchErrorCode;
-
-	constructor(code: ExerciseSearchErrorCode, message: string) {
-		super(message);
-		this.name = "ExerciseSearchError";
-		this.code = code;
-	}
-}
-
-const fetchOnlineExerciseSuggestions = async (
-	query: string,
-): Promise<ExerciseSearchSuccessResponse> => {
+const fetchOnlineExerciseSuggestions = async (query: string) => {
 	const response = await fetch(`/api/exercises/search?query=${encodeURIComponent(query)}`);
 
-	if (response.status === 429) throw new ExerciseSearchError("RATE_LIMITED", "Too many requests");
+	const data = (await response.json()) as
+		| ExerciseSearchErrorResponse
+		| ExerciseSearchSuccessResponse;
 
-	if (!response.ok) {
-		throw new ExerciseSearchError(
-			"REQUEST_FAILED",
-			`Exercise search failed with status ${response.status}`,
-		);
+	if (!data.success) {
+		return err({
+			code: response.status === 429 ? "RATE_LIMITED" : "REQUEST_FAILED",
+		} as const);
 	}
 
-	const data = (await response.json()) as Partial<ExerciseSearchSuccessResponse>;
-
-	if (!data.success || !Array.isArray(data.exercises)) {
-		throw new ExerciseSearchError(
-			"REQUEST_FAILED",
-			"Exercise search returned an unexpected response",
-		);
+	if (data.success && !Array.isArray(data.exercises)) {
+		return err({
+			code: "INVALID_RESPONSE",
+		} as const);
 	}
 
-	return {
-		success: true,
-		exercises: data.exercises,
-	};
+	return ok(data);
 };
 
 export function useExerciseSuggestions(rawQuery: string) {
@@ -85,9 +64,7 @@ export function useExerciseSuggestions(rawQuery: string) {
 		let isCurrent = true;
 
 		// use default exercises for instant results
-		const defaultExercises = sortExercisesAlphabetically(
-			fetchDefaultExercises(query),
-		);
+		const defaultExercises = sortExercisesAlphabetically(fetchDefaultExercises(query));
 		setSuggestions(defaultExercises);
 		setIsDbSearchLoading(true);
 
@@ -101,9 +78,7 @@ export function useExerciseSuggestions(rawQuery: string) {
 
 				const dbExercises = Array.isArray(dataFromDb) ? dataFromDb : [];
 				setSuggestions(
-					sortExercisesAlphabetically(
-						deduplicateExercises(defaultExercises, dbExercises),
-					),
+					sortExercisesAlphabetically(deduplicateExercises(defaultExercises, dbExercises)),
 				);
 			} catch (error) {
 				if (!isCurrent) return;
@@ -130,27 +105,39 @@ export function useExerciseSuggestions(rawQuery: string) {
 		setIsOnlineSearchLoading(true);
 
 		try {
-			// fetch from exercisesdb api
-			const dataFromApi = await queryClient.fetchQuery({
+			const result = await queryClient.fetchQuery({
 				queryKey: ["exercise-search-online", query],
 				queryFn: () => fetchOnlineExerciseSuggestions(query),
-				staleTime: 1000 * 60 * 1, // 1 hour
-				gcTime: 1000 * 60 * 3, // 3 hours
+				staleTime: 1000 * 60 * 1,
+				gcTime: 1000 * 60 * 3,
 			});
 
-			if (dataFromApi.exercises.length > 0) {
-				setSuggestions((prev) =>
-					sortExercisesAlphabetically(
-						deduplicateExercises(prev, dataFromApi.exercises),
-					),
-				);
-			}
-		} catch (error) {
-			if (error instanceof ExerciseSearchError && error.code === "RATE_LIMITED") {
-				showExerciseSearchRateLimitToast();
-			} else {
-				showExerciseSearchFailedToast();
-			}
+			result.match(
+				(data) => {
+					if (data.exercises.length > 0) {
+						setSuggestions((prev) =>
+							sortExercisesAlphabetically(deduplicateExercises(prev, data.exercises)),
+						);
+					}
+				},
+				(error) => {
+					const code = error.code;
+
+					switch (code) {
+						case "RATE_LIMITED":
+							showErrorToast("Too many requests. Please try again later.");
+							return;
+						case "REQUEST_FAILED":
+							showErrorToast("Failed to fetch exercises.");
+							return;
+						case "INVALID_RESPONSE":
+							showErrorToast("The exercise search response was not in the expected format.");
+							return;
+						default:
+							throw new Error(`Unhandled app error code: ${code satisfies never}`);
+					}
+				},
+			);
 		} finally {
 			setIsOnlineSearchLoading(false);
 		}
