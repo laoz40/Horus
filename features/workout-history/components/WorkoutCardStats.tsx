@@ -19,7 +19,7 @@ export default function WorkoutCardStats({
 	const displayWorkoutVolume = Math.floor(workoutVolume);
 
 	return (
-		<div className="mt-2 grid grid-cols-4 items-center gap-x-24 border-t pt-1">
+		<div className="mt-2 grid grid-cols-4 items-center gap-x-9 border-t pt-1">
 			{/* Workout Duration */}
 			<div className="flex items-center justify-start gap-1.5">
 				<Clock className="size-4 shrink-0" />
