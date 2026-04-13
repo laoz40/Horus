@@ -57,6 +57,7 @@ export function ExerciseNameInputDropdown({
 							// reset muscle groups when typing in the input
 							setValue(`exercises.${exerciseIndex}.global.muscleGroups`, []);
 						}}
+						onClick={(e) => e.currentTarget.select()}
 						onBlur={() => field.onChange(query)}
 					/>
 					<ComboboxContent className="min-w-(--anchor-width)">
