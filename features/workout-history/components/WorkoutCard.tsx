@@ -2,7 +2,7 @@ import Card from "@/components/Card";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
-import { useHistoryUiStore } from "@/features/workout-history/stores/historyUiStore";
+import { markWorkoutDeleted } from "@/features/workout-history/stores/historyUiStore";
 import { toTitleCase } from "@/features/workout-form/lib/convertWorkoutData";
 import { getRelativeTime } from "@/lib/date";
 import { ShineBorder } from "@/components/ui/shine-border";
@@ -27,7 +27,6 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
 
 function Content({ workout }: WorkoutCardProps) {
 	const deleteWorkout = useMutation(api.workouts.deleteWorkout);
-	const markWorkoutDeleted = useHistoryUiStore((state) => state.markWorkoutDeleted);
 
 	const handleDelete = async () => {
 		try {

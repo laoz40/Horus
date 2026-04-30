@@ -2,6 +2,8 @@ import { useEffect, useRef, type RefObject } from "react";
 
 import {
 	selectScrollTargetId,
+	selectExercise,
+	setScrollTarget,
 	useWorkoutFormUiStore,
 } from "@/features/workout-form/stores/workoutFormUiStore";
 
@@ -18,8 +20,6 @@ export const useExerciseNavigation = ({
 	exerciseIds,
 }: UseExerciseNavigationProps): UseExerciseNavigationReturn => {
 	const scrollTargetId = useWorkoutFormUiStore(selectScrollTargetId);
-	const selectExercise = useWorkoutFormUiStore((state) => state.selectExercise);
-	const setScrollTarget = useWorkoutFormUiStore((state) => state.setScrollTarget);
 	const exerciseListRef = useRef<HTMLDivElement | null>(null);
 	const exerciseFormRefs = useRef<Record<string, HTMLDivElement | null>>({});
 	const previousExerciseCount = useRef(exerciseIds.length);
@@ -41,7 +41,7 @@ export const useExerciseNavigation = ({
 			block: "nearest",
 		});
 		setScrollTarget(null);
-	}, [scrollTargetId, setScrollTarget]);
+	}, [scrollTargetId]);
 
 	useEffect(() => {
 		const newExerciseAdded =
@@ -55,7 +55,7 @@ export const useExerciseNavigation = ({
 		}
 
 		previousExerciseCount.current = exerciseIds.length;
-	}, [exerciseIds, setScrollTarget]);
+	}, [exerciseIds]);
 
 	useEffect(() => {
 		const scrollContainer = exerciseListRef.current;
@@ -89,7 +89,7 @@ export const useExerciseNavigation = ({
 		});
 
 		return () => observer.disconnect();
-	}, [exerciseIds.length, selectExercise]);
+	}, [exerciseIds.length]);
 
 	return {
 		exerciseListRef,

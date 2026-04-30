@@ -6,7 +6,12 @@ import { forwardRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
-import { useWorkoutFormUiStore } from "@/features/workout-form/stores/workoutFormUiStore";
+import {
+	openRecentSetsDialog,
+	setRecentCompletedSets,
+	setRecentSetsError,
+	setRecentSetsLoading,
+} from "@/features/workout-form/stores/workoutFormUiStore";
 import { showSetDeletedToast } from "@/lib/toastMessages";
 import { cn } from "@/lib/utils";
 import { useConvex } from "convex/react";
@@ -25,11 +30,6 @@ interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
 const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 	({ className, exerciseIndex, isEditing }, ref) => {
 		const convex = useConvex();
-
-		const openRecentSetsDialog = useWorkoutFormUiStore((state) => state.openRecentSetsDialog);
-		const setRecentSetsLoading = useWorkoutFormUiStore((state) => state.setRecentSetsLoading);
-		const setRecentSetsError = useWorkoutFormUiStore((state) => state.setRecentSetsError);
-		const setRecentCompletedSets = useWorkoutFormUiStore((state) => state.setRecentCompletedSets);
 
 		const {
 			control,

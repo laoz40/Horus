@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 import {
 	selectSelectedExerciseId,
+	selectExercise,
 	useWorkoutFormUiStore,
 } from "@/features/workout-form/stores/workoutFormUiStore";
 
@@ -19,7 +20,6 @@ export const useExerciseSelection = ({
 	exerciseIds,
 }: UseExerciseSelectionProps): UseExerciseSelectionReturn => {
 	const selectedExerciseId = useWorkoutFormUiStore(selectSelectedExerciseId);
-	const selectExercise = useWorkoutFormUiStore((state) => state.selectExercise);
 	const lastKnownSelectedIndexRef = useRef<number>(0);
 
 	const selectedExerciseIndex = selectedExerciseId
@@ -40,7 +40,7 @@ export const useExerciseSelection = ({
 
 		const nextIndex = Math.min(lastKnownSelectedIndexRef.current, exerciseIds.length - 1);
 		selectExercise(exerciseIds[nextIndex] ?? null);
-	}, [exerciseIds, selectedExerciseId, selectExercise]);
+	}, [exerciseIds, selectedExerciseId]);
 
 	return {
 		selectedExerciseId: selectedExerciseId ?? undefined,

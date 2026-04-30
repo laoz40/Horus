@@ -2,7 +2,10 @@ import { type ReactElement } from "react";
 
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { Button } from "@/components/ui/button";
-import { useWorkoutFormUiStore } from "@/features/workout-form/stores/workoutFormUiStore";
+import {
+	toggleExerciseEdit,
+	useWorkoutFormUiStore,
+} from "@/features/workout-form/stores/workoutFormUiStore";
 
 import ExerciseSelector from "./ExerciseSelector";
 
@@ -19,7 +22,6 @@ export default function WorkoutFormBottomBar({
 }: WorkoutFormBottomBarProps): ReactElement | null {
 	const selectedExerciseId = useWorkoutFormUiStore((state) => state.selectedExerciseId);
 	const isEditing = useWorkoutFormUiStore((state) => state.isEditing);
-	const toggleExerciseEdit = useWorkoutFormUiStore((state) => state.toggleExerciseEdit);
 
 	const show = exerciseIds.length > 0;
 	if (!show) return null;

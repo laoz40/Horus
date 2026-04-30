@@ -3,7 +3,11 @@
 import { useEffect } from "react";
 
 import type { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
-import { selectDeletedWorkoutIds, useHistoryUiStore } from "@/features/workout-history/stores/historyUiStore";
+import {
+	clearDeletedWorkoutIds,
+	selectDeletedWorkoutIds,
+	useHistoryUiStore,
+} from "@/features/workout-history/stores/historyUiStore";
 
 import WorkoutCard from "./WorkoutCard";
 import { WorkoutCardSkeletonList } from "./HistoryWorkoutCardSkeleton";
@@ -18,7 +22,6 @@ export default function HistoryList({
 	WORKOUTS_PER_PAGE: number;
 }) {
 	const deletedWorkoutIds = useHistoryUiStore(selectDeletedWorkoutIds);
-	const clearDeletedWorkoutIds = useHistoryUiStore((state) => state.clearDeletedWorkoutIds);
 
 	useEffect(() => {
 		clearDeletedWorkoutIds();
@@ -26,7 +29,7 @@ export default function HistoryList({
 		return () => {
 			clearDeletedWorkoutIds();
 		};
-	}, [clearDeletedWorkoutIds]);
+	}, []);
 
 	const visibleWorkouts = workouts.filter((workout) => !deletedWorkoutIds.has(workout._id));
 

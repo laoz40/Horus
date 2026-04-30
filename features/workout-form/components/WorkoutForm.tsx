@@ -20,12 +20,16 @@ import {
 import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
 import { showErrorToast, showExerciseDeletedToast } from "@/lib/toastMessages";
 import {
-	useWorkoutFormUiStore,
+	initializeWorkoutSession,
+	resetWorkoutFormUi,
 	selectIsRecentSetsDialogOpen,
 	selectRecentSetsExerciseName,
 	selectIsRecentSetsLoading,
 	selectRecentSetsError,
 	selectRecentCompletedSets,
+	setRecentSetsDialogOpen,
+	setScrollTarget,
+	useWorkoutFormUiStore,
 } from "@/features/workout-form/stores/workoutFormUiStore";
 
 import ExerciseForm from "./ExerciseForm";
@@ -47,8 +51,6 @@ export default function WorkoutForm({
 	workoutId,
 	missingGlobalExercisesCount = 0,
 }: WorkoutFormProps): ReactElement {
-	const initializeWorkoutSession = useWorkoutFormUiStore((state) => state.initializeWorkoutSession);
-	const resetWorkoutFormUi = useWorkoutFormUiStore((state) => state.resetWorkoutFormUi);
 	const isEditing = useWorkoutFormUiStore((state) => state.isEditing);
 	const startedAtMs = useWorkoutFormUiStore((state) => state.startedAtMs);
 	const isRecentSetsDialogOpen = useWorkoutFormUiStore(selectIsRecentSetsDialogOpen);
@@ -56,8 +58,6 @@ export default function WorkoutForm({
 	const isRecentSetsLoading = useWorkoutFormUiStore(selectIsRecentSetsLoading);
 	const recentSetsError = useWorkoutFormUiStore(selectRecentSetsError);
 	const recentCompletedSets = useWorkoutFormUiStore(selectRecentCompletedSets);
-	const setRecentSetsDialogOpen = useWorkoutFormUiStore((state) => state.setRecentSetsDialogOpen);
-	const setScrollTarget = useWorkoutFormUiStore((state) => state.setScrollTarget);
 
 	// Strip fully empty sets/exercises before RHF validation so blank rows don't block submit.
 	const baseResolver = zodResolver(WorkoutSchema);
@@ -98,7 +98,7 @@ export default function WorkoutForm({
 		return () => {
 			resetWorkoutFormUi();
 		};
-	}, [initialDurationSeconds, initializeWorkoutSession, resetWorkoutFormUi]);
+	}, [initialDurationSeconds]);
 
 	useEffect(() => {
 		if (missingGlobalExercisesCount <= 0) return;

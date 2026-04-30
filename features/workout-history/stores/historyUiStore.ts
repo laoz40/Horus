@@ -4,12 +4,7 @@ export interface HistoryUiState {
 	deletedWorkoutIds: Set<string>;
 }
 
-export interface HistoryUiActions {
-	markWorkoutDeleted: (workoutId: string) => void;
-	clearDeletedWorkoutIds: () => void;
-}
-
-export type HistoryUiStore = HistoryUiState & HistoryUiActions;
+export type HistoryUiStore = HistoryUiState;
 
 const createInitialHistoryUiState = (): HistoryUiState => ({
 	deletedWorkoutIds: new Set<string>(),
@@ -17,14 +12,16 @@ const createInitialHistoryUiState = (): HistoryUiState => ({
 
 export const selectDeletedWorkoutIds = (state: HistoryUiStore) => state.deletedWorkoutIds;
 
-export const useHistoryUiStore = create<HistoryUiStore>()((set) => ({
+export const useHistoryUiStore = create<HistoryUiStore>()(() => ({
 	...createInitialHistoryUiState(),
-	markWorkoutDeleted: (workoutId) => {
-		set((state) => ({
-			deletedWorkoutIds: new Set(state.deletedWorkoutIds).add(workoutId),
-		}));
-	},
-	clearDeletedWorkoutIds: () => {
-		set(createInitialHistoryUiState());
-	},
 }));
+
+export function markWorkoutDeleted(workoutId: string): void {
+	useHistoryUiStore.setState((state) => ({
+		deletedWorkoutIds: new Set(state.deletedWorkoutIds).add(workoutId),
+	}));
+}
+
+export function clearDeletedWorkoutIds(): void {
+	useHistoryUiStore.setState(createInitialHistoryUiState());
+}
