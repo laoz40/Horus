@@ -8,7 +8,10 @@ import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { api } from "@/convex/_generated/api";
-import { type Workout } from "@/features/workout-form/lib/validateWorkout";
+import {
+	type Workout,
+	validateCompletedSet,
+} from "@/features/workout-form/lib/validateWorkout";
 import { startRestTimer } from "@/features/workout-form/stores/workoutFormUiStore";
 import { showSetPrToast } from "@/lib/toastMessages";
 
@@ -46,6 +49,8 @@ export default function SetRow({
 		register,
 		control,
 		getValues,
+		setError,
+		clearErrors,
 		formState: { errors },
 	} = useFormContext<Workout>();
 	const convex = useConvex();
@@ -57,6 +62,31 @@ export default function SetRow({
 	const exerciseSetsFieldName = `exercises.${exerciseIndex}.sets` as const;
 
 	const isChecked = useWatch({ control, name: completedFieldName, defaultValue: false });
+
+	const validateCurrentSetForCompletion = (): boolean => {
+		// Field-level RHF trigger is not enough here because draft sets allow empty reps;
+		// the submit schema only requires reps later at the exercise level. Checkbox
+		// completion needs an immediate per-set Zod check so blank rows cannot be checked.
+		const result = validateCompletedSet(getValues(exerciseSetsFieldName)?.[setIndex]);
+
+		if (result.success) {
+			clearErrors([repsFieldName, weightFieldName]);
+			return true;
+		}
+
+		const repsIssue = result.error.issues.find((issue) => issue.path[0] === "reps");
+		const weightIssue = result.error.issues.find((issue) => issue.path[0] === "weight");
+
+		if (repsIssue) {
+			setError(repsFieldName, { type: "zod", message: repsIssue.message });
+		}
+
+		if (weightIssue) {
+			setError(weightFieldName, { type: "zod", message: weightIssue.message });
+		}
+
+		return false;
+	};
 
 	const handleDeleteSet = () => {
 		onDeleteSet(setIndex);
@@ -111,6 +141,11 @@ export default function SetRow({
 									onCheckedChange={async (value) => {
 										const nextChecked = !!value;
 										const previousChecked = !!field.value;
+										if (nextChecked && !validateCurrentSetForCompletion()) {
+											field.onChange(false);
+											return;
+										}
+
 										field.onChange(nextChecked);
 
 										if (previousChecked || !nextChecked) return;

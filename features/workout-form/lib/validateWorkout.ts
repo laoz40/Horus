@@ -41,6 +41,17 @@ const SetSchema = z.object({
 	completed: z.boolean(),
 });
 
+// SetSchema keeps reps optional so fully blank draft rows can exist while editing.
+// Completing a set is stricter: the current row must be valid immediately, before
+// the broader workout submit flow strips empty rows and runs exercise-level checks.
+const CompletedSetSchema = SetSchema.extend({
+	reps: z
+		.number(SET_REPS_MISSING_MESSAGE)
+		.int()
+		.positive(SET_REPS_MISSING_MESSAGE)
+		.max(MAX_SET_REPS, NUMERIC_MAX_MESSAGE),
+});
+
 const ExerciseSchema = z
 	.object({
 		id: z.string(),
@@ -72,6 +83,10 @@ export const SanitizedWorkoutSchema = z.preprocess(stripEmptyWorkoutEntries, Wor
 
 export const validateWorkout = (workout: Workout) => {
 	return SanitizedWorkoutSchema.safeParse(workout);
+};
+
+export const validateCompletedSet = (set: Set | undefined) => {
+	return CompletedSetSchema.safeParse(set);
 };
 
 export type Set = z.infer<typeof SetSchema>;
