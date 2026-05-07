@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Oxanium } from "next/font/google";
 import DeferredToaster from "@/components/DeferredToaster";
+import RestTimerButton from "@/components/RestTimerButton";
 import ConvexClientProvider from "./ConvexClientProvider";
 import { Providers } from "./providers";
 
@@ -64,7 +65,10 @@ export default function RootLayout({
 					enableSystem
 					disableTransitionOnChange>
 					<ConvexClientProvider>
-						<Providers>{children}</Providers>
+						<Providers>
+							<RestTimerButton />
+							{children}
+						</Providers>
 					</ConvexClientProvider>
 				</ThemeProvider>
 			</body>

@@ -1,17 +1,18 @@
 "use client";
 
 import { type ReactElement } from "react";
-import { Controller, useFormContext, useWatch } from "react-hook-form";
+import { useConvex } from "convex/react";
 import { Trash } from "lucide-react";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import NumberInput from "./NumberInput";
-
 import { api } from "@/convex/_generated/api";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import { type Workout } from "@/features/workout-form/lib/validateWorkout";
+import { startRestTimer } from "@/features/workout-form/stores/workoutFormUiStore";
 import { showSetPrToast } from "@/lib/toastMessages";
-import { useConvex } from "convex/react";
+
+import NumberInput from "./NumberInput";
 
 interface SetRowProps {
 	exerciseIndex: number;
@@ -94,7 +95,7 @@ export default function SetRow({
 								size="icon-sm"
 								type="button"
 								onClick={handleDeleteSet}>
-								<Trash className="size-5"/>
+								<Trash className="size-5" />
 							</Button>
 						</div>
 					) : (
@@ -113,6 +114,8 @@ export default function SetRow({
 										field.onChange(nextChecked);
 
 										if (previousChecked || !nextChecked) return;
+
+										startRestTimer();
 
 										const exerciseName = getValues(exerciseNameFieldName)?.trim();
 										if (!exerciseName) return;
