@@ -8,8 +8,8 @@
 		"start": "next start",
 		"format": "oxfmt --check",
 		"format:fix": "oxfmt",
-		"lint": "oxlint",
-		"lint:fix": "oxlint --fix"
+		"lint": "oxlint .",
+		"lint:fix": "oxlint . --fix"
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.1.0",
