@@ -28,7 +28,7 @@ export default function WorkoutFormBottomBar({
 
 	const canToggleEdit = Boolean(selectedExerciseId);
 	const addOrDelete = isEditing ? (
-		<div className="flex-1">
+		<div className="w-full">
 			<AlertDialogDestructive
 				handleDelete={onDeleteExercise}
 				title="Delete exercise?"
@@ -44,7 +44,7 @@ export default function WorkoutFormBottomBar({
 	) : (
 		<Button
 			variant="default"
-			className="flex-1"
+			className="w-full"
 			type="button"
 			onClick={onAddExercise}>
 			Add Exercise
@@ -57,10 +57,10 @@ export default function WorkoutFormBottomBar({
 				<div className="flex items-center justify-start">
 					<ExerciseSelector exerciseIds={exerciseIds} />
 				</div>
-				<div className="flex items-center gap-3">
+				<div className="grid grid-cols-2 items-center gap-3">
 					<Button
 						variant={isEditing ? "default" : "outline"}
-						className={isEditing ? "flex-1" : "flex-1 text-muted-foreground"}
+						className="w-full"
 						type="button"
 						disabled={!canToggleEdit}
 						onClick={toggleExerciseEdit}>

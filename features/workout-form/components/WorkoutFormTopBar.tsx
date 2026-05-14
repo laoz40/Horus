@@ -37,7 +37,7 @@ export default function WorkoutFormTopBar({
 		<div className="ios-safe-area-top relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen bg-sidebar dark:bg-sidebar glass:backdrop-blur-xs border-b">
 			<div className="max-w-5xl mx-auto px-4 flex flex-row justify-between items-center py-4">
 				<Button
-					variant="secondary"
+					variant="outline"
 					asChild
 					size="sm">
 					<Link href={workoutId ? "/workouts" : "/"}>Back</Link>
