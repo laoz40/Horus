@@ -78,7 +78,7 @@ function ExerciseNotes({ exerciseIndex }: ExerciseCollapsiblesProps) {
 			<div className="flex flex-col gap-1">
 				<Textarea
 					placeholder="Write a note..."
-					className="text-foreground"
+					className="bg-card text-foreground dark:bg-input"
 					{...register(`exercises.${exerciseIndex}.notes`)}
 				/>
 				{errors.exercises?.[exerciseIndex]?.notes && (

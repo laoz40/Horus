@@ -1,6 +1,6 @@
 "use client";
 
-import { HistoryIcon } from "lucide-react";
+import { HistoryIcon, PlusIcon } from "lucide-react";
 import { forwardRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
@@ -90,7 +90,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		return (
 			<section
 				ref={ref}
-				className={cn("flex min-h-full flex-col gap-5 p-4", className)}>
+				className={cn("flex min-h-full flex-col gap-3 p-4", className)}>
 				{/* Exercise Name */}
 				<div className="shrink-0 flex flex-col gap-2">
 					<div className="flex items-center gap-2">
@@ -102,7 +102,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 								variant="outline"
 								size="default"
 								type="button"
-								className="h-11 w-11 shrink-0 justify-end border-none bg-transparent! p-0 text-muted-foreground has-[>svg]:px-0"
+								className="h-11 w-11 shrink-0 justify-end border-none bg-transparent! p-0 text-muted-foreground shadow-none has-[>svg]:px-0"
 								onClick={handleRecentClick}
 								aria-label="Recent exercises">
 								<HistoryIcon className="size-5" />
@@ -133,10 +133,11 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 							</div>
 							<Button
 								variant="ghost"
-								className="w-full shrink-0 text-muted-foreground text-sm"
+								className="w-full shrink-0 items-center text-muted-foreground text-sm leading-0"
 								type="button"
 								onClick={handleAddSet}>
-								Add Set
+								<PlusIcon className="size-4" />
+								<span className="translate-y-px">Add Set</span>
 							</Button>
 							{errors.exercises?.[exerciseIndex]?.sets?.root?.message && (
 								<span className="text-red-500 text-sm">

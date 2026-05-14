@@ -4,7 +4,6 @@ import { type ReactElement } from "react";
 import { useConvex } from "convex/react";
 import { Trash } from "lucide-react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
-
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { api } from "@/convex/_generated/api";
@@ -14,7 +13,6 @@ import {
 } from "@/features/workout-form/lib/validateWorkout";
 import { startRestTimer } from "@/features/workout-form/stores/workoutFormUiStore";
 import { showSetPrToast } from "@/lib/toastMessages";
-
 import NumberInput from "./NumberInput";
 
 interface SetRowProps {
@@ -99,18 +97,18 @@ export default function SetRow({
 					<NumberInput
 						variant="decimal"
 						placeholder="kg"
-						className="h-11 text-2xl text-foreground"
+						className="h-11 bg-card text-2xl text-foreground dark:bg-input"
 						maxLength={6}
 						{...register(weightFieldName, { setValueAs: parseOptionalNumber })}
 					/>
 					<span
-						className={`text-muted-foreground text-sm ${isChecked ? "text-primary" : "text-muted-foreground"}`}>
+						className={`text-muted-foreground text-base ${isChecked ? "text-primary" : "text-muted-foreground"}`}>
 						×
 					</span>
 					<NumberInput
 						variant="integer"
 						placeholder="reps"
-						className="h-11 text-2xl text-foreground"
+						className="h-11 bg-card text-2xl text-foreground dark:bg-input"
 						maxLength={6}
 						{...register(repsFieldName, { setValueAs: parseOptionalNumber })}
 					/>
@@ -132,7 +130,7 @@ export default function SetRow({
 							defaultValue={false}
 							render={({ field }) => (
 								<Checkbox
-									className="ml-4 size-11"
+									className="ml-4 size-11 bg-card dark:bg-input"
 									iconClassName="size-6"
 									aria-label="Color success"
 									checked={field.value}
