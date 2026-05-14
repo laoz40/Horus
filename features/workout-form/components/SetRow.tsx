@@ -95,15 +95,11 @@ export default function SetRow({
 	return (
 		<>
 			<div className="flex flex-col gap-1">
-				<div className="grid grid-cols-[min-content_1fr_min-content_1fr_min-content] gap-5 place-items-center">
-					<span
-						className={`text-muted-foreground text-sm ${isChecked ? "text-primary" : "text-muted-foreground"}`}>
-						{setIndex + 1}
-					</span>
+				<div className="grid grid-cols-[1fr_min-content_1fr_min-content] gap-5 place-items-center">
 					<NumberInput
 						variant="decimal"
 						placeholder="kg"
-						className="text-2xl h-11"
+						className="h-11 text-2xl text-foreground"
 						maxLength={6}
 						{...register(weightFieldName, { setValueAs: parseOptionalNumber })}
 					/>
@@ -114,7 +110,7 @@ export default function SetRow({
 					<NumberInput
 						variant="integer"
 						placeholder="reps"
-						className="text-2xl h-11"
+						className="h-11 text-2xl text-foreground"
 						maxLength={6}
 						{...register(repsFieldName, { setValueAs: parseOptionalNumber })}
 					/>
@@ -122,10 +118,11 @@ export default function SetRow({
 						<div className="ml-4 flex items-center justify-center text-destructive">
 							<Button
 								variant="ghost"
-								size="icon-sm"
+								size="icon-lg"
+								className="h-11 w-11"
 								type="button"
 								onClick={handleDeleteSet}>
-								<Trash className="size-5" />
+								<Trash className="size-6" />
 							</Button>
 						</div>
 					) : (
@@ -135,7 +132,8 @@ export default function SetRow({
 							defaultValue={false}
 							render={({ field }) => (
 								<Checkbox
-									className="size-8 ml-4"
+									className="ml-4 size-11"
+									iconClassName="size-6"
 									aria-label="Color success"
 									checked={field.value}
 									onCheckedChange={async (value) => {

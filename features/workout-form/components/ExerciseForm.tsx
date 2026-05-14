@@ -2,7 +2,6 @@
 
 import { HistoryIcon } from "lucide-react";
 import { forwardRef, useEffect } from "react";
-
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
@@ -16,7 +15,6 @@ import { showSetDeletedToast } from "@/lib/toastMessages";
 import { cn } from "@/lib/utils";
 import { useConvex } from "convex/react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
-
 import { createDefaultSet } from "../lib/WorkoutFormDefaults";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
 import { ExerciseNameInputDropdown } from "./ExerciseNameInputDropdown";
@@ -104,7 +102,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 								variant="outline"
 								size="default"
 								type="button"
-								className="h-11 w-11 shrink-0 px-0 text-muted-foreground"
+								className="h-11 w-11 shrink-0 justify-end border-none bg-transparent! p-0 text-muted-foreground has-[>svg]:px-0"
 								onClick={handleRecentClick}
 								aria-label="Recent exercises">
 								<HistoryIcon className="size-5" />
@@ -121,7 +119,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				{hasExerciseName && (
 					<div className="flex min-h-0 flex-1 flex-col gap-2">
 						{/* Set Rows */}
-						<div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto no-scrollbar">
+						<div className="-mx-1 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-1 no-scrollbar">
 							<div className="flex flex-col gap-3 pt-0.5">
 								{sets.map((set, setIndex) => (
 									<SetRow

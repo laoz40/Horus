@@ -49,7 +49,8 @@ export function ExerciseNameInputDropdown({
 					}}>
 					<ComboboxInput
 						placeholder="Enter an exercise..."
-						className="text-2xl font-medium h-11"
+						className="h-11 border-none bg-transparent!"
+						inputClassName="px-0 font-semibold"
 						maxLength={64}
 						value={query}
 						onChange={(e) => {

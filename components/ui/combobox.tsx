@@ -39,17 +39,24 @@ function ComboboxTrigger({
 
 function ComboboxInput({
 	className,
+	inputClassName,
 	children,
 	disabled = false,
 	...props
 }: ComboboxPrimitive.Input.Props & {
 	showTrigger?: boolean;
 	showClear?: boolean;
+	inputClassName?: string;
 }) {
 	return (
 		<InputGroup className={cn("w-auto bg-popover dark:bg-input", className)}>
 			<ComboboxPrimitive.Input
-				render={<InputGroupInput disabled={disabled} />}
+				render={
+					<InputGroupInput
+						disabled={disabled}
+						className={inputClassName}
+					/>
+				}
 				{...props}
 			/>
 			{children}
