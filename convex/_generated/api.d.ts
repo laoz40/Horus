@@ -9,10 +9,12 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as dailySetStats from "../dailySetStats.js";
 import type * as exercises from "../exercises.js";
 import type * as http from "../http.js";
 import type * as lib_calculateStatPr from "../lib/calculateStatPr.js";
 import type * as lib_calculateStatVolume from "../lib/calculateStatVolume.js";
+import type * as lib_dailySetStats from "../lib/dailySetStats.js";
 import type * as lib_getWorkoutMuscleGroups from "../lib/getWorkoutMuscleGroups.js";
 import type * as lib_globalExerciseLookup from "../lib/globalExerciseLookup.js";
 import type * as lib_parseAndValidateWorkout from "../lib/parseAndValidateWorkout.js";
@@ -29,10 +31,12 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  dailySetStats: typeof dailySetStats;
   exercises: typeof exercises;
   http: typeof http;
   "lib/calculateStatPr": typeof lib_calculateStatPr;
   "lib/calculateStatVolume": typeof lib_calculateStatVolume;
+  "lib/dailySetStats": typeof lib_dailySetStats;
   "lib/getWorkoutMuscleGroups": typeof lib_getWorkoutMuscleGroups;
   "lib/globalExerciseLookup": typeof lib_globalExerciseLookup;
   "lib/parseAndValidateWorkout": typeof lib_parseAndValidateWorkout;

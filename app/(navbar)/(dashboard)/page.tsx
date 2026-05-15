@@ -4,6 +4,7 @@ import { type ReactElement } from "react";
 import DashboardAccountButton from "@/features/auth/components/DashboardAccountButton";
 import DashboardPresetsSection from "@/features/dashboard/components/DashboardPresetsSection";
 import DashboardStartSection from "@/features/dashboard/components/DashboardStartSection";
+import DashboardYearInTrainingSection from "@/features/dashboard/components/DashboardYearInTrainingSection";
 import { authClient } from "@/lib/auth-client";
 
 export default function DashboardPage(): ReactElement {
@@ -11,7 +12,7 @@ export default function DashboardPage(): ReactElement {
 	const user = sessionData?.user ?? null;
 
 	const isSignedIn = user !== null;
-	const displayName = isSignedIn ? user.name ?? "Legend" : "Legend";
+	const displayName = isSignedIn ? (user.name ?? "Legend") : "Legend";
 	const headingText = isSignedIn ? "Welcome back," : "Welcome,";
 	const shouldShowSkeleton = isPending && sessionData === null;
 
@@ -40,6 +41,10 @@ export default function DashboardPage(): ReactElement {
 
 			<DashboardStartSection />
 			<DashboardPresetsSection />
+			<DashboardYearInTrainingSection
+				isAuthPending={isPending}
+				isSignedIn={isSignedIn}
+			/>
 		</div>
 	);
 }

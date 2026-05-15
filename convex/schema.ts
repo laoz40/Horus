@@ -7,9 +7,15 @@ export default defineSchema({
 		name: v.string(),
 		normalizedName: v.string(),
 	}).index("by_normalizedName", ["normalizedName"]),
+	dailySetStats: defineTable({
+		userId: v.string(),
+		dayKey: v.string(),
+		setCount: v.float64(),
+	}).index("by_userId_dayKey", ["userId", "dayKey"]),
 	workouts: defineTable({
 		durationSeconds: v.union(v.float64(), v.null()),
 		exerciseCount: v.optional(v.float64()),
+		setCount: v.optional(v.float64()),
 		muscleGroups: v.optional(v.array(v.string())),
 		name: v.string(),
 		totalPrSets: v.float64(),
@@ -40,6 +46,8 @@ export default defineSchema({
 		reps: v.float64(),
 		completed: v.boolean(),
 	})
+		.index("by_completed", ["completed"])
+		.index("by_userId_completed", ["userId", "completed"])
 		.index("by_userId_globalExerciseId_completed_workoutCreationTime_order", [
 			"userId",
 			"globalExerciseId",

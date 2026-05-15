@@ -3,6 +3,12 @@ import { ConvexError, v } from "convex/values";
 import type { WorkoutFormData } from "../features/workout-form/lib/types";
 import { calculateTotalPrSets } from "./lib/calculateStatPr";
 import { calculateWorkoutVolume } from "./lib/calculateStatVolume";
+import {
+	adjustDailySetStat,
+	countCompletedSets,
+	deleteDailySetStatsForUser,
+	getUtcDayKey,
+} from "./lib/dailySetStats";
 import { getWorkoutMuscleGroups } from "./lib/getWorkoutMuscleGroups";
 import { mapExercisesWithGlobalExerciseIds } from "./lib/globalExerciseLookup";
 import { parseAndValidateWorkout } from "./lib/parseAndValidateWorkout";
@@ -55,11 +61,13 @@ export const createWorkout = mutation({
 			);
 			const muscleGroups = getWorkoutMuscleGroups(workoutData);
 			const totalVolume = calculateWorkoutVolume(workoutData);
+			const setCount = countCompletedSets(exercisesWithGlobalExerciseIds);
 
 			const workoutId = await ctx.db.insert("workouts", {
 				name: workoutData.name,
 				durationSeconds: workoutData.durationSeconds,
 				exerciseCount: exercisesWithGlobalExerciseIds.length,
+				setCount,
 				muscleGroups,
 				totalPrSets,
 				totalVolume,
@@ -73,6 +81,11 @@ export const createWorkout = mutation({
 				userId: identity.subject,
 				workoutCreationTime: workout._creationTime,
 				exercises: exercisesWithGlobalExerciseIds,
+			});
+			await adjustDailySetStat(ctx, {
+				userId: identity.subject,
+				dayKey: getUtcDayKey(workout._creationTime),
+				delta: setCount,
 			});
 
 			return { workout: workoutData };
@@ -104,12 +117,14 @@ export const updateWorkout = mutation({
 			);
 			const muscleGroups = getWorkoutMuscleGroups(workoutData);
 			const totalVolume = calculateWorkoutVolume(workoutData);
+			const setCount = countCompletedSets(exercisesWithGlobalExerciseIds);
 
 			// update the workout row in the workouts table
 			await ctx.db.patch(args.workoutId, {
 				name: workoutData.name,
 				durationSeconds: workoutData.durationSeconds,
 				exerciseCount: exercisesWithGlobalExerciseIds.length,
+				setCount,
 				muscleGroups,
 				totalPrSets,
 				totalVolume,
@@ -122,6 +137,11 @@ export const updateWorkout = mutation({
 				userId: identity.subject,
 				workoutCreationTime: workout._creationTime,
 				exercises: exercisesWithGlobalExerciseIds,
+			});
+			await adjustDailySetStat(ctx, {
+				userId: identity.subject,
+				dayKey: getUtcDayKey(workout._creationTime),
+				delta: setCount - (workout.setCount ?? 0),
 			});
 
 			return { workout: workoutData, workoutId: args.workoutId };
@@ -137,6 +157,11 @@ export const deleteWorkout = mutation({
 			const identity = await requireIdentity(ctx);
 			const workout = await getWorkout(ctx, args.workoutId, identity.subject);
 
+			await adjustDailySetStat(ctx, {
+				userId: identity.subject,
+				dayKey: getUtcDayKey(workout._creationTime),
+				delta: -(workout.setCount ?? 0),
+			});
 			await deleteWorkoutChildren(ctx, args.workoutId);
 			await ctx.db.delete(args.workoutId);
 
@@ -159,6 +184,8 @@ export const deleteAllWorkouts = mutation({
 				.withIndex("by_userId", (q) => q.eq("userId", identity.subject))
 				.collect();
 			if (workouts.length === 0) throw new ConvexError({ code: "NO_WORKOUTS" });
+
+			await deleteDailySetStatsForUser(ctx, identity.subject);
 
 			const DELETE_BATCH_SIZE = 25;
 			for (let index = 0; index < workouts.length; index += DELETE_BATCH_SIZE) {
