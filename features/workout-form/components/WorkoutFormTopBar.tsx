@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { type ReactElement } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { useWorkoutFormUiStore } from "@/features/workout-form/stores/workoutFor
 import { formatDurationFull } from "@/lib/time";
 
 import { WorkoutNameDialog } from "./WorkoutNameDialog";
+import WorkoutExitLink from "./WorkoutExitLink";
 
 interface WorkoutFormTopBarProps {
 	initialDurationSeconds: number;
@@ -40,7 +40,7 @@ export default function WorkoutFormTopBar({
 					variant="outline"
 					asChild
 					size="sm">
-					<Link href={workoutId ? "/workouts" : "/"}>Back</Link>
+					<WorkoutExitLink href={workoutId ? "/workouts" : "/"}>Back</WorkoutExitLink>
 				</Button>
 				<WorkoutDuration initialDurationSeconds={initialDurationSeconds} />
 				<WorkoutNameDialog>

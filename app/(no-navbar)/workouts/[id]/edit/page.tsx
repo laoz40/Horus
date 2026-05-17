@@ -17,9 +17,13 @@ export default async function EditWorkoutPage({ params }: { params: Promise<{ id
 	}
 
 	try {
-		const workout = await fetchQuery(api.workouts.getWorkoutById, {
-			workoutId,
-		}, { token });
+		const workout = await fetchQuery(
+			api.workouts.getWorkoutById,
+			{
+				workoutId,
+			},
+			{ token },
+		);
 
 		const formData: WorkoutFormData = {
 			name: workout.name,
@@ -37,13 +41,13 @@ export default async function EditWorkoutPage({ params }: { params: Promise<{ id
 		};
 
 		return (
-			<>
+			<div className="create-workout-page flex min-h-0 flex-1 flex-col">
 				<WorkoutForm
 					initialData={formData}
 					workoutId={id}
 					missingGlobalExercisesCount={workout.missingGlobalExercisesCount}
 				/>
-			</>
+			</div>
 		);
 	} catch (error) {
 		if (error instanceof ConvexError && error.data?.code === "NO_WORKOUT_FOUND") {

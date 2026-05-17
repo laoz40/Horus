@@ -1,6 +1,7 @@
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { WorkoutFormData } from "@/features/workout-form/lib/types";
+import { animateCreateWorkoutExit } from "@/features/workout-form/lib/animateCreateWorkoutExit";
 import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
 import { showErrorToast, showWorkoutSavedToast } from "@/lib/toastMessages";
 import { useMutation } from "convex/react";
@@ -39,7 +40,9 @@ export const useWorkoutSubmit = ({
 					})
 				: await createWorkout({ workout: workoutInput });
 
-			router.push("/workouts");
+			animateCreateWorkoutExit(() => {
+				router.push("/workouts");
+			});
 			showWorkoutSavedToast(result.workout.name);
 		} catch (error) {
 			// zod validation error (server)
