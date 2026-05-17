@@ -49,7 +49,7 @@ export function ExerciseNameInputDropdown({
 					}}>
 					<ComboboxInput
 						placeholder="Enter an exercise..."
-						className="h-11 border-none bg-transparent! shadow-none"
+						className="h-11 rounded-none border-x-0 border-t-0 border-b border-transparent bg-transparent! shadow-none has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-0"
 						inputClassName="px-0 font-semibold shadow-none"
 						maxLength={64}
 						value={query}
