@@ -39,11 +39,7 @@ export default function WorkoutCardOptions({
 	);
 }
 
-function Content({
-	handleDelete,
-	workoutId,
-	workoutName,
-}: WorkoutCardOptionsProps): ReactElement {
+function Content({ handleDelete, workoutId, workoutName }: WorkoutCardOptionsProps): ReactElement {
 	const router = useRouter();
 	const convex = useConvex();
 

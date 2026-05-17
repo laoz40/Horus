@@ -7,7 +7,7 @@ import {
 	NavigationMenuList,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Dumbbell, Settings, TrendingUp, History } from "lucide-react";
+import { Dumbbell, History, Settings, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -28,6 +28,7 @@ export default function NavigationMenuMobile() {
 
 	return (
 		<NavigationMenu
+			style={{ viewTransitionName: "site-nav" }}
 			className={cn(
 				"w-full max-w-full bg-sidebar dark:bg-sidebar ios-safe-area-bottom",
 				// bottom bar
@@ -59,7 +60,9 @@ export default function NavigationMenuMobile() {
 								)}
 								active={active}
 								asChild>
-								<Link href={item.href}>
+								<Link
+									href={item.href}
+									transitionTypes={["nav-route"]}>
 									<item.icon className={cn("mb-1 h-6! w-6! text-current")} />
 									{item.title}
 								</Link>
