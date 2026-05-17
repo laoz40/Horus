@@ -220,6 +220,12 @@ body {
 	max-width: none;
 }
 
+@media (min-width: 768px) {
+	.react-calendar-heatmap {
+		width: 100%;
+	}
+}
+
 .react-calendar-heatmap text {
 	fill: var(--muted-foreground);
 	font-size: 0.625rem;

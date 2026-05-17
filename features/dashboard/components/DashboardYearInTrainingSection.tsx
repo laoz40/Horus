@@ -2,6 +2,7 @@
 
 import CalendarHeatmap from "react-calendar-heatmap";
 import { useQuery } from "convex/react";
+import { Loader2 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 
 type HeatmapValue = {
@@ -24,7 +25,7 @@ export default function DashboardYearInTrainingSection({
 	const stats = useQuery(api.dailySetStats.getYear, isSignedIn ? { year } : "skip");
 
 	if (isAuthPending || (isSignedIn && stats === undefined)) {
-		return <YearInTrainingSkeleton year={year} />;
+		return <YearInTrainingLoading year={year} />;
 	}
 
 	const values: HeatmapValue[] =
@@ -73,42 +74,14 @@ function YearInTrainingShell({ year, children }: { year: number; children: React
 	);
 }
 
-const skeletonMonths = [
-	"Jan",
-	"Feb",
-	"Mar",
-	"Apr",
-	"May",
-	"Jun",
-	"Jul",
-	"Aug",
-	"Sep",
-	"Oct",
-	"Nov",
-	"Dec",
-];
-
-function YearInTrainingSkeleton({ year }: { year: number }) {
+function YearInTrainingLoading({ year }: { year: number }) {
 	return (
 		<YearInTrainingShell year={year}>
-			<div className="border bg-card p-3 shadow-sm">
-				<div className="overflow-x-auto pb-1">
-					<div className="w-[634px] max-w-none animate-pulse overflow-hidden">
-						<div className="grid grid-cols-12 text-[0.625rem] text-muted-foreground">
-							{skeletonMonths.map((month) => (
-								<span key={month}>{month}</span>
-							))}
-						</div>
-						<div className="grid grid-flow-col grid-rows-7 gap-0.5">
-							{Array.from({ length: 53 * 7 }).map((_, index) => (
-								<div
-									key={index}
-									className="size-2.5 bg-muted"
-								/>
-							))}
-						</div>
-					</div>
-				</div>
+			<div className="flex min-h-28 items-center justify-center border bg-card p-3 text-muted-foreground shadow-sm md:min-h-36">
+				<Loader2
+					className="size-5 animate-spin"
+					aria-label="Loading year in training"
+				/>
 			</div>
 		</YearInTrainingShell>
 	);
