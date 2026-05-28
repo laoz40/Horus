@@ -12,10 +12,16 @@ interface WorkoutForPrCalculation {
 	}[];
 }
 
-interface ExercisePrs {
+export interface ExercisePrs {
 	weightPr: number;
 	volumePr: number;
 	bodyweightRepsPr: number;
+}
+
+export interface ExercisePrSummary extends ExercisePrs {
+	weightPrSetId: Id<"workoutSets"> | null;
+	volumePrSetId: Id<"workoutSets"> | null;
+	bodyweightRepsPrSetId: Id<"workoutSets"> | null;
 }
 
 export interface SetPrResult {
@@ -40,12 +46,25 @@ interface CurrentWorkoutForPr {
 	}[];
 }
 
-function emptyExercisePrs(): ExercisePrs {
+export function emptyExercisePrs(): ExercisePrs {
 	return {
 		weightPr: 0,
 		volumePr: 0,
 		bodyweightRepsPr: 0,
 	};
+}
+
+export function emptyExercisePrSummary(): ExercisePrSummary {
+	return {
+		...emptyExercisePrs(),
+		weightPrSetId: null,
+		volumePrSetId: null,
+		bodyweightRepsPrSetId: null,
+	};
+}
+
+export function hasExercisePrHistory(summary: ExercisePrSummary): boolean {
+	return Boolean(summary.weightPrSetId ?? summary.volumePrSetId ?? summary.bodyweightRepsPrSetId);
 }
 
 function emptySetPrResult(): SetPrResult {
@@ -128,6 +147,41 @@ export function updateExercisePrs(set: ComparableSet, currentExercise: ExerciseP
 		weightPr: Math.max(currentExercise.weightPr, set.weight),
 		volumePr: Math.max(currentExercise.volumePr, set.weight * set.reps),
 		bodyweightRepsPr: Math.max(currentExercise.bodyweightRepsPr, set.weight === 0 ? set.reps : 0),
+	};
+}
+
+export function updateExercisePrSummary(
+	set: ComparableSet,
+	setId: Id<"workoutSets">,
+	currentExercise: ExercisePrSummary,
+): ExercisePrSummary {
+	if (!set.completed) return currentExercise;
+
+	const volume = set.weight * set.reps;
+
+	return {
+		weightPr: set.weight > currentExercise.weightPr ? set.weight : currentExercise.weightPr,
+		weightPrSetId: set.weight > currentExercise.weightPr ? setId : currentExercise.weightPrSetId,
+		volumePr: volume > currentExercise.volumePr ? volume : currentExercise.volumePr,
+		volumePrSetId: volume > currentExercise.volumePr ? setId : currentExercise.volumePrSetId,
+		bodyweightRepsPr:
+			set.weight === 0 && set.reps > currentExercise.bodyweightRepsPr
+				? set.reps
+				: currentExercise.bodyweightRepsPr,
+		bodyweightRepsPrSetId:
+			set.weight === 0 && set.reps > currentExercise.bodyweightRepsPr
+				? setId
+				: currentExercise.bodyweightRepsPrSetId,
+	};
+}
+
+export function getPrPatchFields(result: SetPrResult) {
+	return {
+		isPr: result.isPr,
+		prType: result.prType,
+		isCurrentWeightPr: false,
+		isCurrentVolumePr: false,
+		isCurrentBodyweightRepsPr: false,
 	};
 }
 
