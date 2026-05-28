@@ -55,11 +55,11 @@ export default function RecentCompletedSetsDialog({
 				</DialogHeader>
 
 				<div className="flex flex-col gap-3">
-					<div className="grid grid-cols-[64px_48px_minmax(72px,1fr)_minmax(112px,auto)] gap-2 text-muted-foreground text-xs uppercase tracking-wide">
+					<div className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 text-muted-foreground text-xs uppercase tracking-wide">
 						<span>Weight</span>
 						<span>Reps</span>
 						<span />
-						<span className="text-right whitespace-nowrap">Completed</span>
+						<span className="truncate text-right">Completed</span>
 					</div>
 
 					{isLoading ? (
@@ -67,7 +67,7 @@ export default function RecentCompletedSetsDialog({
 							{Array.from({ length: 6 }).map((_, index) => (
 								<div
 									key={index}
-									className="grid grid-cols-[64px_48px_minmax(72px,1fr)_minmax(112px,auto)] gap-2 border-b py-2 last:border-b-0">
+									className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 border-b py-2 last:border-b-0">
 									<div className="bg-muted h-4 w-8 animate-pulse" />
 									<div className="bg-muted h-4 w-8 animate-pulse" />
 									<div className="bg-muted h-4 w-14 animate-pulse" />
@@ -89,7 +89,7 @@ export default function RecentCompletedSetsDialog({
 								return (
 									<div
 										key={`${set.time}-${set.weight}-${set.reps}-${index}`}
-										className="grid grid-cols-[64px_48px_minmax(72px,1fr)_minmax(112px,auto)] items-center gap-2 border-b py-2 text-sm last:border-b-0">
+										className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] items-center gap-1 border-b py-2 text-sm last:border-b-0">
 										<span className={cn(set.isPr && "font-semibold")}>{set.weight}</span>
 										<span className={cn(set.isPr && "font-semibold")}>{set.reps}</span>
 										<span>
@@ -99,7 +99,12 @@ export default function RecentCompletedSetsDialog({
 												</span>
 											) : null}
 										</span>
-										<span className={cn("text-right whitespace-nowrap", set.isPr && "font-semibold")}>
+										<span
+											className={cn(
+												"min-w-0 truncate text-right",
+												set.isPr && "font-semibold",
+											)}
+											title={set.time}>
 											{set.time}
 										</span>
 									</div>

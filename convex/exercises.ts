@@ -6,7 +6,7 @@ import {
 	normalizePrSet,
 	updateExercisePrs,
 } from "./lib/calculateStatPr";
-import { getExercisePrSummary } from "./lib/exercisePrs";
+import { getCurrentPrTypesForSet, getExercisePrSummary } from "./lib/exercisePrs";
 import { errorHandlerWrapper, requireIdentity } from "./lib/server";
 import { getRelativeTime } from "../lib/date";
 import { normalizeName } from "../lib/normalizeName";
@@ -67,20 +67,7 @@ export const getRecentCompletedSetsByExerciseName = query({
 			);
 
 			return recentCompletedSets.map((set) => {
-				const prTypes: Array<"weight" | "volume" | "bodyweightReps"> = [];
-
-				if (set.isCurrentWeightPr === true || currentPrSummary?.weightPrSetId === set._id) {
-					prTypes.push("weight");
-				}
-				if (set.isCurrentVolumePr === true || currentPrSummary?.volumePrSetId === set._id) {
-					prTypes.push("volume");
-				}
-				if (
-					set.isCurrentBodyweightRepsPr === true ||
-					currentPrSummary?.bodyweightRepsPrSetId === set._id
-				) {
-					prTypes.push("bodyweightReps");
-				}
+				const prTypes = getCurrentPrTypesForSet(set, currentPrSummary);
 
 				return {
 					weight: set.weight,

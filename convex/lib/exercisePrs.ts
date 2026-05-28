@@ -2,6 +2,8 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { emptyExercisePrSummary, type ExercisePrSummary } from "./calculateStatPr";
 
+export type CurrentPrType = "weight" | "volume" | "bodyweightReps";
+
 type DbCtx = MutationCtx | QueryCtx;
 
 export async function getExercisePrSummary(
@@ -103,6 +105,31 @@ export async function clearCurrentPrFlags(
 	}
 
 	await Promise.all([...patches].map(([setId, patch]) => ctx.db.patch(setId, patch)));
+}
+
+export function getCurrentPrTypesForSet(
+	set: Pick<
+		Doc<"workoutSets">,
+		"_id" | "isCurrentWeightPr" | "isCurrentVolumePr" | "isCurrentBodyweightRepsPr"
+	>,
+	summary: Pick<
+		Doc<"exercisePrs">,
+		"weightPrSetId" | "volumePrSetId" | "bodyweightRepsPrSetId"
+	> | null,
+): CurrentPrType[] {
+	const prTypes: CurrentPrType[] = [];
+
+	if (set.isCurrentWeightPr === true || summary?.weightPrSetId === set._id) {
+		prTypes.push("weight");
+	}
+	if (set.isCurrentVolumePr === true || summary?.volumePrSetId === set._id) {
+		prTypes.push("volume");
+	}
+	if (set.isCurrentBodyweightRepsPr === true || summary?.bodyweightRepsPrSetId === set._id) {
+		prTypes.push("bodyweightReps");
+	}
+
+	return prTypes;
 }
 
 export async function markCurrentPrFlags(
