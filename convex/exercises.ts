@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import {
-	calculateSetPrResult,
 	emptyExercisePrSummary,
 	getSetPrResult,
 	hasExercisePrHistory,
@@ -120,35 +119,7 @@ export const checkCompletedSetPrByExerciseName = query({
 
 			const summary = await getExercisePrSummary(ctx, identity.subject, globalExercise._id);
 
-			if (!summary) {
-				const previousSets = (
-					await ctx.db
-						.query("workoutSets")
-						.withIndex("by_userId_globalExerciseId_completed_workoutCreationTime_order", (query) =>
-							query
-								.eq("userId", identity.subject)
-								.eq("globalExerciseId", globalExercise._id)
-								.eq("completed", true),
-						)
-						.collect()
-				).map((set) => ({
-					globalExerciseId: globalExercise._id,
-					weight: set.weight,
-					reps: set.reps,
-					completed: set.completed,
-				}));
-
-				return calculateSetPrResult(
-					previousSets,
-					globalExercise._id,
-					args.sets.map((set) => ({
-						completed: set.completed,
-						reps: Number(set.reps) || 0,
-						weight: Number(set.weight) || 0,
-					})),
-					args.setIndex,
-				);
-			}
+			if (!summary) return { isPr: false, prType: null };
 
 			let currentSummary = {
 				...emptyExercisePrSummary(),
