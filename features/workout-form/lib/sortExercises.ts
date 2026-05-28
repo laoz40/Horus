@@ -1,4 +1,4 @@
-import { ExerciseSuggestion } from "@/features/workout-form/hooks/useExerciseSuggestions";
+import type { ExerciseSuggestion } from "@/features/workout-form/lib/types";
 
 export const sortExercisesAlphabetically = (
 	exercises: ExerciseSuggestion[],
