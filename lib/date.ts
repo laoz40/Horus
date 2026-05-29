@@ -9,9 +9,4 @@ export const getCurrentDay = (): string => dayjs().format("dddd");
 
 // relative time
 dayjs.extend(relativeTime);
-export const getRelativeTime = (date: Date) => {
-	if (!date) {
-		return "Date unavailable";
-	}
-	return dayjs(date).fromNow();
-};
+export const getRelativeTime = (date: Date) => dayjs(date).fromNow();

@@ -72,7 +72,7 @@ export const getRecentCompletedSetsByExerciseName = query({
 				return {
 					weight: set.weight,
 					reps: set.reps,
-					time: getRelativeTime(new Date(set.workoutCreationTime as number)),
+					time: getRelativeTime(new Date(set.workoutCreationTime)),
 					isPr: prTypes.length > 0,
 					prTypes,
 				};

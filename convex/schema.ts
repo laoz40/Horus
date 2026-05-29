@@ -37,7 +37,7 @@ export default defineSchema({
 	workoutSets: defineTable({
 		userId: v.optional(v.string()),
 		globalExerciseId: v.optional(v.id("globalExercises")),
-		workoutCreationTime: v.optional(v.float64()),
+		workoutCreationTime: v.float64(),
 		workoutId: v.optional(v.id("workouts")),
 		workoutExerciseId: v.id("workoutExercises"),
 		order: v.float64(),
