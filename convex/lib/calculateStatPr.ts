@@ -89,16 +89,6 @@ export function getSetPrResult(
 	return emptySetPrResult();
 }
 
-export function updateExercisePrs(set: ComparableSet, currentExercise: ExercisePrs): ExercisePrs {
-	if (!set.completed) return currentExercise;
-
-	return {
-		weightPr: Math.max(currentExercise.weightPr, set.weight),
-		volumePr: Math.max(currentExercise.volumePr, set.weight * set.reps),
-		bodyweightRepsPr: Math.max(currentExercise.bodyweightRepsPr, set.weight === 0 ? set.reps : 0),
-	};
-}
-
 export function updateExercisePrSummary(
 	set: ComparableSet,
 	setId: Id<"workoutSets">,
