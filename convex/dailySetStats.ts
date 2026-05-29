@@ -53,8 +53,6 @@ async function rebuildAllUsers(ctx: MutationCtx) {
 	const dayCounts = new Map<string, { userId: string; dayKey: string; setCount: number }>();
 
 	for (const set of completedSets) {
-		if (!set.userId || !set.workoutId || set.workoutCreationTime === undefined) continue;
-
 		setCountsByWorkout.set(set.workoutId, (setCountsByWorkout.get(set.workoutId) ?? 0) + 1);
 
 		const dayKey = getUtcDayKey(set.workoutCreationTime);

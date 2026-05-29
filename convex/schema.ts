@@ -35,10 +35,10 @@ export default defineSchema({
 		.index("by_workoutId_order", ["workoutId", "order"])
 		.index("by_userId_globalExerciseId", ["userId", "globalExerciseId"]),
 	workoutSets: defineTable({
-		userId: v.optional(v.string()),
-		globalExerciseId: v.optional(v.id("globalExercises")),
+		userId: v.string(),
+		globalExerciseId: v.id("globalExercises"),
 		workoutCreationTime: v.float64(),
-		workoutId: v.optional(v.id("workouts")),
+		workoutId: v.id("workouts"),
 		workoutExerciseId: v.id("workoutExercises"),
 		order: v.float64(),
 		clientSetId: v.string(),

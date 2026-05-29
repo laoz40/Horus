@@ -51,7 +51,7 @@ export async function rebuildExercisePrsForUser(
 				: { isPr: false, prType: null };
 
 			await ctx.db.patch(set._id, getPrPatchFields(result));
-			if (set.workoutId) touchedWorkoutIds.add(set.workoutId);
+			touchedWorkoutIds.add(set.workoutId);
 
 			summary = updateExercisePrSummary(normalizedSet, set._id, summary);
 			if (!hasHistory && normalizedSet.completed) hasHistory = true;
