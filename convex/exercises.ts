@@ -1,5 +1,11 @@
 import { v } from "convex/values";
-import { calculateSetPrResult, getWorkoutSetPrResults } from "./lib/calculateStatPr";
+import {
+	emptyExercisePrSummary,
+	getSetPrResult,
+	hasExercisePrHistory,
+	normalizePrSet,
+} from "./lib/calculateStatPr";
+import { getCurrentPrTypesForSet, getExercisePrSummary } from "./lib/exercisePrs";
 import { errorHandlerWrapper, requireIdentity } from "./lib/server";
 import { getRelativeTime } from "../lib/date";
 import { normalizeName } from "../lib/normalizeName";
@@ -43,7 +49,7 @@ export const getRecentCompletedSetsByExerciseName = query({
 				.first();
 			if (!globalExercise) return [];
 
-			const completedSets = await ctx.db
+			const recentCompletedSets = await ctx.db
 				.query("workoutSets")
 				.withIndex("by_userId_globalExerciseId_completed_workoutCreationTime_order", (query) =>
 					query
@@ -51,33 +57,25 @@ export const getRecentCompletedSetsByExerciseName = query({
 						.eq("globalExerciseId", globalExercise._id)
 						.eq("completed", true),
 				)
-				.order("asc")
-				.collect();
-
-			const setPrResults = getWorkoutSetPrResults(
-				[],
+				.order("desc")
+				.take(6);
+			const currentPrSummary = await getExercisePrSummary(
+				ctx,
+				identity.subject,
 				globalExercise._id,
-				completedSets.map((set) => ({
-					weight: set.weight,
-					reps: set.reps,
-					completed: set.completed,
-				})),
 			);
 
-			return completedSets
-				.slice(-6)
-				.reverse()
-				.map((set, index) => {
-					const prResult = setPrResults[completedSets.length - 1 - index];
+			return recentCompletedSets.map((set) => {
+				const prTypes = getCurrentPrTypesForSet(set, currentPrSummary);
 
-					return {
-						weight: set.weight,
-						reps: set.reps,
-						time: getRelativeTime(new Date(set.workoutCreationTime as number)),
-						isPr: prResult?.isPr ?? false,
-						prType: prResult?.prType ?? null,
-					};
-				});
+				return {
+					weight: set.weight,
+					reps: set.reps,
+					time: getRelativeTime(new Date(set.workoutCreationTime)),
+					isPr: prTypes.length > 0,
+					prTypes,
+				};
+			});
 		}),
 });
 
@@ -105,32 +103,61 @@ export const checkCompletedSetPrByExerciseName = query({
 
 			if (!globalExercise) return { isPr: false, prType: null };
 
-			const previousSets = (
-				await ctx.db
-					.query("workoutSets")
-					.withIndex("by_userId_globalExerciseId_completed_workoutCreationTime_order", (query) =>
-						query
-							.eq("userId", identity.subject)
-							.eq("globalExerciseId", globalExercise._id)
-							.eq("completed", true),
-					)
-					.collect()
-			).map((set) => ({
-				globalExerciseId: globalExercise._id,
-				weight: set.weight,
-				reps: set.reps,
-				completed: set.completed,
-			}));
+			// Get this user's saved PRs for this exercise. If this is their first
+			// time doing it, start empty.
+			const summary =
+				(await getExercisePrSummary(ctx, identity.subject, globalExercise._id)) ??
+				emptyExercisePrSummary();
 
-			return calculateSetPrResult(
-				previousSets,
-				globalExercise._id,
-				args.sets.map((set) => ({
+			// Start with the PRs already saved in the PR table.
+			let currentSummary = {
+				...emptyExercisePrSummary(),
+				weightPr: summary.weightPr,
+				weightPrSetId: summary.weightPrSetId,
+				volumePr: summary.volumePr,
+				volumePrSetId: summary.volumePrSetId,
+				bodyweightRepsPr: summary.bodyweightRepsPr,
+				bodyweightRepsPrSetId: summary.bodyweightRepsPrSetId,
+			};
+			let hasHistory = hasExercisePrHistory(currentSummary);
+
+			// loop through this workout to also include completed sets
+			// that happened before the set we are checking.
+			for (const [index, set] of args.sets.entries()) {
+				const normalizedSet = normalizePrSet({
 					completed: set.completed,
 					reps: Number(set.reps) || 0,
 					weight: Number(set.weight) || 0,
-				})),
-				args.setIndex,
-			);
+				});
+
+				// If current set, check if it beats the saved PRs.
+				if (index === args.setIndex) {
+					return hasHistory
+						? getSetPrResult(normalizedSet, currentSummary)
+						: { isPr: false, prType: null };
+				}
+
+				// Check if previous compelted set beats the saved PRs.
+				// Add it to currentSummary so later sets can be compared against it.
+				if (normalizedSet.completed) {
+					currentSummary = {
+						...currentSummary,
+						weightPr: Math.max(currentSummary.weightPr, normalizedSet.weight),
+						volumePr: Math.max(
+							currentSummary.volumePr,
+							normalizedSet.weight * normalizedSet.reps,
+						),
+						bodyweightRepsPr: Math.max(
+							currentSummary.bodyweightRepsPr,
+							normalizedSet.weight === 0 ? normalizedSet.reps : 0,
+						),
+					};
+
+					// Add history so later sets can be compared against it.
+					if (!hasHistory) hasHistory = true;
+				}
+			}
+
+			return { isPr: false, prType: null };
 		}),
 });

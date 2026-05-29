@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 
 import type {
 	RecentCompletedSet,
+	RecentCompletedSetPrType,
 } from "@/features/workout-form/stores/workoutFormUiStore";
 
 interface RecentCompletedSetsDialogProps {
@@ -24,6 +25,12 @@ interface RecentCompletedSetsDialogProps {
 	error: string | null;
 	sets: RecentCompletedSet[];
 }
+
+const prTypeLabels: Record<RecentCompletedSetPrType, string> = {
+	weight: "Weight PR",
+	volume: "Volume PR",
+	bodyweightReps: "Reps PR",
+};
 
 export default function RecentCompletedSetsDialog({
 	open,
@@ -48,10 +55,11 @@ export default function RecentCompletedSetsDialog({
 				</DialogHeader>
 
 				<div className="flex flex-col gap-3">
-					<div className="grid grid-cols-[64px_64px_minmax(140px,1fr)] gap-2 text-muted-foreground text-xs uppercase tracking-wide">
+					<div className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 text-muted-foreground text-xs uppercase tracking-wide">
 						<span>Weight</span>
 						<span>Reps</span>
-						<span className="text-right whitespace-nowrap">Completed</span>
+						<span />
+						<span className="truncate text-right">Completed</span>
 					</div>
 
 					{isLoading ? (
@@ -59,9 +67,10 @@ export default function RecentCompletedSetsDialog({
 							{Array.from({ length: 6 }).map((_, index) => (
 								<div
 									key={index}
-									className="grid grid-cols-[64px_64px_minmax(140px,1fr)] gap-2 border-b py-2 last:border-b-0">
+									className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 border-b py-2 last:border-b-0">
 									<div className="bg-muted h-4 w-8 animate-pulse" />
 									<div className="bg-muted h-4 w-8 animate-pulse" />
+									<div className="bg-muted h-4 w-14 animate-pulse" />
 									<div className="ml-auto bg-muted h-4 w-24 animate-pulse" />
 								</div>
 							))}
@@ -74,17 +83,33 @@ export default function RecentCompletedSetsDialog({
 						</p>
 					) : (
 						<div className="flex flex-col">
-							{sets.map((set, index) => (
-								<div
-									key={`${set.time}-${set.weight}-${set.reps}-${index}`}
-									className="grid grid-cols-[64px_64px_minmax(140px,1fr)] gap-2 border-b py-2 text-sm last:border-b-0">
-									<span className={cn(set.isPr && "font-semibold")}>{set.weight}</span>
-									<span className={cn(set.isPr && "font-semibold")}>{set.reps}</span>
-									<span className="flex flex-col items-end gap-1 text-right whitespace-nowrap">
-										<span className={cn(set.isPr && "font-semibold")}>{set.time}</span>
-									</span>
-								</div>
-							))}
+							{sets.map((set, index) => {
+								const primaryPrType = set.prTypes[0];
+
+								return (
+									<div
+										key={`${set.time}-${set.weight}-${set.reps}-${index}`}
+										className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] items-center gap-1 border-b py-2 text-sm last:border-b-0">
+										<span className={cn(set.isPr && "font-semibold")}>{set.weight}</span>
+										<span className={cn(set.isPr && "font-semibold")}>{set.reps}</span>
+										<span>
+											{primaryPrType ? (
+												<span className="rounded-md border bg-muted px-1.5 py-0.5 text-muted-foreground text-xs whitespace-nowrap">
+													{prTypeLabels[primaryPrType]}
+												</span>
+											) : null}
+										</span>
+										<span
+											className={cn(
+												"min-w-0 truncate text-right",
+												set.isPr && "font-semibold",
+											)}
+											title={set.time}>
+											{set.time}
+										</span>
+									</div>
+								);
+							})}
 						</div>
 					)}
 				</div>

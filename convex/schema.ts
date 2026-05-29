@@ -35,16 +35,23 @@ export default defineSchema({
 		.index("by_workoutId_order", ["workoutId", "order"])
 		.index("by_userId_globalExerciseId", ["userId", "globalExerciseId"]),
 	workoutSets: defineTable({
-		userId: v.optional(v.string()),
-		globalExerciseId: v.optional(v.id("globalExercises")),
-		workoutCreationTime: v.optional(v.float64()),
-		workoutId: v.optional(v.id("workouts")),
+		userId: v.string(),
+		globalExerciseId: v.id("globalExercises"),
+		workoutCreationTime: v.float64(),
+		workoutId: v.id("workouts"),
 		workoutExerciseId: v.id("workoutExercises"),
 		order: v.float64(),
 		clientSetId: v.string(),
 		weight: v.float64(),
 		reps: v.float64(),
 		completed: v.boolean(),
+		isPr: v.optional(v.boolean()),
+		prType: v.optional(
+			v.union(v.literal("weight"), v.literal("volume"), v.literal("bodyweightReps"), v.null()),
+		),
+		isCurrentWeightPr: v.optional(v.boolean()),
+		isCurrentVolumePr: v.optional(v.boolean()),
+		isCurrentBodyweightRepsPr: v.optional(v.boolean()),
 	})
 		.index("by_completed", ["completed"])
 		.index("by_userId_completed", ["userId", "completed"])
@@ -58,4 +65,16 @@ export default defineSchema({
 		.index("by_workoutId", ["workoutId"])
 		.index("by_workoutExerciseId", ["workoutExerciseId"])
 		.index("by_workoutExerciseId_order", ["workoutExerciseId", "order"]),
+	exercisePrs: defineTable({
+		userId: v.string(),
+		globalExerciseId: v.id("globalExercises"),
+		weightPr: v.float64(),
+		weightPrSetId: v.union(v.id("workoutSets"), v.null()),
+		volumePr: v.float64(),
+		volumePrSetId: v.union(v.id("workoutSets"), v.null()),
+		bodyweightRepsPr: v.float64(),
+		bodyweightRepsPrSetId: v.union(v.id("workoutSets"), v.null()),
+	})
+		.index("by_userId", ["userId"])
+		.index("by_userId_globalExerciseId", ["userId", "globalExerciseId"]),
 });

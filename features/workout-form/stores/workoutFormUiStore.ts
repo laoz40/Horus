@@ -7,7 +7,7 @@ export interface RecentCompletedSet {
 	reps: number;
 	time: string;
 	isPr: boolean;
-	prType: RecentCompletedSetPrType | null;
+	prTypes: RecentCompletedSetPrType[];
 }
 
 export interface WorkoutFormUiState {
