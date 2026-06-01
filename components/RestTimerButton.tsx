@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactElement } from "react";
-
+import { useEffect, useRef, useState, type ReactElement } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Drawer,
@@ -27,27 +26,41 @@ const formatElapsedTime = (elapsedMs: number): string => {
 	return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 };
 
+const REST_TARGET_MS = 2 * 60 * 1000;
+
 export default function RestTimerButton(): ReactElement {
 	const isOpen = useWorkoutFormUiStore(selectIsRestTimerDrawerOpen);
 	const startedAtMs = useWorkoutFormUiStore(selectRestTimerStartedAtMs);
 	const [nowMs, setNowMs] = useState(() => Date.now());
+	const hasOpenedAtRestTimer = useRef(false);
 
 	useEffect(() => {
+		hasOpenedAtRestTimer.current = false;
+
 		if (!startedAtMs) return;
 
 		setNowMs(Date.now());
 		const intervalId = window.setInterval(() => {
 			setNowMs(Date.now());
-		}, 1_000);
+		}, 1000);
 
 		return () => window.clearInterval(intervalId);
 	}, [startedAtMs]);
+
+	useEffect(() => {
+		if (!startedAtMs || hasOpenedAtRestTimer.current) return;
+
+		if (nowMs - startedAtMs < REST_TARGET_MS) return;
+
+		hasOpenedAtRestTimer.current = true;
+		setRestTimerDrawerOpen(true);
+	}, [nowMs, startedAtMs]);
 
 	if (!startedAtMs) return <></>;
 
 	const elapsedMs = nowMs - startedAtMs;
 	const elapsedTime = formatElapsedTime(elapsedMs);
-	const isOverRestTarget = elapsedMs >= 2 * 60 * 1_000;
+	const isOverRestTarget = elapsedMs >= REST_TARGET_MS;
 
 	return (
 		<Drawer
@@ -77,7 +90,7 @@ export default function RestTimerButton(): ReactElement {
 					{elapsedTime}
 				</div>
 				<Button
-					variant="outline"
+					variant={isOverRestTarget ? "destructive" : "outline"}
 					className="w-fit px-12"
 					onClick={finishRestTimer}>
 					FINISH REST
