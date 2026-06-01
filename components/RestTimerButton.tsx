@@ -29,6 +29,24 @@ const formatElapsedTime = (elapsedMs: number): string => {
 const REST_TARGET_MS = 2 * 60 * 1000; // 2 minutes
 const REST_TARGET_REMINDER_INTERVAL_MS = 15 * 1000; // 15 seconds
 
+const requestRestTimerNotificationPermission = async (): Promise<void> => {
+	if (!("Notification" in window)) return;
+
+	if (Notification.permission !== "default") return;
+
+	await Notification.requestPermission();
+};
+
+const showRestTimerNotification = (elapsedTime: string): void => {
+	if (!("Notification" in window)) return;
+
+	if (Notification.permission !== "granted") return;
+
+	new Notification("Rest timer", {
+		body: `${elapsedTime} rest elapsed. Time for your next set.`,
+	});
+};
+
 export default function RestTimerButton(): ReactElement {
 	const isOpen = useWorkoutFormUiStore(selectIsRestTimerDrawerOpen);
 	const startedAtMs = useWorkoutFormUiStore(selectRestTimerStartedAtMs);
@@ -41,6 +59,7 @@ export default function RestTimerButton(): ReactElement {
 		if (!startedAtMs) return;
 
 		setNowMs(Date.now());
+		void requestRestTimerNotificationPermission();
 		const intervalId = window.setInterval(() => {
 			setNowMs(Date.now());
 		}, 1000);
@@ -54,6 +73,7 @@ export default function RestTimerButton(): ReactElement {
 		if (nowMs < nextAutoOpenMsRef.current) return;
 
 		setRestTimerDrawerOpen(true);
+		void showRestTimerNotification(formatElapsedTime(nowMs - startedAtMs));
 
 		// ensure next auto-open time is in the future
 		while (nextAutoOpenMsRef.current <= nowMs) {
