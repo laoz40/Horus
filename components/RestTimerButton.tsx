@@ -26,16 +26,17 @@ const formatElapsedTime = (elapsedMs: number): string => {
 	return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 };
 
-const REST_TARGET_MS = 2 * 60 * 1000;
+const REST_TARGET_MS = 2 * 60 * 1000; // 2 minutes
+const REST_TARGET_REMINDER_INTERVAL_MS = 15 * 1000; // 15 seconds
 
 export default function RestTimerButton(): ReactElement {
 	const isOpen = useWorkoutFormUiStore(selectIsRestTimerDrawerOpen);
 	const startedAtMs = useWorkoutFormUiStore(selectRestTimerStartedAtMs);
 	const [nowMs, setNowMs] = useState(() => Date.now());
-	const hasOpenedAtRestTimer = useRef(false);
+	const nextAutoOpenMsRef = useRef<number | null>(null);
 
 	useEffect(() => {
-		hasOpenedAtRestTimer.current = false;
+		nextAutoOpenMsRef.current = startedAtMs ? startedAtMs + REST_TARGET_MS : null;
 
 		if (!startedAtMs) return;
 
@@ -48,12 +49,16 @@ export default function RestTimerButton(): ReactElement {
 	}, [startedAtMs]);
 
 	useEffect(() => {
-		if (!startedAtMs || hasOpenedAtRestTimer.current) return;
+		if (!startedAtMs || !nextAutoOpenMsRef.current) return;
 
-		if (nowMs - startedAtMs < REST_TARGET_MS) return;
+		if (nowMs < nextAutoOpenMsRef.current) return;
 
-		hasOpenedAtRestTimer.current = true;
 		setRestTimerDrawerOpen(true);
+
+		// ensure next auto-open time is in the future
+		while (nextAutoOpenMsRef.current <= nowMs) {
+			nextAutoOpenMsRef.current += REST_TARGET_REMINDER_INTERVAL_MS;
+		}
 	}, [nowMs, startedAtMs]);
 
 	if (!startedAtMs) return <></>;
