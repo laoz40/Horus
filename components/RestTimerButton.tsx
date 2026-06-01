@@ -37,14 +37,31 @@ const requestRestTimerNotificationPermission = async (): Promise<void> => {
 	await Notification.requestPermission();
 };
 
-const showRestTimerNotification = (elapsedTime: string): void => {
+const showRestTimerNotification = async (elapsedTime: string): Promise<void> => {
 	if (!("Notification" in window)) return;
 
 	if (Notification.permission !== "granted") return;
 
-	new Notification("Rest timer", {
+	const notificationOptions: NotificationOptions = {
 		body: `${elapsedTime} rest elapsed. Time for your next set.`,
-	});
+		tag: "rest-timer-reminder",
+	};
+
+	if ("serviceWorker" in navigator) {
+		try {
+			const registration = await navigator.serviceWorker.ready;
+			await registration.showNotification("Rest timer", notificationOptions);
+			return;
+		} catch {
+			// Fall back to the Notification constructor when service worker notifications are unavailable.
+		}
+	}
+
+	try {
+		new Notification("Rest timer", notificationOptions);
+	} catch {
+		// Some browsers, including Android Chrome, disallow the Notification constructor.
+	}
 };
 
 export default function RestTimerButton(): ReactElement {
