@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactElement } from "react";
-
+import { useEffect, useRef, useState, type ReactElement } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Drawer,
@@ -27,27 +26,83 @@ const formatElapsedTime = (elapsedMs: number): string => {
 	return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 };
 
+const REST_TARGET_MS = 2 * 60 * 1000; // 2 minutes
+const REST_TARGET_REMINDER_INTERVAL_MS = 15 * 1000; // 15 seconds
+
+const requestRestTimerNotificationPermission = async (): Promise<void> => {
+	if (!("Notification" in window)) return;
+
+	if (Notification.permission !== "default") return;
+
+	await Notification.requestPermission();
+};
+
+const showRestTimerNotification = async (elapsedTime: string): Promise<void> => {
+	if (!("Notification" in window)) return;
+
+	if (Notification.permission !== "granted") return;
+
+	const notificationOptions: NotificationOptions = {
+		body: `${elapsedTime} rest elapsed. Time for your next set.`,
+		tag: "rest-timer-reminder",
+	};
+
+	if ("serviceWorker" in navigator) {
+		try {
+			const registration = await navigator.serviceWorker.ready;
+			await registration.showNotification("Rest timer", notificationOptions);
+			return;
+		} catch {
+			// Fall back to the Notification constructor when service worker notifications are unavailable.
+		}
+	}
+
+	try {
+		new Notification("Rest timer", notificationOptions);
+	} catch {
+		// Some browsers, including Android Chrome, disallow the Notification constructor.
+	}
+};
+
 export default function RestTimerButton(): ReactElement {
 	const isOpen = useWorkoutFormUiStore(selectIsRestTimerDrawerOpen);
 	const startedAtMs = useWorkoutFormUiStore(selectRestTimerStartedAtMs);
 	const [nowMs, setNowMs] = useState(() => Date.now());
+	const nextAutoOpenMsRef = useRef<number | null>(null);
 
 	useEffect(() => {
+		nextAutoOpenMsRef.current = startedAtMs ? startedAtMs + REST_TARGET_MS : null;
+
 		if (!startedAtMs) return;
 
 		setNowMs(Date.now());
+		void requestRestTimerNotificationPermission();
 		const intervalId = window.setInterval(() => {
 			setNowMs(Date.now());
-		}, 1_000);
+		}, 1000);
 
 		return () => window.clearInterval(intervalId);
 	}, [startedAtMs]);
+
+	useEffect(() => {
+		if (!startedAtMs || !nextAutoOpenMsRef.current) return;
+
+		if (nowMs < nextAutoOpenMsRef.current) return;
+
+		setRestTimerDrawerOpen(true);
+		void showRestTimerNotification(formatElapsedTime(nowMs - startedAtMs));
+
+		// ensure next auto-open time is in the future
+		while (nextAutoOpenMsRef.current <= nowMs) {
+			nextAutoOpenMsRef.current += REST_TARGET_REMINDER_INTERVAL_MS;
+		}
+	}, [nowMs, startedAtMs]);
 
 	if (!startedAtMs) return <></>;
 
 	const elapsedMs = nowMs - startedAtMs;
 	const elapsedTime = formatElapsedTime(elapsedMs);
-	const isOverRestTarget = elapsedMs >= 2 * 60 * 1_000;
+	const isOverRestTarget = elapsedMs >= REST_TARGET_MS;
 
 	return (
 		<Drawer
@@ -77,7 +132,7 @@ export default function RestTimerButton(): ReactElement {
 					{elapsedTime}
 				</div>
 				<Button
-					variant="outline"
+					variant={isOverRestTarget ? "destructive" : "outline"}
 					className="w-fit px-12"
 					onClick={finishRestTimer}>
 					FINISH REST
