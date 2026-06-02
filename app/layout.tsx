@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { Oxanium } from "next/font/google";
 import DeferredToaster from "@/components/DeferredToaster";
 import RestTimerButton from "@/components/RestTimerButton";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import ConvexClientProvider from "./ConvexClientProvider";
 import { Providers } from "./providers";
 
@@ -40,6 +41,7 @@ export default function RootLayout({
 			suppressHydrationWarning>
 			<body className="flex flex-col h-dvh w-full dark:bg-background relative">
 				<DeferredToaster />
+				<ServiceWorkerRegistration />
 				{/* Cosmic Nebula */}
 				<div
 					className="absolute inset-0 -z-100 hidden glass:block"
