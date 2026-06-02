@@ -27,14 +27,16 @@ const formatElapsedTime = (elapsedMs: number): string => {
 };
 
 const REST_TARGET_MS = 2 * 60 * 1000; // 2 minutes
-const REST_TARGET_REMINDER_INTERVAL_MS = 15 * 1000; // 15 seconds
+const REST_TARGET_REMINDER_INTERVAL_MS = 30 * 1000; // 30 seconds
 
+// iOS/Safari only allows permission prompts from a direct user gesture i.e. opening rest timer button.
 const requestRestTimerNotificationPermission = async (): Promise<void> => {
 	if (!("Notification" in window)) return;
 
-	if (Notification.permission !== "default") return;
-
-	await Notification.requestPermission();
+	try {
+		await Notification.requestPermission();
+	} catch {
+	}
 };
 
 const showRestTimerNotification = async (elapsedTime: string): Promise<void> => {
@@ -47,16 +49,22 @@ const showRestTimerNotification = async (elapsedTime: string): Promise<void> => 
 		tag: "rest-timer-reminder",
 	};
 
+	// Prefer the service worker notification path when it is available.
+	// This works better for mobile browsers and installed web apps.
 	if ("serviceWorker" in navigator) {
 		try {
-			const registration = await navigator.serviceWorker.ready;
-			await registration.showNotification("Rest timer", notificationOptions);
-			return;
+			const registration = await navigator.serviceWorker.getRegistration();
+
+			if (registration) {
+				await registration.showNotification("Rest timer", notificationOptions);
+				return;
+			}
 		} catch {
 			// Fall back to the Notification constructor when service worker notifications are unavailable.
 		}
 	}
 
+	// If there is no service worker yet, try the regular browser notification path.
 	try {
 		new Notification("Rest timer", notificationOptions);
 	} catch {
@@ -76,7 +84,6 @@ export default function RestTimerButton(): ReactElement {
 		if (!startedAtMs) return;
 
 		setNowMs(Date.now());
-		void requestRestTimerNotificationPermission();
 		const intervalId = window.setInterval(() => {
 			setNowMs(Date.now());
 		}, 1000);
@@ -116,7 +123,8 @@ export default function RestTimerButton(): ReactElement {
 						"absolute -left-5 top-2/3 z-50 -translate-y-1/2 rotate-270 rounded-l-md border border-t-0 text-sm font-semibold tabular-nums shadow-sm",
 						isOverRestTarget && "text-destructive hover:text-destructive",
 					)}
-					variant="outline">
+					variant="outline"
+					onClick={() => void requestRestTimerNotificationPermission()}>
 					{elapsedTime}
 				</Button>
 			</DrawerTrigger>
