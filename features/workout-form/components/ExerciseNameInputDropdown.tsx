@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from "react";
 import type { MouseEvent, PointerEvent, Touch, TouchEvent } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { useExerciseSuggestions } from "@/features/workout-form/hooks/useExerciseSuggestions";
@@ -8,9 +8,9 @@ import { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: number }) {
 	const listboxId = useId();
-	const { control, getValues, setValue } = useFormContext<Workout>();
-	const getExerciseName = getValues(`exercises.${exerciseIndex}.global.name`);
-	const [query, setQuery] = useState<string>(getExerciseName ?? "");
+	const { control, setValue } = useFormContext<Workout>();
+	const exerciseNamePath = `exercises.${exerciseIndex}.global.name` as const;
+	const query = useWatch({ control, name: exerciseNamePath }) ?? "";
 	const [isOpen, setIsOpen] = useState(false);
 	const { suggestions, isDbSearchLoading, isOnlineSearchLoading, fetchMoreSuggestions } =
 		useExerciseSuggestions(query);
@@ -25,11 +25,10 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 
 	return (
 		<Controller
-			name={`exercises.${exerciseIndex}.global.name`}
+			name={exerciseNamePath}
 			control={control}
 			render={({ field }) => {
 				const selectExercise = (exerciseName: string) => {
-					setQuery(exerciseName);
 					field.onChange(exerciseName);
 
 					const match = suggestions.find((exercise) => exercise.name === exerciseName);
@@ -165,7 +164,8 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 								aria-expanded={!!shouldShowSuggestions}
 								aria-controls={listboxId}
 								onChange={(e) => {
-									setQuery(e.target.value ?? "");
+									const nextQuery = e.target.value ?? "";
+									field.onChange(nextQuery);
 									setIsOpen(true);
 									// reset muscle groups when typing in the input
 									setValue(`exercises.${exerciseIndex}.global.muscleGroups`, []);
@@ -176,7 +176,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 									setIsOpen(true);
 								}}
 								onBlur={() => {
-									field.onChange(query);
+									field.onBlur();
 									setIsOpen(false);
 								}}
 							/>
