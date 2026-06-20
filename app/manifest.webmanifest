@@ -22,5 +22,13 @@
 			"type": "image/png",
 			"purpose": "any"
 		}
+	],
+	"shortcuts": [
+		{
+			"name": "Start Workout",
+			"short_name": "Start",
+			"description": "Start a new workout.",
+			"url": "/workouts/new"
+		}
 	]
 }
