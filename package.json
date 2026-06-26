@@ -9,7 +9,8 @@
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",
 		"lint": "oxlint . --fix",
-		"lint:check": "oxlint ."
+		"lint:check": "oxlint .",
+		"typecheck:native": "tsgo --noEmit"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
@@ -58,12 +59,13 @@
 		"@types/node": "^24.10.1",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
+		"@typescript/native-preview": "7.0.0-dev.20260624.1",
 		"babel-plugin-react-compiler": "^1.0.0",
 		"baseline-browser-mapping": "^2.9.19",
 		"oxfmt": "^0.35.0",
 		"oxlint": "^1.50.0",
 		"tailwindcss": "^4",
 		"tw-animate-css": "^1.4.0",
-		"typescript": "7.0.1-rc"
+		"typescript": "6.0.2"
 	}
 }
