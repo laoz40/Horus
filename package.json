@@ -11,6 +11,11 @@
 		"lint": "oxlint . --fix",
 		"lint:check": "oxlint ."
 	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"esbuild"
+		]
+	},
 	"dependencies": {
 		"@base-ui/react": "^1.5.0",
 		"@convex-dev/better-auth": "^0.12.4",
