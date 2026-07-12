@@ -31,9 +31,7 @@ export default function SettingsAccountBar({ initialUser }: SettingsAccountBarPr
 						classNames={{ fallback: "bg-primary text-primary-foreground" }}
 					/>
 					<div className="flex flex-col">
-						<span className="text-base font-semibold leading-tight">
-							{user?.name ?? "Legend"}
-						</span>
+						<span className="text-base font-semibold leading-tight">{user?.name ?? "Legend"}</span>
 						<span className="text-sm text-muted-foreground">{user?.email ?? "Signed in"}</span>
 					</div>
 				</div>

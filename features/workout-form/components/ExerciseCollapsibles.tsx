@@ -1,10 +1,6 @@
 "use client";
 
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Slider } from "@/components/ui/slider";
 import { BicepsFlexed, ChevronDown, LucideIcon, Notebook } from "lucide-react";
 import { Activity, ReactNode, useState } from "react";
@@ -121,9 +117,7 @@ const CollapsibleFilter = ({
 			</CollapsibleTrigger>
 
 			<Activity mode={isCollapsibleOpen ? "visible" : "hidden"}>
-				<CollapsibleContent className="pt-1 pb-3">
-					{children}
-				</CollapsibleContent>
+				<CollapsibleContent className="pt-1 pb-3">{children}</CollapsibleContent>
 			</Activity>
 		</Collapsible>
 	);

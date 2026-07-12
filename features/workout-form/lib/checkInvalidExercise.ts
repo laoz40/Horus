@@ -32,9 +32,7 @@ const exerciseHasValidationError = (exerciseError: unknown): boolean => {
 	return false;
 };
 
-export const getFirstInvalidExerciseIndex = (
-	errors: FieldErrors<Workout>,
-): number | null => {
+export const getFirstInvalidExerciseIndex = (errors: FieldErrors<Workout>): number | null => {
 	const exerciseErrors = errors.exercises;
 	if (!Array.isArray(exerciseErrors)) return null;
 

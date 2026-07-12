@@ -37,7 +37,11 @@ export default function SignUpDialog({ show }: SignUpDialogProps): ReactElement 
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel variant="secondary" onClick={handleClick}>Let me test</AlertDialogCancel>
+					<AlertDialogCancel
+						variant="secondary"
+						onClick={handleClick}>
+						Let me test
+					</AlertDialogCancel>
 					<Button asChild>
 						<Link href="/login">Sign in</Link>
 					</Button>

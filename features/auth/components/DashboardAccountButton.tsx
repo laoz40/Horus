@@ -79,8 +79,7 @@ export default function DashboardAccountButton({
 				<DropdownMenuSeparator />
 				<DropdownMenuItem
 					asChild
-					className="min-h-11 text-base sm:min-h-8 sm:text-sm"
-				>
+					className="min-h-11 text-base sm:min-h-8 sm:text-sm">
 					<Link href="/settings/account">
 						<User className="size-5 sm:size-4" />
 						<span className="leading-0">Account</span>
@@ -88,8 +87,7 @@ export default function DashboardAccountButton({
 				</DropdownMenuItem>
 				<DropdownMenuItem
 					asChild
-					className="min-h-11 text-base sm:min-h-8 sm:text-sm"
-				>
+					className="min-h-11 text-base sm:min-h-8 sm:text-sm">
 					<Link href="/settings">
 						<Settings className="size-5 sm:size-4" />
 						<span className="leading-0">Settings</span>

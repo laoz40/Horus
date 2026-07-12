@@ -35,8 +35,7 @@ const requestRestTimerNotificationPermission = async (): Promise<void> => {
 
 	try {
 		await Notification.requestPermission();
-	} catch {
-	}
+	} catch {}
 };
 
 const showRestTimerNotification = async (elapsedTime: string): Promise<void> => {

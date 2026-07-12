@@ -48,7 +48,9 @@ export default function WelcomeNameForm(): ReactElement {
 	});
 
 	return (
-		<form onSubmit={onSubmit} className="mt-1 flex w-full max-w-xs flex-col gap-1">
+		<form
+			onSubmit={onSubmit}
+			className="mt-1 flex w-full max-w-xs flex-col gap-1">
 			<p className="mt-2 text-sm">Add your name to continue.</p>
 			<Input
 				type="text"
@@ -56,8 +58,13 @@ export default function WelcomeNameForm(): ReactElement {
 				placeholder="Legend"
 				disabled={isSubmitting}
 			/>
-			{errors.name?.message ? <p className="text-sm text-destructive">{errors.name.message}</p> : null}
-			<Button type="submit" disabled={isSubmitting} className="mt-8">
+			{errors.name?.message ? (
+				<p className="text-sm text-destructive">{errors.name.message}</p>
+			) : null}
+			<Button
+				type="submit"
+				disabled={isSubmitting}
+				className="mt-8">
 				{isSubmitting ? "Saving..." : "Continue"}
 			</Button>
 		</form>

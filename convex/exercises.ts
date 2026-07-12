@@ -143,10 +143,7 @@ export const checkCompletedSetPrByExerciseName = query({
 					currentSummary = {
 						...currentSummary,
 						weightPr: Math.max(currentSummary.weightPr, normalizedSet.weight),
-						volumePr: Math.max(
-							currentSummary.volumePr,
-							normalizedSet.weight * normalizedSet.reps,
-						),
+						volumePr: Math.max(currentSummary.volumePr, normalizedSet.weight * normalizedSet.reps),
 						bodyweightRepsPr: Math.max(
 							currentSummary.bodyweightRepsPr,
 							normalizedSet.weight === 0 ? normalizedSet.reps : 0,

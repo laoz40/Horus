@@ -18,9 +18,7 @@ function parseWorkout(workout: WorkoutFormData): WorkoutForSave {
 			return {
 				id: exercise.id,
 				global,
-				...(exercise.difficulty !== undefined
-					? { difficulty: exercise.difficulty }
-					: {}),
+				...(exercise.difficulty !== undefined ? { difficulty: exercise.difficulty } : {}),
 				notes: (exercise.notes ?? "").trim(),
 				sets: exercise.sets.map((set) => ({
 					id: set.id,

@@ -78,9 +78,7 @@ export default function RecentCompletedSetsDialog({
 					) : error ? (
 						<p className="text-destructive text-sm">{error}</p>
 					) : sets.length === 0 ? (
-						<p className="text-muted-foreground text-sm">
-							No recent completed sets found.
-						</p>
+						<p className="text-muted-foreground text-sm">No recent completed sets found.</p>
 					) : (
 						<div className="flex flex-col">
 							{sets.map((set, index) => {
@@ -100,10 +98,7 @@ export default function RecentCompletedSetsDialog({
 											) : null}
 										</span>
 										<span
-											className={cn(
-												"min-w-0 truncate text-right",
-												set.isPr && "font-semibold",
-											)}
+											className={cn("min-w-0 truncate text-right", set.isPr && "font-semibold")}
 											title={set.time}>
 											{set.time}
 										</span>

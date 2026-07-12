@@ -8,10 +8,7 @@ interface fetchedExercise {
 	muscleGroups?: string[];
 }
 
-export const deduplicateExercises = (
-	groupOne: fetchedExercise[],
-	groupTwo: fetchedExercise[],
-) => {
+export const deduplicateExercises = (groupOne: fetchedExercise[], groupTwo: fetchedExercise[]) => {
 	const map = new Map<string, fetchedExercise>();
 
 	const addIfMissing = (exercise: fetchedExercise, addAll: boolean) => {
@@ -52,8 +49,7 @@ export const createSuggestionObject = (exercise: {
 }): ExerciseSuggestion => ({
 	id: exercise.id,
 	name: toTitleCase(exercise.name),
-	normalizedName:
-		exercise.normalizedName ?? normalizeName(exercise.name),
+	normalizedName: exercise.normalizedName ?? normalizeName(exercise.name),
 	// muscleGroups if from DB, targetMuscles if from form api
 	muscleGroups: exercise.muscleGroups ?? exercise.targetMuscles,
 });

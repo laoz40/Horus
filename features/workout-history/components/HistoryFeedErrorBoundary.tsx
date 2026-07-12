@@ -40,10 +40,7 @@ const getHistoryFeedErrorMessage = (error: unknown) => {
 	return fallbackMessage;
 };
 
-function HistoryFeedErrorFallback({
-	error,
-	resetErrorBoundary,
-}: Readonly<FallbackProps>) {
+function HistoryFeedErrorFallback({ error, resetErrorBoundary }: Readonly<FallbackProps>) {
 	const message = getHistoryFeedErrorMessage(error);
 
 	useEffect(() => {

@@ -7,10 +7,7 @@ import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { api } from "@/convex/_generated/api";
-import {
-	type Workout,
-	validateCompletedSet,
-} from "@/features/workout-form/lib/validateWorkout";
+import { type Workout, validateCompletedSet } from "@/features/workout-form/lib/validateWorkout";
 import { startRestTimer } from "@/features/workout-form/stores/workoutFormUiStore";
 import { showSetPrToast } from "@/lib/toastMessages";
 import NumberInput from "./NumberInput";

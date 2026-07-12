@@ -47,9 +47,7 @@ export default function WorkoutCardStats({
 			{/* PR Indicator */}
 			<div className="flex items-center justify-end gap-1.5">
 				{pr > 0 ? (
-					<Badge className="text-xs font-semibold text-primary-foreground">
-						{pr} PRs
-					</Badge>
+					<Badge className="text-xs font-semibold text-primary-foreground">{pr} PRs</Badge>
 				) : null}
 			</div>
 		</div>

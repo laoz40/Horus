@@ -24,8 +24,7 @@ export default function HistoryPagination({
 				onClick={onLoadMore}
 				disabled={isLoading}
 				variant="outline"
-				size="lg"
-				>
+				size="lg">
 				{isLoading ? "Loading..." : "Load more"}
 			</Button>
 		</div>

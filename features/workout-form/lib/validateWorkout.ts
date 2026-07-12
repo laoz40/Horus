@@ -27,11 +27,7 @@ const GlobalExerciseInputSchema = z.object({
 
 const SetSchema = z.object({
 	id: z.string(),
-	weight: z
-		.number()
-		.nonnegative()
-		.max(MAX_SET_WEIGHT, NUMERIC_MAX_MESSAGE)
-		.optional(),
+	weight: z.number().nonnegative().max(MAX_SET_WEIGHT, NUMERIC_MAX_MESSAGE).optional(),
 	reps: z
 		.number(SET_REPS_MISSING_MESSAGE)
 		.int()

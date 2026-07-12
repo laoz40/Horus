@@ -23,9 +23,7 @@ export default function HistoryFeed({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 		return <SignInPrompt />;
 	}
 
-	return (
-		<Content WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE} />
-	);
+	return <Content WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE} />;
 }
 
 function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
