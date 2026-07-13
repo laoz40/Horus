@@ -1,2 +1,2 @@
-// Database tables are added here as the PostgreSQL migration is implemented.
-export {};
+export * from "@/lib/db/schema/auth";
+export * from "@/lib/db/schema/workouts";
