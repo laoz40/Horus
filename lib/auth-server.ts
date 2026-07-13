@@ -7,31 +7,23 @@ import { Resend } from "resend";
 
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
+import { env } from "@/env";
 import { shortHash } from "@/lib/shortHash";
 
-function requiredEnvironmentVariable(name: string): string {
-	const value = process.env[name];
-	if (!value) {
-		throw new Error(`${name} is required for authentication.`);
-	}
-
-	return value;
-}
-
-const resend = new Resend(requiredEnvironmentVariable("RESEND_API_KEY"));
-const resendFromEmail = requiredEnvironmentVariable("RESEND_FROM_EMAIL");
-const personalEmail = requiredEnvironmentVariable("PERSONAL_EMAIL");
-const googleClientId = requiredEnvironmentVariable("GOOGLE_CLIENT_ID");
-const googleClientSecret = requiredEnvironmentVariable("GOOGLE_CLIENT_SECRET");
-const facebookClientId = requiredEnvironmentVariable("FACEBOOK_CLIENT_ID");
-const facebookClientSecret = requiredEnvironmentVariable("FACEBOOK_CLIENT_SECRET");
-const githubClientId = requiredEnvironmentVariable("GITHUB_CLIENT_ID");
-const githubClientSecret = requiredEnvironmentVariable("GITHUB_CLIENT_SECRET");
+const resend = new Resend(env.RESEND_API_KEY);
+const resendFromEmail = env.RESEND_FROM_EMAIL;
+const personalEmail = env.PERSONAL_EMAIL;
+const googleClientId = env.GOOGLE_CLIENT_ID;
+const googleClientSecret = env.GOOGLE_CLIENT_SECRET;
+const facebookClientId = env.FACEBOOK_CLIENT_ID;
+const facebookClientSecret = env.FACEBOOK_CLIENT_SECRET;
+const githubClientId = env.GITHUB_CLIENT_ID;
+const githubClientSecret = env.GITHUB_CLIENT_SECRET;
 
 const otpExpiresInSeconds = 300;
 
 export const auth = betterAuth({
-	baseURL: process.env.SITE_URL,
+	baseURL: env.SITE_URL,
 	database: drizzleAdapter(db, {
 		provider: "pg",
 		schema,
