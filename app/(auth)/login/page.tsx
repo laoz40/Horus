@@ -5,7 +5,7 @@ export default function SignInPage() {
 		<div className="flex min-h-dvh items-center justify-center px-4">
 			<AuthView
 				view="EMAIL_OTP"
-				redirectTo="/welcome"
+				redirectTo="/migration-preview"
 				cardHeader="Log in to Horus"
 				cardFooter="Thanks for using my app, and have fun with your workout!"
 				classNames={{

@@ -1,18 +1,19 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { api } from "@/convex/_generated/api";
-import { fetchAuthQuery } from "@/lib/auth-server";
-
 import WelcomeNameForm from "@/features/auth/components/WelcomeNameForm";
+import { auth } from "@/lib/auth-server";
 
 export default async function WelcomePage() {
-	const user = await fetchAuthQuery(api.auth.getCurrentUser);
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
 
-	if (!user) {
+	if (!session) {
 		redirect("/login");
 	}
 
-	if (user.name) {
+	if (session.user.name) {
 		redirect("/");
 	}
 
