@@ -4,7 +4,7 @@ import { type ReactElement } from "react";
 import DashboardAccountButton from "@/features/auth/components/DashboardAccountButton";
 import DashboardPresetsSection from "@/features/dashboard/components/DashboardPresetsSection";
 import DashboardStartSection from "@/features/dashboard/components/DashboardStartSection";
-import DashboardYearInTrainingSection from "@/features/dashboard/components/DashboardYearInTrainingSection";
+// import DashboardYearInTrainingSection from "@/features/dashboard/components/DashboardYearInTrainingSection";
 import { authClient } from "@/lib/auth-client";
 
 export default function DashboardPage(): ReactElement {
@@ -41,10 +41,11 @@ export default function DashboardPage(): ReactElement {
 
 			<DashboardStartSection />
 			<DashboardPresetsSection />
-			<DashboardYearInTrainingSection
+			{/* TODO: Restore Year in Training after its authenticated Convex query moves to PostgreSQL. */}
+			{/* <DashboardYearInTrainingSection
 				isAuthPending={isPending}
 				isSignedIn={isSignedIn}
-			/>
+			/> */}
 		</div>
 	);
 }
