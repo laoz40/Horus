@@ -35,10 +35,7 @@ export const exercises = pgTable(
 		normalizedName: text("normalized_name").notNull(),
 	},
 	(table) => [
-		uniqueIndex("exercises_user_id_normalized_name_unique").on(
-			table.userId,
-			table.normalizedName,
-		),
+		uniqueIndex("exercises_user_id_normalized_name_unique").on(table.userId, table.normalizedName),
 	],
 );
 
@@ -93,10 +90,7 @@ export const workoutExercises = pgTable(
 		notes: text("notes").notNull().default(""),
 	},
 	(table) => [
-		uniqueIndex("workout_exercises_workout_id_position_unique").on(
-			table.workoutId,
-			table.position,
-		),
+		uniqueIndex("workout_exercises_workout_id_position_unique").on(table.workoutId, table.position),
 		index("workout_exercises_exercise_id_index").on(table.exerciseId),
 		check("workout_exercises_position_nonnegative", sql`${table.position} >= 0`),
 	],

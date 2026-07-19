@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useConvex } from "convex/react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { showErrorToast } from "@/lib/toastMessages";
 import { deduplicateExercises } from "@/features/workout-form/lib/convertWorkoutData";
 import { fetchDefaultExercises } from "@/features/workout-form/lib/fetchExercises";
 import { sortExercisesAlphabetically } from "@/features/workout-form/lib/sortExercises";
-import { api } from "@/convex/_generated/api";
 import type { ExerciseSuggestion } from "@/features/workout-form/lib/types";
+import { orpc } from "@/lib/orpc/client";
 import { err, ok } from "neverthrow";
 
 interface ExerciseSearchErrorResponse {
@@ -46,58 +45,52 @@ const fetchOnlineExerciseSuggestions = async (query: string) => {
 
 export function useExerciseSuggestions(rawQuery: string) {
 	const [suggestions, setSuggestions] = useState<ExerciseSuggestion[]>([]);
-	const [isDbSearchLoading, setIsDbSearchLoading] = useState(false);
+	const [debouncedQuery, setDebouncedQuery] = useState("");
 	const [isOnlineSearchLoading, setIsOnlineSearchLoading] = useState(false);
-	const convex = useConvex();
 	const queryClient = useQueryClient();
 
 	const query = rawQuery.trim();
+	const defaultExercises = useMemo(
+		() => sortExercisesAlphabetically(fetchDefaultExercises(query)),
+		[query],
+	);
+
+	// Debounce PostgreSQL searches while keeping local defaults immediate.
+	useEffect(() => {
+		if (query.length === 0) {
+			setDebouncedQuery("");
+			return;
+		}
+
+		const timeout = setTimeout(() => setDebouncedQuery(query), 300);
+		return () => clearTimeout(timeout);
+	}, [query]);
+
+	const exerciseSearch = useQuery(
+		orpc.exercises.search.queryOptions({
+			input: { query: debouncedQuery },
+			enabled: debouncedQuery.length > 0,
+		}),
+	);
 
 	useEffect(() => {
 		if (query.length === 0) {
 			setSuggestions([]);
-			setIsDbSearchLoading(false);
 			return;
 		}
 
-		// to ignore late async results after query changes/unmount
-		let isCurrent = true;
+		// Only use database results when they belong to the text currently in the input.
+		// This prevents results for an older debounced query from appearing after the user types more.
+		const dbExercises = debouncedQuery === query ? (exerciseSearch.data ?? []) : [];
 
-		// use default exercises for instant results
-		const defaultExercises = sortExercisesAlphabetically(fetchDefaultExercises(query));
-		setSuggestions(defaultExercises);
-		setIsDbSearchLoading(true);
+		// Combine instant local matches with PostgreSQL matches, remove duplicates, and sort the dropdown.
+		setSuggestions(
+			sortExercisesAlphabetically(deduplicateExercises(defaultExercises, dbExercises)),
+		);
+	}, [debouncedQuery, defaultExercises, exerciseSearch.data, query]);
 
-		// debounce the query by 300ms
-		const timeout = setTimeout(async () => {
-			try {
-				const dataFromDb = await convex.query(api.exercises.searchGlobalExercises, {
-					query,
-				});
-				if (!isCurrent) return;
-
-				const dbExercises = Array.isArray(dataFromDb) ? dataFromDb : [];
-				setSuggestions(
-					sortExercisesAlphabetically(deduplicateExercises(defaultExercises, dbExercises)),
-				);
-			} catch (error) {
-				if (!isCurrent) return;
-				console.log("Query not found", error);
-				setSuggestions(defaultExercises);
-			} finally {
-				if (isCurrent) {
-					setIsDbSearchLoading(false);
-				}
-			}
-		}, 300);
-
-		// cleanup: cancel the timeout
-		return () => {
-			isCurrent = false;
-			setIsDbSearchLoading(false);
-			clearTimeout(timeout);
-		};
-	}, [convex, query]);
+	const isDbSearchLoading =
+		query.length > 0 && (debouncedQuery !== query || exerciseSearch.isFetching);
 
 	const fetchMoreSuggestions = async () => {
 		if (query.length === 0) return;
