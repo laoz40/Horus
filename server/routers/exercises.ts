@@ -4,7 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { exerciseMuscleGroups, exercises, muscleGroups } from "@/lib/db/schema";
 import { normalizeName } from "@/lib/normalizeName";
-import { protectedProcedure } from "@/lib/orpc/procedures";
+import { protectedProcedure } from "@/server/procedures";
 
 export const exercisesRouter = {
 	search: protectedProcedure

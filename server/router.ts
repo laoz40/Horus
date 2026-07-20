@@ -1,4 +1,4 @@
-import { exercisesRouter } from "@/lib/orpc/exercises";
+import { exercisesRouter } from "@/server/routers/exercises";
 
 export const appRouter = {
 	exercises: exercisesRouter,
