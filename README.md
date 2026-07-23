@@ -6,7 +6,7 @@ A web app to track my gym workouts. I created my own because I didn't enjoy
 existing solutions and my previous method of tracking workouts (excel spreadsheet) is
 super inefficient, laggy and doesn't scale well.
 
-**[Link](horus-workout.vercel.app)**
+**[Link](https://horus-workout.vercel.app/)**
 
 <div align="center">
     <img src="image1.webp" style="width:49%;" />
