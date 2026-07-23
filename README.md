@@ -1,7 +1,8 @@
 # Horus
 
 > Project WIP
-> Currently Migrating to PostgreSQL
+> 
+> Currently migrating to PostgreSQL
 
 A web app to track my gym workouts. I created my own because I didn't enjoy
 existing solutions and my previous method of tracking workouts (excel spreadsheet) is
