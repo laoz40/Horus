@@ -13,6 +13,7 @@
 		"lint": "oxlint . --fix",
 		"lint:check": "oxlint .",
 		"migration:import-exercises": "tsx scripts/import-convex-exercises.ts",
+		"migration:import-workouts": "tsx scripts/import-convex-workouts.ts",
 		"typecheck:native": "tsgo --noEmit"
 	},
 	"pnpm": {
