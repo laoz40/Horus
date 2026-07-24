@@ -10,67 +10,12 @@ import {
 import { EllipsisVertical } from "lucide-react";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { Button } from "@/components/ui/button";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
-import { showErrorToast } from "@/lib/toastMessages";
-import { Authenticated, useConvex } from "convex/react";
-import { ConvexError } from "convex/values";
-import { useRouter } from "next/navigation";
 
 interface WorkoutCardOptionsProps {
-	handleDelete: () => void;
-	workoutId: string;
 	workoutName: string;
 }
 
-export default function WorkoutCardOptions({
-	handleDelete,
-	workoutId,
-	workoutName,
-}: WorkoutCardOptionsProps): ReactElement {
-	return (
-		<Authenticated>
-			<Content
-				handleDelete={handleDelete}
-				workoutId={workoutId}
-				workoutName={workoutName}
-			/>
-		</Authenticated>
-	);
-}
-
-function Content({ handleDelete, workoutId, workoutName }: WorkoutCardOptionsProps): ReactElement {
-	const router = useRouter();
-	const convex = useConvex();
-
-	const handleEdit = async () => {
-		try {
-			await convex.query(api.workouts.canEditWorkout, {
-				workoutId: workoutId as Id<"workouts">,
-			});
-
-			router.push(`/workouts/${workoutId}/edit`);
-		} catch (error) {
-			if (error instanceof ConvexError && error.data?.code === "NO_WORKOUT_FOUND") {
-				showErrorToast("Couldn't find workout in the database.");
-				return;
-			}
-
-			if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
-				showErrorToast("Couldn't access the database. Please try again.");
-				return;
-			}
-
-			if (error instanceof ConvexError && error.data?.code === "UNAUTHORIZED") {
-				showErrorToast("You must be signed in to edit workouts.");
-				return;
-			}
-
-			showErrorToast("Unexpected error opening workout editor.");
-			console.error("Unexpected error opening workout editor:", error);
-		}
-	};
-
+export default function WorkoutCardOptions({ workoutName }: WorkoutCardOptionsProps): ReactElement {
 	return (
 		<>
 			<DropdownMenu>
@@ -89,10 +34,7 @@ function Content({ handleDelete, workoutId, workoutName }: WorkoutCardOptionsPro
 					<DropdownMenuGroup>
 						<DropdownMenuItem
 							className="h-10"
-							onSelect={(e) => {
-								e.preventDefault();
-								handleEdit();
-							}}>
+							onSelect={(event) => event.preventDefault()}>
 							Edit
 						</DropdownMenuItem>
 
@@ -103,7 +45,7 @@ function Content({ handleDelete, workoutId, workoutName }: WorkoutCardOptionsPro
 						<AlertDialogDestructive
 							title="Delete workout?"
 							description={`This will permanently delete workout: ${workoutName}`}
-							handleDelete={handleDelete}>
+							handleDelete={() => undefined}>
 							<DropdownMenuItem
 								className="h-10"
 								variant="destructive"
