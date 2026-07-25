@@ -1,25 +1,28 @@
 "use client";
 
-import { useConvexAuth, usePaginatedQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
+import { orpc } from "@/lib/orpc/client";
+
 import HistoryList from "./HistoryList";
 import HistoryPagination from "./HistoryPagination";
 import { WorkoutCardSkeletonList } from "./HistoryWorkoutCardSkeleton";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 interface HistoryFeedProps {
 	WORKOUTS_PER_PAGE: number;
 }
 
 export default function HistoryFeed({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
-	const { isAuthenticated, isLoading } = useConvexAuth();
+	const { data: sessionData, isPending } = authClient.useSession();
 
-	if (isLoading) {
+	if (isPending) {
 		return <WorkoutCardSkeletonList count={WORKOUTS_PER_PAGE} />;
 	}
 
-	if (!isAuthenticated) {
+	if (!sessionData) {
 		return <SignInPrompt />;
 	}
 
@@ -27,27 +30,27 @@ export default function HistoryFeed({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 }
 
 function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
-	const { results, status, loadMore } = usePaginatedQuery(
-		api.workouts.listWorkouts,
-		{},
-		{ initialNumItems: WORKOUTS_PER_PAGE },
+	const historyQuery = useInfiniteQuery(
+		orpc.workouts.list.infiniteOptions({
+			input: (offset: number) => ({ limit: WORKOUTS_PER_PAGE, offset }),
+			initialPageParam: 0,
+			getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
+			throwOnError: true,
+		}),
 	);
-
-	const isLoadingFirstPage = status === "LoadingFirstPage";
-	const hasNextPage = status === "CanLoadMore";
-	const isLoading = status === "LoadingMore" || isLoadingFirstPage;
+	const workouts = historyQuery.data?.pages.flatMap((page) => page.items) ?? [];
 
 	return (
 		<>
 			<HistoryList
-				workouts={results}
-				isLoading={isLoadingFirstPage}
+				workouts={workouts}
+				isLoading={historyQuery.isPending}
 				WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE}
 			/>
 			<HistoryPagination
-				hasNextPage={hasNextPage}
-				isLoading={isLoading}
-				onLoadMore={() => loadMore(WORKOUTS_PER_PAGE)}
+				hasNextPage={historyQuery.hasNextPage}
+				isLoading={historyQuery.isFetchingNextPage}
+				onLoadMore={() => historyQuery.fetchNextPage()}
 				className="mt-1"
 			/>
 		</>
