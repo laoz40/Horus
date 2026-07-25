@@ -3,8 +3,14 @@ import "server-only";
 import { z } from "zod";
 import { protectedProcedure } from "@/server/procedures";
 import { db } from "@/lib/db";
-import { workouts, workoutExercises } from "@/lib/db/schema";
-import { desc, eq, count } from "drizzle-orm";
+import {
+	workouts,
+	workoutExercises,
+	workoutSets,
+	muscleGroups,
+	exerciseMuscleGroups,
+} from "@/lib/db/schema";
+import { desc, eq, countDistinct, sql } from "drizzle-orm";
 
 const historyInputSchema = z.object({
 	limit: z.number().int().min(1).max(25),
@@ -38,10 +44,25 @@ export const workoutsRouter = {
 					createdAt: workouts.createdAt,
 					name: workouts.name,
 					durationSeconds: workouts.durationSeconds,
-					exerciseCount: count(workoutExercises.id),
+					exerciseCount: countDistinct(workoutExercises.id),
+					totalVolume: sql<number>`coalesce(sum(${workoutSets.weight} * ${workoutSets.reps})
+						filter (where ${workoutSets.completed} = true),
+						0
+					)::double precision`,
+					muscleGroups: sql<string[]>`(
+						select coalesce(
+							array_agg(distinct ${muscleGroups.name} order by ${muscleGroups.name}),
+							array[]::text[]
+						)
+						from ${workoutExercises} as workout_exercises_for_muscle_groups
+						join ${exerciseMuscleGroups} on ${exerciseMuscleGroups.exerciseId} = workout_exercises_for_muscle_groups.exercise_id
+						join ${muscleGroups} on ${muscleGroups.id} = ${exerciseMuscleGroups.muscleGroupId}
+						where workout_exercises_for_muscle_groups.workout_id = ${workouts.id}
+					)`,
 				})
 				.from(workouts)
 				.leftJoin(workoutExercises, eq(workoutExercises.workoutId, workouts.id))
+				.leftJoin(workoutSets, eq(workoutSets.workoutExerciseId, workoutExercises.id))
 				.where(eq(workouts.userId, context.userId))
 				.groupBy(workouts.id)
 				.orderBy(desc(workouts.createdAt))
@@ -56,10 +77,10 @@ export const workoutsRouter = {
 					_creationTime: workout.createdAt.getTime(),
 					name: workout.name,
 					durationSeconds: workout.durationSeconds,
-					totalVolume: 0,
+					totalVolume: workout.totalVolume,
 					totalPrSets: 0,
 					exerciseCount: workout.exerciseCount,
-					muscleGroups: [],
+					muscleGroups: workout.muscleGroups,
 				})),
 				// if extra rows exist, then return offset for next page, else null
 				nextOffset: rows.length > input.limit ? input.offset + input.limit : null,
