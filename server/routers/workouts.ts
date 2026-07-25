@@ -3,8 +3,8 @@ import "server-only";
 import { z } from "zod";
 import { protectedProcedure } from "@/server/procedures";
 import { db } from "@/lib/db";
-import { workouts } from "@/lib/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { workouts, workoutExercises } from "@/lib/db/schema";
+import { desc, eq, count } from "drizzle-orm";
 
 const historyInputSchema = z.object({
 	limit: z.number().int().min(1).max(25),
@@ -38,9 +38,12 @@ export const workoutsRouter = {
 					createdAt: workouts.createdAt,
 					name: workouts.name,
 					durationSeconds: workouts.durationSeconds,
+					exerciseCount: count(workoutExercises.id),
 				})
 				.from(workouts)
+				.leftJoin(workoutExercises, eq(workoutExercises.workoutId, workouts.id))
 				.where(eq(workouts.userId, context.userId))
+				.groupBy(workouts.id)
 				.orderBy(desc(workouts.createdAt))
 				.limit(input.limit + 1) // limit + 1 pagination pattern. if 11 is returned, next page exists
 				.offset(input.offset);
@@ -55,7 +58,7 @@ export const workoutsRouter = {
 					durationSeconds: workout.durationSeconds,
 					totalVolume: 0,
 					totalPrSets: 0,
-					exerciseCount: 0,
+					exerciseCount: workout.exerciseCount,
 					muscleGroups: [],
 				})),
 				// if extra rows exist, then return offset for next page, else null
