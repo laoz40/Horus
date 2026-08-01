@@ -67,11 +67,13 @@ export const workouts = pgTable(
 			.references(() => users.id, { onDelete: "cascade" }),
 		name: text("name").notNull(),
 		durationSeconds: integer("duration_seconds"),
+		totalPrSets: integer("total_pr_sets").notNull().default(0),
 		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 	},
 	(table) => [
 		index("workouts_user_id_created_at_index").on(table.userId, table.createdAt),
 		check("workouts_duration_seconds_nonnegative", sql`${table.durationSeconds} >= 0`),
+		check("workouts_total_pr_sets_nonnegative", sql`${table.totalPrSets} >= 0`),
 	],
 );
 
@@ -107,6 +109,9 @@ export const workoutSets = pgTable(
 		weight: numeric("weight", { mode: "number" }).notNull(),
 		reps: numeric("reps", { mode: "number" }).notNull(),
 		completed: boolean("completed").notNull().default(false),
+		isWeightPr: boolean("is_weight_pr").notNull().default(false),
+		isVolumePr: boolean("is_volume_pr").notNull().default(false),
+		isBodyweightRepsPr: boolean("is_bodyweight_reps_pr").notNull().default(false),
 	},
 	(table) => [
 		uniqueIndex("workout_sets_workout_exercise_id_position_unique").on(
@@ -116,5 +121,13 @@ export const workoutSets = pgTable(
 		check("workout_sets_position_nonnegative", sql`${table.position} >= 0`),
 		check("workout_sets_weight_nonnegative", sql`${table.weight} >= 0`),
 		check("workout_sets_reps_nonnegative", sql`${table.reps} >= 0`),
+		check(
+			"workout_sets_pr_requires_completion",
+			sql`not (${table.isWeightPr} or ${table.isVolumePr} or ${table.isBodyweightRepsPr}) or ${table.completed}`,
+		),
+		check(
+			"workout_sets_pr_matches_weight_type",
+			sql`not ${table.isBodyweightRepsPr} or (${table.weight} = 0 and not ${table.isWeightPr} and not ${table.isVolumePr})`,
+		),
 	],
 );
