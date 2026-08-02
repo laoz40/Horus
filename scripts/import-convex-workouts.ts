@@ -8,6 +8,7 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 import { z } from "zod";
 
 import { exercises, users, workoutExercises, workouts, workoutSets } from "@/lib/db/schema";
+import { calculatePrHistory } from "@/server/lib/pr";
 
 config({ path: ".env.local" });
 
@@ -262,7 +263,7 @@ async function importWorkouts({ sourcePath, userId }: ImportArguments): Promise<
 				targetWorkoutExerciseIdBySourceId.set(sourceWorkoutExercise._id, targetWorkoutExercise.id);
 			}
 
-			for (const sourceSet of source.workoutSets) {
+			const prHistorySets = source.workoutSets.map((sourceSet) => {
 				const sourceWorkout = sourceWorkoutById.get(sourceSet.workoutId);
 				const sourceWorkoutExercise = sourceWorkoutExerciseById.get(sourceSet.workoutExerciseId);
 				if (!sourceWorkout || !sourceWorkoutExercise) {
@@ -276,13 +277,69 @@ async function importWorkouts({ sourcePath, userId }: ImportArguments): Promise<
 					throw new Error(`Workout set ${sourceSet._id} has inconsistent denormalized references.`);
 				}
 
+				const exerciseId = targetExerciseIdBySourceId.get(sourceSet.globalExerciseId);
+				if (!exerciseId) {
+					throw new Error(
+						`Workout set ${sourceSet._id} references an exercise that was not imported.`,
+					);
+				}
+
+				return {
+					setId: sourceSet._id,
+					workoutId: sourceSet.workoutId,
+					exerciseId,
+					weight: sourceSet.weight,
+					reps: sourceSet.reps,
+					completed: sourceSet.completed,
+					sortTime: sourceWorkout._creationTime,
+					exercisePosition: sourceWorkoutExercise.order,
+					setPosition: sourceSet.order,
+				};
+			});
+			prHistorySets.sort(
+				(left, right) =>
+					left.sortTime - right.sortTime ||
+					left.workoutId.localeCompare(right.workoutId) ||
+					left.exercisePosition - right.exercisePosition ||
+					left.setPosition - right.setPosition,
+			);
+
+			const prStatuses = calculatePrHistory(prHistorySets);
+			const prStatusBySourceSetId = new Map(prStatuses.map((status) => [status.setId, status]));
+			const prSetCountBySourceWorkoutId = new Map<string, number>();
+
+			for (const sourceSet of source.workoutSets) {
+				const prStatus = prStatusBySourceSetId.get(sourceSet._id);
+				const targetWorkoutExerciseId = targetWorkoutExerciseIdBySourceId.get(
+					sourceSet.workoutExerciseId,
+				);
+				if (!prStatus || !targetWorkoutExerciseId) {
+					throw new Error(`Workout set ${sourceSet._id} could not be prepared for import.`);
+				}
+
 				await tx.insert(workoutSets).values({
-					workoutExerciseId: targetWorkoutExerciseIdBySourceId.get(sourceSet.workoutExerciseId)!,
+					workoutExerciseId: targetWorkoutExerciseId,
 					position: sourceSet.order,
 					weight: sourceSet.weight,
 					reps: sourceSet.reps,
 					completed: sourceSet.completed,
+					isWeightPr: prStatus.isWeightPr,
+					isVolumePr: prStatus.isVolumePr,
+					isBodyweightRepsPr: prStatus.isBodyweightRepsPr,
 				});
+
+				if (prStatus.isWeightPr || prStatus.isVolumePr || prStatus.isBodyweightRepsPr) {
+					const currentCount = prSetCountBySourceWorkoutId.get(sourceSet.workoutId) ?? 0;
+					prSetCountBySourceWorkoutId.set(sourceSet.workoutId, currentCount + 1);
+				}
+			}
+
+			for (const [sourceWorkoutId, totalPrSets] of prSetCountBySourceWorkoutId) {
+				const targetWorkoutId = targetWorkoutIdBySourceId.get(sourceWorkoutId);
+				if (!targetWorkoutId) {
+					throw new Error(`Workout ${sourceWorkoutId} was not imported.`);
+				}
+				await tx.update(workouts).set({ totalPrSets }).where(eq(workouts.id, targetWorkoutId));
 			}
 
 			return {
