@@ -44,6 +44,7 @@ export const workoutsRouter = {
 					createdAt: workouts.createdAt,
 					name: workouts.name,
 					durationSeconds: workouts.durationSeconds,
+					totalPrSets: workouts.totalPrSets,
 					exerciseCount: countDistinct(workoutExercises.id),
 					totalVolume: sql<number>`coalesce(sum(${workoutSets.weight} * ${workoutSets.reps})
 						filter (where ${workoutSets.completed} = true),
@@ -78,7 +79,7 @@ export const workoutsRouter = {
 					name: workout.name,
 					durationSeconds: workout.durationSeconds,
 					totalVolume: workout.totalVolume,
-					totalPrSets: 0,
+					totalPrSets: workout.totalPrSets,
 					exerciseCount: workout.exerciseCount,
 					muscleGroups: workout.muscleGroups,
 				})),
