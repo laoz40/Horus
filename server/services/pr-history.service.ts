@@ -1,8 +1,8 @@
 import "server-only";
 
+import { requireUser } from "@/server/services/lib/users";
 import { rebuildPrHistoryTx } from "@/server/services/pr-history.db";
-import { requireUserForPrRebuild } from "@/server/services/pr-history.functions";
 
 export function rebuildPrHistory(userId: string) {
-	return requireUserForPrRebuild(userId).andThen(() => rebuildPrHistoryTx(userId));
+	return requireUser(userId).andThen(() => rebuildPrHistoryTx(userId));
 }

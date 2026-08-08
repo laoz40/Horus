@@ -8,7 +8,7 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 import { z } from "zod";
 
 import { exercises, users, workoutExercises, workouts, workoutSets } from "@/lib/db/schema";
-import { calculatePrHistory } from "@/server/lib/pr";
+import { calculatePrHistory } from "@/server/services/pr-history.functions";
 
 config({ path: ".env.local" });
 

@@ -4,15 +4,14 @@ import { Pool } from "@neondatabase/serverless";
 import { asc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { env } from "@/env";
-import { db } from "@/lib/db";
-import { workouts, workoutExercises, workoutSets, users } from "@/lib/db/schema";
+import { workouts, workoutExercises, workoutSets } from "@/lib/db/schema";
 import { tryPromise } from "@/lib/tryPromise";
 import {
 	buildPrTotalsByWorkoutId,
 	calculatePrHistory,
 	type PrSetUpdate,
 	summarizePrHistory,
-} from "@/server/lib/pr";
+} from "@/server/services/pr-history.functions";
 
 type TransactionDatabase = ReturnType<typeof drizzle>;
 type Tx = Parameters<Parameters<TransactionDatabase["transaction"]>[0]>[0];
@@ -72,13 +71,6 @@ async function updateWorkoutPrTotals(
 	for (const [workoutId, totalPrSets] of totalsByWorkoutId) {
 		await tx.update(workouts).set({ totalPrSets }).where(eq(workouts.id, workoutId));
 	}
-}
-
-export function findUser(userId: string) {
-	return tryPromise({
-		try: () => db.select({ id: users.id }).from(users).where(eq(users.id, userId)).limit(1),
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
-	}).map(([user]) => user);
 }
 
 export function rebuildPrHistoryTx(userId: string) {
