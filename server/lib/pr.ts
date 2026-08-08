@@ -35,6 +35,12 @@ export interface PrSetUpdate {
 	isBodyweightRepsPr: boolean;
 }
 
+export type PrHistoryRebuildSummary = {
+	workoutCount: number;
+	workoutsWithPrs: number;
+	historicalPrSets: number;
+};
+
 export const emptyExercisePrs = (): ExercisePrs => ({
 	hasHistory: false,
 	highestWeight: 0,
@@ -81,6 +87,32 @@ export const calculatePrsForSet = (set: PrSet, currentRecords: ExercisePrs): PrR
 		},
 	};
 };
+
+export const buildPrTotalsByWorkoutId = (prStatuses: PrSetUpdate[]) => {
+	const totalsByWorkoutId = new Map<string, number>();
+
+	for (const status of prStatuses) {
+		if (!status.isWeightPr && !status.isVolumePr && !status.isBodyweightRepsPr) {
+			continue;
+		}
+
+		totalsByWorkoutId.set(status.workoutId, (totalsByWorkoutId.get(status.workoutId) ?? 0) + 1);
+	}
+
+	return totalsByWorkoutId;
+};
+
+export const summarizePrHistory = (
+	workoutCount: number,
+	prStatuses: PrSetUpdate[],
+	totalsByWorkoutId: Map<string, number>,
+): PrHistoryRebuildSummary => ({
+	workoutCount,
+	workoutsWithPrs: totalsByWorkoutId.size,
+	historicalPrSets: prStatuses.filter(
+		(status) => status.isWeightPr || status.isVolumePr || status.isBodyweightRepsPr,
+	).length,
+});
 
 export const calculatePrHistory = (sets: PrHistorySet[]): PrSetUpdate[] => {
 	const recordsByExerciseId = new Map<string, ExercisePrs>();
