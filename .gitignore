@@ -53,3 +53,4 @@ dev.db
 .agents
 AGENTS.md
 db_migration_plan/
+paseo.json

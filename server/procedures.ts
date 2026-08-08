@@ -12,6 +12,9 @@ const baseProcedure = os.$context<ORPCContext>().errors({
 	UNAUTHORIZED: {
 		message: "Authentication is required",
 	},
+	DATABASE_ERROR: {
+		message: "The database operation failed",
+	},
 });
 
 const requireAuthenticatedUser = baseProcedure.middleware(async ({ context, errors, next }) => {

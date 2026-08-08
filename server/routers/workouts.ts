@@ -2,15 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 import { protectedProcedure } from "@/server/procedures";
-import { db } from "@/lib/db";
-import {
-	workouts,
-	workoutExercises,
-	workoutSets,
-	muscleGroups,
-	exerciseMuscleGroups,
-} from "@/lib/db/schema";
-import { desc, eq, countDistinct, sql } from "drizzle-orm";
+import { listWorkouts } from "@/server/services/workouts.service";
 
 const historyInputSchema = z.object({
 	limit: z.number().int().min(1).max(25),
@@ -37,54 +29,24 @@ export const workoutsRouter = {
 	list: protectedProcedure
 		.input(historyInputSchema)
 		.output(historySchema)
-		.handler(async ({ input, context }) => {
-			const rows = await db
-				.select({
-					id: workouts.id,
-					createdAt: workouts.createdAt,
-					name: workouts.name,
-					durationSeconds: workouts.durationSeconds,
-					totalPrSets: workouts.totalPrSets,
-					exerciseCount: countDistinct(workoutExercises.id),
-					totalVolume: sql<number>`coalesce(sum(${workoutSets.weight} * ${workoutSets.reps})
-						filter (where ${workoutSets.completed} = true),
-						0
-					)::double precision`,
-					muscleGroups: sql<string[]>`(
-						select coalesce(
-							array_agg(distinct ${muscleGroups.name} order by ${muscleGroups.name}),
-							array[]::text[]
-						)
-						from ${workoutExercises} as workout_exercises_for_muscle_groups
-						join ${exerciseMuscleGroups} on ${exerciseMuscleGroups.exerciseId} = workout_exercises_for_muscle_groups.exercise_id
-						join ${muscleGroups} on ${muscleGroups.id} = ${exerciseMuscleGroups.muscleGroupId}
-						where workout_exercises_for_muscle_groups.workout_id = ${workouts.id}
-					)`,
-				})
-				.from(workouts)
-				.leftJoin(workoutExercises, eq(workoutExercises.workoutId, workouts.id))
-				.leftJoin(workoutSets, eq(workoutSets.workoutExerciseId, workoutExercises.id))
-				.where(eq(workouts.userId, context.userId))
-				.groupBy(workouts.id)
-				.orderBy(desc(workouts.createdAt))
-				.limit(input.limit + 1) // limit + 1 pagination pattern. if 11 is returned, next page exists
-				.offset(input.offset);
+		.handler(async ({ input, context, errors }) => {
+			const result = await listWorkouts({ ...input, userId: context.userId });
 
-			const pageWorkouts = rows.slice(0, input.limit);
+			return result.match(
+				(value) => value,
+				(error) => {
+					const reason = error.reason;
 
-			return {
-				items: pageWorkouts.map((workout) => ({
-					_id: workout.id,
-					_creationTime: workout.createdAt.getTime(),
-					name: workout.name,
-					durationSeconds: workout.durationSeconds,
-					totalVolume: workout.totalVolume,
-					totalPrSets: workout.totalPrSets,
-					exerciseCount: workout.exerciseCount,
-					muscleGroups: workout.muscleGroups,
-				})),
-				// if extra rows exist, then return offset for next page, else null
-				nextOffset: rows.length > input.limit ? input.offset + input.limit : null,
-			};
+					switch (reason) {
+						case "DATABASE_ERROR":
+							console.error("Failed to list workouts", { cause: error.cause });
+							throw errors.DATABASE_ERROR();
+						default: {
+							const exhaustiveReason: never = reason;
+							throw exhaustiveReason;
+						}
+					}
+				},
+			);
 		}),
 };
