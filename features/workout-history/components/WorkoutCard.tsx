@@ -34,7 +34,10 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
 							{workout.name}
 						</h2>
 					</div>
-					<WorkoutCardOptions workoutName={workout.name} />
+					<WorkoutCardOptions
+						workoutId={workout._id}
+						workoutName={workout.name}
+					/>
 				</div>
 
 				<div className="mt-2 grid min-h-6 grid-cols-[1fr_min-content]">

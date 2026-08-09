@@ -16,7 +16,6 @@ import {
 	rebuildExercisePrsForUser,
 	rebuildMissingExercisePrsForUser,
 } from "./lib/rebuildExercisePrs";
-import { getWorkoutChildrenForUi } from "./lib/workoutChildrenForUi";
 import {
 	deleteWorkoutChildren,
 	getWorkout,
@@ -243,30 +242,6 @@ export const canEditWorkout = query({
 			await getWorkout(ctx, args.workoutId, identity.subject);
 
 			return { ok: true };
-		}),
-});
-
-export const getWorkoutById = query({
-	args: {
-		workoutId: v.id("workouts"),
-	},
-	handler: async (ctx, args) =>
-		errorHandlerWrapper(async () => {
-			const identity = await requireIdentity(ctx);
-			const workout = await getWorkout(ctx, args.workoutId, identity.subject);
-			const { exercises, missingGlobalExercisesCount } = await getWorkoutChildrenForUi(
-				ctx,
-				workout._id,
-			);
-
-			return {
-				_id: workout._id,
-				_creationTime: workout._creationTime,
-				name: workout.name,
-				durationSeconds: workout.durationSeconds,
-				exercises,
-				missingGlobalExercisesCount,
-			};
 		}),
 });
 

@@ -1,4 +1,5 @@
 import { type ReactElement } from "react";
+import Link from "next/link";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -12,10 +13,14 @@ import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { Button } from "@/components/ui/button";
 
 interface WorkoutCardOptionsProps {
+	workoutId: string;
 	workoutName: string;
 }
 
-export default function WorkoutCardOptions({ workoutName }: WorkoutCardOptionsProps): ReactElement {
+export default function WorkoutCardOptions({
+	workoutId,
+	workoutName,
+}: WorkoutCardOptionsProps): ReactElement {
 	return (
 		<>
 			<DropdownMenu>
@@ -33,9 +38,9 @@ export default function WorkoutCardOptions({ workoutName }: WorkoutCardOptionsPr
 					className="w-34">
 					<DropdownMenuGroup>
 						<DropdownMenuItem
-							className="h-10"
-							onSelect={(event) => event.preventDefault()}>
-							Edit
+							asChild
+							className="h-10">
+							<Link href={`/workouts/${workoutId}/edit`}>Edit</Link>
 						</DropdownMenuItem>
 
 						<DropdownMenuItem className="h-10">Share</DropdownMenuItem>

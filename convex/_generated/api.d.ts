@@ -22,7 +22,6 @@ import type * as lib_parseAndValidateWorkout from "../lib/parseAndValidateWorkou
 import type * as lib_rebuildExercisePrs from "../lib/rebuildExercisePrs.js";
 import type * as lib_server from "../lib/server.js";
 import type * as lib_workoutActions from "../lib/workoutActions.js";
-import type * as lib_workoutChildrenForUi from "../lib/workoutChildrenForUi.js";
 import type * as workouts from "../workouts.js";
 
 import type { ApiFromModules, FilterApi, FunctionReference } from "convex/server";
@@ -42,7 +41,6 @@ declare const fullApi: ApiFromModules<{
 	"lib/rebuildExercisePrs": typeof lib_rebuildExercisePrs;
 	"lib/server": typeof lib_server;
 	"lib/workoutActions": typeof lib_workoutActions;
-	"lib/workoutChildrenForUi": typeof lib_workoutChildrenForUi;
 	workouts: typeof workouts;
 }>;
 
