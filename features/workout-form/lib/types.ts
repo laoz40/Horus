@@ -1,50 +1,12 @@
-interface SetFormData {
-	id: string;
-	weight?: number;
-	reps?: number;
-	completed: boolean;
-}
+import type * as z from "zod";
 
-interface ExerciseFormData {
-	id: string;
-	global: {
-		name: string;
-		muscleGroups?: string[];
-	};
-	difficulty?: number;
-	notes?: string;
-	sets: SetFormData[];
-}
+import type {
+	WorkoutForSaveSchema,
+	WorkoutSchema,
+} from "@/features/workout-form/lib/validateWorkout";
 
-export interface WorkoutFormData {
-	name: string;
-	durationSeconds: number | null;
-	exercises: ExerciseFormData[];
-}
-
-export interface SetForSave {
-	id: string;
-	weight: number;
-	reps: number;
-	completed: boolean;
-}
-
-export interface ExerciseForSave {
-	id: string;
-	global: {
-		name: string;
-		muscleGroups?: string[];
-	};
-	difficulty?: number;
-	notes?: string;
-	sets: SetForSave[];
-}
-
-export interface WorkoutForSave {
-	name: string;
-	durationSeconds: number | null;
-	exercises: ExerciseForSave[];
-}
+export type WorkoutFormData = z.infer<typeof WorkoutSchema>;
+export type WorkoutForSave = z.infer<typeof WorkoutForSaveSchema>;
 
 export interface ExerciseSuggestion {
 	id: string;

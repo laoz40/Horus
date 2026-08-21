@@ -1,8 +1,9 @@
 import "server-only";
 
 import { z } from "zod";
+import { WorkoutForSaveSchema } from "@/features/workout-form/lib/validateWorkout";
 import { protectedProcedure } from "@/server/procedures";
-import { getWorkoutById, listWorkouts } from "@/server/services/workouts.service";
+import { getWorkoutById, listWorkouts, updateWorkout } from "@/server/services/workouts.service";
 
 const workoutFormSchema = z.object({
 	name: z.string(),
@@ -10,6 +11,7 @@ const workoutFormSchema = z.object({
 	exercises: z.array(
 		z.object({
 			id: z.uuid(),
+			exerciseId: z.uuid(),
 			global: z.object({
 				name: z.string(),
 				muscleGroups: z.array(z.string()),
@@ -27,6 +29,29 @@ const workoutFormSchema = z.object({
 		}),
 	),
 });
+
+export const updateWorkoutInputSchema = z
+	.object({
+		workoutId: z.uuid(),
+		workout: WorkoutForSaveSchema,
+	})
+	.strict();
+
+export const updateWorkoutOutputSchema = z
+	.object({
+		workoutId: z.uuid(),
+		workout: WorkoutForSaveSchema,
+	})
+	.strict();
+
+export const updateWorkoutProcedure = protectedProcedure
+	.errors({
+		INVALID_INPUT: {
+			message: "The workout update contains invalid identifiers",
+		},
+	})
+	.input(updateWorkoutInputSchema)
+	.output(updateWorkoutOutputSchema);
 
 const historyInputSchema = z.object({
 	limit: z.number().int().min(1).max(25),
@@ -50,6 +75,30 @@ const historySchema = z.object({
 });
 
 export const workoutsRouter = {
+	update: updateWorkoutProcedure.handler(async ({ input, context, errors }) => {
+		const result = await updateWorkout(input.workoutId, context.userId, input.workout);
+
+		return result.match(
+			(value) => value,
+			(error) => {
+				const reason = error.reason;
+
+				switch (reason) {
+					case "NOT_FOUND":
+						throw errors.NOT_FOUND();
+					case "INVALID_INPUT":
+						throw errors.INVALID_INPUT();
+					case "DATABASE_ERROR":
+						console.error("Failed to update workout", { cause: error.cause });
+						throw errors.DATABASE_ERROR();
+					default: {
+						const exhaustiveReason: never = reason;
+						throw exhaustiveReason;
+					}
+				}
+			},
+		);
+	}),
 	getById: protectedProcedure
 		.input(z.object({ id: z.uuid() }))
 		.output(workoutFormSchema)

@@ -20,7 +20,6 @@ import {
 	deleteWorkoutChildren,
 	getWorkout,
 	getWorkoutExerciseGlobalIds,
-	insertWorkoutChildren,
 	insertWorkoutChildrenWithPrs,
 } from "./lib/workoutActions";
 import { errorHandlerWrapper, requireIdentity } from "./lib/server";
@@ -107,63 +106,6 @@ export const createWorkout = mutation({
 			});
 
 			return { workout: workoutData };
-		}),
-});
-
-export const updateWorkout = mutation({
-	args: {
-		workoutId: v.id("workouts"),
-		workout: workoutObject,
-	},
-	handler: async (ctx, args) =>
-		errorHandlerWrapper(async () => {
-			const identity = await requireIdentity(ctx);
-			const workout = await getWorkout(ctx, args.workoutId, identity.subject);
-			const workoutData = parseAndValidateWorkout(args.workout as WorkoutFormData);
-
-			const oldGlobalExerciseIds = await getWorkoutExerciseGlobalIds(ctx, args.workoutId);
-			const exercisesWithGlobalExerciseIds = await mapExercisesWithGlobalExerciseIds(
-				ctx,
-				workoutData.exercises,
-			);
-			const affectedGlobalExerciseIds = [
-				...oldGlobalExerciseIds,
-				...exercisesWithGlobalExerciseIds.map((exercise) => exercise.globalExerciseId),
-			];
-			const muscleGroups = getWorkoutMuscleGroups(workoutData);
-			const totalVolume = calculateWorkoutVolume(workoutData);
-			const setCount = countCompletedSets(exercisesWithGlobalExerciseIds);
-
-			// update the workout row in the workouts table
-			await ctx.db.patch(args.workoutId, {
-				name: workoutData.name,
-				durationSeconds: workoutData.durationSeconds,
-				exerciseCount: exercisesWithGlobalExerciseIds.length,
-				setCount,
-				muscleGroups,
-				totalPrSets: 0,
-				totalVolume,
-			});
-
-			// update the workoutExercises and workoutSets tables
-			await deleteWorkoutChildren(ctx, args.workoutId);
-			await insertWorkoutChildren(ctx, {
-				workoutId: args.workoutId,
-				userId: identity.subject,
-				workoutCreationTime: workout._creationTime,
-				exercises: exercisesWithGlobalExerciseIds,
-			});
-			await rebuildExercisePrsForUser(ctx, {
-				userId: identity.subject,
-				globalExerciseIds: affectedGlobalExerciseIds,
-			});
-			await adjustDailySetStat(ctx, {
-				userId: identity.subject,
-				dayKey: getUtcDayKey(workout._creationTime),
-				delta: setCount - (workout.setCount ?? 0),
-			});
-
-			return { workout: workoutData, workoutId: args.workoutId };
 		}),
 });
 

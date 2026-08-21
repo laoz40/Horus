@@ -2,6 +2,8 @@ import "server-only";
 
 import { err, ok } from "neverthrow";
 
+import type { WorkoutForSave } from "@/features/workout-form/lib/types";
+import { normalizeName } from "@/lib/normalizeName";
 import type {
 	ListWorkoutsQuery,
 	WorkoutForEdit,
@@ -16,12 +18,67 @@ export function requireWorkoutForEdit(workout: WorkoutForEdit | null) {
 	return ok(workout);
 }
 
+function normalizeMuscleGroups(muscleGroups: string[] | undefined) {
+	const muscleGroupsByNormalizedName = new Map<string, { name: string; normalizedName: string }>();
+
+	for (const name of muscleGroups ?? []) {
+		const normalizedName = normalizeName(name);
+		if (normalizedName.length === 0 || muscleGroupsByNormalizedName.has(normalizedName)) {
+			continue;
+		}
+
+		muscleGroupsByNormalizedName.set(normalizedName, {
+			name: name.trim(),
+			normalizedName,
+		});
+	}
+
+	return [...muscleGroupsByNormalizedName.values()];
+}
+
+export function validateUniqueWorkoutChildIds(workout: WorkoutForSave) {
+	const workoutExerciseIds = workout.exercises.map((exercise) => exercise.id);
+	const setIds = workout.exercises.flatMap((exercise) => exercise.sets.map((set) => set.id));
+	const hasDuplicateWorkoutExerciseId =
+		new Set(workoutExerciseIds).size !== workoutExerciseIds.length;
+	const hasDuplicateSetId = new Set(setIds).size !== setIds.length;
+
+	if (hasDuplicateWorkoutExerciseId || hasDuplicateSetId) {
+		return err({ reason: "INVALID_INPUT" as const });
+	}
+
+	return ok(null);
+}
+
+export function normalizeWorkoutForUpdate(workout: WorkoutForSave) {
+	return {
+		...workout,
+		exercises: workout.exercises.map((exercise) => ({
+			...exercise,
+			global: {
+				name: exercise.global.name,
+				normalizedName: normalizeName(exercise.global.name),
+				muscleGroups: normalizeMuscleGroups(exercise.global.muscleGroups),
+			},
+		})),
+	};
+}
+
+export function requireWorkoutForUpdate(workoutExists: boolean) {
+	if (!workoutExists) {
+		return err({ reason: "NOT_FOUND" as const });
+	}
+
+	return ok(null);
+}
+
 export function buildWorkoutEditForm(workout: WorkoutForEdit) {
 	return {
 		name: workout.name,
 		durationSeconds: workout.durationSeconds,
 		exercises: workout.exercises.map((exercise) => ({
 			id: exercise.id,
+			exerciseId: exercise.exerciseId,
 			global: {
 				name: exercise.name,
 				muscleGroups: exercise.muscleGroups,

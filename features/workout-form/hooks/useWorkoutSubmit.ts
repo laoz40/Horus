@@ -1,12 +1,12 @@
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
-import type { WorkoutFormData } from "@/features/workout-form/lib/types";
-import { animateCreateWorkoutExit } from "@/features/workout-form/lib/animateCreateWorkoutExit";
-import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
-import { showErrorToast, showWorkoutSavedToast } from "@/lib/toastMessages";
-import { useMutation } from "convex/react";
-import { ConvexError } from "convex/values";
+import { isDefinedError } from "@orpc/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+
+import { animateCreateWorkoutExit } from "@/features/workout-form/lib/animateCreateWorkoutExit";
+import type { WorkoutFormData } from "@/features/workout-form/lib/types";
+import { parseWorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
+import { orpc } from "@/lib/orpc/client";
+import { showErrorToast, showWorkoutSavedToast } from "@/lib/toastMessages";
 
 interface UseWorkoutSubmitProps {
 	startedAtMs: number;
@@ -14,7 +14,8 @@ interface UseWorkoutSubmitProps {
 }
 
 interface UseWorkoutSubmitReturn {
-	submitWorkout: (data: WorkoutFormData) => Promise<void>;
+	isSubmitting: boolean;
+	submitWorkout: (data: WorkoutFormData) => void;
 }
 
 export const useWorkoutSubmit = ({
@@ -22,64 +23,79 @@ export const useWorkoutSubmit = ({
 	workoutId,
 }: UseWorkoutSubmitProps): UseWorkoutSubmitReturn => {
 	const router = useRouter();
-	const createWorkout = useMutation(api.workouts.createWorkout);
-	const updateWorkout = useMutation(api.workouts.updateWorkout);
+	const queryClient = useQueryClient();
+	const updateWorkout = useMutation(
+		orpc.workouts.update.mutationOptions({
+			onSuccess: async (result) => {
+				// Refresh both cached views so revisiting the edit page or history shows the saved data.
+				await Promise.all([
+					queryClient.invalidateQueries({
+						queryKey: orpc.workouts.getById.key({
+							type: "query",
+							input: { id: result.workoutId },
+						}),
+					}),
+					queryClient.invalidateQueries({
+						queryKey: orpc.workouts.list.key({ type: "infinite" }),
+					}),
+				]);
 
-	const submitWorkout = async (data: WorkoutFormData) => {
+				animateCreateWorkoutExit(() => {
+					router.push("/workouts");
+				});
+				showWorkoutSavedToast(result.workout.name);
+			},
+			onError: (error) => {
+				if (!isDefinedError(error)) {
+					showErrorToast("Failed to save workout.");
+					console.error(error);
+					return;
+				}
+
+				switch (error.code) {
+					case "INVALID_INPUT":
+						showErrorToast("Invalid workout data.");
+						return;
+					case "DATABASE_ERROR":
+						showErrorToast("Couldn't access the database. Please try again.");
+						return;
+					case "UNAUTHORIZED":
+						showErrorToast("You must be signed in to save workouts.");
+						router.push("/login");
+						return;
+					case "NOT_FOUND":
+						showErrorToast("Couldn't find workout in the database.");
+						router.push("/workouts");
+						return;
+					default: {
+						const exhaustiveError: never = error;
+						return exhaustiveError;
+					}
+				}
+			},
+		}),
+	);
+
+	const submitWorkout = (data: WorkoutFormData) => {
+		if (!workoutId) return;
+
 		const durationSeconds = Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000));
-		const workoutInput = stripEmptyWorkoutEntries({
-			...data,
-			durationSeconds,
-		}) as WorkoutFormData;
+		const workoutResult = parseWorkoutForSave(data, durationSeconds);
 
-		try {
-			const result = workoutId
-				? await updateWorkout({
-						workoutId: workoutId as Id<"workouts">,
-						workout: workoutInput,
-					})
-				: await createWorkout({ workout: workoutInput });
-
-			animateCreateWorkoutExit(() => {
-				router.push("/workouts");
-			});
-			showWorkoutSavedToast(result.workout.name);
-		} catch (error) {
-			// zod validation error (server)
-			if (error instanceof ConvexError && error.data?.code === "INVALID_WORKOUT_DATA") {
-				// get first error message
-				const firstMessage = error.data.issues?.[0]?.message ?? "Invalid workout data.";
-				showErrorToast(firstMessage);
-				return;
-			}
-
-			if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
-				showErrorToast("Couldn't access the database. Please try again.");
-				return;
-			}
-
-			if (error instanceof ConvexError && error.data?.code === "UNAUTHORIZED") {
-				showErrorToast("You must be signed in to save workouts.");
-				router.push("/login");
-				return;
-			}
-
-			if (error instanceof ConvexError && error.data?.code === "NO_WORKOUT_FOUND") {
-				showErrorToast("Couldn't find workout in the database.");
-				router.push("/workouts");
-				return;
-			}
-
-			// convex schema validation error
-			if (error instanceof Error && error.message.includes("ArgumentValidationError")) {
-				showErrorToast("Invalid workout data.");
-				return;
-			}
-
-			showErrorToast("Failed to save workout.");
-			console.error(error);
+		if (!workoutResult.success) {
+			const [firstIssue] = workoutResult.error.issues;
+			showErrorToast(firstIssue?.message ?? "Invalid workout data.");
+			return;
 		}
+
+		updateWorkout.mutate({
+			workoutId,
+			workout: workoutResult.data,
+		});
 	};
 
-	return { submitWorkout };
+	return {
+		isSubmitting: updateWorkout.isPending,
+		submitWorkout,
+	};
 };

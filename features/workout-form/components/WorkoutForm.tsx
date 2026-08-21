@@ -71,11 +71,7 @@ export default function WorkoutForm({
 		defaultValues: createDefaultWorkoutValues(),
 	});
 
-	const {
-		handleSubmit,
-		formState: { isSubmitting },
-		reset,
-	} = methods;
+	const { handleSubmit, reset } = methods;
 
 	const {
 		fields: exercises,
@@ -127,7 +123,7 @@ export default function WorkoutForm({
 		);
 	}, [append, exercises.length]);
 
-	const { submitWorkout } = useWorkoutSubmit({ startedAtMs, workoutId });
+	const { isSubmitting, submitWorkout } = useWorkoutSubmit({ startedAtMs, workoutId });
 
 	const handleInvalidSubmit = (errors: FieldErrors<Workout>) => {
 		// find the first invalid exercise
