@@ -13,6 +13,7 @@ import {
 	workoutSets,
 } from "@/lib/db/schema";
 import { tryPromise } from "@/lib/tryPromise";
+import { rebuildPrHistoryForUserTx } from "@/server/services/pr-history.db";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -349,6 +350,7 @@ export function updateWorkoutRows(
 				await updateWorkoutFields(tx, updateInput);
 				await deleteWorkoutChildren(tx, updateInput.workoutId);
 				await insertWorkoutChildren(tx, updateInput.workoutId, exercisesWithDatabaseIds);
+				await rebuildPrHistoryForUserTx(tx, updateInput.userId);
 
 				return workoutResult;
 			}),

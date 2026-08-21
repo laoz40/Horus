@@ -4,17 +4,21 @@ import { Pool } from "@neondatabase/serverless";
 import { asc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { env } from "@/env";
+import type { db } from "@/lib/db";
 import { workouts, workoutExercises, workoutSets } from "@/lib/db/schema";
 import { tryPromise } from "@/lib/tryPromise";
 import {
 	buildPrTotalsByWorkoutId,
 	calculatePrHistory,
+	type PrHistoryRebuildSummary,
 	type PrSetUpdate,
 	summarizePrHistory,
 } from "@/server/services/pr-history.functions";
 
 type TransactionDatabase = ReturnType<typeof drizzle>;
-type Tx = Parameters<Parameters<TransactionDatabase["transaction"]>[0]>[0];
+type ServerlessTx = Parameters<Parameters<TransactionDatabase["transaction"]>[0]>[0];
+type HttpTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+type Tx = ServerlessTx | HttpTx;
 
 async function getWorkoutCount(tx: Tx, userId: string): Promise<number> {
 	const workoutRows = await tx
@@ -73,6 +77,22 @@ async function updateWorkoutPrTotals(
 	}
 }
 
+export async function rebuildPrHistoryForUserTx(
+	tx: Tx,
+	userId: string,
+): Promise<PrHistoryRebuildSummary> {
+	const workoutCount = await getWorkoutCount(tx, userId);
+	const historySets = await getPrHistorySets(tx, userId);
+	const prStatuses = calculatePrHistory(historySets);
+	const totalsByWorkoutId = buildPrTotalsByWorkoutId(prStatuses);
+
+	await updateSetPrStatuses(tx, prStatuses);
+	await resetWorkoutPrTotals(tx, userId);
+	await updateWorkoutPrTotals(tx, totalsByWorkoutId);
+
+	return summarizePrHistory(workoutCount, prStatuses, totalsByWorkoutId);
+}
+
 export function rebuildPrHistoryTx(userId: string) {
 	const pool = new Pool({ connectionString: env.DATABASE_URL });
 	const transactionDatabase = drizzle({ client: pool });
@@ -80,18 +100,7 @@ export function rebuildPrHistoryTx(userId: string) {
 	return tryPromise({
 		try: () =>
 			transactionDatabase
-				.transaction(async (tx) => {
-					const workoutCount = await getWorkoutCount(tx, userId);
-					const historySets = await getPrHistorySets(tx, userId);
-					const prStatuses = calculatePrHistory(historySets);
-					const totalsByWorkoutId = buildPrTotalsByWorkoutId(prStatuses);
-
-					await updateSetPrStatuses(tx, prStatuses);
-					await resetWorkoutPrTotals(tx, userId);
-					await updateWorkoutPrTotals(tx, totalsByWorkoutId);
-
-					return summarizePrHistory(workoutCount, prStatuses, totalsByWorkoutId);
-				})
+				.transaction((tx) => rebuildPrHistoryForUserTx(tx, userId))
 				.finally(() => pool.end()),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
