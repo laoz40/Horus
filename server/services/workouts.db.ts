@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, countDistinct, desc, eq, sql } from "drizzle-orm";
 import type { Result } from "neverthrow";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
-import { db } from "@/lib/db";
+import { db, type DatabaseTransaction, runDatabaseTransaction } from "@/lib/db";
 import {
 	exerciseMuscleGroups,
 	exercises,
@@ -15,31 +15,34 @@ import {
 import { tryPromise } from "@/lib/tryPromise";
 import { rebuildPrHistoryForUserTx } from "@/server/services/pr-history.db";
 
-type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+type Tx = DatabaseTransaction;
 
-type WorkoutUpdateExercise = WorkoutForSave["exercises"][number];
+type WorkoutWriteExercise = WorkoutForSave["exercises"][number];
 
-type PreparedWorkoutUpdateExercise = Omit<WorkoutUpdateExercise, "global"> & {
-	global: Omit<WorkoutUpdateExercise["global"], "muscleGroups"> & {
+type PreparedWorkoutWriteExercise = Omit<WorkoutWriteExercise, "global"> & {
+	global: Omit<WorkoutWriteExercise["global"], "muscleGroups"> & {
 		normalizedName: string;
 		muscleGroups: Array<{ name: string; normalizedName: string }>;
 	};
 };
 
-type WorkoutExerciseWithDatabaseId = PreparedWorkoutUpdateExercise & { exerciseId: string };
+type WorkoutExerciseWithDatabaseId = PreparedWorkoutWriteExercise & { exerciseId: string };
+
+type WorkoutWriteInput = {
+	userId: string;
+	workout: Omit<WorkoutForSave, "exercises"> & {
+		exercises: PreparedWorkoutWriteExercise[];
+	};
+};
+
+type WorkoutUpdateInput = WorkoutWriteInput & {
+	workoutId: string;
+};
 
 export type ListWorkoutsQuery = {
 	userId: string;
 	limit: number;
 	offset: number;
-};
-
-export type WorkoutUpdateInput = {
-	workoutId: string;
-	userId: string;
-	workout: Omit<WorkoutForSave, "exercises"> & {
-		exercises: PreparedWorkoutUpdateExercise[];
-	};
 };
 
 type RequireWorkoutForUpdate = (workoutExists: boolean) => Result<null, { reason: "NOT_FOUND" }>;
@@ -211,7 +214,7 @@ async function insertExerciseMuscleGroups(
 async function createOrGetExercise(
 	tx: Tx,
 	userId: string,
-	exercise: PreparedWorkoutUpdateExercise,
+	exercise: PreparedWorkoutWriteExercise,
 ): Promise<string> {
 	const [createdExercise] = await tx
 		.insert(exercises)
@@ -245,7 +248,7 @@ async function createOrGetExercise(
 async function findOrCreateExerciseId(
 	tx: Tx,
 	userId: string,
-	exercise: PreparedWorkoutUpdateExercise,
+	exercise: PreparedWorkoutWriteExercise,
 ): Promise<string> {
 	if (exercise.exerciseId) {
 		const submittedExerciseId = await findSubmittedExerciseId(
@@ -270,21 +273,38 @@ async function findOrCreateExerciseId(
 
 async function findOrCreateWorkoutExercises(
 	tx: Tx,
-	updateInput: WorkoutUpdateInput,
+	writeInput: WorkoutWriteInput,
 ): Promise<WorkoutExerciseWithDatabaseId[]> {
 	const exerciseIdsByNormalizedName = new Map<string, string>();
 	const exercisesWithDatabaseIds: WorkoutExerciseWithDatabaseId[] = [];
 
-	for (const exercise of updateInput.workout.exercises) {
+	for (const exercise of writeInput.workout.exercises) {
 		const normalizedName = exercise.global.normalizedName;
 		const cachedExerciseId = exerciseIdsByNormalizedName.get(normalizedName);
 		const exerciseId =
-			cachedExerciseId ?? (await findOrCreateExerciseId(tx, updateInput.userId, exercise));
+			cachedExerciseId ?? (await findOrCreateExerciseId(tx, writeInput.userId, exercise));
 		exerciseIdsByNormalizedName.set(normalizedName, exerciseId);
 		exercisesWithDatabaseIds.push({ ...exercise, exerciseId });
 	}
 
 	return exercisesWithDatabaseIds;
+}
+
+async function insertWorkoutRow(tx: Tx, writeInput: WorkoutWriteInput): Promise<string> {
+	const [workout] = await tx
+		.insert(workouts)
+		.values({
+			userId: writeInput.userId,
+			name: writeInput.workout.name,
+			durationSeconds: writeInput.workout.durationSeconds,
+		})
+		.returning({ id: workouts.id });
+
+	if (!workout) {
+		throw new Error("Workout insert did not return a row");
+	}
+
+	return workout.id;
 }
 
 async function updateWorkoutFields(tx: Tx, updateInput: WorkoutUpdateInput): Promise<void> {
@@ -302,7 +322,7 @@ async function deleteWorkoutChildren(tx: Tx, workoutId: string): Promise<void> {
 	await tx.delete(workoutExercises).where(eq(workoutExercises.workoutId, workoutId));
 }
 
-async function insertWorkoutChildren(
+async function insertWorkoutExerciseRows(
 	tx: Tx,
 	workoutId: string,
 	exercisesForWorkout: WorkoutExerciseWithDatabaseId[],
@@ -317,7 +337,12 @@ async function insertWorkoutChildren(
 			notes: exercise.notes ?? "",
 		})),
 	);
+}
 
+async function insertWorkoutSetRows(
+	tx: Tx,
+	exercisesForWorkout: WorkoutExerciseWithDatabaseId[],
+): Promise<void> {
 	await tx.insert(workoutSets).values(
 		exercisesForWorkout.flatMap((exercise) =>
 			exercise.sets.map((set, position) => ({
@@ -332,13 +357,29 @@ async function insertWorkoutChildren(
 	);
 }
 
+export function createWorkoutRows(createInput: WorkoutWriteInput) {
+	return tryPromise({
+		try: () =>
+			runDatabaseTransaction(async (tx) => {
+				const workoutId = await insertWorkoutRow(tx, createInput);
+				const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(tx, createInput);
+				await insertWorkoutExerciseRows(tx, workoutId, exercisesWithDatabaseIds);
+				await insertWorkoutSetRows(tx, exercisesWithDatabaseIds);
+				await rebuildPrHistoryForUserTx(tx, createInput.userId);
+
+				return workoutId;
+			}),
+		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	});
+}
+
 export function updateWorkoutRows(
 	updateInput: WorkoutUpdateInput,
 	requireWorkout: RequireWorkoutForUpdate,
 ) {
 	return tryPromise({
 		try: () =>
-			db.transaction(async (tx) => {
+			runDatabaseTransaction(async (tx) => {
 				const workout = await getWorkoutForUpdate(tx, updateInput.workoutId, updateInput.userId);
 				const workoutResult = requireWorkout(workout !== undefined);
 
@@ -349,7 +390,8 @@ export function updateWorkoutRows(
 				const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(tx, updateInput);
 				await updateWorkoutFields(tx, updateInput);
 				await deleteWorkoutChildren(tx, updateInput.workoutId);
-				await insertWorkoutChildren(tx, updateInput.workoutId, exercisesWithDatabaseIds);
+				await insertWorkoutExerciseRows(tx, updateInput.workoutId, exercisesWithDatabaseIds);
+				await insertWorkoutSetRows(tx, exercisesWithDatabaseIds);
 				await rebuildPrHistoryForUserTx(tx, updateInput.userId);
 
 				return workoutResult;

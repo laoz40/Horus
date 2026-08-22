@@ -6,6 +6,11 @@ import { searchExercises } from "@/server/services/exercises.service";
 
 export const exercisesRouter = {
 	search: protectedProcedure
+		.errors({
+			DATABASE_ERROR: {
+				message: "The database operation failed",
+			},
+		})
 		.input(
 			z.object({
 				query: z.string(),

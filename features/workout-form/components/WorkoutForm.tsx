@@ -36,7 +36,10 @@ import ExerciseForm from "./ExerciseForm";
 import WorkoutFormBottomBar from "./WorkoutFormBottomBar";
 import { useExerciseNavigation } from "@/features/workout-form/hooks/useExerciseNavigation";
 import { useExerciseSelection } from "@/features/workout-form/hooks/useExerciseSelection";
-import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit";
+import {
+	type WorkoutSubmitMode,
+	useWorkoutSubmit,
+} from "@/features/workout-form/hooks/useWorkoutSubmit";
 import WorkoutFormTopBar from "./WorkoutFormTopBar";
 import RecentCompletedSetsDialog from "./RecentCompletedSetsDialog";
 
@@ -123,7 +126,10 @@ export default function WorkoutForm({
 		);
 	}, [append, exercises.length]);
 
-	const { isSubmitting, submitWorkout } = useWorkoutSubmit({ startedAtMs, workoutId });
+	const submitMode: WorkoutSubmitMode = workoutId
+		? { type: "update", workoutId }
+		: { type: "create" };
+	const { isSubmitting, submitWorkout } = useWorkoutSubmit({ startedAtMs, mode: submitMode });
 
 	const handleInvalidSubmit = (errors: FieldErrors<Workout>) => {
 		// find the first invalid exercise

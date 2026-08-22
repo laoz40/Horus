@@ -179,32 +179,3 @@ export const recomputeWorkoutTotalPrSetsBatch = internalMutation({
 		}
 	},
 });
-
-// Rebuilds PRs only for exercises that do not already have a saved PR summary.
-export async function rebuildMissingExercisePrsForUser(
-	ctx: MutationCtx,
-	args: {
-		userId: string;
-		globalExerciseIds: Id<"globalExercises">[];
-	},
-): Promise<void> {
-	const missingGlobalExerciseIds: Id<"globalExercises">[] = [];
-
-	for (const globalExerciseId of new Set(args.globalExerciseIds)) {
-		const summary = await ctx.db
-			.query("exercisePrs")
-			.withIndex("by_userId_globalExerciseId", (query) =>
-				query.eq("userId", args.userId).eq("globalExerciseId", globalExerciseId),
-			)
-			.first();
-
-		if (!summary) missingGlobalExerciseIds.push(globalExerciseId);
-	}
-
-	if (missingGlobalExerciseIds.length === 0) return;
-
-	await rebuildExercisePrsForUser(ctx, {
-		userId: args.userId,
-		globalExerciseIds: missingGlobalExerciseIds,
-	});
-}

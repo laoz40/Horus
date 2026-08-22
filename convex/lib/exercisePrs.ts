@@ -1,6 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { emptyExercisePrSummary, type ExercisePrSummary } from "./calculateStatPr";
+import type { ExercisePrSummary } from "./calculateStatPr";
 
 export type CurrentPrType = "weight" | "volume" | "bodyweightReps";
 
@@ -17,27 +17,6 @@ export async function getExercisePrSummary(
 			query.eq("userId", userId).eq("globalExerciseId", globalExerciseId),
 		)
 		.first();
-}
-
-export async function getExercisePrSummaries(
-	ctx: DbCtx,
-	userId: string,
-	globalExerciseIds: Id<"globalExercises">[],
-): Promise<Map<Id<"globalExercises">, ExercisePrSummary>> {
-	const uniqueIds = [...new Set(globalExerciseIds)];
-	const summaries = await Promise.all(
-		uniqueIds.map(async (globalExerciseId) => ({
-			globalExerciseId,
-			summary: await getExercisePrSummary(ctx, userId, globalExerciseId),
-		})),
-	);
-
-	return new Map(
-		summaries.map(({ globalExerciseId, summary }) => [
-			globalExerciseId,
-			summary ?? emptyExercisePrSummary(),
-		]),
-	);
 }
 
 export async function upsertExercisePrSummary(

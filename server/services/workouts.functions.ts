@@ -50,7 +50,7 @@ export function validateUniqueWorkoutChildIds(workout: WorkoutForSave) {
 	return ok(null);
 }
 
-export function normalizeWorkoutForUpdate(workout: WorkoutForSave) {
+export function normalizeWorkoutForWrite(workout: WorkoutForSave) {
 	return {
 		...workout,
 		exercises: workout.exercises.map((exercise) => ({

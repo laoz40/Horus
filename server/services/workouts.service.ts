@@ -2,6 +2,7 @@ import "server-only";
 
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import {
+	createWorkoutRows,
 	getWorkoutForEdit,
 	listWorkoutRows,
 	updateWorkoutRows,
@@ -10,7 +11,7 @@ import {
 import {
 	buildWorkoutEditForm,
 	buildWorkoutHistoryPage,
-	normalizeWorkoutForUpdate,
+	normalizeWorkoutForWrite,
 	requireWorkoutForEdit,
 	requireWorkoutForUpdate,
 	validateUniqueWorkoutChildIds,
@@ -26,12 +27,22 @@ export function listWorkouts(query: ListWorkoutsQuery) {
 	return listWorkoutRows(query).map((rows) => buildWorkoutHistoryPage(rows, query));
 }
 
+export function createWorkout(userId: string, workout: WorkoutForSave) {
+	return validateUniqueWorkoutChildIds(workout)
+		.map(() => ({
+			userId,
+			workout: normalizeWorkoutForWrite(workout),
+		}))
+		.asyncAndThen(createWorkoutRows)
+		.map((workoutId) => ({ workoutId, workout }));
+}
+
 export function updateWorkout(workoutId: string, userId: string, workout: WorkoutForSave) {
 	return validateUniqueWorkoutChildIds(workout)
 		.map(() => ({
 			workoutId,
 			userId,
-			workout: normalizeWorkoutForUpdate(workout),
+			workout: normalizeWorkoutForWrite(workout),
 		}))
 		.asyncAndThen((updateInput) => updateWorkoutRows(updateInput, requireWorkoutForUpdate))
 		.map(() => ({ workoutId, workout }));

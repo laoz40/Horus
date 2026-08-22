@@ -1,10 +1,7 @@
 import "server-only";
 
-import { Pool } from "@neondatabase/serverless";
 import { asc, eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/neon-serverless";
-import { env } from "@/env";
-import type { db } from "@/lib/db";
+import { type DatabaseTransaction, runDatabaseTransaction } from "@/lib/db";
 import { workouts, workoutExercises, workoutSets } from "@/lib/db/schema";
 import { tryPromise } from "@/lib/tryPromise";
 import {
@@ -15,10 +12,7 @@ import {
 	summarizePrHistory,
 } from "@/server/services/pr-history.functions";
 
-type TransactionDatabase = ReturnType<typeof drizzle>;
-type ServerlessTx = Parameters<Parameters<TransactionDatabase["transaction"]>[0]>[0];
-type HttpTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
-type Tx = ServerlessTx | HttpTx;
+type Tx = DatabaseTransaction;
 
 async function getWorkoutCount(tx: Tx, userId: string): Promise<number> {
 	const workoutRows = await tx
@@ -94,14 +88,8 @@ export async function rebuildPrHistoryForUserTx(
 }
 
 export function rebuildPrHistoryTx(userId: string) {
-	const pool = new Pool({ connectionString: env.DATABASE_URL });
-	const transactionDatabase = drizzle({ client: pool });
-
 	return tryPromise({
-		try: () =>
-			transactionDatabase
-				.transaction((tx) => rebuildPrHistoryForUserTx(tx, userId))
-				.finally(() => pool.end()),
+		try: () => runDatabaseTransaction((tx) => rebuildPrHistoryForUserTx(tx, userId)),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
 }

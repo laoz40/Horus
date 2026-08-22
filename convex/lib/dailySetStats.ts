@@ -5,15 +5,6 @@ export function getUtcDayKey(timestamp: number): string {
 	return new Date(timestamp).toISOString().slice(0, 10);
 }
 
-export function countCompletedSets(
-	exercises: Array<{ sets: Array<{ completed: boolean }> }>,
-): number {
-	return exercises.reduce(
-		(total, exercise) => total + exercise.sets.filter((set) => set.completed).length,
-		0,
-	);
-}
-
 export async function adjustDailySetStat(
 	ctx: MutationCtx,
 	args: { userId: string; dayKey: string; delta: number },

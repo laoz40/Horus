@@ -1,113 +1,14 @@
 import { paginationOptsValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
-import type { WorkoutFormData } from "../features/workout-form/lib/types";
-import { getExercisePrSummaries } from "./lib/exercisePrs";
-import { calculateWorkoutVolume } from "./lib/calculateStatVolume";
-import {
-	adjustDailySetStat,
-	countCompletedSets,
-	deleteDailySetStatsForUser,
-	getUtcDayKey,
-} from "./lib/dailySetStats";
-import { getWorkoutMuscleGroups } from "./lib/getWorkoutMuscleGroups";
-import { mapExercisesWithGlobalExerciseIds } from "./lib/globalExerciseLookup";
-import { parseAndValidateWorkout } from "./lib/parseAndValidateWorkout";
-import {
-	rebuildExercisePrsForUser,
-	rebuildMissingExercisePrsForUser,
-} from "./lib/rebuildExercisePrs";
+import { adjustDailySetStat, deleteDailySetStatsForUser, getUtcDayKey } from "./lib/dailySetStats";
+import { rebuildExercisePrsForUser } from "./lib/rebuildExercisePrs";
 import {
 	deleteWorkoutChildren,
 	getWorkout,
 	getWorkoutExerciseGlobalIds,
-	insertWorkoutChildrenWithPrs,
 } from "./lib/workoutActions";
 import { errorHandlerWrapper, requireIdentity } from "./lib/server";
 import { mutation, query } from "./_generated/server";
-
-const workoutObject = v.object({
-	durationSeconds: v.union(v.float64(), v.null()),
-	exercises: v.array(
-		v.object({
-			global: v.object({
-				muscleGroups: v.optional(v.array(v.string())),
-				name: v.string(),
-			}),
-			difficulty: v.optional(v.float64()),
-			id: v.string(),
-			notes: v.optional(v.string()),
-			sets: v.array(
-				v.object({
-					completed: v.boolean(),
-					id: v.string(),
-					reps: v.optional(v.float64()),
-					weight: v.optional(v.float64()),
-				}),
-			),
-		}),
-	),
-	name: v.string(),
-});
-
-export const createWorkout = mutation({
-	args: {
-		workout: workoutObject,
-	},
-	handler: async (ctx, args) =>
-		errorHandlerWrapper(async () => {
-			const identity = await requireIdentity(ctx);
-			const workoutData = parseAndValidateWorkout(args.workout as WorkoutFormData);
-
-			const exercisesWithGlobalExerciseIds = await mapExercisesWithGlobalExerciseIds(
-				ctx,
-				workoutData.exercises,
-			);
-			const globalExerciseIds = exercisesWithGlobalExerciseIds.map(
-				(exercise) => exercise.globalExerciseId,
-			);
-			await rebuildMissingExercisePrsForUser(ctx, {
-				userId: identity.subject,
-				globalExerciseIds,
-			});
-			const exercisePrSummaries = await getExercisePrSummaries(
-				ctx,
-				identity.subject,
-				globalExerciseIds,
-			);
-			const muscleGroups = getWorkoutMuscleGroups(workoutData);
-			const totalVolume = calculateWorkoutVolume(workoutData);
-			const setCount = countCompletedSets(exercisesWithGlobalExerciseIds);
-
-			const workoutId = await ctx.db.insert("workouts", {
-				name: workoutData.name,
-				durationSeconds: workoutData.durationSeconds,
-				exerciseCount: exercisesWithGlobalExerciseIds.length,
-				setCount,
-				muscleGroups,
-				totalPrSets: 0,
-				totalVolume,
-				userId: identity.subject,
-			});
-			const workout = await ctx.db.get(workoutId);
-			if (!workout) throw new ConvexError({ code: "NO_WORKOUT_FOUND", workoutId });
-
-			const totalPrSets = await insertWorkoutChildrenWithPrs(ctx, {
-				workoutId,
-				userId: identity.subject,
-				workoutCreationTime: workout._creationTime,
-				exercises: exercisesWithGlobalExerciseIds,
-				exercisePrSummaries,
-			});
-			await ctx.db.patch(workoutId, { totalPrSets });
-			await adjustDailySetStat(ctx, {
-				userId: identity.subject,
-				dayKey: getUtcDayKey(workout._creationTime),
-				delta: setCount,
-			});
-
-			return { workout: workoutData };
-		}),
-});
 
 export const deleteWorkout = mutation({
 	args: {
