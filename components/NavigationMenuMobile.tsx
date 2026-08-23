@@ -1,11 +1,5 @@
 "use client";
 
-import {
-	NavigationMenu,
-	NavigationMenuItem,
-	NavigationMenuLink,
-	NavigationMenuList,
-} from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { Dumbbell, History, Settings, TrendingUp } from "lucide-react";
 import Link from "next/link";
@@ -27,47 +21,47 @@ export default function NavigationMenuMobile() {
 	const pathname = usePathname();
 
 	return (
-		<NavigationMenu
+		<nav
+			aria-label="Main navigation"
 			className={cn(
+				"relative flex max-w-max w-full items-center justify-around",
 				"w-full max-w-full bg-sidebar dark:bg-sidebar ios-safe-area-bottom",
 				// bottom bar
 				"border-t order-2",
 				// left sidebar
 				"md:order-first md:border-t-0 md:border-r md:w-16 md:h-full md:flex-col",
 			)}>
-			<NavigationMenuList
+			<ul
 				className={cn(
-					"w-full",
+					"flex flex-1 list-none items-center justify-around gap-1 w-full",
 					// left sidebar
 					"md:flex-col md:justify-center md:h-full md:gap-2",
 				)}>
 				{navigationMenuItems.map((item) => {
 					const active = isRouteActive(pathname, item.href);
 					return (
-						<NavigationMenuItem
+						<li
 							key={item.title}
-							className="flex-1 md:flex-initial md:w-full">
-							<NavigationMenuLink
+							className="relative flex-1 md:flex-initial md:w-full">
+							<Link
+								href={item.href}
+								aria-current={active ? "page" : undefined}
 								className={cn(
 									"flex flex-col h-auto items-center justify-center w-full rounded-none px-3 py-2.5",
-									"bg-transparent! text-muted-foreground text-sm",
+									"bg-transparent! text-muted-foreground text-xs",
 									"transition-colors duration-150",
 									"hover:bg-transparent hover:text-primary",
 									"focus:bg-transparent focus:text-primary",
 									"focus-visible:ring-0 focus-visible:outline-none",
 									active && "text-primary",
-								)}
-								active={active}
-								asChild>
-								<Link href={item.href}>
-									<item.icon className={cn("mb-1 h-6! w-6! text-current")} />
-									{item.title}
-								</Link>
-							</NavigationMenuLink>
-						</NavigationMenuItem>
+								)}>
+								<item.icon className={cn("mb-1 size-6 text-current")} />
+								{item.title}
+							</Link>
+						</li>
 					);
 				})}
-			</NavigationMenuList>
-		</NavigationMenu>
+			</ul>
+		</nav>
 	);
 }

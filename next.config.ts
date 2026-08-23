@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-	allowedDevOrigins: ["*.trycloudflare.com"],
+	allowedDevOrigins: ["*.trycloudflare.com", "**.ts.net"],
 	reactCompiler: true,
 	typescript: {
 		ignoreBuildErrors: true,
