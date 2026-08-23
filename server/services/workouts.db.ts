@@ -13,7 +13,11 @@ import {
 	workoutSets,
 } from "@/lib/db/schema";
 import { tryPromise } from "@/lib/tryPromise";
-import { rebuildPrHistoryForUserTx } from "@/server/services/pr-history.db";
+import {
+	calculateAppendedPrHistoryForUserTx,
+	rebuildPrHistoryForUserTx,
+} from "@/server/services/pr-history.db";
+import { buildPrTotalsByWorkoutId, type PrSetUpdate } from "@/server/services/pr-history.functions";
 
 type Tx = DatabaseTransaction;
 
@@ -342,19 +346,53 @@ async function insertWorkoutExerciseRows(
 async function insertWorkoutSetRows(
 	tx: Tx,
 	exercisesForWorkout: WorkoutExerciseWithDatabaseId[],
+	prStatusesBySetId: ReadonlyMap<string, PrSetUpdate> = new Map(),
 ): Promise<void> {
 	await tx.insert(workoutSets).values(
 		exercisesForWorkout.flatMap((exercise) =>
-			exercise.sets.map((set, position) => ({
-				id: set.id,
-				workoutExerciseId: exercise.id,
-				position,
-				weight: set.weight,
-				reps: set.reps,
-				completed: set.completed,
-			})),
+			exercise.sets.map((set, position) => {
+				const prStatus = prStatusesBySetId.get(set.id);
+
+				return {
+					id: set.id,
+					workoutExerciseId: exercise.id,
+					position,
+					weight: set.weight,
+					reps: set.reps,
+					completed: set.completed,
+					isWeightPr: prStatus?.isWeightPr ?? false,
+					isVolumePr: prStatus?.isVolumePr ?? false,
+					isBodyweightRepsPr: prStatus?.isBodyweightRepsPr ?? false,
+				};
+			}),
 		),
 	);
+}
+
+function buildNewWorkoutPrSets(
+	workoutId: string,
+	exercisesForWorkout: WorkoutExerciseWithDatabaseId[],
+) {
+	return exercisesForWorkout.flatMap((exercise) =>
+		exercise.sets.map((set) => ({
+			setId: set.id,
+			workoutId,
+			exerciseId: exercise.exerciseId,
+			weight: set.weight,
+			reps: set.reps,
+			completed: set.completed,
+		})),
+	);
+}
+
+async function updateWorkoutPrTotal(
+	tx: Tx,
+	workoutId: string,
+	prStatuses: PrSetUpdate[],
+): Promise<void> {
+	const totalPrSets = buildPrTotalsByWorkoutId(prStatuses).get(workoutId) ?? 0;
+
+	await tx.update(workouts).set({ totalPrSets }).where(eq(workouts.id, workoutId));
 }
 
 export function createWorkoutRows(createInput: WorkoutWriteInput) {
@@ -363,9 +401,17 @@ export function createWorkoutRows(createInput: WorkoutWriteInput) {
 			runDatabaseTransaction(async (tx) => {
 				const workoutId = await insertWorkoutRow(tx, createInput);
 				const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(tx, createInput);
+				const newWorkoutSets = buildNewWorkoutPrSets(workoutId, exercisesWithDatabaseIds);
+				const prStatuses = await calculateAppendedPrHistoryForUserTx(
+					tx,
+					createInput.userId,
+					newWorkoutSets,
+				);
+				const prStatusesBySetId = new Map(prStatuses.map((status) => [status.setId, status]));
+
 				await insertWorkoutExerciseRows(tx, workoutId, exercisesWithDatabaseIds);
-				await insertWorkoutSetRows(tx, exercisesWithDatabaseIds);
-				await rebuildPrHistoryForUserTx(tx, createInput.userId);
+				await insertWorkoutSetRows(tx, exercisesWithDatabaseIds, prStatusesBySetId);
+				await updateWorkoutPrTotal(tx, workoutId, prStatuses);
 
 				return workoutId;
 			}),

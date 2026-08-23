@@ -35,6 +35,8 @@ export interface PrSetUpdate {
 	isBodyweightRepsPr: boolean;
 }
 
+export type ExercisePrsByExerciseId = ReadonlyMap<string, ExercisePrs>;
+
 export type PrHistoryRebuildSummary = {
 	workoutCount: number;
 	workoutsWithPrs: number;
@@ -114,8 +116,11 @@ export const summarizePrHistory = (
 	).length,
 });
 
-export const calculatePrHistory = (sets: PrHistorySet[]): PrSetUpdate[] => {
-	const recordsByExerciseId = new Map<string, ExercisePrs>();
+export const calculatePrHistory = (
+	sets: PrHistorySet[],
+	initialRecordsByExerciseId: ExercisePrsByExerciseId = new Map(),
+): PrSetUpdate[] => {
+	const recordsByExerciseId = new Map(initialRecordsByExerciseId);
 	const prStatuses: PrSetUpdate[] = [];
 
 	for (const set of sets) {

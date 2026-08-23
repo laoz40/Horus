@@ -1,18 +1,68 @@
 import "server-only";
 
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { type DatabaseTransaction, runDatabaseTransaction } from "@/lib/db";
 import { workouts, workoutExercises, workoutSets } from "@/lib/db/schema";
 import { tryPromise } from "@/lib/tryPromise";
 import {
 	buildPrTotalsByWorkoutId,
 	calculatePrHistory,
+	type ExercisePrs,
+	type PrHistorySet,
 	type PrHistoryRebuildSummary,
 	type PrSetUpdate,
 	summarizePrHistory,
 } from "@/server/services/pr-history.functions";
 
 type Tx = DatabaseTransaction;
+
+type ExercisePrRow = ExercisePrs & { exerciseId: string };
+
+function getExercisePrRows(tx: Tx, userId: string, exerciseIds: string[]) {
+	return tx
+		.select({
+			exerciseId: workoutExercises.exerciseId,
+			hasHistory: sql<boolean>`count(*) filter (where ${workoutSets.completed}) > 0`,
+			highestWeight: sql<number>`coalesce(
+				max(${workoutSets.weight}) filter (
+					where ${workoutSets.completed} and ${workoutSets.weight} > 0
+				),
+				0
+			)::double precision`,
+			highestVolume: sql<number>`coalesce(
+				max(${workoutSets.weight} * ${workoutSets.reps}) filter (
+					where ${workoutSets.completed} and ${workoutSets.weight} > 0
+				),
+				0
+			)::double precision`,
+			highestBodyweightReps: sql<number>`coalesce(
+				max(${workoutSets.reps}) filter (
+					where ${workoutSets.completed} and ${workoutSets.weight} = 0
+				),
+				0
+			)::double precision`,
+		})
+		.from(workoutSets)
+		.innerJoin(workoutExercises, eq(workoutExercises.id, workoutSets.workoutExerciseId))
+		.innerJoin(workouts, eq(workouts.id, workoutExercises.workoutId))
+		.where(and(eq(workouts.userId, userId), inArray(workoutExercises.exerciseId, exerciseIds)))
+		.groupBy(workoutExercises.exerciseId);
+}
+
+export async function calculateAppendedPrHistoryForUserTx(
+	tx: Tx,
+	userId: string,
+	sets: PrHistorySet[],
+): Promise<PrSetUpdate[]> {
+	const exerciseIds = [...new Set(sets.map((set) => set.exerciseId))];
+	const previousPrRows: ExercisePrRow[] =
+		exerciseIds.length === 0 ? [] : await getExercisePrRows(tx, userId, exerciseIds);
+	const previousPrsByExerciseId = new Map(
+		previousPrRows.map(({ exerciseId, ...prs }) => [exerciseId, prs]),
+	);
+
+	return calculatePrHistory(sets, previousPrsByExerciseId);
+}
 
 async function getWorkoutCount(tx: Tx, userId: string): Promise<number> {
 	const workoutRows = await tx
