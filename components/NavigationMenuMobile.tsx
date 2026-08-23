@@ -28,7 +28,6 @@ export default function NavigationMenuMobile() {
 
 	return (
 		<NavigationMenu
-			style={{ viewTransitionName: "site-nav" }}
 			className={cn(
 				"w-full max-w-full bg-sidebar dark:bg-sidebar ios-safe-area-bottom",
 				// bottom bar
@@ -60,9 +59,7 @@ export default function NavigationMenuMobile() {
 								)}
 								active={active}
 								asChild>
-								<Link
-									href={item.href}
-									transitionTypes={["nav-route"]}>
+								<Link href={item.href}>
 									<item.icon className={cn("mb-1 h-6! w-6! text-current")} />
 									{item.title}
 								</Link>
