@@ -27,6 +27,7 @@ import {
 	selectIsRecentSetsLoading,
 	selectRecentSetsError,
 	selectRecentCompletedSets,
+	selectCreateWorkoutDraft,
 	setRecentSetsDialogOpen,
 	setScrollTarget,
 	useWorkoutFormUiStore,
@@ -54,6 +55,7 @@ export default function WorkoutForm({
 	workoutId,
 	missingGlobalExercisesCount = 0,
 }: WorkoutFormProps): ReactElement {
+	const createWorkoutDraft = useWorkoutFormUiStore(selectCreateWorkoutDraft);
 	const isEditing = useWorkoutFormUiStore((state) => state.isEditing);
 	const startedAtMs = useWorkoutFormUiStore((state) => state.startedAtMs);
 	const isRecentSetsDialogOpen = useWorkoutFormUiStore(selectIsRecentSetsDialogOpen);
@@ -84,12 +86,14 @@ export default function WorkoutForm({
 		name: "exercises",
 		control: methods.control,
 	});
-	const initialDurationSeconds = initialData?.durationSeconds ?? 0;
+	const restoredInitialData =
+		initialData ?? (workoutId ? undefined : (createWorkoutDraft ?? undefined));
+	const initialDurationSeconds = restoredInitialData?.durationSeconds ?? 0;
 
 	useEffect(() => {
-		if (!initialData) return;
-		reset(initialData);
-	}, [initialData, reset]);
+		if (!restoredInitialData) return;
+		reset(restoredInitialData);
+	}, [reset, restoredInitialData]);
 
 	useEffect(() => {
 		initializeWorkoutSession(initialDurationSeconds);

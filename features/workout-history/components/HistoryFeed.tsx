@@ -1,6 +1,6 @@
 "use client";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useIsMutating } from "@tanstack/react-query";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ export default function HistoryFeed({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 }
 
 function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
+	const isCreatingWorkout = useIsMutating({ mutationKey: orpc.workouts.create.mutationKey() }) > 0;
 	const historyQuery = useInfiniteQuery(
 		orpc.workouts.list.infiniteOptions({
 			input: (offset: number) => ({ limit: WORKOUTS_PER_PAGE, offset }),
@@ -39,6 +40,10 @@ function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 		}),
 	);
 	const workouts = historyQuery.data?.pages.flatMap((page) => page.items) ?? [];
+
+	if (isCreatingWorkout) {
+		return <WorkoutCardSkeletonList count={WORKOUTS_PER_PAGE} />;
+	}
 
 	return (
 		<>

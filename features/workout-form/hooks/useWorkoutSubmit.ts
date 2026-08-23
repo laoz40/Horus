@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { animateCreateWorkoutExit } from "@/features/workout-form/lib/animateCreateWorkoutExit";
 import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { parseWorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
+import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
 import { orpc } from "@/lib/orpc/client";
 import { showErrorToast, showWorkoutSavedToast } from "@/lib/toastMessages";
 
@@ -32,7 +33,7 @@ export const useWorkoutSubmit = ({
 	const router = useRouter();
 	const queryClient = useQueryClient();
 
-	const finishWorkoutSave = (workoutName: string) => {
+	const finishWorkoutUpdate = (workoutName: string) => {
 		animateCreateWorkoutExit(() => {
 			router.push("/workouts");
 		});
@@ -46,21 +47,25 @@ export const useWorkoutSubmit = ({
 					queryKey: orpc.workouts.list.key({ type: "infinite" }),
 				});
 
-				finishWorkoutSave(result.workout.name);
+				setCreateWorkoutDraft(null);
+				showWorkoutSavedToast(result.workout.name);
 			},
 			onError: (error) => {
 				if (!isDefinedError(error)) {
 					showErrorToast("Failed to save workout.");
 					console.error(error);
+					router.push("/workouts/new");
 					return;
 				}
 
 				switch (error.code) {
 					case "INVALID_INPUT":
 						showErrorToast("Invalid workout data.");
+						router.push("/workouts/new");
 						return;
 					case "DATABASE_ERROR":
 						showErrorToast("Couldn't access the database. Please try again.");
+						router.push("/workouts/new");
 						return;
 					case "UNAUTHORIZED":
 						showErrorToast("You must be signed in to save workouts.");
@@ -91,7 +96,7 @@ export const useWorkoutSubmit = ({
 					}),
 				]);
 
-				finishWorkoutSave(result.workout.name);
+				finishWorkoutUpdate(result.workout.name);
 			},
 			onError: (error) => {
 				if (!isDefinedError(error)) {
@@ -136,7 +141,9 @@ export const useWorkoutSubmit = ({
 
 		switch (mode.type) {
 			case "create":
+				setCreateWorkoutDraft(workoutResult.data);
 				createWorkout.mutate({ workout: workoutResult.data });
+				router.push("/workouts");
 				return;
 			case "update":
 				updateWorkout.mutate({
