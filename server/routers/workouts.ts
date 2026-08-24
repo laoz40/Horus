@@ -5,6 +5,7 @@ import { WorkoutForSaveSchema } from "@/features/workout-form/lib/validateWorkou
 import { protectedProcedure } from "@/server/procedures";
 import {
 	createWorkout,
+	deleteWorkout,
 	getWorkoutById,
 	listWorkouts,
 	updateWorkout,
@@ -52,6 +53,15 @@ const workoutSaveOutputSchema = z
 	.object({
 		workoutId: z.uuid(),
 		workout: WorkoutForSaveSchema,
+	})
+	.strict();
+
+const deleteWorkoutInputSchema = z.object({ workoutId: z.uuid() }).strict();
+
+const deleteWorkoutOutputSchema = z
+	.object({
+		deletedWorkoutId: z.uuid(),
+		deletedWorkoutName: z.string(),
 	})
 	.strict();
 
@@ -126,6 +136,42 @@ export const workoutsRouter = {
 			},
 		);
 	}),
+	delete: protectedProcedure
+		.errors({
+			NOT_FOUND: {
+				message: "The requested workout was not found",
+			},
+			DATABASE_ERROR: {
+				message: "The database operation failed",
+			},
+		})
+		.input(deleteWorkoutInputSchema)
+		.output(deleteWorkoutOutputSchema)
+		.handler(async ({ input, context, errors }) => {
+			const result = await deleteWorkout(input.workoutId, context.userId);
+
+			return result.match(
+				(workout) => ({
+					deletedWorkoutId: workout.id,
+					deletedWorkoutName: workout.name,
+				}),
+				(error) => {
+					const reason = error.reason;
+
+					switch (reason) {
+						case "NOT_FOUND":
+							throw errors.NOT_FOUND();
+						case "DATABASE_ERROR":
+							console.error("Failed to delete workout", { cause: error.cause });
+							throw errors.DATABASE_ERROR();
+						default: {
+							const exhaustiveReason: never = reason;
+							throw exhaustiveReason;
+						}
+					}
+				},
+			);
+		}),
 	update: updateWorkoutProcedure.handler(async ({ input, context, errors }) => {
 		const result = await updateWorkout(input.workoutId, context.userId, input.workout);
 

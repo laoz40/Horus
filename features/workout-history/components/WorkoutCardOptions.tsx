@@ -1,3 +1,7 @@
+"use client";
+
+import { isDefinedError } from "@orpc/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import Link from "next/link";
 import {
@@ -11,6 +15,9 @@ import {
 import { EllipsisVertical } from "lucide-react";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { Button } from "@/components/ui/button";
+import { markWorkoutDeleted } from "@/features/workout-history/stores/historyUiStore";
+import { orpc } from "@/lib/orpc/client";
+import { showErrorToast, showWorkoutDeletedToast } from "@/lib/toastMessages";
 
 interface WorkoutCardOptionsProps {
 	workoutId: string;
@@ -21,6 +28,42 @@ export default function WorkoutCardOptions({
 	workoutId,
 	workoutName,
 }: WorkoutCardOptionsProps): ReactElement {
+	const queryClient = useQueryClient();
+	const deleteWorkout = useMutation(
+		orpc.workouts.delete.mutationOptions({
+			onSuccess: async (result) => {
+				markWorkoutDeleted(result.deletedWorkoutId);
+				showWorkoutDeletedToast(result.deletedWorkoutName);
+				await queryClient.invalidateQueries({
+					queryKey: orpc.workouts.list.key({ type: "infinite" }),
+				});
+			},
+			onError: (error) => {
+				if (!isDefinedError(error)) {
+					showErrorToast("Failed to delete workout.");
+					console.error(error);
+					return;
+				}
+
+				switch (error.code) {
+					case "NOT_FOUND":
+						showErrorToast("Couldn't find workout in the database.");
+						return;
+					case "DATABASE_ERROR":
+						showErrorToast("Couldn't access the database. Please try again.");
+						return;
+					case "UNAUTHORIZED":
+						showErrorToast("You must be signed in to delete workouts.");
+						return;
+					default: {
+						const exhaustiveError: never = error;
+						return exhaustiveError;
+					}
+				}
+			},
+		}),
+	);
+
 	return (
 		<>
 			<DropdownMenu>
@@ -50,7 +93,7 @@ export default function WorkoutCardOptions({
 						<AlertDialogDestructive
 							title="Delete workout?"
 							description={`This will permanently delete workout: ${workoutName}`}
-							handleDelete={() => undefined}>
+							handleDelete={() => deleteWorkout.mutate({ workoutId })}>
 							<DropdownMenuItem
 								className="h-10"
 								variant="destructive"

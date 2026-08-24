@@ -10,7 +10,7 @@ import type {
 	WorkoutHistoryRow,
 } from "@/server/services/workouts.db";
 
-export function requireWorkoutForEdit(workout: WorkoutForEdit | null) {
+export function requireWorkout<T>(workout: T | null) {
 	if (workout === null) {
 		return err({ reason: "NOT_FOUND" as const });
 	}

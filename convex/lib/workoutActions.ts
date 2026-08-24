@@ -17,18 +17,6 @@ export async function getWorkout(
 	return workout;
 }
 
-export async function getWorkoutExerciseGlobalIds(
-	ctx: WorkoutCtx,
-	workoutId: Id<"workouts">,
-): Promise<Id<"globalExercises">[]> {
-	const workoutExercises = await ctx.db
-		.query("workoutExercises")
-		.withIndex("by_workoutId", (query) => query.eq("workoutId", workoutId))
-		.collect();
-
-	return workoutExercises.map((exercise) => exercise.globalExerciseId);
-}
-
 export async function deleteRowsInBatches(
 	ctx: MutationCtx,
 	rowIds: Array<Id<"workoutSets"> | Id<"workoutExercises">>,

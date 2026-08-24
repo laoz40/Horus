@@ -3,6 +3,7 @@ import "server-only";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import {
 	createWorkoutRows,
+	deleteWorkoutRow,
 	getWorkoutForEdit,
 	listWorkoutRows,
 	updateWorkoutRows,
@@ -12,19 +13,21 @@ import {
 	buildWorkoutEditForm,
 	buildWorkoutHistoryPage,
 	normalizeWorkoutForWrite,
-	requireWorkoutForEdit,
+	requireWorkout,
 	requireWorkoutForUpdate,
 	validateUniqueWorkoutChildIds,
 } from "@/server/services/workouts.functions";
 
 export function getWorkoutById(workoutId: string, userId: string) {
-	return getWorkoutForEdit(workoutId, userId)
-		.andThen(requireWorkoutForEdit)
-		.map(buildWorkoutEditForm);
+	return getWorkoutForEdit(workoutId, userId).andThen(requireWorkout).map(buildWorkoutEditForm);
 }
 
 export function listWorkouts(query: ListWorkoutsQuery) {
 	return listWorkoutRows(query).map((rows) => buildWorkoutHistoryPage(rows, query));
+}
+
+export function deleteWorkout(workoutId: string, userId: string) {
+	return deleteWorkoutRow(workoutId, userId).andThen(requireWorkout);
 }
 
 export function createWorkout(userId: string, workout: WorkoutForSave) {

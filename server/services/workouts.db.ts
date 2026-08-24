@@ -82,6 +82,11 @@ export type WorkoutHistoryRow = {
 	muscleGroups: string[];
 };
 
+export type DeletedWorkout = {
+	id: string;
+	name: string;
+};
+
 function getWorkout(workoutId: string, userId: string) {
 	return db
 		.select({
@@ -444,6 +449,28 @@ export function updateWorkoutRows(
 			}),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	}).andThen((result) => result);
+}
+
+export function deleteWorkoutRow(workoutId: string, userId: string) {
+	return tryPromise({
+		try: () =>
+			runDatabaseTransaction(async (tx): Promise<DeletedWorkout | null> => {
+				const [deletedWorkout] = await tx
+					.delete(workouts)
+					.where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)))
+					.returning({ id: workouts.id, name: workouts.name });
+
+				if (!deletedWorkout) {
+					return null;
+				}
+
+				// Deleting an older workout can change every later historical PR for its exercises.
+				await rebuildPrHistoryForUserTx(tx, userId);
+
+				return deletedWorkout;
+			}),
+		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	});
 }
 
 export function getWorkoutForEdit(workoutId: string, userId: string) {

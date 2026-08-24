@@ -1,44 +1,9 @@
 import { paginationOptsValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
-import { adjustDailySetStat, deleteDailySetStatsForUser, getUtcDayKey } from "./lib/dailySetStats";
-import { rebuildExercisePrsForUser } from "./lib/rebuildExercisePrs";
-import {
-	deleteWorkoutChildren,
-	getWorkout,
-	getWorkoutExerciseGlobalIds,
-} from "./lib/workoutActions";
+import { deleteDailySetStatsForUser } from "./lib/dailySetStats";
+import { deleteWorkoutChildren, getWorkout } from "./lib/workoutActions";
 import { errorHandlerWrapper, requireIdentity } from "./lib/server";
 import { mutation, query } from "./_generated/server";
-
-export const deleteWorkout = mutation({
-	args: {
-		workoutId: v.id("workouts"),
-	},
-	handler: async (ctx, args) =>
-		errorHandlerWrapper(async () => {
-			const identity = await requireIdentity(ctx);
-			const workout = await getWorkout(ctx, args.workoutId, identity.subject);
-			const affectedGlobalExerciseIds = await getWorkoutExerciseGlobalIds(ctx, args.workoutId);
-
-			await adjustDailySetStat(ctx, {
-				userId: identity.subject,
-				dayKey: getUtcDayKey(workout._creationTime),
-				delta: -(workout.setCount ?? 0),
-			});
-			await deleteWorkoutChildren(ctx, args.workoutId);
-			await ctx.db.delete(args.workoutId);
-			await rebuildExercisePrsForUser(ctx, {
-				userId: identity.subject,
-				globalExerciseIds: affectedGlobalExerciseIds,
-			});
-
-			return {
-				success: true,
-				deletedWorkoutId: args.workoutId,
-				deletedWorkoutName: workout.name,
-			};
-		}),
-});
 
 export const deleteAllWorkouts = mutation({
 	args: {},
