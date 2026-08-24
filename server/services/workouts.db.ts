@@ -1,9 +1,8 @@
 import "server-only";
 
 import { and, asc, countDistinct, desc, eq, sql } from "drizzle-orm";
-import type { Result } from "neverthrow";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
-import { db, type DatabaseTransaction, runDatabaseTransaction } from "@/lib/db";
+import { db, type DatabaseTransaction } from "@/lib/db";
 import {
 	exerciseMuscleGroups,
 	exercises,
@@ -13,11 +12,7 @@ import {
 	workoutSets,
 } from "@/lib/db/schema";
 import { tryPromise } from "@/lib/tryPromise";
-import {
-	calculateAppendedPrHistoryForUserTx,
-	rebuildPrHistoryForUserTx,
-} from "@/server/services/pr-history.db";
-import { buildPrTotalsByWorkoutId, type PrSetUpdate } from "@/server/services/pr-history.functions";
+import type { PrSetUpdate } from "@/server/services/pr-history.functions";
 
 type Tx = DatabaseTransaction;
 
@@ -30,16 +25,16 @@ type PreparedWorkoutWriteExercise = Omit<WorkoutWriteExercise, "global"> & {
 	};
 };
 
-type WorkoutExerciseWithDatabaseId = PreparedWorkoutWriteExercise & { exerciseId: string };
+export type WorkoutExerciseWithDatabaseId = PreparedWorkoutWriteExercise & { exerciseId: string };
 
-type WorkoutWriteInput = {
+export type WorkoutWriteInput = {
 	userId: string;
 	workout: Omit<WorkoutForSave, "exercises"> & {
 		exercises: PreparedWorkoutWriteExercise[];
 	};
 };
 
-type WorkoutUpdateInput = WorkoutWriteInput & {
+export type WorkoutUpdateInput = WorkoutWriteInput & {
 	workoutId: string;
 };
 
@@ -48,8 +43,6 @@ export type ListWorkoutsQuery = {
 	limit: number;
 	offset: number;
 };
-
-type RequireWorkoutForUpdate = (workoutExists: boolean) => Result<null, { reason: "NOT_FOUND" }>;
 
 export type WorkoutForEdit = {
 	id: string;
@@ -87,7 +80,7 @@ export type DeletedWorkout = {
 	name: string;
 };
 
-function getWorkout(workoutId: string, userId: string) {
+function getWorkoutDetails(workoutId: string, userId: string) {
 	return db
 		.select({
 			id: workouts.id,
@@ -140,14 +133,22 @@ function getWorkoutSetRows(workoutId: string) {
 		.orderBy(asc(workoutSets.position));
 }
 
-function getWorkoutForUpdate(tx: Tx, workoutId: string, userId: string) {
+export function getWorkout(tx: Tx, workoutId: string, userId: string) {
 	return tx
-		.select({ id: workouts.id })
+		.select({ id: workouts.id, name: workouts.name, createdAt: workouts.createdAt })
 		.from(workouts)
 		.where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)))
 		.limit(1)
 		.for("update")
 		.then(([workout]) => workout);
+}
+
+export function getWorkoutExerciseIds(tx: Tx, workoutId: string): Promise<string[]> {
+	return tx
+		.selectDistinct({ exerciseId: workoutExercises.exerciseId })
+		.from(workoutExercises)
+		.where(eq(workoutExercises.workoutId, workoutId))
+		.then((rows) => rows.map((row) => row.exerciseId));
 }
 
 function findSubmittedExerciseId(
@@ -280,7 +281,7 @@ async function findOrCreateExerciseId(
 	return existingExerciseId ?? createOrGetExercise(tx, userId, exercise);
 }
 
-async function findOrCreateWorkoutExercises(
+export async function findOrCreateWorkoutExercises(
 	tx: Tx,
 	writeInput: WorkoutWriteInput,
 ): Promise<WorkoutExerciseWithDatabaseId[]> {
@@ -299,7 +300,7 @@ async function findOrCreateWorkoutExercises(
 	return exercisesWithDatabaseIds;
 }
 
-async function insertWorkoutRow(tx: Tx, writeInput: WorkoutWriteInput): Promise<string> {
+export async function insertWorkoutRow(tx: Tx, writeInput: WorkoutWriteInput): Promise<string> {
 	const [workout] = await tx
 		.insert(workouts)
 		.values({
@@ -316,7 +317,7 @@ async function insertWorkoutRow(tx: Tx, writeInput: WorkoutWriteInput): Promise<
 	return workout.id;
 }
 
-async function updateWorkoutFields(tx: Tx, updateInput: WorkoutUpdateInput): Promise<void> {
+export async function updateWorkoutFields(tx: Tx, updateInput: WorkoutUpdateInput): Promise<void> {
 	await tx
 		.update(workouts)
 		.set({
@@ -327,11 +328,11 @@ async function updateWorkoutFields(tx: Tx, updateInput: WorkoutUpdateInput): Pro
 		.where(and(eq(workouts.id, updateInput.workoutId), eq(workouts.userId, updateInput.userId)));
 }
 
-async function deleteWorkoutChildren(tx: Tx, workoutId: string): Promise<void> {
+export async function deleteWorkoutChildren(tx: Tx, workoutId: string): Promise<void> {
 	await tx.delete(workoutExercises).where(eq(workoutExercises.workoutId, workoutId));
 }
 
-async function insertWorkoutExerciseRows(
+export async function insertWorkoutExerciseRows(
 	tx: Tx,
 	workoutId: string,
 	exercisesForWorkout: WorkoutExerciseWithDatabaseId[],
@@ -348,7 +349,7 @@ async function insertWorkoutExerciseRows(
 	);
 }
 
-async function insertWorkoutSetRows(
+export async function insertWorkoutSetRows(
 	tx: Tx,
 	exercisesForWorkout: WorkoutExerciseWithDatabaseId[],
 	prStatusesBySetId: ReadonlyMap<string, PrSetUpdate> = new Map(),
@@ -374,109 +375,22 @@ async function insertWorkoutSetRows(
 	);
 }
 
-function buildNewWorkoutPrSets(
-	workoutId: string,
-	exercisesForWorkout: WorkoutExerciseWithDatabaseId[],
-) {
-	return exercisesForWorkout.flatMap((exercise) =>
-		exercise.sets.map((set) => ({
-			setId: set.id,
-			workoutId,
-			exerciseId: exercise.exerciseId,
-			weight: set.weight,
-			reps: set.reps,
-			completed: set.completed,
-		})),
-	);
-}
-
-async function updateWorkoutPrTotal(
+export async function updateWorkoutPrTotal(
 	tx: Tx,
 	workoutId: string,
-	prStatuses: PrSetUpdate[],
+	totalPrSets: number,
 ): Promise<void> {
-	const totalPrSets = buildPrTotalsByWorkoutId(prStatuses).get(workoutId) ?? 0;
-
 	await tx.update(workouts).set({ totalPrSets }).where(eq(workouts.id, workoutId));
 }
 
-export function createWorkoutRows(createInput: WorkoutWriteInput) {
-	return tryPromise({
-		try: () =>
-			runDatabaseTransaction(async (tx) => {
-				const workoutId = await insertWorkoutRow(tx, createInput);
-				const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(tx, createInput);
-				const newWorkoutSets = buildNewWorkoutPrSets(workoutId, exercisesWithDatabaseIds);
-				const prStatuses = await calculateAppendedPrHistoryForUserTx(
-					tx,
-					createInput.userId,
-					newWorkoutSets,
-				);
-				const prStatusesBySetId = new Map(prStatuses.map((status) => [status.setId, status]));
-
-				await insertWorkoutExerciseRows(tx, workoutId, exercisesWithDatabaseIds);
-				await insertWorkoutSetRows(tx, exercisesWithDatabaseIds, prStatusesBySetId);
-				await updateWorkoutPrTotal(tx, workoutId, prStatuses);
-
-				return workoutId;
-			}),
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
-	});
-}
-
-export function updateWorkoutRows(
-	updateInput: WorkoutUpdateInput,
-	requireWorkout: RequireWorkoutForUpdate,
-) {
-	return tryPromise({
-		try: () =>
-			runDatabaseTransaction(async (tx) => {
-				const workout = await getWorkoutForUpdate(tx, updateInput.workoutId, updateInput.userId);
-				const workoutResult = requireWorkout(workout !== undefined);
-
-				if (workoutResult.isErr()) {
-					return workoutResult;
-				}
-
-				const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(tx, updateInput);
-				await updateWorkoutFields(tx, updateInput);
-				await deleteWorkoutChildren(tx, updateInput.workoutId);
-				await insertWorkoutExerciseRows(tx, updateInput.workoutId, exercisesWithDatabaseIds);
-				await insertWorkoutSetRows(tx, exercisesWithDatabaseIds);
-				await rebuildPrHistoryForUserTx(tx, updateInput.userId);
-
-				return workoutResult;
-			}),
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
-	}).andThen((result) => result);
-}
-
-export function deleteWorkoutRow(workoutId: string, userId: string) {
-	return tryPromise({
-		try: () =>
-			runDatabaseTransaction(async (tx): Promise<DeletedWorkout | null> => {
-				const [deletedWorkout] = await tx
-					.delete(workouts)
-					.where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)))
-					.returning({ id: workouts.id, name: workouts.name });
-
-				if (!deletedWorkout) {
-					return null;
-				}
-
-				// Deleting an older workout can change every later historical PR for its exercises.
-				await rebuildPrHistoryForUserTx(tx, userId);
-
-				return deletedWorkout;
-			}),
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
-	});
+export async function deleteWorkoutById(tx: Tx, workoutId: string, userId: string): Promise<void> {
+	await tx.delete(workouts).where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)));
 }
 
 export function getWorkoutForEdit(workoutId: string, userId: string) {
 	return tryPromise({
 		try: async (): Promise<WorkoutForEdit | null> => {
-			const workout = await getWorkout(workoutId, userId);
+			const workout = await getWorkoutDetails(workoutId, userId);
 
 			if (!workout) {
 				return null;

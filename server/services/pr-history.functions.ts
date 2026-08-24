@@ -7,6 +7,13 @@ export interface ExercisePrs {
 	highestBodyweightReps: number;
 }
 
+export type ExercisePrRow = ExercisePrs & { exerciseId: string };
+
+export type PrHistoryCutoff = {
+	workoutId: string;
+	createdAt: Date;
+};
+
 interface PrSet {
 	weight: number;
 	reps: number;
@@ -104,6 +111,13 @@ export const buildPrTotalsByWorkoutId = (prStatuses: PrSetUpdate[]) => {
 	return totalsByWorkoutId;
 };
 
+export function buildAffectedExerciseIds(
+	previousExerciseIds: string[],
+	currentExerciseIds: string[],
+) {
+	return [...new Set([...previousExerciseIds, ...currentExerciseIds])];
+}
+
 export const summarizePrHistory = (
 	workoutCount: number,
 	prStatuses: PrSetUpdate[],
@@ -141,3 +155,15 @@ export const calculatePrHistory = (
 
 	return prStatuses;
 };
+
+export function calculateAffectedPrHistory(sets: PrHistorySet[], previousPrRows: ExercisePrRow[]) {
+	const previousPrsByExerciseId = new Map(
+		previousPrRows.map(({ exerciseId, ...prs }) => [exerciseId, prs]),
+	);
+	const prStatuses = calculatePrHistory(sets, previousPrsByExerciseId);
+
+	return {
+		prStatuses,
+		affectedWorkoutIds: [...new Set(prStatuses.map((status) => status.workoutId))],
+	};
+}

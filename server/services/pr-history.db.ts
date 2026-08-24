@@ -1,24 +1,32 @@
 import "server-only";
 
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
-import { type DatabaseTransaction, runDatabaseTransaction } from "@/lib/db";
+import { and, asc, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
+import { type DatabaseTransaction } from "@/lib/db";
 import { workouts, workoutExercises, workoutSets } from "@/lib/db/schema";
-import { tryPromise } from "@/lib/tryPromise";
-import {
-	buildPrTotalsByWorkoutId,
-	calculatePrHistory,
-	type ExercisePrs,
-	type PrHistorySet,
-	type PrHistoryRebuildSummary,
-	type PrSetUpdate,
-	summarizePrHistory,
-} from "@/server/services/pr-history.functions";
+import { type PrHistoryCutoff, type PrSetUpdate } from "@/server/services/pr-history.functions";
 
 type Tx = DatabaseTransaction;
 
-type ExercisePrRow = ExercisePrs & { exerciseId: string };
+function isBeforeCutoff(cutoff: PrHistoryCutoff) {
+	return or(
+		lt(workouts.createdAt, cutoff.createdAt),
+		and(eq(workouts.createdAt, cutoff.createdAt), lt(workouts.id, cutoff.workoutId)),
+	);
+}
 
-function getExercisePrRows(tx: Tx, userId: string, exerciseIds: string[]) {
+function isAtOrAfterCutoff(cutoff: PrHistoryCutoff) {
+	return or(
+		gt(workouts.createdAt, cutoff.createdAt),
+		and(eq(workouts.createdAt, cutoff.createdAt), gte(workouts.id, cutoff.workoutId)),
+	);
+}
+
+export function getExercisePrRows(
+	tx: Tx,
+	userId: string,
+	exerciseIds: string[],
+	cutoff?: PrHistoryCutoff,
+) {
 	return tx
 		.select({
 			exerciseId: workoutExercises.exerciseId,
@@ -45,26 +53,17 @@ function getExercisePrRows(tx: Tx, userId: string, exerciseIds: string[]) {
 		.from(workoutSets)
 		.innerJoin(workoutExercises, eq(workoutExercises.id, workoutSets.workoutExerciseId))
 		.innerJoin(workouts, eq(workouts.id, workoutExercises.workoutId))
-		.where(and(eq(workouts.userId, userId), inArray(workoutExercises.exerciseId, exerciseIds)))
+		.where(
+			and(
+				eq(workouts.userId, userId),
+				inArray(workoutExercises.exerciseId, exerciseIds),
+				cutoff ? isBeforeCutoff(cutoff) : undefined,
+			),
+		)
 		.groupBy(workoutExercises.exerciseId);
 }
 
-export async function calculateAppendedPrHistoryForUserTx(
-	tx: Tx,
-	userId: string,
-	sets: PrHistorySet[],
-): Promise<PrSetUpdate[]> {
-	const exerciseIds = [...new Set(sets.map((set) => set.exerciseId))];
-	const previousPrRows: ExercisePrRow[] =
-		exerciseIds.length === 0 ? [] : await getExercisePrRows(tx, userId, exerciseIds);
-	const previousPrsByExerciseId = new Map(
-		previousPrRows.map(({ exerciseId, ...prs }) => [exerciseId, prs]),
-	);
-
-	return calculatePrHistory(sets, previousPrsByExerciseId);
-}
-
-async function getWorkoutCount(tx: Tx, userId: string): Promise<number> {
+export async function getWorkoutCount(tx: Tx, userId: string): Promise<number> {
 	const workoutRows = await tx
 		.select({ id: workouts.id })
 		.from(workouts)
@@ -73,7 +72,7 @@ async function getWorkoutCount(tx: Tx, userId: string): Promise<number> {
 	return workoutRows.length;
 }
 
-function getPrHistorySets(tx: Tx, userId: string) {
+export function getPrHistorySets(tx: Tx, userId: string) {
 	return tx
 		.select({
 			setId: workoutSets.id,
@@ -95,7 +94,40 @@ function getPrHistorySets(tx: Tx, userId: string) {
 		);
 }
 
-async function updateSetPrStatuses(tx: Tx, prStatuses: PrSetUpdate[]): Promise<void> {
+export function getAffectedPrHistorySets(
+	tx: Tx,
+	userId: string,
+	exerciseIds: string[],
+	cutoff: PrHistoryCutoff,
+) {
+	return tx
+		.select({
+			setId: workoutSets.id,
+			workoutId: workouts.id,
+			exerciseId: workoutExercises.exerciseId,
+			weight: workoutSets.weight,
+			reps: workoutSets.reps,
+			completed: workoutSets.completed,
+		})
+		.from(workoutSets)
+		.innerJoin(workoutExercises, eq(workoutExercises.id, workoutSets.workoutExerciseId))
+		.innerJoin(workouts, eq(workouts.id, workoutExercises.workoutId))
+		.where(
+			and(
+				eq(workouts.userId, userId),
+				inArray(workoutExercises.exerciseId, exerciseIds),
+				isAtOrAfterCutoff(cutoff),
+			),
+		)
+		.orderBy(
+			asc(workouts.createdAt),
+			asc(workouts.id),
+			asc(workoutExercises.position),
+			asc(workoutSets.position),
+		);
+}
+
+export async function updateSetPrStatuses(tx: Tx, prStatuses: PrSetUpdate[]): Promise<void> {
 	if (prStatuses.length === 0) {
 		return;
 	}
@@ -127,7 +159,22 @@ async function updateSetPrStatuses(tx: Tx, prStatuses: PrSetUpdate[]): Promise<v
 	`);
 }
 
-async function updateWorkoutPrTotals(tx: Tx, userId: string): Promise<void> {
+export async function updateWorkoutPrTotals(
+	tx: Tx,
+	userId: string,
+	workoutIds?: string[],
+): Promise<void> {
+	if (workoutIds?.length === 0) {
+		return;
+	}
+
+	const workoutFilter = workoutIds
+		? sql`and workouts_to_update.id in (${sql.join(
+				workoutIds.map((workoutId) => sql`${workoutId}::uuid`),
+				sql`, `,
+			)})`
+		: sql.empty();
+
 	// Count PR sets for every workout in one statement, including workouts whose new total is zero.
 	await tx.execute(sql`
 		update ${workouts} as workouts_to_update
@@ -144,27 +191,6 @@ async function updateWorkoutPrTotals(tx: Tx, userId: string): Promise<void> {
 				)
 		)
 		where workouts_to_update.user_id = ${userId}
+			${workoutFilter}
 	`);
-}
-
-export async function rebuildPrHistoryForUserTx(
-	tx: Tx,
-	userId: string,
-): Promise<PrHistoryRebuildSummary> {
-	const workoutCount = await getWorkoutCount(tx, userId);
-	const historySets = await getPrHistorySets(tx, userId);
-	const prStatuses = calculatePrHistory(historySets);
-	const totalsByWorkoutId = buildPrTotalsByWorkoutId(prStatuses);
-
-	await updateSetPrStatuses(tx, prStatuses);
-	await updateWorkoutPrTotals(tx, userId);
-
-	return summarizePrHistory(workoutCount, prStatuses, totalsByWorkoutId);
-}
-
-export function rebuildPrHistoryTx(userId: string) {
-	return tryPromise({
-		try: () => runDatabaseTransaction((tx) => rebuildPrHistoryForUserTx(tx, userId)),
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
-	});
 }
