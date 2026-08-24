@@ -96,29 +96,55 @@ function getPrHistorySets(tx: Tx, userId: string) {
 }
 
 async function updateSetPrStatuses(tx: Tx, prStatuses: PrSetUpdate[]): Promise<void> {
-	for (const status of prStatuses) {
-		await tx
-			.update(workoutSets)
-			.set({
-				isWeightPr: status.isWeightPr,
-				isVolumePr: status.isVolumePr,
-				isBodyweightRepsPr: status.isBodyweightRepsPr,
-			})
-			.where(eq(workoutSets.id, status.setId));
+	if (prStatuses.length === 0) {
+		return;
 	}
+
+	const calculatedStatuses = sql.join(
+		prStatuses.map(
+			(status) =>
+				sql`(${status.setId}::uuid, ${status.isWeightPr}::boolean, ${status.isVolumePr}::boolean, ${status.isBodyweightRepsPr}::boolean)`,
+		),
+		sql`, `,
+	);
+
+	// Send every calculated status in one statement so Neon does not receive one query per set.
+	await tx.execute(sql`
+		update ${workoutSets} as workout_sets_to_update
+		set
+			is_weight_pr = calculated.is_weight_pr,
+			is_volume_pr = calculated.is_volume_pr,
+			is_bodyweight_reps_pr = calculated.is_bodyweight_reps_pr
+		from (
+			values ${calculatedStatuses}
+		) as calculated(
+			set_id,
+			is_weight_pr,
+			is_volume_pr,
+			is_bodyweight_reps_pr
+		)
+		where workout_sets_to_update.id = calculated.set_id
+	`);
 }
 
-async function resetWorkoutPrTotals(tx: Tx, userId: string): Promise<void> {
-	await tx.update(workouts).set({ totalPrSets: 0 }).where(eq(workouts.userId, userId));
-}
-
-async function updateWorkoutPrTotals(
-	tx: Tx,
-	totalsByWorkoutId: Map<string, number>,
-): Promise<void> {
-	for (const [workoutId, totalPrSets] of totalsByWorkoutId) {
-		await tx.update(workouts).set({ totalPrSets }).where(eq(workouts.id, workoutId));
-	}
+async function updateWorkoutPrTotals(tx: Tx, userId: string): Promise<void> {
+	// Count PR sets for every workout in one statement, including workouts whose new total is zero.
+	await tx.execute(sql`
+		update ${workouts} as workouts_to_update
+		set total_pr_sets = (
+			select count(*)::integer
+			from ${workoutExercises} as workout_exercises_for_total
+			inner join ${workoutSets} as workout_sets_for_total
+				on workout_sets_for_total.workout_exercise_id = workout_exercises_for_total.id
+			where workout_exercises_for_total.workout_id = workouts_to_update.id
+				and (
+					workout_sets_for_total.is_weight_pr
+					or workout_sets_for_total.is_volume_pr
+					or workout_sets_for_total.is_bodyweight_reps_pr
+				)
+		)
+		where workouts_to_update.user_id = ${userId}
+	`);
 }
 
 export async function rebuildPrHistoryForUserTx(
@@ -131,8 +157,7 @@ export async function rebuildPrHistoryForUserTx(
 	const totalsByWorkoutId = buildPrTotalsByWorkoutId(prStatuses);
 
 	await updateSetPrStatuses(tx, prStatuses);
-	await resetWorkoutPrTotals(tx, userId);
-	await updateWorkoutPrTotals(tx, totalsByWorkoutId);
+	await updateWorkoutPrTotals(tx, userId);
 
 	return summarizePrHistory(workoutCount, prStatuses, totalsByWorkoutId);
 }
