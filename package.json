@@ -31,7 +31,7 @@
 		"@radix-ui/react-slot": "^1.2.4",
 		"@tanstack/react-query": "^5.96.1",
 		"@upstash/redis": "^1.36.4",
-		"better-auth": "1.6.15",
+		"better-auth": "1.6.22",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"convex": "^1.42.0",
