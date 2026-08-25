@@ -263,18 +263,6 @@ body {
 		@apply bg-background text-foreground;
 	}
 
-	/* view transitions */
-	::view-transition-group(site-nav) {
-		animation: none;
-		z-index: 100;
-	}
-	::view-transition-old(site-nav) {
-		display: none;
-	}
-	::view-transition-new(site-nav) {
-		animation: none;
-	}
-
 	/* change cursor on buttons */
 	button:not(:disabled),
 	[role="button"]:not(:disabled) {
@@ -313,25 +301,6 @@ body {
 	}
 }
 
-/* view transitions */
-::view-transition-old(.nav-route) {
-	animation: 120ms ease-in both route-fade reverse;
-}
-
-::view-transition-new(.nav-route) {
-	animation: 160ms ease-out 80ms both route-fade;
-}
-
-@keyframes route-fade {
-	from {
-		opacity: 0;
-	}
-
-	to {
-		opacity: 1;
-	}
-}
-
 @keyframes page-slide-up {
 	from {
 		opacity: 1;
@@ -365,9 +334,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-	::view-transition-old(*),
-	::view-transition-new(*),
-	::view-transition-group(*),
 	.create-workout-page {
 		animation-duration: 0s !important;
 		animation-delay: 0s !important;
