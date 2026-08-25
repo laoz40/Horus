@@ -35,6 +35,14 @@ export function requireWorkout<T>(workout: T | null) {
 	return ok(workout);
 }
 
+export function requireDeletedWorkouts(result: { deletedCount: number }) {
+	if (result.deletedCount === 0) {
+		return err({ reason: "NO_WORKOUTS" as const });
+	}
+
+	return ok(result);
+}
+
 function normalizeMuscleGroups(muscleGroups: string[] | undefined) {
 	const muscleGroupsByNormalizedName = new Map<string, { name: string; normalizedName: string }>();
 

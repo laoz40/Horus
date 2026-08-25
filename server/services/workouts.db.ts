@@ -387,6 +387,20 @@ export async function deleteWorkoutById(tx: Tx, workoutId: string, userId: strin
 	await tx.delete(workouts).where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)));
 }
 
+export function deleteAllWorkoutRows(userId: string) {
+	return tryPromise({
+		try: async () => {
+			const deletedWorkouts = await db
+				.delete(workouts)
+				.where(eq(workouts.userId, userId))
+				.returning({ id: workouts.id });
+
+			return { deletedCount: deletedWorkouts.length };
+		},
+		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	});
+}
+
 export function getWorkoutForEdit(workoutId: string, userId: string) {
 	return tryPromise({
 		try: async (): Promise<WorkoutForEdit | null> => {

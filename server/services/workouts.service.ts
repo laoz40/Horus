@@ -6,6 +6,7 @@ import { runDatabaseTransaction } from "@/lib/db";
 import { tryPromise } from "@/lib/tryPromise";
 import {
 	deleteWorkoutById,
+	deleteAllWorkoutRows,
 	deleteWorkoutChildren,
 	findOrCreateWorkoutExercises,
 	getWorkout,
@@ -32,6 +33,7 @@ import {
 	normalizeWorkoutForWrite,
 	calculateAppendedPrHistory,
 	rebuildAffectedPrHistory,
+	requireDeletedWorkouts,
 	requireWorkout,
 	validateUniqueWorkoutChildIds,
 } from "@/server/services/workouts.functions";
@@ -124,6 +126,10 @@ export function listWorkouts(query: ListWorkoutsQuery) {
 
 export function deleteWorkout(workoutId: string, userId: string) {
 	return deleteWorkoutTransaction(workoutId, userId).andThen(requireWorkout);
+}
+
+export function deleteAllWorkouts(userId: string) {
+	return deleteAllWorkoutRows(userId).andThen(requireDeletedWorkouts);
 }
 
 export function createWorkout(userId: string, workout: WorkoutForSave) {

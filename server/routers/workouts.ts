@@ -5,6 +5,7 @@ import { WorkoutForSaveSchema } from "@/features/workout-form/lib/validateWorkou
 import { protectedProcedure } from "@/server/procedures";
 import {
 	createWorkout,
+	deleteAllWorkouts,
 	deleteWorkout,
 	getWorkoutById,
 	listWorkouts,
@@ -62,6 +63,12 @@ const deleteWorkoutOutputSchema = z
 	.object({
 		deletedWorkoutId: z.uuid(),
 		deletedWorkoutName: z.string(),
+	})
+	.strict();
+
+const deleteAllWorkoutsOutputSchema = z
+	.object({
+		deletedCount: z.number().int().positive(),
 	})
 	.strict();
 
@@ -136,6 +143,39 @@ export const workoutsRouter = {
 			},
 		);
 	}),
+	deleteAll: protectedProcedure
+		.errors({
+			NO_WORKOUTS: {
+				message: "No workouts were found",
+			},
+			DATABASE_ERROR: {
+				message: "The database operation failed",
+			},
+		})
+		.input(z.object({}).strict())
+		.output(deleteAllWorkoutsOutputSchema)
+		.handler(async ({ context, errors }) => {
+			const result = await deleteAllWorkouts(context.userId);
+
+			return result.match(
+				(value) => value,
+				(error) => {
+					const reason = error.reason;
+
+					switch (reason) {
+						case "NO_WORKOUTS":
+							throw errors.NO_WORKOUTS();
+						case "DATABASE_ERROR":
+							console.error("Failed to delete all workouts", { cause: error.cause });
+							throw errors.DATABASE_ERROR();
+						default: {
+							const exhaustiveReason: never = reason;
+							throw exhaustiveReason;
+						}
+					}
+				},
+			);
+		}),
 	delete: protectedProcedure
 		.errors({
 			NOT_FOUND: {
