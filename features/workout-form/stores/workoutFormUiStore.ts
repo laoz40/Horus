@@ -2,16 +2,6 @@ import { create } from "zustand";
 
 import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 
-export type RecentCompletedSetPrType = "weight" | "volume" | "bodyweightReps";
-
-export interface RecentCompletedSet {
-	weight: number;
-	reps: number;
-	time: string;
-	isPr: boolean;
-	prTypes: RecentCompletedSetPrType[];
-}
-
 export interface WorkoutFormUiState {
 	createWorkoutDraft: WorkoutFormData | null;
 	selectedExerciseId: string | null;
@@ -20,9 +10,6 @@ export interface WorkoutFormUiState {
 	startedAtMs: number;
 	isRecentSetsDialogOpen: boolean;
 	recentSetsExerciseName: string;
-	isRecentSetsLoading: boolean;
-	recentSetsError: string | null;
-	recentCompletedSets: RecentCompletedSet[];
 	isRestTimerDrawerOpen: boolean;
 	restTimerStartedAtMs: number | null;
 }
@@ -37,9 +24,6 @@ const createInitialWorkoutFormUiState = (): WorkoutFormUiState => ({
 	startedAtMs: Date.now(),
 	isRecentSetsDialogOpen: false,
 	recentSetsExerciseName: "",
-	isRecentSetsLoading: false,
-	recentSetsError: null,
-	recentCompletedSets: [],
 	isRestTimerDrawerOpen: false,
 	restTimerStartedAtMs: null,
 });
@@ -53,9 +37,6 @@ export const selectIsRecentSetsDialogOpen = (state: WorkoutFormUiStore) =>
 	state.isRecentSetsDialogOpen;
 export const selectRecentSetsExerciseName = (state: WorkoutFormUiStore) =>
 	state.recentSetsExerciseName;
-export const selectIsRecentSetsLoading = (state: WorkoutFormUiStore) => state.isRecentSetsLoading;
-export const selectRecentSetsError = (state: WorkoutFormUiStore) => state.recentSetsError;
-export const selectRecentCompletedSets = (state: WorkoutFormUiStore) => state.recentCompletedSets;
 export const selectIsRestTimerDrawerOpen = (state: WorkoutFormUiStore) =>
 	state.isRestTimerDrawerOpen;
 export const selectRestTimerStartedAtMs = (state: WorkoutFormUiStore) => state.restTimerStartedAtMs;
@@ -72,9 +53,6 @@ export function initializeWorkoutSession(initialDurationSeconds = 0): void {
 		startedAtMs: Date.now() - Math.max(0, initialDurationSeconds ?? 0) * 1000,
 		isRecentSetsDialogOpen: false,
 		recentSetsExerciseName: "",
-		isRecentSetsLoading: false,
-		recentSetsError: null,
-		recentCompletedSets: [],
 		isRestTimerDrawerOpen: false,
 		restTimerStartedAtMs: null,
 	});
@@ -117,9 +95,6 @@ export function openRecentSetsDialog(exerciseName: string): void {
 	useWorkoutFormUiStore.setState({
 		isRecentSetsDialogOpen: true,
 		recentSetsExerciseName: exerciseName,
-		isRecentSetsLoading: true,
-		recentSetsError: null,
-		recentCompletedSets: [],
 	});
 }
 
@@ -127,25 +102,10 @@ export function setRecentSetsDialogOpen(open: boolean): void {
 	useWorkoutFormUiStore.setState({ isRecentSetsDialogOpen: open });
 }
 
-export function setRecentSetsLoading(loading: boolean): void {
-	useWorkoutFormUiStore.setState({ isRecentSetsLoading: loading });
-}
-
-export function setRecentSetsError(error: string | null): void {
-	useWorkoutFormUiStore.setState({ recentSetsError: error });
-}
-
-export function setRecentCompletedSets(sets: RecentCompletedSet[]): void {
-	useWorkoutFormUiStore.setState({ recentCompletedSets: sets });
-}
-
 export function resetRecentSetsDialog(): void {
 	useWorkoutFormUiStore.setState({
 		isRecentSetsDialogOpen: false,
 		recentSetsExerciseName: "",
-		isRecentSetsLoading: false,
-		recentSetsError: null,
-		recentCompletedSets: [],
 	});
 }
 

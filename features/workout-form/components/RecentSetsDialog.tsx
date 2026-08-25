@@ -1,5 +1,7 @@
 "use client";
 
+import { isDefinedError } from "@orpc/client";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -10,36 +12,59 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { getRelativeTime } from "@/lib/date";
+import { orpc } from "@/lib/orpc/client";
 import { cn } from "@/lib/utils";
 
-import type {
-	RecentCompletedSet,
-	RecentCompletedSetPrType,
-} from "@/features/workout-form/stores/workoutFormUiStore";
-
-interface RecentCompletedSetsDialogProps {
+interface RecentSetsDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	exerciseName: string;
-	isLoading: boolean;
-	error: string | null;
-	sets: RecentCompletedSet[];
 }
 
-const prTypeLabels: Record<RecentCompletedSetPrType, string> = {
+type RecentSetPrType = "weight" | "volume" | "bodyweightReps";
+
+const prTypeLabels: Record<RecentSetPrType, string> = {
 	weight: "Weight PR",
 	volume: "Volume PR",
 	bodyweightReps: "Reps PR",
 };
 
-export default function RecentCompletedSetsDialog({
+export default function RecentSetsDialog({
 	open,
 	onOpenChange,
 	exerciseName,
-	isLoading,
-	error,
-	sets,
-}: RecentCompletedSetsDialogProps) {
+}: RecentSetsDialogProps) {
+	const recentSetsQuery = useQuery(
+		orpc.exercises.recentSets.queryOptions({
+			input: { exerciseName },
+			enabled: open && exerciseName.length > 0,
+		}),
+	);
+
+	const getErrorMessage = () => {
+		if (!recentSetsQuery.isError) return null;
+
+		const error = recentSetsQuery.error;
+		if (!isDefinedError(error)) return "Couldn't load recent sets.";
+
+		switch (error.code) {
+			case "DATABASE_ERROR":
+			case "UNAUTHORIZED":
+				return "Couldn't load recent sets.";
+			default: {
+				const exhaustiveError: never = error;
+				return exhaustiveError;
+			}
+		}
+	};
+
+	const sets = (recentSetsQuery.data ?? []).map(({ completedAtMs, ...set }) => ({
+		...set,
+		time: getRelativeTime(new Date(completedAtMs)),
+	}));
+	const errorMessage = getErrorMessage();
+
 	return (
 		<Dialog
 			open={open}
@@ -50,7 +75,8 @@ export default function RecentCompletedSetsDialog({
 				<DialogHeader>
 					<DialogTitle>Most Recent Sets</DialogTitle>
 					<DialogDescription className="text-balance leading-snug">
-						Your recently completed sets for&nbsp;<span className="font-bold">{exerciseName}</span>
+						Your recently completed sets for&nbsp;
+						<span className="font-bold">{exerciseName}</span>
 					</DialogDescription>
 				</DialogHeader>
 
@@ -62,7 +88,7 @@ export default function RecentCompletedSetsDialog({
 						<span className="truncate text-right">Completed</span>
 					</div>
 
-					{isLoading ? (
+					{recentSetsQuery.isFetching ? (
 						<div className="flex flex-col">
 							{Array.from({ length: 6 }).map((_, index) => (
 								<div
@@ -70,13 +96,13 @@ export default function RecentCompletedSetsDialog({
 									className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 border-b py-2 last:border-b-0">
 									<div className="bg-muted h-4 w-8 animate-pulse" />
 									<div className="bg-muted h-4 w-8 animate-pulse" />
-									<div className="bg-muted h-4 w-14 animate-pulse" />
+									<div />
 									<div className="ml-auto bg-muted h-4 w-24 animate-pulse" />
 								</div>
 							))}
 						</div>
-					) : error ? (
-						<p className="text-destructive text-sm">{error}</p>
+					) : errorMessage ? (
+						<p className="text-destructive text-sm">{errorMessage}</p>
 					) : sets.length === 0 ? (
 						<p className="text-muted-foreground text-sm">No recent completed sets found.</p>
 					) : (

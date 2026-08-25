@@ -5,9 +5,8 @@ import {
 	hasExercisePrHistory,
 	normalizePrSet,
 } from "./lib/calculateStatPr";
-import { getCurrentPrTypesForSet, getExercisePrSummary } from "./lib/exercisePrs";
+import { getExercisePrSummary } from "./lib/exercisePrs";
 import { errorHandlerWrapper, requireIdentity } from "./lib/server";
-import { getRelativeTime } from "../lib/date";
 import { normalizeName } from "../lib/normalizeName";
 import { query } from "./_generated/server";
 
@@ -32,51 +31,6 @@ export const searchGlobalExercises = query({
 				...(exercise.muscleGroups !== undefined ? { muscleGroups: exercise.muscleGroups } : {}),
 			}));
 	},
-});
-
-export const getRecentCompletedSetsByExerciseName = query({
-	args: {
-		exerciseName: v.string(),
-	},
-	handler: async (ctx, args) =>
-		errorHandlerWrapper(async () => {
-			const identity = await requireIdentity(ctx);
-
-			const exerciseName = normalizeName(args.exerciseName);
-			const globalExercise = await ctx.db
-				.query("globalExercises")
-				.withIndex("by_normalizedName", (query) => query.eq("normalizedName", exerciseName))
-				.first();
-			if (!globalExercise) return [];
-
-			const recentCompletedSets = await ctx.db
-				.query("workoutSets")
-				.withIndex("by_userId_globalExerciseId_completed_workoutCreationTime_order", (query) =>
-					query
-						.eq("userId", identity.subject)
-						.eq("globalExerciseId", globalExercise._id)
-						.eq("completed", true),
-				)
-				.order("desc")
-				.take(6);
-			const currentPrSummary = await getExercisePrSummary(
-				ctx,
-				identity.subject,
-				globalExercise._id,
-			);
-
-			return recentCompletedSets.map((set) => {
-				const prTypes = getCurrentPrTypesForSet(set, currentPrSummary);
-
-				return {
-					weight: set.weight,
-					reps: set.reps,
-					time: getRelativeTime(new Date(set.workoutCreationTime)),
-					isPr: prTypes.length > 0,
-					prTypes,
-				};
-			});
-		}),
 });
 
 export const checkCompletedSetPrByExerciseName = query({

@@ -24,9 +24,6 @@ import {
 	resetWorkoutFormUi,
 	selectIsRecentSetsDialogOpen,
 	selectRecentSetsExerciseName,
-	selectIsRecentSetsLoading,
-	selectRecentSetsError,
-	selectRecentCompletedSets,
 	selectCreateWorkoutDraft,
 	setRecentSetsDialogOpen,
 	setScrollTarget,
@@ -42,7 +39,7 @@ import {
 	useWorkoutSubmit,
 } from "@/features/workout-form/hooks/useWorkoutSubmit";
 import WorkoutFormTopBar from "./WorkoutFormTopBar";
-import RecentCompletedSetsDialog from "./RecentCompletedSetsDialog";
+import RecentSetsDialog from "./RecentSetsDialog";
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;
@@ -60,9 +57,6 @@ export default function WorkoutForm({
 	const startedAtMs = useWorkoutFormUiStore((state) => state.startedAtMs);
 	const isRecentSetsDialogOpen = useWorkoutFormUiStore(selectIsRecentSetsDialogOpen);
 	const recentSetsExerciseName = useWorkoutFormUiStore(selectRecentSetsExerciseName);
-	const isRecentSetsLoading = useWorkoutFormUiStore(selectIsRecentSetsLoading);
-	const recentSetsError = useWorkoutFormUiStore(selectRecentSetsError);
-	const recentCompletedSets = useWorkoutFormUiStore(selectRecentCompletedSets);
 
 	// Strip fully empty sets/exercises before RHF validation so blank rows don't block submit.
 	const baseResolver = zodResolver(WorkoutSchema);
@@ -195,13 +189,10 @@ export default function WorkoutForm({
 					onAddExercise={handleAddExercise}
 					onDeleteExercise={handleDeleteExercise}
 				/>
-				<RecentCompletedSetsDialog
+				<RecentSetsDialog
 					open={isRecentSetsDialogOpen}
 					onOpenChange={setRecentSetsDialogOpen}
 					exerciseName={recentSetsExerciseName}
-					isLoading={isRecentSetsLoading}
-					error={recentSetsError}
-					sets={recentCompletedSets}
 				/>
 			</FormProvider>
 		</div>

@@ -3,17 +3,10 @@
 import { HistoryIcon, PlusIcon } from "lucide-react";
 import { forwardRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { api } from "@/convex/_generated/api";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
-import {
-	openRecentSetsDialog,
-	setRecentCompletedSets,
-	setRecentSetsError,
-	setRecentSetsLoading,
-} from "@/features/workout-form/stores/workoutFormUiStore";
+import { openRecentSetsDialog } from "@/features/workout-form/stores/workoutFormUiStore";
 import { showSetDeletedToast } from "@/lib/toastMessages";
 import { cn } from "@/lib/utils";
-import { useConvex } from "convex/react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { createDefaultSet } from "../lib/WorkoutFormDefaults";
 import ExerciseCollapsibles from "./ExerciseCollapsibles";
@@ -27,8 +20,6 @@ interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 	({ className, exerciseIndex, isEditing }, ref) => {
-		const convex = useConvex();
-
 		const {
 			control,
 			trigger,
@@ -67,24 +58,11 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		}) as string | undefined;
 		const hasExerciseName = Boolean(exerciseName?.trim());
 
-		const handleRecentClick = async () => {
+		const handleRecentClick = () => {
 			const trimmedName = exerciseName?.trim();
 			if (!trimmedName) return;
 
 			openRecentSetsDialog(trimmedName);
-
-			try {
-				const fetchedSets = await convex.query(api.exercises.getRecentCompletedSetsByExerciseName, {
-					exerciseName: trimmedName,
-				});
-
-				setRecentCompletedSets(fetchedSets);
-			} catch (error) {
-				console.error("Failed to fetch recent completed sets:", error);
-				setRecentSetsError("Couldn't load recent completed sets.");
-			} finally {
-				setRecentSetsLoading(false);
-			}
 		};
 
 		return (
