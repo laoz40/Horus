@@ -1,33 +1,8 @@
-import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
-import { mutation, query } from "./_generated/server";
+import { mutation } from "./_generated/server";
 import { getUtcDayKey } from "./lib/dailySetStats";
-import { errorHandlerWrapper, requireIdentity } from "./lib/server";
-
-export const getYear = query({
-	args: {
-		year: v.float64(),
-	},
-	handler: async (ctx, args) =>
-		errorHandlerWrapper(async () => {
-			const identity = await requireIdentity(ctx);
-			const startDayKey = `${args.year}-01-01`;
-			const endDayKey = `${args.year}-12-31`;
-
-			const stats = await ctx.db
-				.query("dailySetStats")
-				.withIndex("by_userId_dayKey", (index) =>
-					index.eq("userId", identity.subject).gte("dayKey", startDayKey).lte("dayKey", endDayKey),
-				)
-				.collect();
-
-			return stats.map((stat) => ({
-				dayKey: stat.dayKey,
-				setCount: stat.setCount,
-			}));
-		}),
-});
+import { errorHandlerWrapper } from "./lib/server";
 
 export const rebuildAll = mutation({
 	args: {},

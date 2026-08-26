@@ -1,9 +1,9 @@
 "use client";
 
 import CalendarHeatmap from "react-calendar-heatmap";
-import { useQuery } from "convex/react";
+import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { api } from "@/convex/_generated/api";
+import { orpc } from "@/lib/orpc/client";
 
 type HeatmapValue = {
 	date: string;
@@ -22,14 +22,19 @@ export default function DashboardYearInTrainingSection({
 	isSignedIn,
 }: DashboardYearInTrainingSectionProps) {
 	const year = new Date().getFullYear();
-	const stats = useQuery(api.dailySetStats.getYear, isSignedIn ? { year } : "skip");
+	const statsQuery = useQuery(
+		orpc.dashboard.yearInTraining.queryOptions({
+			input: { year },
+			enabled: isSignedIn,
+		}),
+	);
 
-	if (isAuthPending || (isSignedIn && stats === undefined)) {
+	if (isAuthPending || (isSignedIn && statsQuery.isPending)) {
 		return <YearInTrainingLoading year={year} />;
 	}
 
 	const values: HeatmapValue[] =
-		stats?.map((row) => ({ date: row.dayKey, count: row.setCount })) ?? [];
+		statsQuery.data?.map((row) => ({ date: row.dayKey, count: row.setCount })) ?? [];
 
 	return (
 		<YearInTrainingShell year={year}>
