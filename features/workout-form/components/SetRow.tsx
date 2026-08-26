@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactElement } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Trash } from "lucide-react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,6 @@ import { type Workout, validateCompletedSet } from "@/features/workout-form/lib/
 import { orpc } from "@/lib/orpc/client";
 import { startRestTimer } from "@/features/workout-form/stores/workoutFormUiStore";
 import { showSetPrToast } from "@/lib/toastMessages";
-import { tryCatch } from "@/lib/tryPromise";
 import NumberInput from "./NumberInput";
 
 interface SetRowProps {
@@ -48,6 +48,15 @@ export default function SetRow({
 		clearErrors,
 		formState: { errors },
 	} = useFormContext<Workout>();
+	const checkSetPrMutation = useMutation(
+		orpc.exercises.checkSetPr.mutationOptions({
+			onSuccess: (result, input) => {
+				if (result.prType) {
+					showSetPrToast(input.exerciseName, result.prType);
+				}
+			},
+		}),
+	);
 	const completedFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.completed` as const;
 	const weightFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.weight` as const;
 	const repsFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.reps` as const;
@@ -129,7 +138,7 @@ export default function SetRow({
 									iconClassName="size-6"
 									aria-label="Color success"
 									checked={field.value}
-									onCheckedChange={async (value) => {
+									onCheckedChange={(value) => {
 										const nextChecked = !!value;
 										const previousChecked = !!field.value;
 										if (nextChecked && !validateCurrentSetForCompletion()) {
@@ -156,20 +165,12 @@ export default function SetRow({
 											weight: set.weight,
 										}));
 
-										const result = await tryCatch(() =>
-											orpc.exercises.checkSetPr.call({
-												exerciseName,
-												sets: setsForPrCheck,
-												setIndex,
-											}),
-										);
-
-										// PR feedback is optional, so a failed check does not undo set completion.
-										if (result.isErr()) return;
-
-										if (result.value.prType) {
-											showSetPrToast(exerciseName, result.value.prType);
-										}
+										// If the PR check fails, keep the set completed and skip only the PR toast.
+										checkSetPrMutation.mutate({
+											exerciseName,
+											sets: setsForPrCheck,
+											setIndex,
+										});
 									}}
 								/>
 							)}
