@@ -21,6 +21,13 @@ export interface RecentSetRow {
 	isBodyweightRepsPr: boolean;
 }
 
+export interface ExercisePrRow {
+	hasHistory: boolean;
+	highestWeight: number;
+	highestVolume: number;
+	highestBodyweightReps: number;
+}
+
 export function searchExerciseRows(userId: string, normalizedQuery: string) {
 	return tryPromise({
 		try: () =>
@@ -44,6 +51,43 @@ export function searchExerciseRows(userId: string, normalizedQuery: string) {
 				.groupBy(exercises.id)
 				.orderBy(asc(exercises.name))
 				.limit(10),
+		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	});
+}
+
+export function getExercisePrRows(userId: string, normalizedExerciseName: string) {
+	return tryPromise({
+		try: (): Promise<ExercisePrRow[]> =>
+			db
+				.select({
+					hasHistory: sql<boolean>`count(*) > 0`,
+					highestWeight: sql<number>`coalesce(
+						max(${workoutSets.weight}) filter (where ${workoutSets.weight} > 0),
+						0
+					)::double precision`,
+					highestVolume: sql<number>`coalesce(
+						max(${workoutSets.weight} * ${workoutSets.reps}) filter (
+							where ${workoutSets.weight} > 0
+						),
+						0
+					)::double precision`,
+					highestBodyweightReps: sql<number>`coalesce(
+						max(${workoutSets.reps}) filter (where ${workoutSets.weight} = 0),
+						0
+					)::double precision`,
+				})
+				.from(workoutSets)
+				.innerJoin(workoutExercises, eq(workoutExercises.id, workoutSets.workoutExerciseId))
+				.innerJoin(workouts, eq(workouts.id, workoutExercises.workoutId))
+				.innerJoin(exercises, eq(exercises.id, workoutExercises.exerciseId))
+				.where(
+					and(
+						eq(workouts.userId, userId),
+						eq(exercises.userId, userId),
+						eq(exercises.normalizedName, normalizedExerciseName),
+						eq(workoutSets.completed, true),
+					),
+				),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
 }
