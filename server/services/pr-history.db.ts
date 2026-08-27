@@ -127,36 +127,41 @@ export function getAffectedPrHistorySets(
 		);
 }
 
+const SET_PR_STATUSES_CHUNK_SIZE = 4000;
+
 export async function updateSetPrStatuses(tx: Tx, prStatuses: PrSetUpdate[]): Promise<void> {
 	if (prStatuses.length === 0) {
 		return;
 	}
 
-	const calculatedStatuses = sql.join(
-		prStatuses.map(
-			(status) =>
-				sql`(${status.setId}::uuid, ${status.isWeightPr}::boolean, ${status.isVolumePr}::boolean, ${status.isBodyweightRepsPr}::boolean)`,
-		),
-		sql`, `,
-	);
+	for (let i = 0; i < prStatuses.length; i += SET_PR_STATUSES_CHUNK_SIZE) {
+		const chunk = prStatuses.slice(i, i + SET_PR_STATUSES_CHUNK_SIZE);
+		const calculatedStatuses = sql.join(
+			chunk.map(
+				(status) =>
+					sql`(${status.setId}::uuid, ${status.isWeightPr}::boolean, ${status.isVolumePr}::boolean, ${status.isBodyweightRepsPr}::boolean)`,
+			),
+			sql`, `,
+		);
 
-	// Send every calculated status in one statement so Neon does not receive one query per set.
-	await tx.execute(sql`
-		update ${workoutSets} as workout_sets_to_update
-		set
-			is_weight_pr = calculated.is_weight_pr,
-			is_volume_pr = calculated.is_volume_pr,
-			is_bodyweight_reps_pr = calculated.is_bodyweight_reps_pr
-		from (
-			values ${calculatedStatuses}
-		) as calculated(
-			set_id,
-			is_weight_pr,
-			is_volume_pr,
-			is_bodyweight_reps_pr
-		)
-		where workout_sets_to_update.id = calculated.set_id
-	`);
+		// Send calculated statuses in bounded chunks so Neon/PostgreSQL does not exceed its 65,535 parameter limit.
+		await tx.execute(sql`
+			update ${workoutSets} as workout_sets_to_update
+			set
+				is_weight_pr = calculated.is_weight_pr,
+				is_volume_pr = calculated.is_volume_pr,
+				is_bodyweight_reps_pr = calculated.is_bodyweight_reps_pr
+			from (
+				values ${calculatedStatuses}
+			) as calculated(
+				set_id,
+				is_weight_pr,
+				is_volume_pr,
+				is_bodyweight_reps_pr
+			)
+			where workout_sets_to_update.id = calculated.set_id
+		`);
+	}
 }
 
 export async function updateWorkoutPrTotals(
