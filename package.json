@@ -12,9 +12,6 @@
 		"format:check": "oxfmt --check",
 		"lint": "oxlint . --fix",
 		"lint:check": "oxlint .",
-		"migration:import-exercises": "tsx scripts/import-convex-exercises.ts",
-		"migration:import-workouts": "tsx scripts/import-convex-workouts.ts",
-		"migration:rebuild-pr-history": "tsx --conditions=react-server scripts/rebuild-pr-history.ts",
 		"typecheck:native": "tsgo --noEmit"
 	},
 	"pnpm": {

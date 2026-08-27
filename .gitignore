@@ -47,10 +47,5 @@ dev.db
 # clerk configuration (can include secrets)
 /.clerk/
 
-# Convex to PostgreSQL migration
-/.migration-data/
-
 .agents
 AGENTS.md
-db_migration_plan/
-paseo.json
