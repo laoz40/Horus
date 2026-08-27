@@ -10,12 +10,6 @@ interface HistoryFeedErrorBoundaryProps {
 	WORKOUTS_PER_PAGE: number;
 }
 
-type HistoryQueryError = Error & {
-	data?: {
-		code?: string;
-	};
-};
-
 const getHistoryFeedErrorMessage = (error: unknown) => {
 	const fallbackMessage = "Unexpected error loading workout history.";
 
@@ -23,7 +17,7 @@ const getHistoryFeedErrorMessage = (error: unknown) => {
 		return fallbackMessage;
 	}
 
-	const code = (error as HistoryQueryError).data?.code;
+	const code = (error as { code?: string }).code;
 
 	if (code === "UNAUTHORIZED") {
 		return "You must be signed in to view workout history.";
