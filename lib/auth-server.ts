@@ -1,5 +1,6 @@
 import "server-only";
 
+import { Redis } from "@upstash/redis";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins";
@@ -20,6 +21,11 @@ const facebookClientSecret = env.FACEBOOK_CLIENT_SECRET;
 const githubClientId = env.GITHUB_CLIENT_ID;
 const githubClientSecret = env.GITHUB_CLIENT_SECRET;
 
+const redis = new Redis({
+	url: env.UPSTASH_REDIS_REST_URL,
+	token: env.UPSTASH_REDIS_REST_TOKEN,
+});
+
 const otpExpiresInSeconds = 300;
 
 export const auth = betterAuth({
@@ -29,6 +35,32 @@ export const auth = betterAuth({
 		schema,
 		usePlural: true,
 	}),
+	secondaryStorage: {
+		get: async (key) => {
+			const value = await redis.get<string>(key);
+			return value ? (typeof value === "string" ? value : JSON.stringify(value)) : null;
+		},
+		set: async (key, value, ttl) => {
+			if (ttl) {
+				await redis.set(key, value, { ex: ttl });
+			} else {
+				await redis.set(key, value);
+			}
+		},
+		delete: async (key) => {
+			await redis.del(key);
+		},
+		increment: async (key, ttl) => {
+			const count = await redis.incr(key);
+			if (count === 1 && ttl) {
+				await redis.expire(key, ttl);
+			}
+			return count;
+		},
+	},
+	rateLimit: {
+		enabled: true,
+	},
 	session: {
 		storeSessionInDatabase: true,
 		expiresIn: 60 * 60 * 24 * 14,

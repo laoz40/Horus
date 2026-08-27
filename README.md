@@ -106,16 +106,16 @@ In the future, I plan to build a native mobile version of this app.
   - [ ] emails for delete account, stale account
 - [x] change db, from sqlite to convex
   - [x] remove unused prisma and sqlite code
-  - [ ] rate limiter plugin
-  - [ ] add max/upper character limits to inputs
   - [x] remove old nested workout schema
 - [x] change db 2, from convex to PostgreSQL (Neon)
-    - [x] remove convex code
-    - [x] implement orpc for type safety between server and client
-    - [x] implement drizzle for type safety between server and client
-    - [x] use neverthrow for clean error handling
-    - [ ] migrate prod data to postgres
+  - [x] remove convex code
+  - [x] implement orpc for type safety between server and client
+  - [x] implement drizzle for type safety between server and client
+  - [x] use neverthrow for clean error handling
+  - [ ] migrate prod data to postgres
 - [x] use t3env for env var validation
+- [ ] rate limit every endpoint
+- [ ] add max/upper character limits to inputs
 - [x] add webmanifest to support ios app shortcut
   - [x] a bottom margin so that the home button indicator does not cover the nav content
 
