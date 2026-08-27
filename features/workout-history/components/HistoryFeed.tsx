@@ -41,7 +41,7 @@ function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 	);
 	const workouts = historyQuery.data?.pages.flatMap((page) => page.items) ?? [];
 
-	if (isCreatingWorkout) {
+	if (isCreatingWorkout && !historyQuery.data) {
 		return <WorkoutCardSkeletonList count={WORKOUTS_PER_PAGE} />;
 	}
 
