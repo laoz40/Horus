@@ -9,24 +9,33 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Field, FieldGroup } from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
 import { getCurrentDay } from "@/lib/date";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import Link from "next/link";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { Authenticated, Unauthenticated } from "convex/react";
 
 interface WorkoutNameDialogProps {
 	children: React.ReactNode;
 }
 
+type AuthStatus = "pending" | "authenticated" | "unauthenticated";
+
 export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 	const { register } = useFormContext<Workout>();
-
 	const [open, setOpen] = useState(false);
+	const { data: sessionData, isPending } = authClient.useSession();
+	let authStatus: AuthStatus = "unauthenticated";
+
+	if (sessionData?.user) {
+		authStatus = "authenticated";
+	}
+	if (isPending) {
+		authStatus = "pending";
+	}
 
 	return (
 		<Dialog
@@ -40,7 +49,7 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 				</DialogHeader>
 				<FieldGroup>
 					<Field>
-						<Label htmlFor="name-1">Enter workout name</Label>
+						<FieldLabel htmlFor="name-1">Enter workout name</FieldLabel>
 						<Input
 							id="name-1"
 							maxLength={64}
@@ -49,31 +58,35 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 						/>
 					</Field>
 				</FieldGroup>
-				<Unauthenticated>
+				{authStatus === "unauthenticated" ? (
 					<p className="text-sm text-destructive">
 						You need an account to create and save workouts.
 					</p>
-				</Unauthenticated>
+				) : null}
 				<DialogFooter className="flex flex-row justify-between gap-2">
-					<Authenticated>
-						<DialogClose asChild>
-							<Button variant="secondary">Cancel</Button>
-						</DialogClose>
-						<Button
-							type="submit"
-							form="workout-form"
-							onClick={() => setOpen(false)}>
-							Save
-						</Button>
-					</Authenticated>
-					<Unauthenticated>
-						<DialogClose asChild>
-							<Button variant="secondary">Close</Button>
-						</DialogClose>
-						<Button asChild>
-							<Link href="/login">Sign in</Link>
-						</Button>
-					</Unauthenticated>
+					{authStatus === "authenticated" ? (
+						<>
+							<DialogClose asChild>
+								<Button variant="secondary">Cancel</Button>
+							</DialogClose>
+							<Button
+								type="submit"
+								form="workout-form"
+								onClick={() => setOpen(false)}>
+								Save
+							</Button>
+						</>
+					) : null}
+					{authStatus === "unauthenticated" ? (
+						<>
+							<DialogClose asChild>
+								<Button variant="secondary">Close</Button>
+							</DialogClose>
+							<Button asChild>
+								<Link href="/login">Sign in</Link>
+							</Button>
+						</>
+					) : null}
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

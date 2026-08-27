@@ -10,12 +10,6 @@ interface HistoryFeedErrorBoundaryProps {
 	WORKOUTS_PER_PAGE: number;
 }
 
-type ConvexQueryError = Error & {
-	data?: {
-		code?: string;
-	};
-};
-
 const getHistoryFeedErrorMessage = (error: unknown) => {
 	const fallbackMessage = "Unexpected error loading workout history.";
 
@@ -23,15 +17,7 @@ const getHistoryFeedErrorMessage = (error: unknown) => {
 		return fallbackMessage;
 	}
 
-	const code = (error as ConvexQueryError).data?.code;
-
-	if (code === "INVALID_PAGINATION_OPTS") {
-		return "Invalid history pagination settings. Please refresh and try again.";
-	}
-
-	if (code === "DB_QUERY_FAILED") {
-		return "Couldn't access the database. Please try again later.";
-	}
+	const code = (error as { code?: string }).code;
 
 	if (code === "UNAUTHORIZED") {
 		return "You must be signed in to view workout history.";

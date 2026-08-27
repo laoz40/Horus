@@ -1,4 +1,9 @@
+"use client";
+
+import { isDefinedError } from "@orpc/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement } from "react";
+import Link from "next/link";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -10,66 +15,54 @@ import {
 import { EllipsisVertical } from "lucide-react";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { Button } from "@/components/ui/button";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
-import { showErrorToast } from "@/lib/toastMessages";
-import { Authenticated, useConvex } from "convex/react";
-import { ConvexError } from "convex/values";
-import { useRouter } from "next/navigation";
+import { markWorkoutDeleted } from "@/features/workout-history/stores/historyUiStore";
+import { orpc } from "@/lib/orpc/client";
+import { showErrorToast, showWorkoutDeletedToast } from "@/lib/toastMessages";
 
 interface WorkoutCardOptionsProps {
-	handleDelete: () => void;
 	workoutId: string;
 	workoutName: string;
 }
 
 export default function WorkoutCardOptions({
-	handleDelete,
 	workoutId,
 	workoutName,
 }: WorkoutCardOptionsProps): ReactElement {
-	return (
-		<Authenticated>
-			<Content
-				handleDelete={handleDelete}
-				workoutId={workoutId}
-				workoutName={workoutName}
-			/>
-		</Authenticated>
+	const queryClient = useQueryClient();
+	const deleteWorkout = useMutation(
+		orpc.workouts.delete.mutationOptions({
+			onSuccess: async (result) => {
+				markWorkoutDeleted(result.deletedWorkoutId);
+				showWorkoutDeletedToast(result.deletedWorkoutName);
+				await queryClient.invalidateQueries({
+					queryKey: orpc.workouts.list.key({ type: "infinite" }),
+				});
+			},
+			onError: (error) => {
+				if (!isDefinedError(error)) {
+					showErrorToast("Failed to delete workout.");
+					console.error(error);
+					return;
+				}
+
+				switch (error.code) {
+					case "NOT_FOUND":
+						showErrorToast("Couldn't find workout in the database.");
+						return;
+					case "DATABASE_ERROR":
+						showErrorToast("Couldn't access the database. Please try again.");
+						return;
+					case "UNAUTHORIZED":
+						showErrorToast("You must be signed in to delete workouts.");
+						return;
+					default: {
+						const exhaustiveError: never = error;
+						return exhaustiveError;
+					}
+				}
+			},
+		}),
 	);
-}
-
-function Content({ handleDelete, workoutId, workoutName }: WorkoutCardOptionsProps): ReactElement {
-	const router = useRouter();
-	const convex = useConvex();
-
-	const handleEdit = async () => {
-		try {
-			await convex.query(api.workouts.canEditWorkout, {
-				workoutId: workoutId as Id<"workouts">,
-			});
-
-			router.push(`/workouts/${workoutId}/edit`);
-		} catch (error) {
-			if (error instanceof ConvexError && error.data?.code === "NO_WORKOUT_FOUND") {
-				showErrorToast("Couldn't find workout in the database.");
-				return;
-			}
-
-			if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
-				showErrorToast("Couldn't access the database. Please try again.");
-				return;
-			}
-
-			if (error instanceof ConvexError && error.data?.code === "UNAUTHORIZED") {
-				showErrorToast("You must be signed in to edit workouts.");
-				return;
-			}
-
-			showErrorToast("Unexpected error opening workout editor.");
-			console.error("Unexpected error opening workout editor:", error);
-		}
-	};
 
 	return (
 		<>
@@ -88,12 +81,9 @@ function Content({ handleDelete, workoutId, workoutName }: WorkoutCardOptionsPro
 					className="w-34">
 					<DropdownMenuGroup>
 						<DropdownMenuItem
-							className="h-10"
-							onSelect={(e) => {
-								e.preventDefault();
-								handleEdit();
-							}}>
-							Edit
+							asChild
+							className="h-10">
+							<Link href={`/workouts/${workoutId}/edit`}>Edit</Link>
 						</DropdownMenuItem>
 
 						<DropdownMenuItem className="h-10">Share</DropdownMenuItem>
@@ -103,7 +93,7 @@ function Content({ handleDelete, workoutId, workoutName }: WorkoutCardOptionsPro
 						<AlertDialogDestructive
 							title="Delete workout?"
 							description={`This will permanently delete workout: ${workoutName}`}
-							handleDelete={handleDelete}>
+							handleDelete={() => deleteWorkout.mutate({ workoutId })}>
 							<DropdownMenuItem
 								className="h-10"
 								variant="destructive"

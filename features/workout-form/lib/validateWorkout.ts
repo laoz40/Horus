@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { getCurrentDay } from "@/lib/date";
 import { stripEmptyWorkoutEntries } from "./stripEmptyWorkoutEntries";
 
 const MAX_WORKOUT_NAME_LENGTH = 64;
@@ -16,7 +17,7 @@ const SET_REPS_MISSING_MESSAGE = "Set doesn't have reps. You can't just do nothi
 const EXERCISE_NO_SETS_MESSAGE = "Exercise has no sets. Did you even do it?";
 const NO_EXERCISES_MESSAGE = "No exercises, silly. Go do your workout.";
 
-const GlobalExerciseInputSchema = z.object({
+export const GlobalExerciseInputSchema = z.object({
 	name: z
 		.string()
 		.trim()
@@ -25,7 +26,7 @@ const GlobalExerciseInputSchema = z.object({
 	muscleGroups: z.array(z.string()).optional(),
 });
 
-const SetSchema = z.object({
+export const SetSchema = z.object({
 	id: z.string(),
 	weight: z.number().nonnegative().max(MAX_SET_WEIGHT, NUMERIC_MAX_MESSAGE).optional(),
 	reps: z
@@ -48,9 +49,10 @@ const CompletedSetSchema = SetSchema.extend({
 		.max(MAX_SET_REPS, NUMERIC_MAX_MESSAGE),
 });
 
-const ExerciseSchema = z
+export const ExerciseSchema = z
 	.object({
 		id: z.string(),
+		exerciseId: z.string().optional(),
 		global: GlobalExerciseInputSchema,
 		difficulty: z.number().optional(),
 		notes: z.string().max(MAX_EXERCISE_NOTES_LENGTH, EXERCISE_NOTES_MAX_MESSAGE).optional(),
@@ -75,7 +77,40 @@ export const WorkoutSchema = z.object({
 	exercises: z.array(ExerciseSchema).min(1, NO_EXERCISES_MESSAGE),
 });
 
+const SetForSaveSchema = SetSchema.required({ weight: true, reps: true })
+	.extend({ id: z.uuid() })
+	.strict();
+
+const ExerciseForSaveSchema = ExerciseSchema.safeExtend({
+	id: z.uuid(),
+	exerciseId: z.uuid().optional(),
+	global: GlobalExerciseInputSchema.strict(),
+	difficulty: z.number().int().min(0).max(4).optional(),
+	sets: z.array(SetForSaveSchema).min(1),
+}).strict();
+
+export const WorkoutForSaveSchema = WorkoutSchema.extend({
+	durationSeconds: z.number().int().nonnegative().nullable(),
+	exercises: z.array(ExerciseForSaveSchema).min(1),
+}).strict();
+
 export const SanitizedWorkoutSchema = z.preprocess(stripEmptyWorkoutEntries, WorkoutSchema);
+
+const WorkoutForSaveInputSchema = SanitizedWorkoutSchema.transform((workout) => ({
+	...workout,
+	name: workout.name || `${getCurrentDay()} Workout`,
+	exercises: workout.exercises.map((exercise) => ({
+		...exercise,
+		sets: exercise.sets.map((set) => ({
+			...set,
+			weight: set.weight ?? 0,
+		})),
+	})),
+})).pipe(WorkoutForSaveSchema);
+
+export function parseWorkoutForSave(workout: Workout, durationSeconds: number) {
+	return WorkoutForSaveInputSchema.safeParse({ ...workout, durationSeconds });
+}
 
 export const validateWorkout = (workout: Workout) => {
 	return SanitizedWorkoutSchema.safeParse(workout);

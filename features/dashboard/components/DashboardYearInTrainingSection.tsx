@@ -1,9 +1,9 @@
 "use client";
 
 import CalendarHeatmap from "react-calendar-heatmap";
-import { useQuery } from "convex/react";
+import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { api } from "@/convex/_generated/api";
+import { orpc } from "@/lib/orpc/client";
 
 type HeatmapValue = {
 	date: string;
@@ -15,21 +15,40 @@ const emptyText = "Your consistency map starts with your next session.";
 type DashboardYearInTrainingSectionProps = {
 	isAuthPending: boolean;
 	isSignedIn: boolean;
+	userId?: string;
 };
 
 export default function DashboardYearInTrainingSection({
 	isAuthPending,
 	isSignedIn,
+	userId,
 }: DashboardYearInTrainingSectionProps) {
 	const year = new Date().getFullYear();
-	const stats = useQuery(api.dailySetStats.getYear, isSignedIn ? { year } : "skip");
+	const statsQuery = useQuery(
+		orpc.dashboard.yearInTraining.queryOptions({
+			input: { year, userId },
+			enabled: isSignedIn,
+		}),
+	);
 
-	if (isAuthPending || (isSignedIn && stats === undefined)) {
+	if (isAuthPending || (isSignedIn && statsQuery.isPending)) {
 		return <YearInTrainingLoading year={year} />;
 	}
 
+	if (statsQuery.isError) {
+		return (
+			<YearInTrainingShell year={year}>
+				<div className="border bg-card p-3 text-card-foreground shadow-sm">
+					<p className="py-8 text-center text-sm text-destructive">
+						Failed to load year in training data.
+					</p>
+				</div>
+			</YearInTrainingShell>
+		);
+	}
+
 	const values: HeatmapValue[] =
-		stats?.map((row) => ({ date: row.dayKey, count: row.setCount })) ?? [];
+		statsQuery.data?.map((row) => ({ date: row.dayKey, count: row.setCount })) ?? [];
 
 	return (
 		<YearInTrainingShell year={year}>

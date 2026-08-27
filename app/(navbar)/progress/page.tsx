@@ -14,6 +14,7 @@ export default function ProgressPage(): ReactElement {
 			<DashboardYearInTrainingSection
 				isAuthPending={isPending}
 				isSignedIn={isSignedIn}
+				userId={sessionData?.user?.id}
 			/>
 		</div>
 	);

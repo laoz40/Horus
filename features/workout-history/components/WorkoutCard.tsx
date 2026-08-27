@@ -1,64 +1,17 @@
 import Card from "@/components/Card";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
 import type { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
-import { markWorkoutDeleted } from "@/features/workout-history/stores/historyUiStore";
 import { toTitleCase } from "@/features/workout-form/lib/convertWorkoutData";
 import { getRelativeTime } from "@/lib/date";
 import { ShineBorder } from "@/components/ui/shine-border";
 import WorkoutCardStats from "./WorkoutCardStats";
 import WorkoutCardOptions from "./WorkoutCardOptions";
 import { Badge } from "@/components/ui/badge";
-import { showErrorToast, showWorkoutDeletedToast } from "@/lib/toastMessages";
-import { Authenticated, useMutation } from "convex/react";
-import { ConvexError } from "convex/values";
 
 interface WorkoutCardProps {
 	workout: WorkoutHistoryItem;
 }
 
 export default function WorkoutCard({ workout }: WorkoutCardProps) {
-	return (
-		<Authenticated>
-			<Content workout={workout} />
-		</Authenticated>
-	);
-}
-
-function Content({ workout }: WorkoutCardProps) {
-	const deleteWorkout = useMutation(api.workouts.deleteWorkout);
-
-	const handleDelete = async () => {
-		try {
-			const deletedWorkout = await deleteWorkout({
-				workoutId: workout._id as Id<"workouts">,
-			});
-
-			markWorkoutDeleted(workout._id);
-			showWorkoutDeletedToast(deletedWorkout.deletedWorkoutName);
-		} catch (error) {
-			if (error instanceof ConvexError && error.data?.code === "NO_WORKOUT_FOUND") {
-				showErrorToast("Couldn't find workout in the database.");
-				console.error("Missing ID: ", error.data?.workoutId ?? workout._id);
-				return;
-			}
-
-			if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
-				showErrorToast("Couldn't access the database. Please try again.");
-				console.error(error);
-				return;
-			}
-
-			if (error instanceof ConvexError && error.data?.code === "UNAUTHORIZED") {
-				showErrorToast("You must be signed in to delete workouts.");
-				return;
-			}
-
-			showErrorToast("Failed to delete workout.");
-			console.error(error);
-		}
-	};
-
 	const mapMuscleGroups = workout.muscleGroups
 		.slice(0, 3)
 		.map((muscleGroup) => toTitleCase(muscleGroup));
@@ -82,7 +35,6 @@ function Content({ workout }: WorkoutCardProps) {
 						</h2>
 					</div>
 					<WorkoutCardOptions
-						handleDelete={handleDelete}
 						workoutId={workout._id}
 						workoutName={workout.name}
 					/>

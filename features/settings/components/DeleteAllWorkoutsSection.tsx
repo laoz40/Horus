@@ -1,39 +1,48 @@
 "use client";
 
+import { isDefinedError } from "@orpc/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import SectionCard from "@/components/SectionCard";
 import { Button } from "@/components/ui/button";
-import { api } from "@/convex/_generated/api";
+import { orpc } from "@/lib/orpc/client";
 import { showErrorToast, showWorkoutsDeletedToast } from "@/lib/toastMessages";
-import { useMutation } from "convex/react";
-import { ConvexError } from "convex/values";
 
 export default function DeleteAllWorkoutsSection() {
-	const deleteAllWorkouts = useMutation(api.workouts.deleteAllWorkouts);
+	const queryClient = useQueryClient();
+	const deleteAllWorkouts = useMutation(
+		orpc.workouts.deleteAll.mutationOptions({
+			onSuccess: async (result) => {
+				showWorkoutsDeletedToast(result.deletedCount);
+				await queryClient.invalidateQueries({
+					queryKey: orpc.workouts.list.key({ type: "infinite" }),
+				});
+			},
+			onError: (error) => {
+				if (!isDefinedError(error)) {
+					showErrorToast("Failed to delete workouts.");
+					console.error(error);
+					return;
+				}
 
-	const handleDelete = async () => {
-		try {
-			const result = await deleteAllWorkouts({});
-			showWorkoutsDeletedToast(result.deletedCount);
-		} catch (error) {
-			if (error instanceof ConvexError && error.data?.code === "NO_WORKOUTS") {
-				showErrorToast("No workouts to delete.");
-				return;
-			}
-
-			if (error instanceof ConvexError && error.data?.code === "DB_QUERY_FAILED") {
-				showErrorToast("Couldn't reach the database. Please try again.");
-				return;
-			}
-
-			if (error instanceof ConvexError && error.data?.code === "UNAUTHORIZED") {
-				showErrorToast("You must be signed in to delete workouts.");
-				return;
-			}
-
-			showErrorToast("Unexpected error while deleting workouts.");
-		}
-	};
+				switch (error.code) {
+					case "NO_WORKOUTS":
+						showErrorToast("No workouts to delete.");
+						return;
+					case "DATABASE_ERROR":
+						showErrorToast("Couldn't access the database. Please try again.");
+						return;
+					case "UNAUTHORIZED":
+						showErrorToast("You must be signed in to delete workouts.");
+						return;
+					default: {
+						const exhaustiveError: never = error;
+						return exhaustiveError;
+					}
+				}
+			},
+		}),
+	);
 
 	return (
 		<SectionCard header="Data">
@@ -42,7 +51,7 @@ export default function DeleteAllWorkoutsSection() {
 				<AlertDialogDestructive
 					title="Delete all workouts?"
 					description="This will permanently delete all workouts."
-					handleDelete={handleDelete}>
+					handleDelete={() => deleteAllWorkouts.mutate({})}>
 					<Button
 						variant="destructive"
 						size="sm"

@@ -28,8 +28,13 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 			name={exerciseNamePath}
 			control={control}
 			render={({ field }) => {
+				const clearExerciseIdentity = () => {
+					setValue(`exercises.${exerciseIndex}.exerciseId`, undefined);
+				};
+
 				const selectExercise = (exerciseName: string) => {
 					field.onChange(exerciseName);
+					clearExerciseIdentity();
 
 					const match = suggestions.find((exercise) => exercise.name === exerciseName);
 					setValue(`exercises.${exerciseIndex}.global.muscleGroups`, match?.muscleGroups ?? []);
@@ -166,8 +171,9 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 								onChange={(e) => {
 									const nextQuery = e.target.value ?? "";
 									field.onChange(nextQuery);
+									clearExerciseIdentity();
 									setIsOpen(true);
-									// reset muscle groups when typing in the input
+									// Reset metadata when typing because the name no longer identifies the selected exercise.
 									setValue(`exercises.${exerciseIndex}.global.muscleGroups`, []);
 								}}
 								onFocus={() => setIsOpen(true)}
