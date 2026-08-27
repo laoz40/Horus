@@ -14,6 +14,4 @@ export const serverEnvironmentSchema = z.object({
 	GITHUB_CLIENT_SECRET: z.string().min(1),
 });
 
-export const clientEnvironmentSchema = {
-	NEXT_PUBLIC_CONVEX_URL: z.url(),
-};
+export const clientEnvironmentSchema = {};

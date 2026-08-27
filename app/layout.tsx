@@ -5,7 +5,6 @@ import { Oxanium } from "next/font/google";
 import DeferredToaster from "@/components/DeferredToaster";
 import RestTimerButton from "@/components/RestTimerButton";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
-import ConvexClientProvider from "./ConvexClientProvider";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
@@ -66,12 +65,10 @@ export default function RootLayout({
 					}}
 					enableSystem
 					disableTransitionOnChange>
-					<ConvexClientProvider>
-						<Providers>
-							<RestTimerButton />
-							{children}
-						</Providers>
-					</ConvexClientProvider>
+					<Providers>
+						<RestTimerButton />
+						{children}
+					</Providers>
 				</ThemeProvider>
 			</body>
 		</html>

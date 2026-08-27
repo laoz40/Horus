@@ -1,8 +1,6 @@
 # Horus
 
 > Project WIP
->
-> Currently migrating to PostgreSQL
 
 A web app to track my gym workouts. I created my own because I didn't enjoy
 existing solutions and my previous method of tracking workouts (excel spreadsheet) is
@@ -37,7 +35,9 @@ super inefficient, laggy and doesn't scale well.
 - Next.js 16
 - React 19
 - TypeScript
-- Convex
+- PostgreSQL (Neon)
+- Drizzle ORM
+- oRPC
 - Better Auth
 - Redis
 - Zod
@@ -87,13 +87,10 @@ In the future, I plan to build a native mobile version of this app.
   - [x] fix glass theme bg on UserButton component
 - [ ] fix grey colours on light mode for inputs and secondary buttons, so it doesn't look disabled
   - should match select colour
-- [x] implement convex as backend
-  - [x] remove unused prisma and sqlite code
 - [x] implement auth (clerk)
-  - [x] connect to convex
   - [x] add chevron to indicate profile bar is clickable without affecting trigger
   - [x] fix div min height on profile bar
-- [x] betterauth
+- [x] implement auth 2 (betterauth)
   - [x] otp
   - [x] fix otp code ui
   - [x] resend
@@ -107,10 +104,18 @@ In the future, I plan to build a native mobile version of this app.
   - [x] sign out on dashboard doesn't refresh the name
   - [x] session expiry
   - [ ] emails for delete account, stale account
-- convex
+- [x] change db, from sqlite to convex
+  - [x] remove unused prisma and sqlite code
   - [ ] rate limiter plugin
   - [ ] add max/upper character limits to inputs
   - [x] remove old nested workout schema
+- [x] change db 2, from convex to PostgreSQL (Neon)
+    - [x] remove convex code
+    - [x] implement orpc for type safety between server and client
+    - [x] implement drizzle for type safety between server and client
+    - [x] use neverthrow for clean error handling
+    - [ ] migrate prod data to postgres
+- [x] use t3env for env var validation
 - [x] add webmanifest to support ios app shortcut
   - [x] a bottom margin so that the home button indicator does not cover the nav content
 
@@ -142,19 +147,13 @@ In the future, I plan to build a native mobile version of this app.
   - [x] fix choosing exercise from the list makes the set inputs nan
   - [x] make function to turn exercises from api into title case
   - [x] cache api results to prevent repeat api requests
-  - [ ] contol what suggestions can be added
-  - Add: usageCount to globalexercises or derive from how often it appears in workouts
-  - Then: only show results that have enough usageCount
-  - should calculate unique users -> usage count -> age
-    - reliabilityScore = min(50, uniqueUsers _ 10) + min(30, min(usageCount, uniqueUsers _ 3) \* 2) + min(20, ageInDays)
-  - track createdByUserId so that the creator can see their own suggestions
   - [x] make a search button instead of auto calling the api
   - [x] add default exercises (common ones)
   - [x] show loading state for fetching exercises from db and api
   - [x] show error for too many requests as a toast
   - [x] fix Error fetching from API: TypeError: groupTwo is not iterable
   - [x] extract the toast messages into a toastMessages.ts
-  - [ ] redo error handling
+  - [x] redo error handling
 - [x] make exercise form appear after typing the name
   - [x] fix exercise bottom bar not showing when loading a workout with a single exercise
 - [x] always add empty set or exercise if last one is deleted
@@ -168,8 +167,8 @@ In the future, I plan to build a native mobile version of this app.
   - [x] tap to select exercises from a list, to scroll to that one
 - [x] history icon -> opens dialog to show last 5 sets of that exercise
   - [x] change it to 6 sets
-  - [ ] fix showing sets in order completed and not most recent first
-  - [ ] make the highest volume one bold (do pr calculation of the 6)
+  - [x] fix showing sets in order completed and not most recent first
+  - [x] make the highest volume one bold (do pr calculation of the 6)
 - [x] history icon loads only when exercise is inputted
 - [x] fix dropdown not matching width of input
 - [x] implement another way to delete exercise without inputting the name
@@ -225,14 +224,13 @@ In the future, I plan to build a native mobile version of this app.
 ### Progress
 
 - [ ] graphs to show progression over time
-  - [ ] chart.js?
 - [ ] [filter stats](workout-tracker.md#stats-to-calculate)
-- [ ] frequency heatmap to show sessions per time period
+- [x] frequency heatmap to show sessions per time period
 - [ ] weekly summary
 
 ### Dashboard
 
 - [x] need to add loading state for name and button (used for first load)
 - [ ] show goals/stats on dashboard for motivation
-  - [ ] show frequency heatmap of sessions
+  - [x] show frequency heatmap of sessions
   - [ ] prs
