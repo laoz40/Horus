@@ -4,7 +4,12 @@ import { z } from "zod";
 import { protectedProcedure } from "@/server/procedures";
 import { getYearInTraining } from "@/server/services/dashboard.service";
 
-const yearInTrainingInputSchema = z.object({ year: z.number().int().min(1).max(9999) }).strict();
+const yearInTrainingInputSchema = z
+	.object({
+		year: z.number().int().min(1).max(9999),
+		userId: z.string().optional(),
+	})
+	.strict();
 
 const yearInTrainingOutputSchema = z.array(
 	z.object({

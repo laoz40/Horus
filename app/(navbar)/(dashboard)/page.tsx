@@ -44,6 +44,7 @@ export default function DashboardPage(): ReactElement {
 			<DashboardYearInTrainingSection
 				isAuthPending={isPending}
 				isSignedIn={isSignedIn}
+				userId={user?.id}
 			/>
 		</div>
 	);

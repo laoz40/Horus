@@ -15,22 +15,36 @@ const emptyText = "Your consistency map starts with your next session.";
 type DashboardYearInTrainingSectionProps = {
 	isAuthPending: boolean;
 	isSignedIn: boolean;
+	userId?: string;
 };
 
 export default function DashboardYearInTrainingSection({
 	isAuthPending,
 	isSignedIn,
+	userId,
 }: DashboardYearInTrainingSectionProps) {
 	const year = new Date().getFullYear();
 	const statsQuery = useQuery(
 		orpc.dashboard.yearInTraining.queryOptions({
-			input: { year },
+			input: { year, userId },
 			enabled: isSignedIn,
 		}),
 	);
 
 	if (isAuthPending || (isSignedIn && statsQuery.isPending)) {
 		return <YearInTrainingLoading year={year} />;
+	}
+
+	if (statsQuery.isError) {
+		return (
+			<YearInTrainingShell year={year}>
+				<div className="border bg-card p-3 text-card-foreground shadow-sm">
+					<p className="py-8 text-center text-sm text-destructive">
+						Failed to load year in training data.
+					</p>
+				</div>
+			</YearInTrainingShell>
+		);
 	}
 
 	const values: HeatmapValue[] =
