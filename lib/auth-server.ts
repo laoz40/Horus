@@ -119,7 +119,7 @@ export const auth = betterAuth({
 							<p>Thank you for using my app! Would love to hear any feedback, ideas or questions. You can reach me at <a href="mailto:${personalEmail}">${personalEmail}</a>. Enjoy your workout!</p>`,
 					},
 					{
-						idempotencyKey: `otp-sign-in/${emailKey}/${timeBucket}`,
+						idempotencyKey: `otp-sign-in/${emailKey}/${shortHash(otp)}/${timeBucket}`,
 					},
 				);
 
