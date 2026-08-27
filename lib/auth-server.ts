@@ -16,8 +16,6 @@ const resendFromEmail = env.RESEND_FROM_EMAIL;
 const personalEmail = env.PERSONAL_EMAIL;
 const googleClientId = env.GOOGLE_CLIENT_ID;
 const googleClientSecret = env.GOOGLE_CLIENT_SECRET;
-const facebookClientId = env.FACEBOOK_CLIENT_ID;
-const facebookClientSecret = env.FACEBOOK_CLIENT_SECRET;
 const githubClientId = env.GITHUB_CLIENT_ID;
 const githubClientSecret = env.GITHUB_CLIENT_SECRET;
 
@@ -50,7 +48,7 @@ export const auth = betterAuth({
 		delete: async (key) => {
 			await redis.del(key);
 		},
-		increment: async (key, ttl) => {
+		increment: async (key: string, ttl?: number) => {
 			const count = await redis.incr(key);
 			if (count === 1 && ttl) {
 				await redis.expire(key, ttl);
@@ -72,17 +70,12 @@ export const auth = betterAuth({
 	account: {
 		accountLinking: {
 			enabled: true,
-			trustedProviders: ["facebook"],
 		},
 	},
 	socialProviders: {
 		google: {
 			clientId: googleClientId,
 			clientSecret: googleClientSecret,
-		},
-		facebook: {
-			clientId: facebookClientId,
-			clientSecret: facebookClientSecret,
 		},
 		github: {
 			clientId: githubClientId,

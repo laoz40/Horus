@@ -49,7 +49,7 @@ export function Providers({ children }: { children: ReactNode }) {
 					fields: ["image", "name", "weight"],
 				}}
 				social={{
-					providers: ["google", "facebook", "github"],
+					providers: ["google", "github"],
 				}}
 				basePath="/"
 				viewPaths={{
