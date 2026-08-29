@@ -29,7 +29,9 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 
 	const filteredSuggestions = query.trim() ? suggestions : [];
 	const shouldShowSuggestions = isOpen && query.trim().length > 0;
-	const didHandleTouchSelectionRef = useRef(false);
+	// The search-online touch path lets the browser's synthetic click through, so
+	// the ref marks it handled and the click handler skips the duplicate fetch.
+	const didHandleTouchFetchRef = useRef(false);
 	const { listboxRef, listboxTouchProps, shouldHandleTouchTap, stopTouch } =
 		useSuggestionListTouchScroll();
 
@@ -78,29 +80,19 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 				const selectExerciseFromTouch = (exerciseName: string) => {
 					if (!shouldHandleTouchTap()) return;
 
-					didHandleTouchSelectionRef.current = true;
-					selectExercise(exerciseName);
-				};
-
-				const selectExerciseFromClick = (exerciseName: string) => {
-					if (didHandleTouchSelectionRef.current) {
-						didHandleTouchSelectionRef.current = false;
-						return;
-					}
-
 					selectExercise(exerciseName);
 				};
 
 				const fetchMoreSuggestionsFromTouch = () => {
 					if (!shouldHandleTouchTap()) return;
 
-					didHandleTouchSelectionRef.current = true;
+					didHandleTouchFetchRef.current = true;
 					void fetchMoreSuggestions();
 				};
 
 				const fetchMoreSuggestionsFromClick = () => {
-					if (didHandleTouchSelectionRef.current) {
-						didHandleTouchSelectionRef.current = false;
+					if (didHandleTouchFetchRef.current) {
+						didHandleTouchFetchRef.current = false;
 						return;
 					}
 
@@ -158,7 +150,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 												onPointerDown={preventMousePointerBlur}
 												onMouseDown={preventMouseBlur}
 												onTouchEnd={(event) => handleOptionTouchEnd(event, exercise.name)}
-												onClick={() => selectExerciseFromClick(exercise.name)}>
+												onClick={() => selectExercise(exercise.name)}>
 												{exercise.name}
 											</button>
 										))}
