@@ -26,8 +26,13 @@ const redis = new Redis({
 
 const otpExpiresInSeconds = 300;
 
+// Origins beyond SITE_URL that may call auth endpoints (e.g. Tailscale serve URL for phone access)
+const extraTrustedOrigins =
+	env.EXTRA_TRUSTED_ORIGINS?.split(",").map((origin) => origin.trim()) ?? [];
+
 export const auth = betterAuth({
 	baseURL: env.SITE_URL,
+	trustedOrigins: extraTrustedOrigins,
 	database: drizzleAdapter(db, {
 		provider: "pg",
 		schema,

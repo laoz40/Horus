@@ -3,6 +3,8 @@ import { z } from "zod";
 export const serverEnvironmentSchema = z.object({
 	DATABASE_URL: z.url(),
 	SITE_URL: z.url(),
+	// Comma-separated extra origins (e.g. the Tailscale serve URL) allowed to call auth endpoints
+	EXTRA_TRUSTED_ORIGINS: z.string().optional(),
 	RESEND_API_KEY: z.string().min(1),
 	RESEND_FROM_EMAIL: z.email(),
 	PERSONAL_EMAIL: z.email(),
