@@ -1,9 +1,10 @@
 import { useId, useRef, useState } from "react";
-import type { MouseEvent, PointerEvent, Touch, TouchEvent } from "react";
+import type { MouseEvent, PointerEvent, TouchEvent } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { useExerciseSuggestions } from "@/features/workout-form/hooks/useExerciseSuggestions";
+import { useSuggestionListTouchScroll } from "@/features/workout-form/hooks/useSuggestionListTouchScroll";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 // Keep the input focused when the mouse is used on the dropdown options.
@@ -29,10 +30,8 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 	const filteredSuggestions = query.trim() ? suggestions : [];
 	const shouldShowSuggestions = isOpen && query.trim().length > 0;
 	const didHandleTouchSelectionRef = useRef(false);
-	const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-	const didScrollTouchRef = useRef(false);
-	const lastTouchYRef = useRef<number | null>(null);
-	const listboxRef = useRef<HTMLDivElement | null>(null);
+	const { listboxRef, listboxTouchProps, shouldHandleTouchTap, stopTouch } =
+		useSuggestionListTouchScroll();
 
 	return (
 		<Controller
@@ -57,59 +56,6 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 					setTimeout(() => setFocus(`exercises.${exerciseIndex}.sets.0.weight`), 0);
 				};
 
-				const startTouch = (touch: Touch) => {
-					touchStartRef.current = { x: touch.clientX, y: touch.clientY };
-					didScrollTouchRef.current = false;
-					lastTouchYRef.current = touch.clientY;
-				};
-
-				const updateTouchScrollState = (touch: Touch) => {
-					const startTouchPoint = touchStartRef.current;
-					if (!startTouchPoint) return;
-
-					const movedX = Math.abs(touch.clientX - startTouchPoint.x);
-					const movedY = Math.abs(touch.clientY - startTouchPoint.y);
-					if (movedX > 8 || movedY > 8) {
-						didScrollTouchRef.current = true;
-					}
-				};
-
-				const scrollSuggestionList = (touch: Touch) => {
-					updateTouchScrollState(touch);
-
-					const lastTouchY = lastTouchYRef.current;
-					const listbox = listboxRef.current;
-					if (lastTouchY === null || !listbox) {
-						lastTouchYRef.current = touch.clientY;
-						return;
-					}
-
-					const deltaY = lastTouchY - touch.clientY;
-					listbox.scrollTop += deltaY;
-					lastTouchYRef.current = touch.clientY;
-				};
-
-				const stopTouch = () => {
-					lastTouchYRef.current = null;
-				};
-
-				const handleSuggestionListTouchMove = (event: TouchEvent<HTMLDivElement>) => {
-					event.preventDefault();
-					scrollSuggestionList(event.touches[0]);
-				};
-
-				const handleListboxTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-					startTouch(event.touches[0]);
-				};
-
-				const handleListboxTouchEnd = () => {
-					stopTouch();
-				};
-
-				const handleListboxTouchCancel = () => {
-					stopTouch();
-				};
-
 				const handleOptionTouchEnd = (
 					event: TouchEvent<HTMLButtonElement>,
 					exerciseName: string,
@@ -128,13 +74,6 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 
 				const listboxClassName =
 					"max-h-72 scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0";
-
-				const shouldHandleTouchTap = () => {
-					const shouldHandle = !didScrollTouchRef.current;
-					touchStartRef.current = null;
-					didScrollTouchRef.current = false;
-					return shouldHandle;
-				};
 
 				const selectExerciseFromTouch = (exerciseName: string) => {
 					if (!shouldHandleTouchTap()) return;
@@ -208,10 +147,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 										id={listboxId}
 										role="listbox"
 										className={listboxClassName}
-										onTouchStart={handleListboxTouchStart}
-										onTouchMove={handleSuggestionListTouchMove}
-										onTouchEnd={handleListboxTouchEnd}
-										onTouchCancel={handleListboxTouchCancel}>
+										{...listboxTouchProps}>
 										{filteredSuggestions.map((exercise) => (
 											<button
 												key={exercise.normalizedName}
