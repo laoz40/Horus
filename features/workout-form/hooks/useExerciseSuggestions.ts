@@ -75,14 +75,14 @@ export function useExerciseSuggestions(rawQuery: string) {
 		}),
 	);
 
-		// Combine instant local matches with PostgreSQL matches, remove duplicates, and sort the dropdown.
-		const suggestions = useMemo(() => {
-			// Only use database results when they belong to the text currently in the input.
-			// This prevents results for an older debounced query from appearing after the user types more.
-			const isDbResultCurrent = query.length > 0 && debouncedSearchQuery === query;
-			const dbExercises = isDbResultCurrent ? (exerciseSearch.data ?? []) : [];
+	// Combine instant local matches with PostgreSQL matches, remove duplicates, and sort the dropdown.
+	const suggestions = useMemo(() => {
+		// Only use database results when they belong to the text currently in the input.
+		// This prevents results for an older debounced query from appearing after the user types more.
+		const isDbResultCurrent = query.length > 0 && debouncedSearchQuery === query;
+		const dbExercises = isDbResultCurrent ? (exerciseSearch.data ?? []) : [];
 
-			const onlineExercises = onlineExercisesByQuery[query] ?? [];
+		const onlineExercises = onlineExercisesByQuery[query] ?? [];
 
 		return sortExercisesAlphabetically(
 			deduplicateExercises(deduplicateExercises(defaultExercises, dbExercises), onlineExercises),

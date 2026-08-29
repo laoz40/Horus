@@ -162,8 +162,8 @@ export function buildWorkoutHistoryPage(rows: WorkoutHistoryRow[], query: ListWo
 
 	return {
 		items: pageWorkouts.map((workout) => ({
-			_id: workout.id,
-			_creationTime: workout.createdAt.getTime(),
+			id: workout.id,
+			createdAt: workout.createdAt.getTime(),
 			name: workout.name,
 			durationSeconds: workout.durationSeconds,
 			totalVolume: workout.totalVolume,
