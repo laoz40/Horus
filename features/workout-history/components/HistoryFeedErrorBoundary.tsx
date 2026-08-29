@@ -10,23 +10,21 @@ interface HistoryFeedErrorBoundaryProps {
 	WORKOUTS_PER_PAGE: number;
 }
 
-const getHistoryFeedErrorMessage = (error: unknown) => {
-	const fallbackMessage = "Unexpected error loading workout history.";
-
-	if (!(error instanceof Error)) {
-		return fallbackMessage;
-	}
-
+const getHistoryFeedErrorMessage = (error: Error) => {
 	// orpc errors carry a `code` field on top of the standard Error shape.
 	if ("code" in error && error.code === "UNAUTHORIZED") {
 		return "You must be signed in to view workout history.";
 	}
 
-	return fallbackMessage;
+	return "Unexpected error loading workout history.";
 };
 
 function HistoryFeedErrorFallback({ error, resetErrorBoundary }: Readonly<FallbackProps>) {
-	const message = getHistoryFeedErrorMessage(error);
+	// React hands the boundary an arbitrary thrown value; only real Errors can carry an orpc code
+	const message =
+		error instanceof Error
+			? getHistoryFeedErrorMessage(error)
+			: "Unexpected error loading workout history.";
 
 	useEffect(() => {
 		showErrorToast(message);
