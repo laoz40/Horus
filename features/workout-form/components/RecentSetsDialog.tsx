@@ -24,11 +24,11 @@ interface RecentSetsDialogProps {
 
 type RecentSetPrType = "weight" | "volume" | "bodyweightReps";
 
-const prTypeLabels: Record<RecentSetPrType, string> = {
+const prTypeLabels = {
 	weight: "Weight PR",
 	volume: "Volume PR",
 	bodyweightReps: "Reps PR",
-};
+} satisfies Record<RecentSetPrType, string>;
 
 function SetSkeletonRow() {
 	return (
