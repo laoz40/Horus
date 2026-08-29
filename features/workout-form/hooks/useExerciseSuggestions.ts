@@ -44,12 +44,17 @@ const fetchOnlineExerciseSuggestions = async (query: string) => {
 };
 
 export function useExerciseSuggestions(rawQuery: string) {
-	const [suggestions, setSuggestions] = useState<ExerciseSuggestion[]>([]);
 	const [debouncedQuery, setDebouncedQuery] = useState("");
 	const [isOnlineSearchLoading, setIsOnlineSearchLoading] = useState(false);
+	// Online "fetch more" results are keyed by query so stale results never leak into the dropdown.
+	const [onlineExercisesByQuery, setOnlineExercisesByQuery] = useState<
+		Record<string, ExerciseSuggestion[]>
+	>({});
 	const queryClient = useQueryClient();
 
 	const query = rawQuery.trim();
+	// An empty query disables the DB search immediately without clearing the debounced value.
+	const debouncedSearchQuery = query.length === 0 ? "" : debouncedQuery;
 	const defaultExercises = useMemo(
 		() => sortExercisesAlphabetically(fetchDefaultExercises(query)),
 		[query],
@@ -57,10 +62,7 @@ export function useExerciseSuggestions(rawQuery: string) {
 
 	// Debounce PostgreSQL searches while keeping local defaults immediate.
 	useEffect(() => {
-		if (query.length === 0) {
-			setDebouncedQuery("");
-			return;
-		}
+		if (query.length === 0) return;
 
 		const timeout = setTimeout(() => setDebouncedQuery(query), 300);
 		return () => clearTimeout(timeout);
@@ -68,26 +70,24 @@ export function useExerciseSuggestions(rawQuery: string) {
 
 	const exerciseSearch = useQuery(
 		orpc.exercises.search.queryOptions({
-			input: { query: debouncedQuery },
-			enabled: debouncedQuery.length > 0,
+			input: { query: debouncedSearchQuery },
+			enabled: debouncedSearchQuery.length > 0,
 		}),
 	);
 
-	useEffect(() => {
-		if (query.length === 0) {
-			setSuggestions([]);
-			return;
-		}
-
-		// Only use database results when they belong to the text currently in the input.
-		// This prevents results for an older debounced query from appearing after the user types more.
-		const dbExercises = debouncedQuery === query ? (exerciseSearch.data ?? []) : [];
-
 		// Combine instant local matches with PostgreSQL matches, remove duplicates, and sort the dropdown.
-		setSuggestions(
-			sortExercisesAlphabetically(deduplicateExercises(defaultExercises, dbExercises)),
+		const suggestions = useMemo(() => {
+			// Only use database results when they belong to the text currently in the input.
+			// This prevents results for an older debounced query from appearing after the user types more.
+			const isDbResultCurrent = query.length > 0 && debouncedSearchQuery === query;
+			const dbExercises = isDbResultCurrent ? (exerciseSearch.data ?? []) : [];
+
+			const onlineExercises = onlineExercisesByQuery[query] ?? [];
+
+		return sortExercisesAlphabetically(
+			deduplicateExercises(deduplicateExercises(defaultExercises, dbExercises), onlineExercises),
 		);
-	}, [debouncedQuery, defaultExercises, exerciseSearch.data, query]);
+	}, [query, debouncedSearchQuery, exerciseSearch.data, defaultExercises, onlineExercisesByQuery]);
 
 	const isDbSearchLoading =
 		query.length > 0 && (debouncedQuery !== query || exerciseSearch.isFetching);
@@ -108,9 +108,10 @@ export function useExerciseSuggestions(rawQuery: string) {
 			result.match(
 				(data) => {
 					if (data.exercises.length > 0) {
-						setSuggestions((prev) =>
-							sortExercisesAlphabetically(deduplicateExercises(prev, data.exercises)),
-						);
+						setOnlineExercisesByQuery((prev) => ({
+							...prev,
+							[query]: deduplicateExercises(prev[query] ?? [], data.exercises),
+						}));
 					}
 				},
 				(error) => {
