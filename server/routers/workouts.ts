@@ -105,8 +105,8 @@ const historyInputSchema = z.object({
 });
 
 const historyItemSchema = z.object({
-	_id: z.uuid(),
-	_creationTime: z.number(),
+	id: z.uuid(),
+	createdAt: z.number(),
 	name: z.string(),
 	durationSeconds: z.number().nullable(),
 	totalVolume: z.number(),

@@ -3,7 +3,7 @@
 import { HistoryIcon, PlusIcon } from "lucide-react";
 import { forwardRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { openRecentSetsDialog } from "@/features/workout-form/stores/workoutFormUiStore";
 import { showSetDeletedToast } from "@/lib/toastMessages";
 import { cn } from "@/lib/utils";
@@ -36,14 +36,14 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 
 		const handleAddSet = () => {
 			append(createDefaultSet());
-			trigger(`exercises.${exerciseIndex}.sets`);
+			void trigger(`exercises.${exerciseIndex}.sets`);
 		};
 
 		useEffect(() => {
 			if (sets.length > 0) return;
 
 			append(createDefaultSet());
-			trigger(`exercises.${exerciseIndex}.sets`);
+			void trigger(`exercises.${exerciseIndex}.sets`);
 		}, [append, exerciseIndex, sets.length, trigger]);
 
 		// BUG: when loading a workout to edit, adding new sets after deleting sets loads previous data
@@ -55,8 +55,12 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		const exerciseName = useWatch({
 			control,
 			name: `exercises.${exerciseIndex}.global.name` as const,
-		}) as string | undefined;
+		});
 		const hasExerciseName = Boolean(exerciseName?.trim());
+
+		const exerciseError = errors.exercises?.[exerciseIndex];
+		const nameError = exerciseError?.global?.name;
+		const setsError = exerciseError?.sets?.root;
 
 		const handleRecentClick = () => {
 			const trimmedName = exerciseName?.trim();
@@ -87,11 +91,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 							</Button>
 						)}
 					</div>
-					{errors.exercises?.[exerciseIndex]?.global?.name && (
-						<span className="text-red-500 text-sm">
-							{errors.exercises?.[exerciseIndex]?.global?.name?.message}
-						</span>
-					)}
+					{nameError && <span className="text-red-500 text-sm">{nameError.message}</span>}
 				</div>
 
 				{hasExerciseName && (
@@ -117,11 +117,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 								<PlusIcon className="size-4" />
 								<span className="translate-y-px">Add Set</span>
 							</Button>
-							{errors.exercises?.[exerciseIndex]?.sets?.root?.message && (
-								<span className="text-red-500 text-sm">
-									{errors.exercises?.[exerciseIndex]?.sets?.root?.message}
-								</span>
-							)}
+							{setsError && <span className="text-red-500 text-sm">{setsError.message}</span>}
 						</div>
 
 						{/* Difficulty and Notes */}

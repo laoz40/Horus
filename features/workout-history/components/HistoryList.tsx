@@ -31,7 +31,7 @@ export default function HistoryList({
 		};
 	}, []);
 
-	const visibleWorkouts = workouts.filter((workout) => !deletedWorkoutIds.has(workout._id));
+	const visibleWorkouts = workouts.filter((workout) => !deletedWorkoutIds.has(workout.id));
 
 	if (visibleWorkouts.length === 0) {
 		if (isLoading) {
@@ -51,7 +51,7 @@ export default function HistoryList({
 		<div className="space-y-4 md:space-y-5">
 			{visibleWorkouts.map((workout) => (
 				<WorkoutCard
-					key={workout._id}
+					key={workout.id}
 					workout={workout}
 				/>
 			))}

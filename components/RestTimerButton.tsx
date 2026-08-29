@@ -65,7 +65,7 @@ const showRestTimerNotification = async (elapsedTime: string): Promise<void> => 
 
 	// If there is no service worker yet, try the regular browser notification path.
 	try {
-		new Notification("Rest timer", notificationOptions);
+		void new Notification("Rest timer", notificationOptions);
 	} catch {
 		// Some browsers, including Android Chrome, disallow the Notification constructor.
 	}
@@ -82,7 +82,6 @@ export default function RestTimerButton(): ReactElement {
 
 		if (!startedAtMs) return;
 
-		setNowMs(Date.now());
 		const intervalId = window.setInterval(() => {
 			setNowMs(Date.now());
 		}, 1000);

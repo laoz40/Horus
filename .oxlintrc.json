@@ -1,29 +1,62 @@
 {
 	"$schema": "./node_modules/oxlint/configuration_schema.json",
 	"plugins": ["nextjs", "typescript", "unicorn"],
+	"jsPlugins": [{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" }],
 	"categories": {
-		"correctness": "off"
+		"correctness": "error",
+		"suspicious": "error",
+		"perf": "error"
 	},
 	"env": {
 		"builtin": true
 	},
-	"ignorePatterns": [".next/**", "out/**", "build/**", "next-env.d.ts"],
+	"options": {
+		"typeAware": true
+	},
+	"ignorePatterns": [
+		".next/**",
+		"out/**",
+		"build/**",
+		"next-env.d.ts",
+		"tools/oxlint/anti-slop/**"
+	],
 	"rules": {
-		"@next/next/google-font-display": "warn",
-		"@next/next/google-font-preconnect": "warn",
-		"@next/next/next-script-for-ga": "warn",
-		"@next/next/no-async-client-component": "warn",
-		"@next/next/no-before-interactive-script-outside-document": "warn",
-		"@next/next/no-css-tags": "warn",
-		"@next/next/no-head-element": "warn",
+		"anti-slop/no-chained-type-assertions": "error",
+		"anti-slop/no-unknown-parameters": "error",
+		"anti-slop/no-unknown-returns": "error",
+		"anti-slop/no-known-value-widening": "error",
+		"anti-slop/no-conditional-empty-object-spread": "error",
+		"anti-slop/no-module-mocking": "error",
+		"anti-slop/no-object-parameters": "error",
+		"anti-slop/no-shape-in-symbol-names": "error",
+		"anti-slop/no-runtime-typeof": "error",
+		"anti-slop/no-reflect-apply": "error",
+		"anti-slop/no-reflect-get": "error",
+		"anti-slop/no-unknown-type-aliases": "error",
+		"anti-slop/no-unsafe-dictionary-type": "error",
+		"anti-slop/no-widen-then-assert": "error",
+		"anti-slop/require-safety-comment-for-type-assertion": "error",
+		"@typescript-eslint/no-unsafe-type-assertion": "error",
+		"@typescript-eslint/no-unnecessary-type-assertion": "error",
+		"@typescript-eslint/no-unsafe-argument": "error",
+		"@typescript-eslint/non-nullable-type-assertion-style": "error",
+		"@typescript-eslint/require-await": "error",
+		"@typescript-eslint/switch-exhaustiveness-check": "error",
+		"@next/next/google-font-display": "error",
+		"@next/next/google-font-preconnect": "error",
+		"@next/next/next-script-for-ga": "error",
+		"@next/next/no-async-client-component": "error",
+		"@next/next/no-before-interactive-script-outside-document": "error",
+		"@next/next/no-css-tags": "error",
+		"@next/next/no-head-element": "error",
 		"@next/next/no-html-link-for-pages": "error",
-		"@next/next/no-img-element": "warn",
-		"@next/next/no-page-custom-font": "warn",
-		"@next/next/no-styled-jsx-in-document": "warn",
+		"@next/next/no-img-element": "error",
+		"@next/next/no-page-custom-font": "error",
+		"@next/next/no-styled-jsx-in-document": "error",
 		"@next/next/no-sync-scripts": "error",
-		"@next/next/no-title-in-document-head": "warn",
-		"@next/next/no-typos": "warn",
-		"@next/next/no-unwanted-polyfillio": "warn",
+		"@next/next/no-title-in-document-head": "error",
+		"@next/next/no-typos": "error",
+		"@next/next/no-unwanted-polyfillio": "error",
 		"@next/next/inline-script-id": "error",
 		"@next/next/no-assign-module-variable": "error",
 		"@next/next/no-document-import-in-page": "error",
@@ -43,12 +76,21 @@
 		"@typescript-eslint/no-unnecessary-type-constraint": "error",
 		"@typescript-eslint/no-unsafe-declaration-merging": "error",
 		"@typescript-eslint/no-unsafe-function-type": "error",
-		"no-unused-expressions": "warn",
-		"no-unused-vars": "warn",
+		"no-unused-expressions": "error",
+		"no-unused-vars": "error",
 		"@typescript-eslint/no-wrapper-object-types": "error",
 		"@typescript-eslint/prefer-as-const": "error",
 		"@typescript-eslint/prefer-namespace-keyword": "error",
-		"@typescript-eslint/triple-slash-reference": "error"
+		"@typescript-eslint/triple-slash-reference": "error",
+		"complexity": ["error", { "max": 12 }],
+		"max-depth": ["error", { "max": 3 }],
+		"max-statements": ["error", { "max": 15 }],
+		"max-lines": ["error", { "max": 400, "skipBlankLines": true, "skipComments": true }],
+		"eqeqeq": "error",
+		"array-callback-return": "error",
+		"default-case": "error",
+		"class-methods-use-this": "error",
+		"@typescript-eslint/consistent-return": "off"
 	},
 	"overrides": [
 		{
@@ -72,20 +114,27 @@
 				"react/no-unsafe": "off",
 				"react/react-in-jsx-scope": "off",
 				"react-hooks/rules-of-hooks": "error",
-				"react-hooks/exhaustive-deps": "warn",
-				"import/no-anonymous-default-export": "warn",
+				"react-hooks/exhaustive-deps": "error",
+				"import/no-anonymous-default-export": "error",
+				"import/no-unassigned-import": [
+					"error",
+					{
+						"allow": ["server-only", "**/*.css"]
+					}
+				],
 				"jsx-a11y/alt-text": [
-					"warn",
+					"error",
 					{
 						"elements": ["img"],
 						"img": ["Image"]
 					}
 				],
-				"jsx-a11y/aria-props": "warn",
-				"jsx-a11y/aria-proptypes": "warn",
-				"jsx-a11y/aria-unsupported-elements": "warn",
-				"jsx-a11y/role-has-required-aria-props": "warn",
-				"jsx-a11y/role-supports-aria-props": "warn"
+				"jsx-a11y/aria-props": "error",
+				"jsx-a11y/aria-proptypes": "error",
+				"jsx-a11y/aria-unsupported-elements": "error",
+				"jsx-a11y/role-has-required-aria-props": "error",
+				"jsx-a11y/role-supports-aria-props": "error",
+				"jsx-a11y/prefer-tag-over-role": "off"
 			},
 			"globals": {
 				"AudioWorkletGlobalScope": "readonly",
@@ -123,6 +172,14 @@
 				"prefer-const": "error",
 				"prefer-rest-params": "error",
 				"prefer-spread": "error"
+			}
+		},
+		{
+			"files": ["components/ui/**"],
+			"plugins": ["jsx-a11y"],
+			"rules": {
+				"jsx-a11y/no-noninteractive-tabindex": "off",
+				"jsx-a11y/no-noninteractive-element-interactions": "off"
 			}
 		}
 	]

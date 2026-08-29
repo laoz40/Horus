@@ -9,47 +9,60 @@ import { sortExercisesAlphabetically } from "@/features/workout-form/lib/sortExe
 import type { ExerciseSuggestion } from "@/features/workout-form/lib/types";
 import { orpc } from "@/lib/orpc/client";
 import { err, ok } from "neverthrow";
+import * as z from "zod";
 
-interface ExerciseSearchErrorResponse {
-	success: false;
-	exercises: [];
-	error: string;
-}
-
-interface ExerciseSearchSuccessResponse {
-	success: true;
-	exercises: ExerciseSuggestion[];
-}
+// The /api/exercises/search response is untrusted network data; parse it at the boundary.
+const ExerciseSearchResponseSchema = z.discriminatedUnion("success", [
+	z.object({
+		success: z.literal(true),
+		exercises: z.array(
+			z.object({
+				id: z.string(),
+				name: z.string(),
+				normalizedName: z.string(),
+				muscleGroups: z.array(z.string()).optional(),
+			}),
+		),
+	}),
+	z.object({
+		success: z.literal(false),
+		error: z.string().optional(),
+	}),
+]);
 
 const fetchOnlineExerciseSuggestions = async (query: string) => {
 	const response = await fetch(`/api/exercises/search?query=${encodeURIComponent(query)}`);
 
-	const data = (await response.json()) as
-		| ExerciseSearchErrorResponse
-		| ExerciseSearchSuccessResponse;
+	const parsedResponse = ExerciseSearchResponseSchema.safeParse(await response.json());
 
-	if (!data.success) {
-		return err({
-			code: response.status === 429 ? "RATE_LIMITED" : "REQUEST_FAILED",
-		} as const);
-	}
-
-	if (data.success && !Array.isArray(data.exercises)) {
+	if (!parsedResponse.success) {
 		return err({
 			code: "INVALID_RESPONSE",
 		} as const);
 	}
 
-	return ok(data);
+	// The route answers failures with a JSON body rather than throwing.
+	if (!parsedResponse.data.success) {
+		return err({
+			code: response.status === 429 ? "RATE_LIMITED" : "REQUEST_FAILED",
+		} as const);
+	}
+
+	return ok(parsedResponse.data);
 };
 
 export function useExerciseSuggestions(rawQuery: string) {
-	const [suggestions, setSuggestions] = useState<ExerciseSuggestion[]>([]);
 	const [debouncedQuery, setDebouncedQuery] = useState("");
 	const [isOnlineSearchLoading, setIsOnlineSearchLoading] = useState(false);
+	// Online "fetch more" results are keyed by query so stale results never leak into the dropdown.
+	const [onlineExercisesByQuery, setOnlineExercisesByQuery] = useState<
+		Record<string, ExerciseSuggestion[]>
+	>({});
 	const queryClient = useQueryClient();
 
 	const query = rawQuery.trim();
+	// An empty query disables the DB search immediately without clearing the debounced value.
+	const debouncedSearchQuery = query.length === 0 ? "" : debouncedQuery;
 	const defaultExercises = useMemo(
 		() => sortExercisesAlphabetically(fetchDefaultExercises(query)),
 		[query],
@@ -57,10 +70,7 @@ export function useExerciseSuggestions(rawQuery: string) {
 
 	// Debounce PostgreSQL searches while keeping local defaults immediate.
 	useEffect(() => {
-		if (query.length === 0) {
-			setDebouncedQuery("");
-			return;
-		}
+		if (query.length === 0) return;
 
 		const timeout = setTimeout(() => setDebouncedQuery(query), 300);
 		return () => clearTimeout(timeout);
@@ -68,26 +78,24 @@ export function useExerciseSuggestions(rawQuery: string) {
 
 	const exerciseSearch = useQuery(
 		orpc.exercises.search.queryOptions({
-			input: { query: debouncedQuery },
-			enabled: debouncedQuery.length > 0,
+			input: { query: debouncedSearchQuery },
+			enabled: debouncedSearchQuery.length > 0,
 		}),
 	);
 
-	useEffect(() => {
-		if (query.length === 0) {
-			setSuggestions([]);
-			return;
-		}
-
+	// Combine instant local matches with PostgreSQL matches, remove duplicates, and sort the dropdown.
+	const suggestions = useMemo(() => {
 		// Only use database results when they belong to the text currently in the input.
 		// This prevents results for an older debounced query from appearing after the user types more.
-		const dbExercises = debouncedQuery === query ? (exerciseSearch.data ?? []) : [];
+		const isDbResultCurrent = query.length > 0 && debouncedSearchQuery === query;
+		const dbExercises = isDbResultCurrent ? (exerciseSearch.data ?? []) : [];
 
-		// Combine instant local matches with PostgreSQL matches, remove duplicates, and sort the dropdown.
-		setSuggestions(
-			sortExercisesAlphabetically(deduplicateExercises(defaultExercises, dbExercises)),
+		const onlineExercises = onlineExercisesByQuery[query] ?? [];
+
+		return sortExercisesAlphabetically(
+			deduplicateExercises(deduplicateExercises(defaultExercises, dbExercises), onlineExercises),
 		);
-	}, [debouncedQuery, defaultExercises, exerciseSearch.data, query]);
+	}, [query, debouncedSearchQuery, exerciseSearch.data, defaultExercises, onlineExercisesByQuery]);
 
 	const isDbSearchLoading =
 		query.length > 0 && (debouncedQuery !== query || exerciseSearch.isFetching);
@@ -108,9 +116,10 @@ export function useExerciseSuggestions(rawQuery: string) {
 			result.match(
 				(data) => {
 					if (data.exercises.length > 0) {
-						setSuggestions((prev) =>
-							sortExercisesAlphabetically(deduplicateExercises(prev, data.exercises)),
-						);
+						setOnlineExercisesByQuery((prev) => ({
+							...prev,
+							[query]: deduplicateExercises(prev[query] ?? [], data.exercises),
+						}));
 					}
 				},
 				(error) => {
@@ -127,7 +136,7 @@ export function useExerciseSuggestions(rawQuery: string) {
 							showErrorToast("The exercise search response was not in the expected format.");
 							return;
 						default:
-							throw new Error(`Unhandled app error code: ${code satisfies never}`);
+							throw new Error(`Unhandled app error code: ${String(code satisfies never)}`);
 					}
 				},
 			);

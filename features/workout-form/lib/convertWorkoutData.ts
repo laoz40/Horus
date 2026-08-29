@@ -1,5 +1,5 @@
 import { normalizeName } from "@/lib/normalizeName";
-import { ExerciseSuggestion } from "./types";
+import type { ExerciseSuggestion } from "./types";
 
 interface fetchedExercise {
 	id: string;
@@ -36,7 +36,7 @@ export const toTitleCase = (value: string): string => {
 		.toLowerCase()
 		.split(" ")
 		.filter(Boolean)
-		.map((word) => word[0].toUpperCase() + word.slice(1))
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
 		.join(" ");
 };
 

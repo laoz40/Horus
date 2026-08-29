@@ -37,6 +37,8 @@ export function ShineBorder({
 }: ShineBorderProps) {
 	return (
 		<div
+			// SAFETY: React forwards CSS custom properties to the DOM even though CSSProperties
+			// doesn't model them; the custom props and masks here are all valid runtime style keys.
 			style={
 				{
 					"--border-width": `${borderWidth}px`,

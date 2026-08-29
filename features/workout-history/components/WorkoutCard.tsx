@@ -28,14 +28,14 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
 				<div className="grid grid-cols-[1fr_min-content] items-start gap-x-2">
 					<div className="flex min-w-0 flex-col">
 						<span className="w-fit whitespace-nowrap text-[0.62rem] font-medium uppercase tracking-[0.16em] text-muted-foreground/90">
-							{getRelativeTime(new Date(workout._creationTime))}
+							{getRelativeTime(new Date(workout.createdAt))}
 						</span>
 						<h2 className="mt-0.5 max-w-full truncate text-base font-semibold leading-tight">
 							{workout.name}
 						</h2>
 					</div>
 					<WorkoutCardOptions
-						workoutId={workout._id}
+						workoutId={workout.id}
 						workoutName={workout.name}
 					/>
 				</div>

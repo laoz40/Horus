@@ -1,43 +1,30 @@
 "use client";
 
-import { useEffect, useMemo, type ReactElement } from "react";
+import { useMemo, type ReactElement } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	FormProvider,
-	useFieldArray,
-	useForm,
-	type FieldErrors,
-	type Resolver,
-} from "react-hook-form";
+import { FormProvider, useForm, type FieldErrors, type Resolver } from "react-hook-form";
 
-import { WorkoutFormData } from "@/features/workout-form/lib/types";
+import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { getFirstInvalidExerciseIndex } from "@/features/workout-form/lib/checkInvalidExercise";
-import { Workout, WorkoutSchema } from "@/features/workout-form/lib/validateWorkout";
-import {
-	createDefaultExercise,
-	createDefaultWorkoutValues,
-} from "@/features/workout-form/lib/WorkoutFormDefaults";
+import { WorkoutSchema, type Workout } from "@/features/workout-form/lib/validateWorkout";
+import { createDefaultWorkoutValues } from "@/features/workout-form/lib/WorkoutFormDefaults";
 import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
-import { showErrorToast, showExerciseDeletedToast } from "@/lib/toastMessages";
+import { showExerciseDeletedToast } from "@/lib/toastMessages";
 import {
-	initializeWorkoutSession,
-	resetWorkoutFormUi,
 	selectIsRecentSetsDialogOpen,
 	selectRecentSetsExerciseName,
-	selectCreateWorkoutDraft,
 	setRecentSetsDialogOpen,
 	setScrollTarget,
 	useWorkoutFormUiStore,
 } from "@/features/workout-form/stores/workoutFormUiStore";
+import { useExerciseNavigation } from "@/features/workout-form/hooks/useExerciseNavigation";
+import { useExerciseSelection } from "@/features/workout-form/hooks/useExerciseSelection";
+import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit";
+import { useWorkoutExercises } from "@/features/workout-form/hooks/useWorkoutExercises";
+import { useWorkoutFormInit } from "@/features/workout-form/hooks/useWorkoutFormInit";
 
 import ExerciseForm from "./ExerciseForm";
 import WorkoutFormBottomBar from "./WorkoutFormBottomBar";
-import { useExerciseNavigation } from "@/features/workout-form/hooks/useExerciseNavigation";
-import { useExerciseSelection } from "@/features/workout-form/hooks/useExerciseSelection";
-import {
-	type WorkoutSubmitMode,
-	useWorkoutSubmit,
-} from "@/features/workout-form/hooks/useWorkoutSubmit";
 import WorkoutFormTopBar from "./WorkoutFormTopBar";
 import RecentSetsDialog from "./RecentSetsDialog";
 
@@ -47,24 +34,23 @@ interface WorkoutFormProps {
 	missingGlobalExercisesCount?: number;
 }
 
+// Strip fully empty sets/exercises before RHF validation so blank rows don't block submit.
+const baseResolver = zodResolver(WorkoutSchema);
+const workoutResolver: Resolver<Workout> = (values, context, options) =>
+	baseResolver(stripEmptyWorkoutEntries(values), context, options);
+
 export default function WorkoutForm({
 	initialData,
 	workoutId,
-	missingGlobalExercisesCount = 0,
+	missingGlobalExercisesCount,
 }: WorkoutFormProps): ReactElement {
-	const createWorkoutDraft = useWorkoutFormUiStore(selectCreateWorkoutDraft);
 	const isEditing = useWorkoutFormUiStore((state) => state.isEditing);
 	const startedAtMs = useWorkoutFormUiStore((state) => state.startedAtMs);
 	const isRecentSetsDialogOpen = useWorkoutFormUiStore(selectIsRecentSetsDialogOpen);
 	const recentSetsExerciseName = useWorkoutFormUiStore(selectRecentSetsExerciseName);
 
-	// Strip fully empty sets/exercises before RHF validation so blank rows don't block submit.
-	const baseResolver = zodResolver(WorkoutSchema);
-	const resolver: Resolver<Workout> = async (values, context, options) =>
-		baseResolver(stripEmptyWorkoutEntries(values) as Workout, context, options);
-
 	const methods = useForm<Workout>({
-		resolver,
+		resolver: workoutResolver,
 		mode: "onSubmit",
 		reValidateMode: "onChange",
 		defaultValues: createDefaultWorkoutValues(),
@@ -72,62 +58,23 @@ export default function WorkoutForm({
 
 	const { handleSubmit, reset } = methods;
 
+	const { initialDurationSeconds } = useWorkoutFormInit({
+		reset,
+		initialData,
+		workoutId,
+		missingGlobalExercisesCount,
+	});
+
 	const {
 		fields: exercises,
-		append,
 		remove,
-	} = useFieldArray({
-		name: "exercises",
-		control: methods.control,
+		handleAddExercise,
+	} = useWorkoutExercises({ control: methods.control });
+
+	const { isSubmitting, submitWorkout } = useWorkoutSubmit({
+		startedAtMs,
+		mode: workoutId ? { type: "update", workoutId } : { type: "create" },
 	});
-	const restoredInitialData =
-		initialData ?? (workoutId ? undefined : (createWorkoutDraft ?? undefined));
-	const initialDurationSeconds = restoredInitialData?.durationSeconds ?? 0;
-
-	useEffect(() => {
-		if (!restoredInitialData) return;
-		reset(restoredInitialData);
-	}, [reset, restoredInitialData]);
-
-	useEffect(() => {
-		initializeWorkoutSession(initialDurationSeconds);
-
-		return () => {
-			resetWorkoutFormUi();
-		};
-	}, [initialDurationSeconds]);
-
-	useEffect(() => {
-		if (missingGlobalExercisesCount <= 0) return;
-
-		const s = missingGlobalExercisesCount === 1 ? "" : "s";
-		showErrorToast(
-			`Some exercises in this workout no longer exist. Skipped ${missingGlobalExercisesCount} exercise${s}.`,
-		);
-	}, [missingGlobalExercisesCount]);
-
-	const handleAddExercise = () => {
-		append(
-			createDefaultExercise(),
-			// prevent insta scrolling
-			{ shouldFocus: false },
-		);
-	};
-
-	useEffect(() => {
-		if (exercises.length > 0) return;
-
-		append(
-			createDefaultExercise(),
-			// prevent insta scrolling
-			{ shouldFocus: false },
-		);
-	}, [append, exercises.length]);
-
-	const submitMode: WorkoutSubmitMode = workoutId
-		? { type: "update", workoutId }
-		: { type: "create" };
-	const { isSubmitting, submitWorkout } = useWorkoutSubmit({ startedAtMs, mode: submitMode });
 
 	const handleInvalidSubmit = (errors: FieldErrors<Workout>) => {
 		// find the first invalid exercise

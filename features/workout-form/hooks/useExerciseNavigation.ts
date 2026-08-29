@@ -22,13 +22,20 @@ export const useExerciseNavigation = ({
 	const scrollTargetId = useWorkoutFormUiStore(selectScrollTargetId);
 	const exerciseListRef = useRef<HTMLDivElement | null>(null);
 	const exerciseFormRefs = useRef<Record<string, HTMLDivElement | null>>({});
+	const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
 	const previousExerciseCount = useRef(exerciseIds.length);
 
 	// store form element by id to find and scroll to it later
 	const registerExerciseRef = (exerciseId: string, exerciseFormElement: HTMLDivElement | null) => {
+		const previousElement = exerciseFormRefs.current[exerciseId];
 		exerciseFormRefs.current[exerciseId] = exerciseFormElement;
+
 		if (exerciseFormElement) {
 			exerciseFormElement.dataset.exerciseId = exerciseId;
+			// Track newly mounted exercise forms with the visibility observer.
+			visibilityObserverRef.current?.observe(exerciseFormElement);
+		} else if (previousElement) {
+			visibilityObserverRef.current?.unobserve(previousElement);
 		}
 	};
 
@@ -57,6 +64,8 @@ export const useExerciseNavigation = ({
 		previousExerciseCount.current = exerciseIds.length;
 	}, [exerciseIds]);
 
+	// Create the visibility observer once; exercise forms register and unregister
+	// themselves through registerExerciseRef as they mount and unmount.
 	useEffect(() => {
 		const scrollContainer = exerciseListRef.current;
 		if (!scrollContainer) return;
@@ -66,10 +75,13 @@ export const useExerciseNavigation = ({
 				const visible = forms.filter((form) => form.isIntersecting);
 				if (visible.length === 0) return;
 
-				const mostVisible = visible.sort(
+				const mostVisible = visible.toSorted(
 					(a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0),
 				)[0];
-				const exerciseId = (mostVisible.target as HTMLElement).dataset.exerciseId;
+				if (!mostVisible) return;
+
+				const { target } = mostVisible;
+				const exerciseId = target instanceof HTMLElement ? target.dataset.exerciseId : undefined;
 
 				if (exerciseId) {
 					selectExercise(exerciseId);
@@ -82,14 +94,19 @@ export const useExerciseNavigation = ({
 			},
 		);
 
+		visibilityObserverRef.current = observer;
+
 		Object.values(exerciseFormRefs.current).forEach((exerciseForm) => {
 			if (exerciseForm) {
 				observer.observe(exerciseForm);
 			}
 		});
 
-		return () => observer.disconnect();
-	}, [exerciseIds.length]);
+		return () => {
+			observer.disconnect();
+			visibilityObserverRef.current = null;
+		};
+	}, []);
 
 	return {
 		exerciseListRef,

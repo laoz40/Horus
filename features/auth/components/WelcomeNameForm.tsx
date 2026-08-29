@@ -33,18 +33,15 @@ export default function WelcomeNameForm(): ReactElement {
 		const trimmedName = values.name.trim();
 		const nameValue = trimmedName.length === 0 ? "Legend" : trimmedName;
 
-		try {
-			await authClient.updateUser({
-				name: nameValue,
-				fetchOptions: { throw: true },
-			});
-			router.replace("/");
-		} catch {
+		const { error } = await authClient.updateUser({ name: nameValue });
+		if (error) {
 			setError("name", {
 				type: "server",
 				message: "Could not save your name. Please try again.",
 			});
+			return;
 		}
+		router.replace("/");
 	});
 
 	return (

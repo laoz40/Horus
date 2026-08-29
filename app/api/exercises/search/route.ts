@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server";
 import { fetchApiExercises } from "@/features/workout-form/lib/fetchExercises";
 
+const emptyExercisesResponse = (status: number) => {
+	return NextResponse.json(
+		{
+			success: false,
+			exercises: [],
+		},
+		{ status },
+	);
+};
+
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
 	const query = searchParams.get("query");
@@ -21,23 +31,13 @@ export async function GET(request: Request) {
 		(error) => {
 			const code = error.code;
 
-			const returnResponseWithCode = (status: number) => {
-				return NextResponse.json(
-					{
-						success: false,
-						exercises: [],
-					},
-					{ status },
-				);
-			};
-
 			switch (code) {
 				case "RATE_LIMITED":
-					return returnResponseWithCode(429);
+					return emptyExercisesResponse(429);
 				case "REQUEST_FAILED":
-					return returnResponseWithCode(500);
+					return emptyExercisesResponse(500);
 				default:
-					throw new Error(`Unhandled app error code: ${code satisfies never}`);
+					throw new Error(`Unhandled app error code: ${String(code satisfies never)}`);
 			}
 		},
 	);

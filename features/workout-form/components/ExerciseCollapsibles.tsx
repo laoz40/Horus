@@ -2,11 +2,11 @@
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Slider } from "@/components/ui/slider";
-import { BicepsFlexed, ChevronDown, LucideIcon, Notebook } from "lucide-react";
-import { Activity, ReactNode, useState } from "react";
+import { BicepsFlexed, ChevronDown, Notebook, type LucideIcon } from "lucide-react";
+import { Activity, useState, type ReactNode } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Controller, useFormContext } from "react-hook-form";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 interface ExerciseCollapsiblesProps {
 	exerciseIndex: number;
@@ -22,7 +22,8 @@ const ExerciseCollapsibles = ({ exerciseIndex }: ExerciseCollapsiblesProps) => {
 };
 
 function DifficultySlider({ exerciseIndex }: ExerciseCollapsiblesProps) {
-	const difficultyOptions = ["Too Easy", " ", "Standard", " ", "Nightmare"];
+	// Justify-between spreads the three labels the same way the old spacer-padded row did.
+	const difficultyOptions = ["Too Easy", "Standard", "Nightmare"];
 
 	const initDifficultyValue = (openState: boolean) => {
 		const currentValue = getValues(`exercises.${exerciseIndex}.difficulty`);
@@ -52,8 +53,8 @@ function DifficultySlider({ exerciseIndex }: ExerciseCollapsiblesProps) {
 					)}
 				/>
 				<div className="flex flex-row items-center justify-between text-muted-foreground text-xs">
-					{difficultyOptions.map((difficulty, index) => (
-						<span key={index}>{difficulty}</span>
+					{difficultyOptions.map((difficulty) => (
+						<span key={difficulty}>{difficulty}</span>
 					))}
 				</div>
 			</div>

@@ -1,14 +1,26 @@
 import { useId, useRef, useState } from "react";
-import type { MouseEvent, PointerEvent, Touch, TouchEvent } from "react";
+import type { MouseEvent, PointerEvent, TouchEvent } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { useExerciseSuggestions } from "@/features/workout-form/hooks/useExerciseSuggestions";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import { useSuggestionListTouchScroll } from "@/features/workout-form/hooks/useSuggestionListTouchScroll";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
+
+// Keep the input focused when the mouse is used on the dropdown options.
+const preventMouseBlur = (event: MouseEvent) => {
+	event.preventDefault();
+};
+
+const preventMousePointerBlur = (event: PointerEvent) => {
+	if (event.pointerType === "mouse") {
+		event.preventDefault();
+	}
+};
 
 export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: number }) {
 	const listboxId = useId();
-	const { control, setValue } = useFormContext<Workout>();
+	const { control, setValue, setFocus } = useFormContext<Workout>();
 	const exerciseNamePath = `exercises.${exerciseIndex}.global.name` as const;
 	const query = useWatch({ control, name: exerciseNamePath }) ?? "";
 	const [isOpen, setIsOpen] = useState(false);
@@ -17,11 +29,11 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 
 	const filteredSuggestions = query.trim() ? suggestions : [];
 	const shouldShowSuggestions = isOpen && query.trim().length > 0;
-	const didHandleTouchSelectionRef = useRef(false);
-	const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-	const didScrollTouchRef = useRef(false);
-	const lastTouchYRef = useRef<number | null>(null);
-	const listboxRef = useRef<HTMLDivElement | null>(null);
+	// The search-online touch path lets the browser's synthetic click through, so
+	// the ref marks it handled and the click handler skips the duplicate fetch.
+	const didHandleTouchFetchRef = useRef(false);
+	const { listboxRef, listboxTouchProps, shouldHandleTouchTap, stopTouch } =
+		useSuggestionListTouchScroll();
 
 	return (
 		<Controller
@@ -39,62 +51,20 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 					const match = suggestions.find((exercise) => exercise.name === exerciseName);
 					setValue(`exercises.${exerciseIndex}.global.muscleGroups`, match?.muscleGroups ?? []);
 					setIsOpen(false);
+
+					// Focus weight so the user can type immediately after picking an exercise.
+					// The timeout defers one tick: the weight input is only rendered by the name
+					// change above, so it does not exist to focus until this handler has finished.
+					setTimeout(() => setFocus(`exercises.${exerciseIndex}.sets.0.weight`), 0);
 				};
 
-				const startTouch = (touch: Touch) => {
-					touchStartRef.current = { x: touch.clientX, y: touch.clientY };
-					didScrollTouchRef.current = false;
-					lastTouchYRef.current = touch.clientY;
-				};
-
-				const updateTouchScrollState = (touch: Touch) => {
-					const startTouchPoint = touchStartRef.current;
-					if (!startTouchPoint) return;
-
-					const movedX = Math.abs(touch.clientX - startTouchPoint.x);
-					const movedY = Math.abs(touch.clientY - startTouchPoint.y);
-					if (movedX > 8 || movedY > 8) {
-						didScrollTouchRef.current = true;
-					}
-				};
-
-				const scrollSuggestionList = (touch: Touch) => {
-					updateTouchScrollState(touch);
-
-					const lastTouchY = lastTouchYRef.current;
-					const listbox = listboxRef.current;
-					if (lastTouchY === null || !listbox) {
-						lastTouchYRef.current = touch.clientY;
-						return;
-					}
-
-					const deltaY = lastTouchY - touch.clientY;
-					listbox.scrollTop += deltaY;
-					lastTouchYRef.current = touch.clientY;
-				};
-
-				const stopTouch = () => {
-					lastTouchYRef.current = null;
-				};
-
-				const handleSuggestionListTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+				const handleOptionTouchEnd = (
+					event: TouchEvent<HTMLButtonElement>,
+					exerciseName: string,
+				) => {
+					// Selecting an option unmounts the dropdown and mounts set rows under the finger;
+					// preventDefault stops the browser's synthetic click from focusing the reps input.
 					event.preventDefault();
-					scrollSuggestionList(event.touches[0]);
-				};
-
-				const handleListboxTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-					startTouch(event.touches[0]);
-				};
-
-				const handleListboxTouchEnd = () => {
-					stopTouch();
-				};
-
-				const handleListboxTouchCancel = () => {
-					stopTouch();
-				};
-
-				const handleOptionTouchEnd = (exerciseName: string) => {
 					selectExerciseFromTouch(exerciseName);
 					stopTouch();
 				};
@@ -104,38 +74,11 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 					stopTouch();
 				};
 
-				const preventMouseBlur = (event: MouseEvent) => {
-					event.preventDefault();
-				};
-
-				const preventMousePointerBlur = (event: PointerEvent) => {
-					if (event.pointerType === "mouse") {
-						event.preventDefault();
-					}
-				};
-
 				const listboxClassName =
 					"max-h-72 scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0";
 
-				const shouldHandleTouchTap = () => {
-					const shouldHandle = !didScrollTouchRef.current;
-					touchStartRef.current = null;
-					didScrollTouchRef.current = false;
-					return shouldHandle;
-				};
-
 				const selectExerciseFromTouch = (exerciseName: string) => {
 					if (!shouldHandleTouchTap()) return;
-
-					didHandleTouchSelectionRef.current = true;
-					selectExercise(exerciseName);
-				};
-
-				const selectExerciseFromClick = (exerciseName: string) => {
-					if (didHandleTouchSelectionRef.current) {
-						didHandleTouchSelectionRef.current = false;
-						return;
-					}
 
 					selectExercise(exerciseName);
 				};
@@ -143,13 +86,13 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 				const fetchMoreSuggestionsFromTouch = () => {
 					if (!shouldHandleTouchTap()) return;
 
-					didHandleTouchSelectionRef.current = true;
+					didHandleTouchFetchRef.current = true;
 					void fetchMoreSuggestions();
 				};
 
 				const fetchMoreSuggestionsFromClick = () => {
-					if (didHandleTouchSelectionRef.current) {
-						didHandleTouchSelectionRef.current = false;
+					if (didHandleTouchFetchRef.current) {
+						didHandleTouchFetchRef.current = false;
 						return;
 					}
 
@@ -166,7 +109,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 								value={query}
 								autoComplete="off"
 								role="combobox"
-								aria-expanded={!!shouldShowSuggestions}
+								aria-expanded={shouldShowSuggestions}
 								aria-controls={listboxId}
 								onChange={(e) => {
 									const nextQuery = e.target.value ?? "";
@@ -196,10 +139,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 										id={listboxId}
 										role="listbox"
 										className={listboxClassName}
-										onTouchStart={handleListboxTouchStart}
-										onTouchMove={handleSuggestionListTouchMove}
-										onTouchEnd={handleListboxTouchEnd}
-										onTouchCancel={handleListboxTouchCancel}>
+										{...listboxTouchProps}>
 										{filteredSuggestions.map((exercise) => (
 											<button
 												key={exercise.normalizedName}
@@ -209,8 +149,8 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 												className="hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-left text-base outline-hidden select-none"
 												onPointerDown={preventMousePointerBlur}
 												onMouseDown={preventMouseBlur}
-												onTouchEnd={() => handleOptionTouchEnd(exercise.name)}
-												onClick={() => selectExerciseFromClick(exercise.name)}>
+												onTouchEnd={(event) => handleOptionTouchEnd(event, exercise.name)}
+												onClick={() => selectExercise(exercise.name)}>
 												{exercise.name}
 											</button>
 										))}

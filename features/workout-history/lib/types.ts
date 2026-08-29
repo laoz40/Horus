@@ -1,6 +1,6 @@
 export interface WorkoutHistoryItem {
-	_id: string;
-	_creationTime: number;
+	id: string;
+	createdAt: number;
 	name: string;
 	durationSeconds: number | null;
 	totalVolume: number;

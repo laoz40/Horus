@@ -2,7 +2,7 @@ import type { FieldErrors } from "react-hook-form";
 
 import type { Workout } from "./validateWorkout";
 
-type ExerciseErrorShape = {
+type ExerciseFieldErrors = {
 	global?: {
 		name?: unknown;
 	};
@@ -16,20 +16,12 @@ type ExerciseErrorShape = {
 	};
 };
 
-const exerciseHasValidationError = (exerciseError: unknown): boolean => {
-	if (!exerciseError || typeof exerciseError !== "object") {
-		return false;
-	}
-
-	const error = exerciseError as ExerciseErrorShape;
-
+const exerciseHasValidationError = (error: ExerciseFieldErrors): boolean => {
 	if (error.global?.name) return true;
-	if (error.sets?.message || error.sets?.root?.message) return true;
-	// check each set for errors
-	if (Array.isArray(error.sets)) return error.sets.some((set) => Boolean(set?.reps));
 
-	// if none of the above returns true, exercise is valid
-	return false;
+	const sets = error.sets;
+	if (sets?.message || sets?.root?.message) return true;
+	return Array.isArray(sets) && sets.some((set) => Boolean(set?.reps));
 };
 
 export const getFirstInvalidExerciseIndex = (errors: FieldErrors<Workout>): number | null => {
@@ -38,9 +30,10 @@ export const getFirstInvalidExerciseIndex = (errors: FieldErrors<Workout>): numb
 
 	// loop through the errors and find the first one that is an exercise error
 	for (const [exerciseIndex, exerciseError] of exerciseErrors.entries()) {
-		if (exerciseHasValidationError(exerciseError)) {
-			return exerciseIndex;
-		}
+		// RHF's exercise errors bottom out in `any`; downgrade to unknown, then narrow to a non-null object
+		const error: unknown = exerciseError;
+		if (!(error instanceof Object)) continue;
+		if (exerciseHasValidationError(error)) return exerciseIndex;
 	}
 
 	return null;

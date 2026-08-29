@@ -31,8 +31,10 @@ export default function NumberInput({
 	const config = variantConfig[variant];
 
 	const handleBeforeInput = (event: React.FormEvent<HTMLInputElement>) => {
-		const e = event as unknown as InputEvent;
-		const char = e.data;
+		// React types beforeinput as FormEvent; the native InputEvent carries the inserted text.
+		if (!(event.nativeEvent instanceof InputEvent)) return;
+
+		const char = event.nativeEvent.data;
 
 		if (!char) return; // deletion, paste, etc.
 

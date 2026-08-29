@@ -24,11 +24,22 @@ interface RecentSetsDialogProps {
 
 type RecentSetPrType = "weight" | "volume" | "bodyweightReps";
 
-const prTypeLabels: Record<RecentSetPrType, string> = {
+const prTypeLabels = {
 	weight: "Weight PR",
 	volume: "Volume PR",
 	bodyweightReps: "Reps PR",
-};
+} satisfies Record<RecentSetPrType, string>;
+
+function SetSkeletonRow() {
+	return (
+		<div className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 border-b py-2 last:border-b-0">
+			<div className="bg-muted h-4 w-8 animate-pulse" />
+			<div className="bg-muted h-4 w-8 animate-pulse" />
+			<div />
+			<div className="ml-auto bg-muted h-4 w-24 animate-pulse" />
+		</div>
+	);
+}
 
 export default function RecentSetsDialog({
 	open,
@@ -90,16 +101,12 @@ export default function RecentSetsDialog({
 
 					{recentSetsQuery.isFetching ? (
 						<div className="flex flex-col">
-							{Array.from({ length: 6 }).map((_, index) => (
-								<div
-									key={index}
-									className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 border-b py-2 last:border-b-0">
-									<div className="bg-muted h-4 w-8 animate-pulse" />
-									<div className="bg-muted h-4 w-8 animate-pulse" />
-									<div />
-									<div className="ml-auto bg-muted h-4 w-24 animate-pulse" />
-								</div>
-							))}
+							<SetSkeletonRow />
+							<SetSkeletonRow />
+							<SetSkeletonRow />
+							<SetSkeletonRow />
+							<SetSkeletonRow />
+							<SetSkeletonRow />
 						</div>
 					) : errorMessage ? (
 						<p className="text-destructive text-sm">{errorMessage}</p>
@@ -107,12 +114,12 @@ export default function RecentSetsDialog({
 						<p className="text-muted-foreground text-sm">No recent completed sets found.</p>
 					) : (
 						<div className="flex flex-col">
-							{sets.map((set, index) => {
+							{sets.map((set) => {
 								const primaryPrType = set.prTypes[0];
 
 								return (
 									<div
-										key={`${set.time}-${set.weight}-${set.reps}-${index}`}
+										key={set.id}
 										className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] items-center gap-1 border-b py-2 text-sm last:border-b-0">
 										<span className={cn(set.isPr && "font-semibold")}>{set.weight}</span>
 										<span className={cn(set.isPr && "font-semibold")}>{set.reps}</span>

@@ -1,4 +1,4 @@
-import { ReactNode, type ReactElement } from "react";
+import type { ReactNode, ReactElement } from "react";
 
 export default function NoNavLayout({ children }: { children: ReactNode }): ReactElement {
 	return (

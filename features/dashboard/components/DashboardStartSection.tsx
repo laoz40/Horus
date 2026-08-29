@@ -6,10 +6,6 @@ import { showInfoToast } from "@/lib/toastMessages";
 import Link from "next/link";
 
 export default function DashboardStartSection() {
-	const handleCreatePresetClick = () => {
-		showInfoToast("Presets are coming soon.");
-	};
-
 	return (
 		<Section header="Start">
 			<div className="flex flex-row w-full flex-wrap items-center justify-center gap-2">
@@ -22,7 +18,7 @@ export default function DashboardStartSection() {
 
 				<Button
 					asChild
-					onClick={handleCreatePresetClick}
+					onClick={() => showInfoToast("Presets are coming soon.")}
 					variant="outline"
 					size="lg"
 					className="flex-1">
