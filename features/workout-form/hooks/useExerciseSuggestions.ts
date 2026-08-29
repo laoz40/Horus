@@ -136,7 +136,7 @@ export function useExerciseSuggestions(rawQuery: string) {
 							showErrorToast("The exercise search response was not in the expected format.");
 							return;
 						default:
-							throw new Error(`Unhandled app error code: ${code satisfies never}`);
+							throw new Error(`Unhandled app error code: ${String(code satisfies never)}`);
 					}
 				},
 			);

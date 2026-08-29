@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 				case "REQUEST_FAILED":
 					return emptyExercisesResponse(500);
 				default:
-					throw new Error(`Unhandled app error code: ${code satisfies never}`);
+					throw new Error(`Unhandled app error code: ${String(code satisfies never)}`);
 			}
 		},
 	);
