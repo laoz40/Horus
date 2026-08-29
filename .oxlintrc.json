@@ -9,9 +9,13 @@
 	"env": {
 		"builtin": true
 	},
+	"options": {
+		"typeAware": true
+	},
 	"ignorePatterns": [".next/**", "out/**", "build/**", "next-env.d.ts"],
 	"rules": {
 		"@next/next/google-font-display": "error",
+		"@typescript-eslint/no-unsafe-type-assertion": "error",
 		"@next/next/google-font-preconnect": "error",
 		"@next/next/next-script-for-ga": "error",
 		"@next/next/no-async-client-component": "error",
