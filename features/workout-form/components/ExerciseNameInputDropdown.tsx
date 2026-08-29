@@ -105,7 +105,13 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 					stopTouch();
 				};
 
-				const handleOptionTouchEnd = (exerciseName: string) => {
+				const handleOptionTouchEnd = (
+					event: TouchEvent<HTMLButtonElement>,
+					exerciseName: string,
+				) => {
+					// Selecting an option unmounts the dropdown and mounts set rows under the finger;
+					// preventDefault stops the browser's synthetic click from focusing the reps input.
+					event.preventDefault();
 					selectExerciseFromTouch(exerciseName);
 					stopTouch();
 				};
@@ -210,7 +216,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 												className="hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-left text-base outline-hidden select-none"
 												onPointerDown={preventMousePointerBlur}
 												onMouseDown={preventMouseBlur}
-												onTouchEnd={() => handleOptionTouchEnd(exercise.name)}
+												onTouchEnd={(event) => handleOptionTouchEnd(event, exercise.name)}
 												onClick={() => selectExerciseFromClick(exercise.name)}>
 												{exercise.name}
 											</button>
