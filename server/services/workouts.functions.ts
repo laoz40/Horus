@@ -18,9 +18,9 @@ import {
 	type PrHistorySet,
 	type PrSetUpdate,
 } from "@/server/services/pr-history.functions";
+import type { WorkoutExerciseWithDatabaseId } from "@/server/services/exercises.db";
 import type {
 	ListWorkoutsQuery,
-	WorkoutExerciseWithDatabaseId,
 	WorkoutForEdit,
 	WorkoutHistoryRow,
 } from "@/server/services/workouts.db";
