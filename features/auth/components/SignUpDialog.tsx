@@ -23,10 +23,6 @@ export default function SignUpDialog({ show }: SignUpDialogProps): ReactElement 
 		return <></>;
 	}
 
-	const handleClick = () => {
-		showErrorToast("Any progress will not be saved.");
-	};
-
 	return (
 		<AlertDialog defaultOpen>
 			<AlertDialogContent size="sm">
@@ -39,7 +35,7 @@ export default function SignUpDialog({ show }: SignUpDialogProps): ReactElement 
 				<AlertDialogFooter>
 					<AlertDialogCancel
 						variant="secondary"
-						onClick={handleClick}>
+						onClick={() => showErrorToast("Any progress will not be saved.")}>
 						Let me test
 					</AlertDialogCancel>
 					<Button asChild>
