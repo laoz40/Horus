@@ -212,13 +212,16 @@ async function insertExerciseMuscleGroups(
 	exerciseId: string,
 	muscleGroupsForExercise: Array<{ name: string; normalizedName: string }>,
 ): Promise<void> {
-	for (const muscleGroup of muscleGroupsForExercise) {
-		const muscleGroupId = await getOrCreateMuscleGroupId(tx, muscleGroup);
-		await tx
-			.insert(exerciseMuscleGroups)
-			.values({ exerciseId, muscleGroupId })
-			.onConflictDoNothing();
-	}
+	const muscleGroupIds = await Promise.all(
+		muscleGroupsForExercise.map((muscleGroup) => getOrCreateMuscleGroupId(tx, muscleGroup)),
+	);
+
+	if (muscleGroupIds.length === 0) return;
+
+	await tx
+		.insert(exerciseMuscleGroups)
+		.values(muscleGroupIds.map((muscleGroupId) => ({ exerciseId, muscleGroupId })))
+		.onConflictDoNothing();
 }
 
 async function createOrGetExercise(
