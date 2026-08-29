@@ -3,6 +3,7 @@
 import CalendarHeatmap from "react-calendar-heatmap";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { orpc } from "@/lib/orpc/client";
 
 type HeatmapValue = {
@@ -18,7 +19,15 @@ type DashboardYearInTrainingSectionProps = {
 	userId?: string;
 };
 
-export default function DashboardYearInTrainingSection({
+export default function DashboardYearInTrainingSection(props: DashboardYearInTrainingSectionProps) {
+	return (
+		<ErrorBoundary>
+			<DashboardYearInTraining {...props} />
+		</ErrorBoundary>
+	);
+}
+
+function DashboardYearInTraining({
 	isAuthPending,
 	isSignedIn,
 	userId,
