@@ -47,6 +47,7 @@ export function buildRecentSets(rows: RecentSetRow[]) {
 		if (row.isBodyweightRepsPr) prTypes.push("bodyweightReps");
 
 		return {
+			id: row.id,
 			weight: row.weight,
 			reps: row.reps,
 			completedAtMs: row.completedAtMs,

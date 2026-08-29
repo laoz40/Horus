@@ -106,6 +106,7 @@ export const exercisesRouter = {
 			z.array(
 				z
 					.object({
+						id: z.uuid(),
 						weight: z.number(),
 						reps: z.number(),
 						completedAtMs: z.number(),

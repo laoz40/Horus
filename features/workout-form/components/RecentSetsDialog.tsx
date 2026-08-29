@@ -107,12 +107,12 @@ export default function RecentSetsDialog({
 						<p className="text-muted-foreground text-sm">No recent completed sets found.</p>
 					) : (
 						<div className="flex flex-col">
-							{sets.map((set, index) => {
+							{sets.map((set) => {
 								const primaryPrType = set.prTypes[0];
 
 								return (
 									<div
-										key={`${set.time}-${set.weight}-${set.reps}-${index}`}
+										key={set.id}
 										className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] items-center gap-1 border-b py-2 text-sm last:border-b-0">
 										<span className={cn(set.isPr && "font-semibold")}>{set.weight}</span>
 										<span className={cn(set.isPr && "font-semibold")}>{set.reps}</span>

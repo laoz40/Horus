@@ -13,6 +13,7 @@ import {
 import { tryPromise } from "@/lib/tryPromise";
 
 export interface RecentSetRow {
+	id: string;
 	weight: number;
 	reps: number;
 	completedAtMs: number;
@@ -187,6 +188,7 @@ export function getRecentSetRows(userId: string, normalizedExerciseName: string)
 			db
 				.with(matchingSets, recentSets, weightPr, volumePr, bodyweightRepsPr)
 				.select({
+					id: recentSets.id,
 					weight: recentSets.weight,
 					reps: recentSets.reps,
 					completedAtMs: recentSets.completedAtMs,
