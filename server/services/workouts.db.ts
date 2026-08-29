@@ -288,17 +288,13 @@ export async function findOrCreateWorkoutExercises(
 	tx: Tx,
 	writeInput: WorkoutWriteInput,
 ): Promise<WorkoutExerciseWithDatabaseId[]> {
-	const exerciseIdsByNormalizedName = new Map<string, string>();
-	const exercisesWithDatabaseIds: WorkoutExerciseWithDatabaseId[] = [];
-
-	for (const exercise of writeInput.workout.exercises) {
-		const normalizedName = exercise.global.normalizedName;
-		const cachedExerciseId = exerciseIdsByNormalizedName.get(normalizedName);
-		const exerciseId =
-			cachedExerciseId ?? (await findOrCreateExerciseId(tx, writeInput.userId, exercise));
-		exerciseIdsByNormalizedName.set(normalizedName, exerciseId);
-		exercisesWithDatabaseIds.push({ ...exercise, exerciseId });
-	}
+	// Duplicates by name still resolve to the same row: createOrGetExercise handles insert conflicts.
+	const exercisesWithDatabaseIds = await Promise.all(
+		writeInput.workout.exercises.map(async (exercise) => ({
+			...exercise,
+			exerciseId: await findOrCreateExerciseId(tx, writeInput.userId, exercise),
+		})),
+	);
 
 	return exercisesWithDatabaseIds;
 }
