@@ -10,7 +10,7 @@ interface UseWorkoutExercisesProps {
 }
 
 interface UseWorkoutExercisesReturn extends Pick<
-	UseFieldArrayReturn<Workout, "exercises", "id">,
+	UseFieldArrayReturn<Workout, "exercises">,
 	"fields" | "remove"
 > {
 	handleAddExercise: () => void;
