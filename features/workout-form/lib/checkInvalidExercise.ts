@@ -2,7 +2,7 @@ import type { FieldErrors } from "react-hook-form";
 
 import type { Workout } from "./validateWorkout";
 
-type ExerciseErrorShape = {
+type ExerciseFieldErrors = {
 	global?: {
 		name?: unknown;
 	};
@@ -21,7 +21,7 @@ const exerciseHasValidationError = (exerciseError: unknown): boolean => {
 		return false;
 	}
 
-	const error = exerciseError as ExerciseErrorShape;
+	const error = exerciseError as ExerciseFieldErrors;
 
 	if (error.global?.name) return true;
 	if (error.sets?.message || error.sets?.root?.message) return true;
