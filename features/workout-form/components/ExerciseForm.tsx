@@ -36,14 +36,14 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 
 		const handleAddSet = () => {
 			append(createDefaultSet());
-			trigger(`exercises.${exerciseIndex}.sets`);
+			void trigger(`exercises.${exerciseIndex}.sets`);
 		};
 
 		useEffect(() => {
 			if (sets.length > 0) return;
 
 			append(createDefaultSet());
-			trigger(`exercises.${exerciseIndex}.sets`);
+			void trigger(`exercises.${exerciseIndex}.sets`);
 		}, [append, exerciseIndex, sets.length, trigger]);
 
 		// BUG: when loading a workout to edit, adding new sets after deleting sets loads previous data
