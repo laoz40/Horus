@@ -52,6 +52,11 @@ export const auth = betterAuth({
 			if (value === null) return null;
 			return redisSessionValueSchema.parse(value);
 		},
+		getAndDelete: async (key) => {
+			const value = await redis.getdel(key);
+			if (value === null) return null;
+			return redisSessionValueSchema.parse(value);
+		},
 		set: async (key, value, ttl) => {
 			if (ttl) {
 				await redis.set(key, value, { ex: ttl });
