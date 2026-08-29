@@ -140,7 +140,7 @@ export default function SetRow({
 									checked={field.value}
 									onCheckedChange={(value) => {
 										const nextChecked = !!value;
-										const previousChecked = !!field.value;
+										const previousChecked = field.value;
 										if (nextChecked && !validateCurrentSetForCompletion()) {
 											field.onChange(false);
 											return;

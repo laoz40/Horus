@@ -117,7 +117,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 								value={query}
 								autoComplete="off"
 								role="combobox"
-								aria-expanded={!!shouldShowSuggestions}
+								aria-expanded={shouldShowSuggestions}
 								aria-controls={listboxId}
 								onChange={(e) => {
 									const nextQuery = e.target.value ?? "";
