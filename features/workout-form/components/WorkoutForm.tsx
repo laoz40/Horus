@@ -4,9 +4,9 @@ import { useMemo, type ReactElement } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, type FieldErrors, type Resolver } from "react-hook-form";
 
-import { WorkoutFormData } from "@/features/workout-form/lib/types";
+import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { getFirstInvalidExerciseIndex } from "@/features/workout-form/lib/checkInvalidExercise";
-import { Workout, WorkoutSchema } from "@/features/workout-form/lib/validateWorkout";
+import { WorkoutSchema, type Workout } from "@/features/workout-form/lib/validateWorkout";
 import { createDefaultWorkoutValues } from "@/features/workout-form/lib/WorkoutFormDefaults";
 import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
 import { showExerciseDeletedToast } from "@/lib/toastMessages";

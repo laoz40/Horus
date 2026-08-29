@@ -3,7 +3,7 @@ import { useFieldArray } from "react-hook-form";
 import type { Control, UseFieldArrayReturn } from "react-hook-form";
 
 import { createDefaultExercise } from "@/features/workout-form/lib/WorkoutFormDefaults";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 interface UseWorkoutExercisesProps {
 	control: Control<Workout>;

@@ -3,7 +3,7 @@
 import { HistoryIcon, PlusIcon } from "lucide-react";
 import { forwardRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { openRecentSetsDialog } from "@/features/workout-form/stores/workoutFormUiStore";
 import { showSetDeletedToast } from "@/lib/toastMessages";
 import { cn } from "@/lib/utils";

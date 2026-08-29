@@ -1,7 +1,7 @@
 import { createSuggestionObject } from "./convertWorkoutData";
 import { DEFAULT_EXERCISES } from "./defaultExercises";
 import { normalizeName } from "@/lib/normalizeName";
-import { WgerExerciseResponse } from "./wgerTypes";
+import type { WgerExerciseResponse } from "./wgerTypes";
 import { err, ok } from "neverthrow";
 
 export const fetchDefaultExercises = (query: string) => {

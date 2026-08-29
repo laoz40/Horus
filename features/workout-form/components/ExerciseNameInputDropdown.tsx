@@ -5,7 +5,7 @@ import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { useExerciseSuggestions } from "@/features/workout-form/hooks/useExerciseSuggestions";
 import { useSuggestionListTouchScroll } from "@/features/workout-form/hooks/useSuggestionListTouchScroll";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 // Keep the input focused when the mouse is used on the dropdown options.
 const preventMouseBlur = (event: MouseEvent) => {

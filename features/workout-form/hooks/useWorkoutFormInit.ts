@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import type { UseFormReset } from "react-hook-form";
 
-import { WorkoutFormData } from "@/features/workout-form/lib/types";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import type { WorkoutFormData } from "@/features/workout-form/lib/types";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { showErrorToast } from "@/lib/toastMessages";
 import {
 	initializeWorkoutSession,

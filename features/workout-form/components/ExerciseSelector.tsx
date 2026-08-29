@@ -7,7 +7,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import {
 	selectExercise,
 	setScrollTarget,

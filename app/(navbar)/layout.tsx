@@ -1,5 +1,5 @@
 import NavigationMenuMobile from "@/components/NavigationMenuMobile";
-import { ReactNode, type ReactElement } from "react";
+import type { ReactNode, ReactElement } from "react";
 
 export default function NavLayout({ children }: { children: ReactNode }): ReactElement {
 	return (

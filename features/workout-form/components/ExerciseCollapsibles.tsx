@@ -2,11 +2,11 @@
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Slider } from "@/components/ui/slider";
-import { BicepsFlexed, ChevronDown, LucideIcon, Notebook } from "lucide-react";
-import { Activity, ReactNode, useState } from "react";
+import { BicepsFlexed, ChevronDown, Notebook, type LucideIcon } from "lucide-react";
+import { Activity, useState, type ReactNode } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Controller, useFormContext } from "react-hook-form";
-import { Workout } from "@/features/workout-form/lib/validateWorkout";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 interface ExerciseCollapsiblesProps {
 	exerciseIndex: number;

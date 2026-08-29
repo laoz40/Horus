@@ -1,4 +1,4 @@
-import { Exercise, Set, Workout } from "@/features/workout-form/lib/validateWorkout";
+import type { Exercise, Set, Workout } from "@/features/workout-form/lib/validateWorkout";
 
 export const createDefaultSet = (): Set => ({
 	id: crypto.randomUUID(),

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MouseEvent, ReactNode, type ReactElement } from "react";
+import type { MouseEvent, ReactNode, ReactElement } from "react";
 
 import { animateCreateWorkoutExit } from "@/features/workout-form/lib/animateCreateWorkoutExit";
 
