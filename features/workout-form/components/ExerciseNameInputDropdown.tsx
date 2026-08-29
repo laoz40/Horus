@@ -6,6 +6,17 @@ import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { useExerciseSuggestions } from "@/features/workout-form/hooks/useExerciseSuggestions";
 import { Workout } from "@/features/workout-form/lib/validateWorkout";
 
+// Keep the input focused when the mouse is used on the dropdown options.
+const preventMouseBlur = (event: MouseEvent) => {
+	event.preventDefault();
+};
+
+const preventMousePointerBlur = (event: PointerEvent) => {
+	if (event.pointerType === "mouse") {
+		event.preventDefault();
+	}
+};
+
 export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: number }) {
 	const listboxId = useId();
 	const { control, setValue } = useFormContext<Workout>();
@@ -102,16 +113,6 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 				const handleSearchOnlineTouchEnd = () => {
 					fetchMoreSuggestionsFromTouch();
 					stopTouch();
-				};
-
-				const preventMouseBlur = (event: MouseEvent) => {
-					event.preventDefault();
-				};
-
-				const preventMousePointerBlur = (event: PointerEvent) => {
-					if (event.pointerType === "mouse") {
-						event.preventDefault();
-					}
 				};
 
 				const listboxClassName =
