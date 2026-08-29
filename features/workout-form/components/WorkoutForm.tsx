@@ -37,7 +37,7 @@ interface WorkoutFormProps {
 // Strip fully empty sets/exercises before RHF validation so blank rows don't block submit.
 const baseResolver = zodResolver(WorkoutSchema);
 const workoutResolver: Resolver<Workout> = (values, context, options) =>
-	baseResolver(stripEmptyWorkoutEntries(values) as Workout, context, options);
+	baseResolver(stripEmptyWorkoutEntries(values), context, options);
 
 export default function WorkoutForm({
 	initialData,

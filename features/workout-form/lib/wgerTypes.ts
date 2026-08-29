@@ -1,25 +1,27 @@
-interface WgerExerciseTranslation {
-	language: number;
-	name: string;
-}
+import * as z from "zod";
 
-interface WgerExerciseMuscle {
-	name_en?: string;
-	name?: string;
-}
+const WgerExerciseTranslationSchema = z.object({
+	language: z.number(),
+	name: z.string(),
+});
 
-interface WgerExerciseCategory {
-	name?: string;
-}
+const WgerExerciseMuscleSchema = z.object({
+	name_en: z.string().nullish(),
+	name: z.string().nullish(),
+});
 
-interface WgerExerciseResult {
-	id: number;
-	translations?: WgerExerciseTranslation[];
-	muscles?: WgerExerciseMuscle[];
-	muscles_secondary?: WgerExerciseMuscle[];
-	category?: WgerExerciseCategory;
-}
+const WgerExerciseResultSchema = z.object({
+	id: z.number(),
+	translations: z.array(WgerExerciseTranslationSchema).nullish(),
+	muscles: z.array(WgerExerciseMuscleSchema).nullish(),
+	muscles_secondary: z.array(WgerExerciseMuscleSchema).nullish(),
+	category: z
+		.object({
+			name: z.string().nullish(),
+		})
+		.nullish(),
+});
 
-export interface WgerExerciseResponse {
-	results?: WgerExerciseResult[];
-}
+export const WgerExerciseResponseSchema = z.object({
+	results: z.array(WgerExerciseResultSchema),
+});

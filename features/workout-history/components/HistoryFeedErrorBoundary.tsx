@@ -17,9 +17,8 @@ const getHistoryFeedErrorMessage = (error: unknown) => {
 		return fallbackMessage;
 	}
 
-	const code = (error as { code?: string }).code;
-
-	if (code === "UNAUTHORIZED") {
+	// orpc errors carry a `code` field on top of the standard Error shape.
+	if ("code" in error && error.code === "UNAUTHORIZED") {
 		return "You must be signed in to view workout history.";
 	}
 

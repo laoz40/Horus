@@ -9,38 +9,46 @@ import { sortExercisesAlphabetically } from "@/features/workout-form/lib/sortExe
 import type { ExerciseSuggestion } from "@/features/workout-form/lib/types";
 import { orpc } from "@/lib/orpc/client";
 import { err, ok } from "neverthrow";
+import * as z from "zod";
 
-interface ExerciseSearchErrorResponse {
-	success: false;
-	exercises: [];
-	error: string;
-}
-
-interface ExerciseSearchSuccessResponse {
-	success: true;
-	exercises: ExerciseSuggestion[];
-}
+// The /api/exercises/search response is untrusted network data; parse it at the boundary.
+const ExerciseSearchResponseSchema = z.discriminatedUnion("success", [
+	z.object({
+		success: z.literal(true),
+		exercises: z.array(
+			z.object({
+				id: z.string(),
+				name: z.string(),
+				normalizedName: z.string(),
+				muscleGroups: z.array(z.string()).optional(),
+			}),
+		),
+	}),
+	z.object({
+		success: z.literal(false),
+		error: z.string().optional(),
+	}),
+]);
 
 const fetchOnlineExerciseSuggestions = async (query: string) => {
 	const response = await fetch(`/api/exercises/search?query=${encodeURIComponent(query)}`);
 
-	const data = (await response.json()) as
-		| ExerciseSearchErrorResponse
-		| ExerciseSearchSuccessResponse;
+	const parsedResponse = ExerciseSearchResponseSchema.safeParse(await response.json());
 
-	if (!data.success) {
-		return err({
-			code: response.status === 429 ? "RATE_LIMITED" : "REQUEST_FAILED",
-		} as const);
-	}
-
-	if (data.success && !Array.isArray(data.exercises)) {
+	if (!parsedResponse.success) {
 		return err({
 			code: "INVALID_RESPONSE",
 		} as const);
 	}
 
-	return ok(data);
+	// The route answers failures with a JSON body rather than throwing.
+	if (!parsedResponse.data.success) {
+		return err({
+			code: response.status === 429 ? "RATE_LIMITED" : "REQUEST_FAILED",
+		} as const);
+	}
+
+	return ok(parsedResponse.data);
 };
 
 export function useExerciseSuggestions(rawQuery: string) {

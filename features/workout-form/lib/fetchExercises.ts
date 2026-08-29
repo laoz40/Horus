@@ -1,7 +1,7 @@
 import { createSuggestionObject } from "./convertWorkoutData";
 import { DEFAULT_EXERCISES } from "./defaultExercises";
 import { normalizeName } from "@/lib/normalizeName";
-import type { WgerExerciseResponse } from "./wgerTypes";
+import { WgerExerciseResponseSchema } from "./wgerTypes";
 import { err, ok } from "neverthrow";
 
 export const fetchDefaultExercises = (query: string) => {
@@ -38,8 +38,16 @@ export const fetchApiExercises = async (query: string) => {
 		} as const);
 	}
 
-	const matchedWgerExercises = (await response.json()) as WgerExerciseResponse;
-	const results = Array.isArray(matchedWgerExercises.results) ? matchedWgerExercises.results : [];
+	// The wger API response is untrusted third-party data; parse it at the boundary.
+	const parsedResponse = WgerExerciseResponseSchema.safeParse(await response.json());
+
+	if (!parsedResponse.success) {
+		return err({
+			code: "REQUEST_FAILED",
+		} as const);
+	}
+
+	const results = parsedResponse.data.results;
 
 	return ok(
 		results.flatMap((exercise) => {
