@@ -58,6 +58,10 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		}) as string | undefined;
 		const hasExerciseName = Boolean(exerciseName?.trim());
 
+		const exerciseError = errors.exercises?.[exerciseIndex];
+		const nameError = exerciseError?.global?.name;
+		const setsError = exerciseError?.sets?.root;
+
 		const handleRecentClick = () => {
 			const trimmedName = exerciseName?.trim();
 			if (!trimmedName) return;
@@ -87,11 +91,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 							</Button>
 						)}
 					</div>
-					{errors.exercises?.[exerciseIndex]?.global?.name && (
-						<span className="text-red-500 text-sm">
-							{errors.exercises?.[exerciseIndex]?.global?.name?.message}
-						</span>
-					)}
+					{nameError && <span className="text-red-500 text-sm">{nameError.message}</span>}
 				</div>
 
 				{hasExerciseName && (
@@ -117,11 +117,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 								<PlusIcon className="size-4" />
 								<span className="translate-y-px">Add Set</span>
 							</Button>
-							{errors.exercises?.[exerciseIndex]?.sets?.root?.message && (
-								<span className="text-red-500 text-sm">
-									{errors.exercises?.[exerciseIndex]?.sets?.root?.message}
-								</span>
-							)}
+							{setsError && <span className="text-red-500 text-sm">{setsError.message}</span>}
 						</div>
 
 						{/* Difficulty and Notes */}
