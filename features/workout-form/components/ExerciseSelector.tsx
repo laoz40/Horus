@@ -27,7 +27,7 @@ export default function ExerciseSelector({ exerciseIds }: ExerciseSelectorProps)
 	const exerciseNames = useWatch({
 		control,
 		name: exerciseIds.map((_, exerciseIndex) => `exercises.${exerciseIndex}.global.name` as const),
-	}) as Array<string | undefined>;
+	});
 
 	// match selected id to get index and name
 	const selectedExerciseIndex = exerciseIds.findIndex(

@@ -55,7 +55,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		const exerciseName = useWatch({
 			control,
 			name: `exercises.${exerciseIndex}.global.name` as const,
-		}) as string | undefined;
+		});
 		const hasExerciseName = Boolean(exerciseName?.trim());
 
 		const exerciseError = errors.exercises?.[exerciseIndex];
