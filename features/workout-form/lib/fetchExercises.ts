@@ -45,7 +45,7 @@ export const fetchApiExercises = async (query: string) => {
 		results.flatMap((exercise) => {
 			// get english exercise name
 			const englishTranslation = exercise.translations?.find(
-				(exercise) => exercise.language === 2 && exercise.name.trim().length > 0,
+				(translation) => translation.language === 2 && translation.name.trim().length > 0,
 			);
 			if (!englishTranslation) return [];
 
