@@ -82,7 +82,6 @@ export default function RestTimerButton(): ReactElement {
 
 		if (!startedAtMs) return;
 
-		setNowMs(Date.now());
 		const intervalId = window.setInterval(() => {
 			setNowMs(Date.now());
 		}, 1000);
