@@ -66,7 +66,7 @@ export const useExerciseNavigation = ({
 				const visible = forms.filter((form) => form.isIntersecting);
 				if (visible.length === 0) return;
 
-				const mostVisible = visible.sort(
+				const mostVisible = visible.toSorted(
 					(a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0),
 				)[0];
 				const exerciseId = (mostVisible.target as HTMLElement).dataset.exerciseId;
