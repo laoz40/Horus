@@ -12,7 +12,7 @@
 		"format:check": "oxfmt --check",
 		"lint": "oxlint . --fix",
 		"lint:check": "oxlint .",
-		"typecheck:native": "tsgo --noEmit"
+		"typecheck": "tsgo --noEmit"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
