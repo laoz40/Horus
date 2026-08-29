@@ -64,6 +64,7 @@
 		"zustand": "^5.0.12"
 	},
 	"devDependencies": {
+		"@oxlint/plugins": "1.80.0",
 		"@tailwindcss/postcss": "^4",
 		"@types/node": "^24.10.1",
 		"@types/react": "^19",

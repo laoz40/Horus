@@ -1,6 +1,7 @@
 {
 	"$schema": "./node_modules/oxlint/configuration_schema.json",
 	"plugins": ["nextjs", "typescript", "unicorn"],
+	"jsPlugins": [{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" }],
 	"categories": {
 		"correctness": "error",
 		"suspicious": "error",
@@ -12,7 +13,7 @@
 	"options": {
 		"typeAware": true
 	},
-	"ignorePatterns": [".next/**", "out/**", "build/**", "next-env.d.ts"],
+	"ignorePatterns": [".next/**", "out/**", "build/**", "next-env.d.ts", "tools/oxlint/anti-slop/**"],
 	"rules": {
 		"@typescript-eslint/no-unsafe-type-assertion": "error",
 		"@typescript-eslint/no-unnecessary-type-assertion": "error",
