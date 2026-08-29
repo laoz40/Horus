@@ -30,9 +30,9 @@ export const getFirstInvalidExerciseIndex = (errors: FieldErrors<Workout>): numb
 
 	// loop through the errors and find the first one that is an exercise error
 	for (const [exerciseIndex, exerciseError] of exerciseErrors.entries()) {
+		// RHF's exercise errors bottom out in `any`; downgrade to unknown, then narrow to a non-null object
 		const error: unknown = exerciseError;
-		if (!error || typeof error !== "object") continue;
-
+		if (!(error instanceof Object)) continue;
 		if (exerciseHasValidationError(error)) return exerciseIndex;
 	}
 

@@ -20,13 +20,7 @@ interface SetRowProps {
 }
 
 // Convert blank inputs to undefined instead of nan, so empty fields stay empty in RHF
-const parseOptionalNumber = (value: string | number): number | undefined => {
-	if (typeof value === "number") {
-		return Number.isFinite(value) ? value : undefined;
-	}
-
-	if (typeof value !== "string") return undefined;
-
+const parseOptionalNumber = (value: string): number | undefined => {
 	const trimmed = value.trim();
 	if (trimmed === "") return undefined;
 

@@ -5,6 +5,7 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins";
 import { Resend } from "resend";
+import { z } from "zod";
 
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
@@ -26,6 +27,13 @@ const redis = new Redis({
 
 const otpExpiresInSeconds = 300;
 
+// Upstash auto-parses stored JSON on read, so a "string" may come back as an already-decoded
+// object. Strings pass through untouched; anything else is re-stringified for better-auth.
+const redisSessionValueSchema = z.union([
+	z.string(),
+	z.unknown().transform((value) => JSON.stringify(value)),
+]);
+
 // Origins beyond SITE_URL that may call auth endpoints (e.g. Tailscale serve URL for phone access)
 const extraTrustedOrigins =
 	env.EXTRA_TRUSTED_ORIGINS?.split(",").map((origin) => origin.trim()) ?? [];
@@ -40,8 +48,9 @@ export const auth = betterAuth({
 	}),
 	secondaryStorage: {
 		get: async (key) => {
-			const value = await redis.get<string>(key);
-			return value ? (typeof value === "string" ? value : JSON.stringify(value)) : null;
+			const value = await redis.get(key);
+			if (value === null) return null;
+			return redisSessionValueSchema.parse(value);
 		},
 		set: async (key, value, ttl) => {
 			if (ttl) {
