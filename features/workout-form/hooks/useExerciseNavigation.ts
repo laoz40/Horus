@@ -69,7 +69,10 @@ export const useExerciseNavigation = ({
 				const mostVisible = visible.toSorted(
 					(a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0),
 				)[0];
-				const exerciseId = (mostVisible.target as HTMLElement).dataset.exerciseId;
+				if (!mostVisible) return;
+
+				const { target } = mostVisible;
+				const exerciseId = target instanceof HTMLElement ? target.dataset.exerciseId : undefined;
 
 				if (exerciseId) {
 					selectExercise(exerciseId);

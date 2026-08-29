@@ -67,12 +67,16 @@ export const useSuggestionListTouchScroll = (): UseSuggestionListTouchScrollRetu
 	};
 
 	const handleSuggestionListTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+		const touch = event.touches[0];
+		if (!touch) return;
 		event.preventDefault();
-		scrollSuggestionList(event.touches[0]);
+		scrollSuggestionList(touch);
 	};
 
 	const handleListboxTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-		startTouch(event.touches[0]);
+		const touch = event.touches[0];
+		if (!touch) return;
+		startTouch(touch);
 	};
 
 	return {
