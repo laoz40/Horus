@@ -19,9 +19,12 @@ export const useWorkoutTimer = ({
 	);
 	const [durationSeconds, setDurationSeconds] = useState<number>(initialDurationSeconds);
 
-	useEffect(() => {
+	// Re-anchor the displayed duration when a restored session changes the initial value.
+	const [prevInitialSeconds, setPrevInitialSeconds] = useState(initialDurationSeconds);
+	if (prevInitialSeconds !== initialDurationSeconds) {
+		setPrevInitialSeconds(initialDurationSeconds);
 		setDurationSeconds(initialDurationSeconds);
-	}, [initialDurationSeconds]);
+	}
 
 	useEffect(() => {
 		const updateDuration = () => {
