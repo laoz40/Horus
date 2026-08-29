@@ -51,8 +51,9 @@
 		"@typescript-eslint/prefer-as-const": "error",
 		"@typescript-eslint/prefer-namespace-keyword": "error",
 		"@typescript-eslint/triple-slash-reference": "error",
-		"complexity": ["error", { "max": 15 }],
-		"max-depth": ["error", { "max": 3 }]
+		"complexity": ["error", { "max": 12 }],
+		"max-depth": ["error", { "max": 3 }],
+		"max-statements": ["error", { "max": 15 }]
 	},
 	"overrides": [
 		{
