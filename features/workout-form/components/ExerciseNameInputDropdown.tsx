@@ -19,7 +19,7 @@ const preventMousePointerBlur = (event: PointerEvent) => {
 
 export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: number }) {
 	const listboxId = useId();
-	const { control, setValue } = useFormContext<Workout>();
+	const { control, setValue, setFocus } = useFormContext<Workout>();
 	const exerciseNamePath = `exercises.${exerciseIndex}.global.name` as const;
 	const query = useWatch({ control, name: exerciseNamePath }) ?? "";
 	const [isOpen, setIsOpen] = useState(false);
@@ -50,6 +50,11 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 					const match = suggestions.find((exercise) => exercise.name === exerciseName);
 					setValue(`exercises.${exerciseIndex}.global.muscleGroups`, match?.muscleGroups ?? []);
 					setIsOpen(false);
+
+					// Focus weight so the user can type immediately after picking an exercise.
+					// The timeout defers one tick: the weight input is only rendered by the name
+					// change above, so it does not exist to focus until this handler has finished.
+					setTimeout(() => setFocus(`exercises.${exerciseIndex}.sets.0.weight`), 0);
 				};
 
 				const startTouch = (touch: Touch) => {
