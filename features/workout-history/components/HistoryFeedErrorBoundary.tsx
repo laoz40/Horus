@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import type { ErrorInfo } from "next/error";
 import { Button } from "@/components/ui/button";
 import { showErrorToast } from "@/lib/toastMessages";
 import HistoryFeed from "./HistoryFeed";
@@ -19,7 +20,7 @@ const getHistoryFeedErrorMessage = (error: Error) => {
 	return "Unexpected error loading workout history.";
 };
 
-function HistoryFeedErrorFallback({ error, resetErrorBoundary }: Readonly<FallbackProps>) {
+function HistoryFeedErrorFallback({ error, retry }: ErrorInfo) {
 	// React hands the boundary an arbitrary thrown value; only real Errors can carry an orpc code
 	const message =
 		error instanceof Error
@@ -35,7 +36,7 @@ function HistoryFeedErrorFallback({ error, resetErrorBoundary }: Readonly<Fallba
 			<p className="text-sm text-muted-foreground">{message}</p>
 			<Button
 				type="button"
-				onClick={resetErrorBoundary}
+				onClick={retry}
 				variant="outline">
 				Try again
 			</Button>
@@ -47,7 +48,7 @@ export default function HistoryFeedErrorBoundary({
 	WORKOUTS_PER_PAGE,
 }: Readonly<HistoryFeedErrorBoundaryProps>) {
 	return (
-		<ErrorBoundary FallbackComponent={HistoryFeedErrorFallback}>
+		<ErrorBoundary fallback={HistoryFeedErrorFallback}>
 			<HistoryFeed WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE} />
 		</ErrorBoundary>
 	);

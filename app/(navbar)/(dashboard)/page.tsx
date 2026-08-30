@@ -5,6 +5,7 @@ import DashboardAccountButton from "@/features/auth/components/DashboardAccountB
 import DashboardPresetsSection from "@/features/dashboard/components/DashboardPresetsSection";
 import DashboardStartSection from "@/features/dashboard/components/DashboardStartSection";
 import DashboardYearInTrainingSection from "@/features/dashboard/components/DashboardYearInTrainingSection";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { authClient } from "@/lib/auth-client";
 
 export default function DashboardPage(): ReactElement {
@@ -39,8 +40,12 @@ export default function DashboardPage(): ReactElement {
 				)}
 			</div>
 
-			<DashboardStartSection />
-			<DashboardPresetsSection />
+			<ErrorBoundary>
+				<DashboardStartSection />
+			</ErrorBoundary>
+			<ErrorBoundary>
+				<DashboardPresetsSection />
+			</ErrorBoundary>
 			<DashboardYearInTrainingSection
 				isAuthPending={isPending}
 				isSignedIn={isSignedIn}

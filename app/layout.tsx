@@ -5,6 +5,7 @@ import { Oxanium } from "next/font/google";
 import DeferredToaster from "@/components/DeferredToaster";
 import RestTimerButton from "@/components/RestTimerButton";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import { themeProviderProps } from "@/lib/theme";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
@@ -54,17 +55,7 @@ export default function RootLayout({
      `,
 					}}
 				/>
-				<ThemeProvider
-					attribute="class"
-					defaultTheme="system"
-					themes={["light", "dark", "glass"]}
-					value={{
-						light: "light",
-						dark: "dark",
-						glass: "glass",
-					}}
-					enableSystem
-					disableTransitionOnChange>
+				<ThemeProvider {...themeProviderProps}>
 					<Providers>
 						<RestTimerButton />
 						{children}
