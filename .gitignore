@@ -47,5 +47,4 @@ dev.db
 # clerk configuration (can include secrets)
 /.clerk/
 
-.agents
 AGENTS.md
