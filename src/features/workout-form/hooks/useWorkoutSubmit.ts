@@ -143,6 +143,8 @@ export const useWorkoutSubmit = ({
 			case "create":
 				setCreateWorkoutDraft(workoutResult.data);
 				createWorkout.mutate({ workout: workoutResult.data });
+				// TODO: The history feed has no optimistic UI yet, so this redirect can
+				// briefly land on a stale list until the invalidation refetch lands.
 				router.push("/workouts");
 				return;
 			case "update":
