@@ -1,0 +1,8 @@
+{
+	"name": "horus-verify-helpers",
+	"type": "module",
+	"private": true,
+	"dependencies": {
+		"playwright-core": "^1.62.1"
+	}
+}
