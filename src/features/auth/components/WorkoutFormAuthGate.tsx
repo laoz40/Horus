@@ -2,7 +2,7 @@
 
 import { authClient } from "@/lib/auth-client";
 
-import SignUpDialog from "./SignUpDialog";
+import SignUpDialog from "@/features/auth/components/SignUpDialog";
 
 export default function WorkoutFormAuthGate() {
 	const { data: sessionData, isPending } = authClient.useSession();

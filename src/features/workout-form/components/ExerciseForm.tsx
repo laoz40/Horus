@@ -8,10 +8,10 @@ import { openRecentSetsDialog } from "@/features/workout-form/stores/workoutForm
 import { showSetDeletedToast } from "@/lib/toastMessages";
 import { cn } from "@/lib/utils";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
-import { createDefaultSet } from "../lib/WorkoutFormDefaults";
-import ExerciseCollapsibles from "./ExerciseCollapsibles";
-import { ExerciseNameInputDropdown } from "./ExerciseNameInputDropdown";
-import SetRow from "./SetRow";
+import { createDefaultSet } from "@/features/workout-form/lib/WorkoutFormDefaults";
+import ExerciseCollapsibles from "@/features/workout-form/components/ExerciseCollapsibles";
+import { ExerciseNameInputDropdown } from "@/features/workout-form/components/ExerciseNameInputDropdown";
+import SetRow from "@/features/workout-form/components/SetRow";
 
 interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
 	exerciseIndex: number;

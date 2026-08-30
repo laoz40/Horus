@@ -23,10 +23,10 @@ import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit
 import { useWorkoutExercises } from "@/features/workout-form/hooks/useWorkoutExercises";
 import { useWorkoutFormInit } from "@/features/workout-form/hooks/useWorkoutFormInit";
 
-import ExerciseForm from "./ExerciseForm";
-import WorkoutFormBottomBar from "./WorkoutFormBottomBar";
-import WorkoutFormTopBar from "./WorkoutFormTopBar";
-import RecentSetsDialog from "./RecentSetsDialog";
+import ExerciseForm from "@/features/workout-form/components/ExerciseForm";
+import WorkoutFormBottomBar from "@/features/workout-form/components/WorkoutFormBottomBar";
+import WorkoutFormTopBar from "@/features/workout-form/components/WorkoutFormTopBar";
+import RecentSetsDialog from "@/features/workout-form/components/RecentSetsDialog";
 
 interface WorkoutFormProps {
 	initialData?: WorkoutFormData;

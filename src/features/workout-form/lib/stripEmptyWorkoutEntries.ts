@@ -1,4 +1,4 @@
-import type { Workout } from "./validateWorkout";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 // Strip fully empty sets/exercises before validation.
 export const stripEmptyWorkoutEntries = (workout: Workout): Workout => {

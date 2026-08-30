@@ -1,5 +1,5 @@
 import { normalizeName } from "@/lib/normalizeName";
-import type { ExerciseSuggestion } from "./types";
+import type { ExerciseSuggestion } from "@/features/workout-form/lib/types";
 
 interface fetchedExercise {
 	id: string;

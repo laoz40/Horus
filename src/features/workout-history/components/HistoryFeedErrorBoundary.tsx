@@ -5,7 +5,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import type { ErrorInfo } from "next/error";
 import { Button } from "@/components/ui/button";
 import { showErrorToast } from "@/lib/toastMessages";
-import HistoryFeed from "./HistoryFeed";
+import HistoryFeed from "@/features/workout-history/components/HistoryFeed";
 
 interface HistoryFeedErrorBoundaryProps {
 	WORKOUTS_PER_PAGE: number;

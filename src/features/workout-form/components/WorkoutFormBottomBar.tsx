@@ -7,7 +7,7 @@ import {
 	useWorkoutFormUiStore,
 } from "@/features/workout-form/stores/workoutFormUiStore";
 
-import ExerciseSelector from "./ExerciseSelector";
+import ExerciseSelector from "@/features/workout-form/components/ExerciseSelector";
 
 interface WorkoutFormBottomBarProps {
 	exerciseIds: string[];
