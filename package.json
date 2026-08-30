@@ -9,7 +9,7 @@
 		"db:migrate": "drizzle-kit migrate",
 		"build": "next build",
 		"start": "next start",
-		"test:e2e": "playwright test",
+		"test": "playwright test",
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",
 		"lint": "oxlint . --fix",
