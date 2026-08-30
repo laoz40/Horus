@@ -23,22 +23,22 @@ Preconditions: doctor authenticated; note the verify user's `workouts` row count
 - **Create and save a workout** (verified working end to end; this exact sequence passed all steps):
   ```json
   [
-    {"goto": "/workouts/new"},
-    {"wait": 2000},
-    {"fill": {"placeholder": "Enter an exercise...", "value": "Bench Press"}},
-    {"wait": 1200},
-    {"click": {"role": "option", "name": "Bench Press"}},
-    {"fill": {"placeholder": "kg", "value": "60"}},
-    {"fill": {"placeholder": "reps", "value": "8"}},
-    {"click": {"role": "checkbox", "name": "Color success"}},
-    {"click": {"name": "FINISH REST"}},
-    {"click": {"name": "Finish"}},
-    {"wait": 800},
-    {"fill": {"name": "Enter workout name", "value": "Verify Run Workout"}},
-    {"click": {"name": "Save"}},
-    {"expectToast": "Saved Verify Run Workout"},
-    {"expectUrl": "/workouts"},
-    {"screenshot": "03-after-save.png"}
+  	{ "goto": "/workouts/new" },
+  	{ "wait": 2000 },
+  	{ "fill": { "placeholder": "Enter an exercise...", "value": "Bench Press" } },
+  	{ "wait": 1200 },
+  	{ "click": { "role": "option", "name": "Bench Press" } },
+  	{ "fill": { "placeholder": "kg", "value": "60" } },
+  	{ "fill": { "placeholder": "reps", "value": "8" } },
+  	{ "click": { "role": "checkbox", "name": "Color success" } },
+  	{ "click": { "name": "FINISH REST" } },
+  	{ "click": { "name": "Finish" } },
+  	{ "wait": 800 },
+  	{ "fill": { "name": "Enter workout name", "value": "Verify Run Workout" } },
+  	{ "click": { "name": "Save" } },
+  	{ "expectToast": "Saved Verify Run Workout" },
+  	{ "expectUrl": "/workouts" },
+  	{ "screenshot": "03-after-save.png" }
   ]
   ```
 - **DB side effect:**

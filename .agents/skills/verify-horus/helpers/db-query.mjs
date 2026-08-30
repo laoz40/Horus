@@ -18,7 +18,7 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..
 const args = process.argv.slice(2);
 const sqlText = args.includes("--sql") ? args[args.indexOf("--sql") + 1] : undefined;
 if (!sqlText) {
-	console.error("Usage: db-query.mjs --sql \"<query>\" [--yes]");
+	console.error('Usage: db-query.mjs --sql "<query>" [--yes]');
 	process.exit(1);
 }
 
