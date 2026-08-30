@@ -175,7 +175,7 @@
 			}
 		},
 		{
-			"files": ["components/ui/**"],
+			"files": ["src/components/ui/**"],
 			"plugins": ["jsx-a11y"],
 			"rules": {
 				"jsx-a11y/no-noninteractive-tabindex": "off",
