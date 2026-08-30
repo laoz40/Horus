@@ -17,7 +17,7 @@
 		"dist",
 		"node_modules",
 		"pnpm-lock.yaml",
-		"components/ui/**",
+		"src/components/ui/**",
 		"tools/oxlint/anti-slop/**"
 	]
 }

@@ -9,8 +9,8 @@ import {
 	useHistoryUiStore,
 } from "@/features/workout-history/stores/historyUiStore";
 
-import WorkoutCard from "./WorkoutCard";
-import { WorkoutCardSkeletonList } from "./HistoryWorkoutCardSkeleton";
+import WorkoutCard from "@/features/workout-history/components/WorkoutCard";
+import { WorkoutCardSkeletonList } from "@/features/workout-history/components/HistoryWorkoutCardSkeleton";
 
 export default function HistoryList({
 	workouts,

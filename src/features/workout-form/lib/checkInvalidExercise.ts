@@ -1,6 +1,6 @@
 import type { FieldErrors } from "react-hook-form";
 
-import type { Workout } from "./validateWorkout";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 type ExerciseFieldErrors = {
 	global?: {

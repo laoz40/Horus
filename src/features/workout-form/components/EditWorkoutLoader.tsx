@@ -4,9 +4,9 @@ import { isDefinedError } from "@orpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc/client";
 
-import WorkoutForm from "./WorkoutForm";
-import WorkoutFormPageSkeleton from "./WorkoutFormPageSkeleton";
-import WorkoutLoadError from "./WorkoutLoadError";
+import WorkoutForm from "@/features/workout-form/components/WorkoutForm";
+import WorkoutFormPageSkeleton from "@/features/workout-form/components/WorkoutFormPageSkeleton";
+import WorkoutLoadError from "@/features/workout-form/components/WorkoutLoadError";
 
 interface EditWorkoutLoaderProps {
 	workoutId: string;

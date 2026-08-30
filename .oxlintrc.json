@@ -175,11 +175,27 @@
 			}
 		},
 		{
-			"files": ["components/ui/**"],
+			"files": ["src/components/ui/**"],
 			"plugins": ["jsx-a11y"],
 			"rules": {
 				"jsx-a11y/no-noninteractive-tabindex": "off",
 				"jsx-a11y/no-noninteractive-element-interactions": "off"
+			}
+		},
+		{
+			"files": ["src/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": ["./**", "../**"],
+								"message": "Use absolute imports with the @/ alias."
+							}
+						]
+					}
+				]
 			}
 		}
 	]

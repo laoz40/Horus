@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import "./globals.css";
+import "@/app/globals.css";
 import { ThemeProvider } from "next-themes";
 import { Oxanium } from "next/font/google";
 import DeferredToaster from "@/components/DeferredToaster";
 import RestTimerButton from "@/components/RestTimerButton";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import { themeProviderProps } from "@/lib/theme";
-import { Providers } from "./providers";
+import { Providers } from "@/app/providers";
 
 export const metadata: Metadata = {
 	title: "Horus",

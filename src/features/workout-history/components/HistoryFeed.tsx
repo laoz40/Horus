@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { orpc } from "@/lib/orpc/client";
 
-import HistoryList from "./HistoryList";
-import HistoryPagination from "./HistoryPagination";
-import { WorkoutCardSkeletonList } from "./HistoryWorkoutCardSkeleton";
+import HistoryList from "@/features/workout-history/components/HistoryList";
+import HistoryPagination from "@/features/workout-history/components/HistoryPagination";
+import { WorkoutCardSkeletonList } from "@/features/workout-history/components/HistoryWorkoutCardSkeleton";
 
 interface HistoryFeedProps {
 	WORKOUTS_PER_PAGE: number;

@@ -3,7 +3,7 @@
 import SectionCard from "@/components/SectionCard";
 import { authClient } from "@/lib/auth-client";
 
-import SettingsAccountBar from "./SettingsAccountBar";
+import SettingsAccountBar from "@/features/auth/components/SettingsAccountBar";
 
 export default function SettingsAccountSection() {
 	const { data: sessionData, isPending } = authClient.useSession();

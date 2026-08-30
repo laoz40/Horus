@@ -1,6 +1,6 @@
 "use client";
 
-import "./globals.css";
+import "@/app/globals.css";
 import { ThemeProvider } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { themeProviderProps } from "@/lib/theme";

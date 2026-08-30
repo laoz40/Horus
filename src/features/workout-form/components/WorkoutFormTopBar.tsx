@@ -7,8 +7,8 @@ import { useWorkoutTimer } from "@/features/workout-form/hooks/useWorkoutTimer";
 import { useWorkoutFormUiStore } from "@/features/workout-form/stores/workoutFormUiStore";
 import { formatDurationFull } from "@/lib/time";
 
-import { WorkoutNameDialog } from "./WorkoutNameDialog";
-import WorkoutExitLink from "./WorkoutExitLink";
+import { WorkoutNameDialog } from "@/features/workout-form/components/WorkoutNameDialog";
+import WorkoutExitLink from "@/features/workout-form/components/WorkoutExitLink";
 
 interface WorkoutFormTopBarProps {
 	initialDurationSeconds: number;

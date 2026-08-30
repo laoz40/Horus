@@ -3,8 +3,8 @@ import type { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
 import { toTitleCase } from "@/features/workout-form/lib/convertWorkoutData";
 import { getRelativeTime } from "@/lib/date";
 import { ShineBorder } from "@/components/ui/shine-border";
-import WorkoutCardStats from "./WorkoutCardStats";
-import WorkoutCardOptions from "./WorkoutCardOptions";
+import WorkoutCardStats from "@/features/workout-history/components/WorkoutCardStats";
+import WorkoutCardOptions from "@/features/workout-history/components/WorkoutCardOptions";
 import { Badge } from "@/components/ui/badge";
 
 interface WorkoutCardProps {

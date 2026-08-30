@@ -10,7 +10,7 @@ import { type Workout, validateCompletedSet } from "@/features/workout-form/lib/
 import { orpc } from "@/lib/orpc/client";
 import { startRestTimer } from "@/features/workout-form/stores/workoutFormUiStore";
 import { showSetPrToast } from "@/lib/toastMessages";
-import NumberInput from "./NumberInput";
+import NumberInput from "@/features/workout-form/components/NumberInput";
 
 interface SetRowProps {
 	exerciseIndex: number;
