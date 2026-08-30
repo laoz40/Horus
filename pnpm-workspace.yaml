@@ -1,13 +1,6 @@
-allowBuilds:
-  bufferutil: true
-  core-js: true
-  esbuild: true
-  sharp: true
-  utf-8-validate: true
-
+# None of these postinstall scripts do real work (funding ad, binary verification
+# against prebuilt platform packages), so block them to skip native compilation.
 ignoredBuiltDependencies:
+  - core-js
   - esbuild
-
-onlyBuiltDependencies:
   - sharp
-  - unrs-resolver
