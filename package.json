@@ -9,6 +9,7 @@
 		"db:migrate": "drizzle-kit migrate",
 		"build": "next build",
 		"start": "next start",
+		"test": "playwright test",
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",
 		"lint": "oxlint . --fix",
@@ -64,6 +65,7 @@
 	},
 	"devDependencies": {
 		"@oxlint/plugins": "1.80.0",
+		"@playwright/test": "^1.62.1",
 		"@tailwindcss/postcss": "^4",
 		"@types/node": "^24.10.1",
 		"@types/react": "^19",

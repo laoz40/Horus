@@ -16,14 +16,10 @@ super inefficient, laggy and doesn't scale well.
 ## Features
 
 - Create, edit, delete, and save workouts
-- Log exercises, sets, reps, and weights
-- Store workouts between sessions
+- Log exercises, sets, reps, weights, difficulty, and notes
 - Secure sign up and login
 - Personal accounts with each user’s data kept separate
-- Track workout history over time
-- Track stats like total workout volume and personal records
-- Built-in form validation to reduce mistakes
-- Clear error messages and feedback when something goes wrong
+- Track workout history and personal records over time
 - Mobile-friendly, responsive design
 - Multiple theme options with 3 visual variants
 - Clean, easy-to-use interface
@@ -44,8 +40,9 @@ super inefficient, laggy and doesn't scale well.
 - React Hook Form
 - Zustand
 - Tanstack Query
-- Tailwindcss
+- Tailwind
 - shadcn/ui
+- Playwright
 
 ## Why Next.js?
 
@@ -62,8 +59,6 @@ In the future, I plan to build a native mobile version of this app.
 > build real skills and develop my own knowledge.
 
 ---
-
-## TODO:
 
 ### General
 
@@ -112,12 +107,13 @@ In the future, I plan to build a native mobile version of this app.
   - [x] implement orpc for type safety between server and client
   - [x] implement drizzle for type safety between server and client
   - [x] use neverthrow for clean error handling
-  - [ ] migrate prod data to postgres
+  - [x] migrate prod data to postgres
 - [x] use t3env for env var validation
 - [ ] rate limit every endpoint
 - [ ] add max/upper character limits to inputs
 - [x] add webmanifest to support ios app shortcut
   - [x] a bottom margin so that the home button indicator does not cover the nav content
+- [x] add proper error boundaries to entire app to handle unexpected errors
 
 ### Create Workout Page
 
@@ -173,7 +169,7 @@ In the future, I plan to build a native mobile version of this app.
 - [x] fix dropdown not matching width of input
 - [x] implement another way to delete exercise without inputting the name
 - [x] filter out empty sets and exercises rather than invalidating the workout
-- [ ] clear input button on exercise name
+- [ ] clear input button on exercise name when typing
 - [x] fix duration timer to increment using real time
 - [x] redesign the ui and remove the redundant add set button
   - [x] move position of edit and recent buttons
@@ -220,6 +216,7 @@ In the future, I plan to build a native mobile version of this app.
   - [ ] workouts containing specific exercise/muscle group
 - [x] add pagination
 - [x] ensure fixed height on workout card
+- [ ] optimise update workout mutation (very slow due to pr recalculation)
 
 ### Progress
 
@@ -234,3 +231,13 @@ In the future, I plan to build a native mobile version of this app.
 - [ ] show goals/stats on dashboard for motivation
   - [x] show frequency heatmap of sessions
   - [ ] prs
+
+### Chores
+
+- [x] setup more strict linting rules
+	- [x] add dillon mulroys anti-slop plugin
+- [ ] setup CI
+- [x] update to typescript 7 go
+- [x] update to latest next (16.3.3)
+- [x] use src directory structure
+- [x] setup end to end testing with playwright

@@ -34,9 +34,13 @@ function ensurePlaywright() {
 		return awaitImport("playwright-core");
 	} catch {
 		console.error("Installing playwright-core into helpers (one-time)...");
-		spawnSync("npm", ["install", "--prefix", HELPERS_DIR, "--no-fund", "--no-audit", "playwright-core"], {
-			stdio: "inherit",
-		});
+		spawnSync(
+			"npm",
+			["install", "--prefix", HELPERS_DIR, "--no-fund", "--no-audit", "playwright-core"],
+			{
+				stdio: "inherit",
+			},
+		);
 		return awaitImport("playwright-core");
 	}
 }
@@ -65,7 +69,9 @@ function findChromium() {
 	for (const candidate of candidates) {
 		if (fs.existsSync(candidate)) return candidate;
 	}
-	throw new Error("No Chromium binary found (looked in /usr/sbin/chromium and ~/.cache/ms-playwright)");
+	throw new Error(
+		"No Chromium binary found (looked in /usr/sbin/chromium and ~/.cache/ms-playwright)",
+	);
 }
 
 // Parse .env.local for DATABASE_URL / BETTER_AUTH_SECRET without touching the app's env module.
@@ -140,7 +146,9 @@ async function injectCookie(value) {
 // GET (not POST — the app's session config rejects POST without deferSessionRefresh).
 async function fetchSession(page) {
 	return page.evaluate(async () => {
-		const response = await fetch("/api/auth/get-session", { headers: { accept: "application/json" } });
+		const response = await fetch("/api/auth/get-session", {
+			headers: { accept: "application/json" },
+		});
 		if (response.status === 401) return null;
 		return response.json();
 	});
@@ -187,7 +195,9 @@ async function login() {
 	await withPersistentContext(false, async (page, context) => {
 		await page.goto(`${BASE_URL}/login`, { waitUntil: "domcontentloaded" });
 		console.log("Browser window open at /login — complete the OTP or OAuth login manually.");
-		console.log("Waiting for an authenticated session (polls every 2s, gives up after 5 minutes)...");
+		console.log(
+			"Waiting for an authenticated session (polls every 2s, gives up after 5 minutes)...",
+		);
 		for (let i = 0; i < 150; i++) {
 			await page.waitForTimeout(2000);
 			const session = await fetchSession(page);
@@ -218,7 +228,9 @@ async function flow({ out, stepsJson }) {
 			} catch (error) {
 				const shot = path.join(outDir, `failure-step-${n}.png`);
 				await page.screenshot({ path: shot }).catch(() => {});
-				throw new Error(`step ${n} FAILED (${describeStep(step)}): ${error.message}\nFailure screenshot: ${shot}`);
+				throw new Error(
+					`step ${n} FAILED (${describeStep(step)}): ${error.message}\nFailure screenshot: ${shot}`,
+				);
 			}
 		}
 	});
@@ -251,7 +263,10 @@ async function runStep(page, step, outDir, n) {
 	} else if (step.expectText) {
 		await page.getByText(step.expectText, { exact: false }).first().waitFor({ timeout: 10000 });
 	} else if (step.expectToast) {
-		await page.locator(`[data-sonner-toast]:has-text("${step.expectToast}")`).first().waitFor({ timeout: 10000 });
+		await page
+			.locator(`[data-sonner-toast]:has-text("${step.expectToast}")`)
+			.first()
+			.waitFor({ timeout: 10000 });
 	} else if (step.expectUrl) {
 		await page.waitForURL((url) => url.href.includes(step.expectUrl), { timeout: 10000 });
 	} else if (step.screenshot) {
@@ -273,7 +288,14 @@ async function runStep(page, step, outDir, n) {
 
 function describeStep(step) {
 	const kind = Object.keys(step)[0];
-	const detail = step.goto ?? step.press ?? step.expectText ?? step.expectToast ?? step.expectUrl ?? step.screenshot ?? "";
+	const detail =
+		step.goto ??
+		step.press ??
+		step.expectText ??
+		step.expectToast ??
+		step.expectUrl ??
+		step.screenshot ??
+		"";
 	return detail ? `${kind} ${detail}` : kind;
 }
 
@@ -289,7 +311,10 @@ try {
 	else if (command === "session-dump") await sessionDump();
 	else if (command === "login") await login();
 	else if (command === "flow") await flow({ out: flag("--out"), stepsJson: flag("--steps") });
-	else throw new Error(`Unknown command: ${command}. Use auth | doctor | session-dump | login | flow.`);
+	else
+		throw new Error(
+			`Unknown command: ${command}. Use auth | doctor | session-dump | login | flow.`,
+		);
 } catch (error) {
 	console.error(`ERROR: ${error.message}`);
 	process.exit(1);

@@ -19,9 +19,10 @@ interface SetRowProps {
 	onDeleteSet: (setIndex: number) => void;
 }
 
-// Convert blank inputs to undefined instead of nan, so empty fields stay empty in RHF
-const parseOptionalNumber = (value: string): number | undefined => {
-	const trimmed = value.trim();
+// Convert blank inputs to undefined instead of nan, so empty fields stay empty in RHF.
+// DOM events hand us strings, but editing an existing workout pre-fills numbers.
+const parseOptionalNumber = (value: string | number | null): number | undefined => {
+	const trimmed = String(value ?? "").trim();
 	if (trimmed === "") return undefined;
 
 	const parsedValue = Number(trimmed);
