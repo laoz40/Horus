@@ -17,11 +17,6 @@
 		"lint:check": "oxlint .",
 		"typecheck": "tsc --noEmit"
 	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild"
-		]
-	},
 	"dependencies": {
 		"@base-ui/react": "^1.5.0",
 		"@better-auth/drizzle-adapter": "1.7.2",
