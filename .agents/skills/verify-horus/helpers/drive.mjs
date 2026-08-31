@@ -54,26 +54,6 @@ function awaitImport(name) {
 	});
 }
 
-// Chromium: prefer the system binary (the Playwright-cached one has crashed with SIGTRAP
-// on this machine), fall back to any Playwright cache build.
-function findChromium() {
-	const candidates = ["/usr/sbin/chromium", "/usr/bin/chromium"];
-	const cache = path.join(process.env.HOME ?? "", ".cache/ms-playwright");
-	if (fs.existsSync(cache)) {
-		for (const entry of fs.readdirSync(cache)) {
-			for (const dir of ["chrome-linux64", "chrome-linux"]) {
-				candidates.push(path.join(cache, entry, dir, "chrome"));
-			}
-		}
-	}
-	for (const candidate of candidates) {
-		if (fs.existsSync(candidate)) return candidate;
-	}
-	throw new Error(
-		"No Chromium binary found (looked in /usr/sbin/chromium and ~/.cache/ms-playwright)",
-	);
-}
-
 // Parse .env.local for DATABASE_URL / BETTER_AUTH_SECRET without touching the app's env module.
 function readEnvLocal() {
 	const file = path.join(REPO_ROOT, ".env.local");
@@ -124,7 +104,6 @@ async function injectCookie(value) {
 	const { getChromium } = await ensurePlaywright();
 	const context = await getChromium().launchPersistentContext(PROFILE_DIR, {
 		headless: true,
-		executablePath: findChromium(),
 	});
 	await context.addCookies([
 		{
@@ -158,7 +137,6 @@ async function withPersistentContext(headless, fn) {
 	const { getChromium } = await ensurePlaywright();
 	const context = await getChromium().launchPersistentContext(PROFILE_DIR, {
 		headless,
-		executablePath: findChromium(),
 		viewport: { width: 420, height: 900 }, // mobile-first app: drive at phone width
 	});
 	try {
@@ -230,6 +208,7 @@ async function flow({ out, stepsJson }) {
 				await page.screenshot({ path: shot }).catch(() => {});
 				throw new Error(
 					`step ${n} FAILED (${describeStep(step)}): ${error.message}\nFailure screenshot: ${shot}`,
+					{ cause: error },
 				);
 			}
 		}

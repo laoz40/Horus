@@ -1,6 +1,4 @@
-# None of these postinstall scripts do real work (funding ad, binary verification
-# against prebuilt platform packages), so block them to skip native compilation.
-ignoredBuiltDependencies:
-  - core-js
-  - esbuild
-  - sharp
+allowBuilds:
+  core-js: false
+  esbuild: false
+  sharp: false

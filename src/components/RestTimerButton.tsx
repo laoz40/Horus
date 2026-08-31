@@ -126,7 +126,9 @@ export default function RestTimerButton(): ReactElement {
 					{elapsedTime}
 				</Button>
 			</DrawerTrigger>
-			<DrawerContent className="top-2/3 h-auto w-fit -translate-y-1/2 rounded-r-lg border border-l-0">
+			<DrawerContent
+				aria-describedby={undefined}
+				className="top-2/3 h-auto w-fit -translate-y-1/2 rounded-r-lg border border-l-0">
 				<DrawerHeader className="text-center">
 					<DrawerTitle>Rest Timer</DrawerTitle>
 				</DrawerHeader>

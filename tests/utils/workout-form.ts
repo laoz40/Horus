@@ -18,11 +18,14 @@ export async function addCompletedBenchSet(page: Page): Promise<void> {
 	await page.getByRole("button", { name: "FINISH REST" }).click();
 }
 
-// Finishes the workout: opens the Save dialog, names it, saves, and waits for the
-// redirect to history.
+// Finishes the workout: opens the Save dialog, names it, and waits for the saved
+// toast plus the history redirect. Create navigates immediately; update waits for
+// the mutation (PR recalc) and a short exit animation, which is slow against Neon
+// from CI.
 export async function saveWorkout(page: Page, name: string): Promise<void> {
 	await page.getByRole("button", { name: "Finish" }).click();
 	await page.getByRole("textbox", { name: "Enter workout name" }).fill(name);
 	await page.getByRole("button", { name: "Save" }).click();
-	await expect(page).toHaveURL(/\/workouts$/);
+	await expect(page.getByText(`Saved ${name}`)).toBeVisible({ timeout: 20_000 });
+	await expect(page).toHaveURL(/\/workouts$/, { timeout: 10_000 });
 }

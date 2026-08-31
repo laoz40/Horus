@@ -18,7 +18,8 @@
 		"out/**",
 		"build/**",
 		"next-env.d.ts",
-		"tools/oxlint/anti-slop/**"
+		"tools/oxlint/anti-slop/**",
+		".agents/**"
 	],
 	"rules": {
 		"anti-slop/no-chained-type-assertions": "error",

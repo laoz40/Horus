@@ -10,16 +10,12 @@
 		"build": "next build",
 		"start": "next start",
 		"test": "playwright test",
+		"postinstall": "playwright install chromium",
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",
 		"lint": "oxlint . --fix",
 		"lint:check": "oxlint .",
 		"typecheck": "tsc --noEmit"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild"
-		]
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.5.0",

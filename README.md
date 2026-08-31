@@ -235,8 +235,8 @@ In the future, I plan to build a native mobile version of this app.
 ### Chores
 
 - [x] setup more strict linting rules
-	- [x] add dillon mulroys anti-slop plugin
-- [ ] setup CI
+  - [x] add dillon mulroys anti-slop plugin
+- [x] setup CI
 - [x] update to typescript 7 go
 - [x] update to latest next (16.3.3)
 - [x] use src directory structure
