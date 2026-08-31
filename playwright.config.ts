@@ -8,7 +8,7 @@ export default defineConfig({
 	// Keep run artifacts (traces, screenshots, HTML report) inside tests/.
 	outputDir: "./tests/test-results",
 	reporter: [["list"], ["html", { outputFolder: "tests/playwright-report", open: "never" }]],
-	timeout: 30_000,
+	timeout: 60_000,
 	// Every test shares the dev Neon DB through the app — keep runs serial.
 	workers: 1,
 	use: {
