@@ -104,7 +104,6 @@ async function injectCookie(value) {
 	const { getChromium } = await ensurePlaywright();
 	const context = await getChromium().launchPersistentContext(PROFILE_DIR, {
 		headless: true,
-		executablePath: findChromium(),
 	});
 	await context.addCookies([
 		{
