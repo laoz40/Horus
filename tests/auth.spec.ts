@@ -14,7 +14,9 @@
 //
 // - dashboard greets the e2e user
 //   Signed in via the saved session, / shows "Welcome back" with the e2e user's
-//   name.
+//   name. Dev may log a 400 on dashboard/yearInTraining: Strict Mode aborts the
+//   first heatmap fetch, so the handler can run with no body. Harmless; the
+//   remounted query succeeds. This test does not assert on the heatmap.
 
 import { expect, test } from "@playwright/test";
 
@@ -62,6 +64,8 @@ test.describe("signed out", () => {
 });
 
 test.describe("signed in", () => {
+	// Visiting / starts the Year in Training query. In `pnpm dev`, React Strict
+	// Mode aborts that first POST; oRPC then logs BAD_REQUEST (empty body).
 	test("dashboard greets the e2e user", async ({ page }) => {
 		await page.goto("/");
 		await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
