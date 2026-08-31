@@ -10,6 +10,7 @@
 		"build": "next build",
 		"start": "next start",
 		"test": "playwright test",
+		"postinstall": "playwright install chromium",
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",
 		"lint": "oxlint . --fix",

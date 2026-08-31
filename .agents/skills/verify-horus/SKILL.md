@@ -71,6 +71,6 @@ Proofs go to `.agents/skills/verify-horus/evidence/<run-label>/` (git-ignored, s
 
 ## Helpers
 
-- `helpers/drive.mjs` — `auth | doctor | session-dump | login | flow --out <label> --steps '<json>'` (auto-installs playwright-core into `helpers/node_modules` on first use; uses the system Chromium at `/usr/sbin/chromium` — the Playwright-cached build has crashed on this machine).
+- `helpers/drive.mjs` — `auth | doctor | session-dump | login | flow --out <label> --steps '<json>'` (auto-installs playwright-core into `helpers/node_modules` on first use; uses Playwright's bundled Chromium from `~/.cache/ms-playwright`).
 - `helpers/db-query.mjs` — SQL probe against the dev Neon DB (`--sql "..."`, `--yes` for writes). Reads `DATABASE_URL` from `.env.local`.
 - `features/` — the maintained verification map. Keep it updated when routes, labels, or flows change.
