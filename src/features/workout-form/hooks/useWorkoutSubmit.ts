@@ -33,13 +33,6 @@ export const useWorkoutSubmit = ({
 	const router = useRouter();
 	const queryClient = useQueryClient();
 
-	const finishWorkoutUpdate = (workoutName: string) => {
-		animateCreateWorkoutExit(() => {
-			router.push("/workouts");
-		});
-		showWorkoutSavedToast(workoutName);
-	};
-
 	const createWorkout = useMutation(
 		orpc.workouts.create.mutationOptions({
 			onSuccess: async (result) => {
@@ -82,21 +75,19 @@ export const useWorkoutSubmit = ({
 
 	const updateWorkout = useMutation(
 		orpc.workouts.update.mutationOptions({
-			onSuccess: async (result) => {
-				// Refresh both cached views so revisiting the edit page or history shows the saved data.
-				await Promise.all([
-					queryClient.invalidateQueries({
-						queryKey: orpc.workouts.getById.key({
-							type: "query",
-							input: { id: result.workoutId },
-						}),
+			onSuccess: (result) => {
+				// Refresh cached views in the background after navigating to history.
+				void queryClient.invalidateQueries({
+					queryKey: orpc.workouts.getById.key({
+						type: "query",
+						input: { id: result.workoutId },
 					}),
-					queryClient.invalidateQueries({
-						queryKey: orpc.workouts.list.key({ type: "infinite" }),
-					}),
-				]);
+				});
+				void queryClient.invalidateQueries({
+					queryKey: orpc.workouts.list.key({ type: "infinite" }),
+				});
 
-				finishWorkoutUpdate(result.workout.name);
+				showWorkoutSavedToast(result.workout.name);
 			},
 			onError: (error) => {
 				if (!isDefinedError(error)) {
@@ -151,6 +142,9 @@ export const useWorkoutSubmit = ({
 				updateWorkout.mutate({
 					workoutId: mode.workoutId,
 					workout: workoutResult.data,
+				});
+				animateCreateWorkoutExit(() => {
+					router.push("/workouts");
 				});
 				return;
 			default: {
