@@ -94,16 +94,18 @@ export const useWorkoutSubmit = ({
 
 				return { previousHistory };
 			},
-			onSuccess: (result) => {
+			onSuccess: async (result) => {
+				// Keep the history pending state until refreshed list data (incl. PRs) lands.
+				await queryClient.invalidateQueries({
+					queryKey: orpc.workouts.list.key({ type: "infinite" }),
+				});
+
 				// Refresh cached views in the background after navigating to history.
 				void queryClient.invalidateQueries({
 					queryKey: orpc.workouts.getById.key({
 						type: "query",
 						input: { id: result.workoutId },
 					}),
-				});
-				void queryClient.invalidateQueries({
-					queryKey: orpc.workouts.list.key({ type: "infinite" }),
 				});
 
 				showWorkoutSavedToast(result.workout.name);
