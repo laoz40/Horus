@@ -216,7 +216,7 @@ In the future, I plan to build a native mobile version of this app.
   - [ ] workouts containing specific exercise/muscle group
 - [x] add pagination
 - [x] ensure fixed height on workout card
-- [ ] optimise update workout mutation (very slow due to pr recalculation)
+- [x] improve update workout loading experience (very slow due to pr recalculation)
 
 ### Progress
 
