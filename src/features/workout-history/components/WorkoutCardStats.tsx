@@ -51,7 +51,7 @@ export default function WorkoutCardStats({
 				{isPrPending ? (
 					<div
 						aria-hidden
-						className="h-5 w-12 animate-pulse rounded-full bg-muted"
+						className="h-5 w-12 animate-pulse bg-muted"
 					/>
 				) : null}
 				{!isPrPending && pr > 0 ? (
