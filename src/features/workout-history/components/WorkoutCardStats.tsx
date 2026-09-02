@@ -8,6 +8,7 @@ interface WorkoutCardStatsProps {
 	duration: number;
 	workoutVolume: number;
 	exerciseCount: number;
+	isPrPending?: boolean;
 }
 
 export default function WorkoutCardStats({
@@ -15,6 +16,7 @@ export default function WorkoutCardStats({
 	duration,
 	workoutVolume,
 	exerciseCount,
+	isPrPending = false,
 }: WorkoutCardStatsProps): ReactElement {
 	const displayWorkoutVolume = Math.floor(workoutVolume);
 
@@ -46,7 +48,13 @@ export default function WorkoutCardStats({
 
 			{/* PR Indicator */}
 			<div className="flex items-center justify-end gap-1.5">
-				{pr > 0 ? (
+				{isPrPending ? (
+					<div
+						aria-hidden
+						className="h-5 w-12 animate-pulse rounded-full bg-muted"
+					/>
+				) : null}
+				{!isPrPending && pr > 0 ? (
 					<Badge className="text-xs font-semibold text-primary-foreground">{pr} PRs</Badge>
 				) : null}
 			</div>

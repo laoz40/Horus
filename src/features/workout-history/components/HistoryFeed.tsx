@@ -1,7 +1,8 @@
 "use client";
 
-import { useInfiniteQuery, useIsMutating } from "@tanstack/react-query";
+import { useInfiniteQuery, useIsMutating, useMutationState } from "@tanstack/react-query";
 import Link from "next/link";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
@@ -31,6 +32,7 @@ export default function HistoryFeed({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 
 function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 	const isCreatingWorkout = useIsMutating({ mutationKey: orpc.workouts.create.mutationKey() }) > 0;
+	const pendingPrWorkoutId = usePendingWorkoutUpdateId();
 	const historyQuery = useInfiniteQuery(
 		orpc.workouts.list.infiniteOptions({
 			input: (offset: number) => ({ limit: WORKOUTS_PER_PAGE, offset }),
@@ -51,6 +53,7 @@ function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 				workouts={workouts}
 				isLoading={historyQuery.isPending}
 				WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE}
+				pendingPrWorkoutId={pendingPrWorkoutId}
 			/>
 			<HistoryPagination
 				hasNextPage={historyQuery.hasNextPage}
@@ -60,6 +63,32 @@ function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 			/>
 		</>
 	);
+}
+
+const pendingWorkoutUpdateVariablesSchema = z.object({
+	workoutId: z.uuid(),
+});
+
+function usePendingWorkoutUpdateId(): string | null {
+	const pendingWorkoutIds = useMutationState({
+		filters: {
+			mutationKey: orpc.workouts.update.mutationKey(),
+			status: "pending",
+		},
+		select: (mutation) => {
+			const parsedVariables = pendingWorkoutUpdateVariablesSchema.safeParse(
+				mutation.state.variables,
+			);
+
+			if (!parsedVariables.success) {
+				return null;
+			}
+
+			return parsedVariables.data.workoutId;
+		},
+	});
+
+	return pendingWorkoutIds.at(-1) ?? null;
 }
 
 function SignInPrompt() {

@@ -6,6 +6,11 @@ import { animateCreateWorkoutExit } from "@/features/workout-form/lib/animateCre
 import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { parseWorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
+import {
+	buildOptimisticHistoryFields,
+	patchWorkoutInHistoryCache,
+	type WorkoutHistoryInfiniteData,
+} from "@/features/workout-history/lib/optimisticHistoryItem";
 import { orpc } from "@/lib/orpc/client";
 import { showErrorToast, showWorkoutSavedToast } from "@/lib/toastMessages";
 
@@ -32,6 +37,7 @@ export const useWorkoutSubmit = ({
 }: UseWorkoutSubmitProps): UseWorkoutSubmitReturn => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
+	const historyListQueryKey = orpc.workouts.list.key({ type: "infinite" });
 
 	const createWorkout = useMutation(
 		orpc.workouts.create.mutationOptions({
@@ -75,6 +81,19 @@ export const useWorkoutSubmit = ({
 
 	const updateWorkout = useMutation(
 		orpc.workouts.update.mutationOptions({
+			onMutate: async (variables) => {
+				await queryClient.cancelQueries({ queryKey: historyListQueryKey });
+
+				const previousHistory =
+					queryClient.getQueryData<WorkoutHistoryInfiniteData>(historyListQueryKey);
+				const optimisticFields = buildOptimisticHistoryFields(variables.workout);
+
+				queryClient.setQueryData<WorkoutHistoryInfiniteData>(historyListQueryKey, (current) =>
+					patchWorkoutInHistoryCache(current, variables.workoutId, optimisticFields),
+				);
+
+				return { previousHistory };
+			},
 			onSuccess: (result) => {
 				// Refresh cached views in the background after navigating to history.
 				void queryClient.invalidateQueries({
@@ -89,7 +108,11 @@ export const useWorkoutSubmit = ({
 
 				showWorkoutSavedToast(result.workout.name);
 			},
-			onError: (error) => {
+			onError: (error, _variables, context) => {
+				if (context?.previousHistory !== undefined) {
+					queryClient.setQueryData(historyListQueryKey, context.previousHistory);
+				}
+
 				if (!isDefinedError(error)) {
 					showErrorToast("Failed to save workout.");
 					console.error(error);
