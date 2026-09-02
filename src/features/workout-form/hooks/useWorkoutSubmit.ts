@@ -6,6 +6,11 @@ import { animateCreateWorkoutExit } from "@/features/workout-form/lib/animateCre
 import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { parseWorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
+import {
+	buildOptimisticHistoryFields,
+	patchWorkoutInHistoryCache,
+	type WorkoutHistoryInfiniteData,
+} from "@/features/workout-history/lib/optimisticHistoryItem";
 import { orpc } from "@/lib/orpc/client";
 import { showErrorToast, showWorkoutSavedToast } from "@/lib/toastMessages";
 
@@ -32,13 +37,7 @@ export const useWorkoutSubmit = ({
 }: UseWorkoutSubmitProps): UseWorkoutSubmitReturn => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
-
-	const finishWorkoutUpdate = (workoutName: string) => {
-		animateCreateWorkoutExit(() => {
-			router.push("/workouts");
-		});
-		showWorkoutSavedToast(workoutName);
-	};
+	const historyListQueryKey = orpc.workouts.list.key({ type: "infinite" });
 
 	const createWorkout = useMutation(
 		orpc.workouts.create.mutationOptions({
@@ -82,23 +81,40 @@ export const useWorkoutSubmit = ({
 
 	const updateWorkout = useMutation(
 		orpc.workouts.update.mutationOptions({
-			onSuccess: async (result) => {
-				// Refresh both cached views so revisiting the edit page or history shows the saved data.
-				await Promise.all([
-					queryClient.invalidateQueries({
-						queryKey: orpc.workouts.getById.key({
-							type: "query",
-							input: { id: result.workoutId },
-						}),
-					}),
-					queryClient.invalidateQueries({
-						queryKey: orpc.workouts.list.key({ type: "infinite" }),
-					}),
-				]);
+			onMutate: async (variables) => {
+				await queryClient.cancelQueries({ queryKey: historyListQueryKey });
 
-				finishWorkoutUpdate(result.workout.name);
+				const previousHistory =
+					queryClient.getQueryData<WorkoutHistoryInfiniteData>(historyListQueryKey);
+				const optimisticFields = buildOptimisticHistoryFields(variables.workout);
+
+				queryClient.setQueryData<WorkoutHistoryInfiniteData>(historyListQueryKey, (current) =>
+					patchWorkoutInHistoryCache(current, variables.workoutId, optimisticFields),
+				);
+
+				return { previousHistory };
 			},
-			onError: (error) => {
+			onSuccess: async (result) => {
+				// Keep the history pending state until refreshed list data (incl. PRs) lands.
+				await queryClient.invalidateQueries({
+					queryKey: orpc.workouts.list.key({ type: "infinite" }),
+				});
+
+				// Refresh cached views in the background after navigating to history.
+				void queryClient.invalidateQueries({
+					queryKey: orpc.workouts.getById.key({
+						type: "query",
+						input: { id: result.workoutId },
+					}),
+				});
+
+				showWorkoutSavedToast(result.workout.name);
+			},
+			onError: (error, _variables, context) => {
+				if (context?.previousHistory !== undefined) {
+					queryClient.setQueryData(historyListQueryKey, context.previousHistory);
+				}
+
 				if (!isDefinedError(error)) {
 					showErrorToast("Failed to save workout.");
 					console.error(error);
@@ -151,6 +167,9 @@ export const useWorkoutSubmit = ({
 				updateWorkout.mutate({
 					workoutId: mode.workoutId,
 					workout: workoutResult.data,
+				});
+				animateCreateWorkoutExit(() => {
+					router.push("/workouts");
 				});
 				return;
 			default: {

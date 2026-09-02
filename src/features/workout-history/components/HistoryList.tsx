@@ -16,10 +16,12 @@ export default function HistoryList({
 	workouts,
 	isLoading,
 	WORKOUTS_PER_PAGE,
+	pendingPrWorkoutId,
 }: {
 	workouts: WorkoutHistoryItem[];
 	isLoading: boolean;
 	WORKOUTS_PER_PAGE: number;
+	pendingPrWorkoutId: string | null;
 }) {
 	const deletedWorkoutIds = useHistoryUiStore(selectDeletedWorkoutIds);
 
@@ -53,6 +55,7 @@ export default function HistoryList({
 				<WorkoutCard
 					key={workout.id}
 					workout={workout}
+					isPrPending={pendingPrWorkoutId === workout.id}
 				/>
 			))}
 		</div>

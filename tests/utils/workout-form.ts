@@ -19,9 +19,8 @@ export async function addCompletedBenchSet(page: Page): Promise<void> {
 }
 
 // Finishes the workout: opens the Save dialog, names it, and waits for the saved
-// toast plus the history redirect. Create navigates immediately; update waits for
-// the mutation (PR recalc) and a short exit animation, which is slow against Neon
-// from CI.
+// toast plus the history redirect. Create and update both navigate immediately while
+// the mutation finishes in the background.
 export async function saveWorkout(page: Page, name: string): Promise<void> {
 	await page.getByRole("button", { name: "Finish" }).click();
 	await page.getByRole("textbox", { name: "Enter workout name" }).fill(name);

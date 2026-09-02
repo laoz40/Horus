@@ -9,9 +9,10 @@ import { Badge } from "@/components/ui/badge";
 
 interface WorkoutCardProps {
 	workout: WorkoutHistoryItem;
+	isPrPending?: boolean;
 }
 
-export default function WorkoutCard({ workout }: WorkoutCardProps) {
+export default function WorkoutCard({ workout, isPrPending = false }: WorkoutCardProps) {
 	const mapMuscleGroups = workout.muscleGroups
 		.slice(0, 3)
 		.map((muscleGroup) => toTitleCase(muscleGroup));
@@ -19,7 +20,7 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
 	return (
 		<>
 			<Card>
-				{workout.totalPrSets > 2 && (
+				{!isPrPending && workout.totalPrSets > 2 && (
 					<ShineBorder
 						shineColor="#34e1c9"
 						duration={12}
@@ -58,6 +59,7 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
 					duration={workout.durationSeconds ?? 0}
 					workoutVolume={workout.totalVolume}
 					exerciseCount={workout.exerciseCount}
+					isPrPending={isPrPending}
 				/>
 			</Card>
 		</>
