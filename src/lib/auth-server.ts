@@ -114,8 +114,13 @@ export const auth = betterAuth({
 					throw new Error(`Unsupported OTP type: ${type}`);
 				}
 
-				const timeBucket = Math.floor(Date.now() / 30000);
 				const normalizedEmail = email.trim().toLowerCase();
+				// E2E uses a non-deliverable @horus.local address and reads the OTP from Redis.
+				if (normalizedEmail.endsWith("@horus.local")) {
+					return;
+				}
+
+				const timeBucket = Math.floor(Date.now() / 30000);
 				const emailKey = shortHash(normalizedEmail);
 				const expiresInMinutes = Math.floor(otpExpiresInSeconds / 60);
 

@@ -43,7 +43,7 @@ test.describe("signed out", () => {
 	test("email OTP login lands on /welcome", async ({ page }) => {
 		await page.goto("/login");
 
-		// Request the real OTP (Resend delivers it; we read the stored code instead).
+		// Request the OTP (Resend is skipped for @horus.local; we read the stored code).
 		await page.getByLabel("Email").fill(E2E_EMAIL);
 		await page.getByRole("button", { name: "Send code" }).click();
 		await expect(
