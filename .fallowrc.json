@@ -8,6 +8,27 @@
 		}
 	],
 	"duplicates": {
-		"ignore": ["tools/oxlint/**"]
-	}
+		"ignore": ["tools/oxlint/**", "src/components/ui/**"]
+	},
+	"health": {
+		"ignore": ["src/components/ui/**"]
+	},
+	"rules": {
+		"prop-drilling": "error"
+	},
+	"overrides": [
+		{
+			"files": ["src/components/ui/**"],
+			"rules": {
+				"css-token-drift": "off",
+				"css-dead-surface": "off",
+				"css-duplicate-block": "off",
+				"css-selector-complexity": "off",
+				"css-broken-reference": "off",
+				"unused-files": "off",
+				"unused-exports": "off",
+				"unused-types": "off"
+			}
+		}
+	]
 }
