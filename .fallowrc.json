@@ -8,7 +8,7 @@
 		}
 	],
 	"duplicates": {
-		"ignore": ["tools/oxlint/**", "src/components/ui/**"]
+		"ignore": ["tools/oxlint/**", "src/components/ui/**", "src/lib/db/schema/**"]
 	},
 	"health": {
 		"ignore": ["src/components/ui/**"]
