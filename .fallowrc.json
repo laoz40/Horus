@@ -1,0 +1,10 @@
+{
+	"$schema": "./node_modules/fallow/schema.json",
+	"entry": ["public/sw.js"],
+	"ignoreExports": [
+		{
+			"file": "src/components/ui/**",
+			"exports": ["*"]
+		}
+	]
+}
