@@ -21,7 +21,7 @@ function isAtOrAfterCutoff(cutoff: PrHistoryCutoff) {
 	);
 }
 
-export function getExercisePrRows(
+export function getExercisePrRowsByIds(
 	tx: Tx,
 	userId: string,
 	exerciseIds: string[],
@@ -61,37 +61,6 @@ export function getExercisePrRows(
 			),
 		)
 		.groupBy(workoutExercises.exerciseId);
-}
-
-export async function getWorkoutCount(tx: Tx, userId: string): Promise<number> {
-	const workoutRows = await tx
-		.select({ id: workouts.id })
-		.from(workouts)
-		.where(eq(workouts.userId, userId));
-
-	return workoutRows.length;
-}
-
-export function getPrHistorySets(tx: Tx, userId: string) {
-	return tx
-		.select({
-			setId: workoutSets.id,
-			workoutId: workouts.id,
-			exerciseId: workoutExercises.exerciseId,
-			weight: workoutSets.weight,
-			reps: workoutSets.reps,
-			completed: workoutSets.completed,
-		})
-		.from(workoutSets)
-		.innerJoin(workoutExercises, eq(workoutExercises.id, workoutSets.workoutExerciseId))
-		.innerJoin(workouts, eq(workouts.id, workoutExercises.workoutId))
-		.where(eq(workouts.userId, userId))
-		.orderBy(
-			asc(workouts.createdAt),
-			asc(workouts.id),
-			asc(workoutExercises.position),
-			asc(workoutSets.position),
-		);
 }
 
 export function getAffectedPrHistorySets(

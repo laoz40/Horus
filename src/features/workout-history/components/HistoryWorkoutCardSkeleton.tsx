@@ -2,7 +2,7 @@ interface WorkoutCardSkeletonListProps {
 	count: number;
 }
 
-export function WorkoutCardSkeleton() {
+function WorkoutCardSkeleton() {
 	return (
 		<div className="relative mb-3 cursor-pointer border bg-card px-3 py-2 shadow-xs">
 			<div className="grid grid-cols-[1fr_min-content] items-start gap-x-2">

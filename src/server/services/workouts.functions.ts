@@ -7,7 +7,7 @@ import type { DatabaseTransaction } from "@/lib/db";
 import { normalizeName } from "@/lib/normalizeName";
 import {
 	getAffectedPrHistorySets,
-	getExercisePrRows,
+	getExercisePrRowsByIds,
 	updateSetPrStatuses,
 	updateWorkoutPrTotals,
 } from "@/server/services/pr-history.db";
@@ -112,7 +112,7 @@ export async function calculateAppendedPrHistory(
 ): Promise<PrSetUpdate[]> {
 	const exerciseIds = [...new Set(sets.map((set) => set.exerciseId))];
 	const previousPrRows: ExercisePrRow[] =
-		exerciseIds.length === 0 ? [] : await getExercisePrRows(tx, userId, exerciseIds);
+		exerciseIds.length === 0 ? [] : await getExercisePrRowsByIds(tx, userId, exerciseIds);
 
 	return calculateAffectedPrHistory(sets, previousPrRows).prStatuses;
 }
@@ -127,7 +127,7 @@ export async function rebuildAffectedPrHistory(
 		return;
 	}
 
-	const previousPrRows = await getExercisePrRows(tx, userId, exerciseIds, cutoff);
+	const previousPrRows = await getExercisePrRowsByIds(tx, userId, exerciseIds, cutoff);
 	const historySets = await getAffectedPrHistorySets(tx, userId, exerciseIds, cutoff);
 	const { prStatuses, affectedWorkoutIds } = calculateAffectedPrHistory(
 		historySets,

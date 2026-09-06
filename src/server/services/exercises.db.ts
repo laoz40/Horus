@@ -36,7 +36,7 @@ export interface RecentSetRow {
 	isBodyweightRepsPr: boolean;
 }
 
-export interface ExercisePrRow {
+interface ExercisePrRow {
 	hasHistory: boolean;
 	highestWeight: number;
 	highestVolume: number;

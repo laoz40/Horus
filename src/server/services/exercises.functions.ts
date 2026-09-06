@@ -5,7 +5,7 @@ import {
 	type ExercisePrs,
 } from "@/server/services/pr-history.functions";
 
-export type RecentSetPrType = "weight" | "volume" | "bodyweightReps";
+type RecentSetPrType = "weight" | "volume" | "bodyweightReps";
 
 interface DraftSet {
 	completed: boolean;

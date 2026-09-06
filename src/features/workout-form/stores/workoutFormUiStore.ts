@@ -30,9 +30,7 @@ const createInitialWorkoutFormUiState = (): WorkoutFormUiState => ({
 
 export const selectSelectedExerciseId = (state: WorkoutFormUiStore) => state.selectedExerciseId;
 export const selectCreateWorkoutDraft = (state: WorkoutFormUiStore) => state.createWorkoutDraft;
-export const selectIsEditing = (state: WorkoutFormUiStore) => state.isEditing;
 export const selectScrollTargetId = (state: WorkoutFormUiStore) => state.scrollTargetId;
-export const selectStartedAtMs = (state: WorkoutFormUiStore) => state.startedAtMs;
 export const selectIsRecentSetsDialogOpen = (state: WorkoutFormUiStore) =>
 	state.isRecentSetsDialogOpen;
 export const selectRecentSetsExerciseName = (state: WorkoutFormUiStore) =>
@@ -81,12 +79,6 @@ export function toggleExerciseEdit(): void {
 	});
 }
 
-export function setExerciseEdit(value: boolean): void {
-	useWorkoutFormUiStore.setState((state) => ({
-		isEditing: state.selectedExerciseId ? value : false,
-	}));
-}
-
 export function setScrollTarget(exerciseId: string | null): void {
 	useWorkoutFormUiStore.setState({ scrollTargetId: exerciseId });
 }
@@ -100,13 +92,6 @@ export function openRecentSetsDialog(exerciseName: string): void {
 
 export function setRecentSetsDialogOpen(open: boolean): void {
 	useWorkoutFormUiStore.setState({ isRecentSetsDialogOpen: open });
-}
-
-export function resetRecentSetsDialog(): void {
-	useWorkoutFormUiStore.setState({
-		isRecentSetsDialogOpen: false,
-		recentSetsExerciseName: "",
-	});
 }
 
 export function startRestTimer(): void {

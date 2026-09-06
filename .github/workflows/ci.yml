@@ -45,6 +45,12 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Check for dead code (Fallow)
+        run: pnpm fallow:check-dead-code
+
+      - name: Check for duplication (Fallow)
+        run: pnpm fallow:check-dupes
+
   build:
     name: Build
     runs-on: ubuntu-latest
