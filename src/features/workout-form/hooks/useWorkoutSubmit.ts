@@ -14,7 +14,7 @@ import {
 import { orpc } from "@/lib/orpc/client";
 import { showErrorToast, showWorkoutSavedToast } from "@/lib/toastMessages";
 
-export type WorkoutSubmitMode =
+type WorkoutSubmitMode =
 	| { type: "create" }
 	| {
 			type: "update";

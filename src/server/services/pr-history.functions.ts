@@ -1,4 +1,4 @@
-export type PrType = "weight" | "volume" | "bodyweightReps";
+type PrType = "weight" | "volume" | "bodyweightReps";
 
 export interface ExercisePrs {
 	hasHistory: boolean;
@@ -42,13 +42,7 @@ export interface PrSetUpdate {
 	isBodyweightRepsPr: boolean;
 }
 
-export type ExercisePrsByExerciseId = ReadonlyMap<string, ExercisePrs>;
-
-export type PrHistoryRebuildSummary = {
-	workoutCount: number;
-	workoutsWithPrs: number;
-	historicalPrSets: number;
-};
+type ExercisePrsByExerciseId = ReadonlyMap<string, ExercisePrs>;
 
 export const emptyExercisePrs = (): ExercisePrs => ({
 	hasHistory: false,
@@ -118,19 +112,7 @@ export function buildAffectedExerciseIds(
 	return [...new Set([...previousExerciseIds, ...currentExerciseIds])];
 }
 
-export const summarizePrHistory = (
-	workoutCount: number,
-	prStatuses: PrSetUpdate[],
-	totalsByWorkoutId: Map<string, number>,
-): PrHistoryRebuildSummary => ({
-	workoutCount,
-	workoutsWithPrs: totalsByWorkoutId.size,
-	historicalPrSets: prStatuses.filter(
-		(status) => status.isWeightPr || status.isVolumePr || status.isBodyweightRepsPr,
-	).length,
-});
-
-export const calculatePrHistory = (
+const calculatePrHistory = (
 	sets: PrHistorySet[],
 	initialRecordsByExerciseId: ExercisePrsByExerciseId = new Map(),
 ): PrSetUpdate[] => {

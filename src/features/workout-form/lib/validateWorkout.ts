@@ -17,7 +17,7 @@ const SET_REPS_MISSING_MESSAGE = "Set doesn't have reps. You can't just do nothi
 const EXERCISE_NO_SETS_MESSAGE = "Exercise has no sets. Did you even do it?";
 const NO_EXERCISES_MESSAGE = "No exercises, silly. Go do your workout.";
 
-export const GlobalExerciseInputSchema = z.object({
+const GlobalExerciseInputSchema = z.object({
 	name: z
 		.string()
 		.trim()
@@ -26,7 +26,7 @@ export const GlobalExerciseInputSchema = z.object({
 	muscleGroups: z.array(z.string()).optional(),
 });
 
-export const SetSchema = z.object({
+const SetSchema = z.object({
 	id: z.string(),
 	weight: z.number().nonnegative().max(MAX_SET_WEIGHT, NUMERIC_MAX_MESSAGE).optional(),
 	reps: z
@@ -49,7 +49,7 @@ const CompletedSetSchema = SetSchema.extend({
 		.max(MAX_SET_REPS, NUMERIC_MAX_MESSAGE),
 });
 
-export const ExerciseSchema = z
+const ExerciseSchema = z
 	.object({
 		id: z.string(),
 		exerciseId: z.string().optional(),
@@ -94,7 +94,7 @@ export const WorkoutForSaveSchema = WorkoutSchema.extend({
 	exercises: z.array(ExerciseForSaveSchema).min(1),
 }).strict();
 
-export const SanitizedWorkoutSchema = z.preprocess(stripEmptyWorkoutEntries, WorkoutSchema);
+const SanitizedWorkoutSchema = z.preprocess(stripEmptyWorkoutEntries, WorkoutSchema);
 
 const WorkoutForSaveInputSchema = SanitizedWorkoutSchema.transform((workout) => ({
 	...workout,
@@ -111,10 +111,6 @@ const WorkoutForSaveInputSchema = SanitizedWorkoutSchema.transform((workout) => 
 export function parseWorkoutForSave(workout: Workout, durationSeconds: number) {
 	return WorkoutForSaveInputSchema.safeParse({ ...workout, durationSeconds });
 }
-
-export const validateWorkout = (workout: Workout) => {
-	return SanitizedWorkoutSchema.safeParse(workout);
-};
 
 export const validateCompletedSet = (set: Set | undefined) => {
 	return CompletedSetSchema.safeParse(set);
