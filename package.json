@@ -15,6 +15,9 @@
 		"format:check": "oxfmt --check",
 		"lint": "oxlint . --fix",
 		"lint:check": "oxlint .",
+		"fallow:check-dead-code": "fallow dead-code --fail-on-issues --quiet",
+		"fallow:check-dupes": "fallow dupes --fail-on-issues --quiet",
+		"fallow:check": "pnpm fallow:check-dead-code && pnpm fallow:check-dupes",
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
@@ -66,6 +69,7 @@
 		"babel-plugin-react-compiler": "^1.0.0",
 		"dotenv": "^17.4.2",
 		"drizzle-kit": "^0.31.10",
+		"fallow": "^3.22.0",
 		"oxfmt": "^0.35.0",
 		"oxlint": "^1.80.0",
 		"oxlint-tsgolint": "^7.0.2001",
