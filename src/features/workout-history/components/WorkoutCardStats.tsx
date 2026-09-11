@@ -26,11 +26,11 @@ export default function WorkoutCardStats({
 	return (
 		<div
 			className={cn(
-				"mt-2 grid grid-cols-4 items-center gap-x-9",
+				"mt-2 flex items-center justify-between",
 				showBorderTop && "border-t pt-1",
 			)}>
 			{/* Workout Duration */}
-			<div className="flex items-center justify-start gap-1.5">
+			<div className="flex items-center gap-1.5">
 				<IconClockFilled className="size-4 shrink-0" />
 				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
 					{formatDurationSummary(duration)}
@@ -38,7 +38,7 @@ export default function WorkoutCardStats({
 			</div>
 
 			{/* Total volume lifted */}
-			<div className="flex items-center justify-center gap-1.5">
+			<div className="flex items-center gap-1.5">
 				<IconWeightFilled className="size-4 shrink-0" />
 				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
 					{displayWorkoutVolume} kg
@@ -46,30 +46,37 @@ export default function WorkoutCardStats({
 			</div>
 
 			{/* Number of exercises */}
-			<div className="flex items-center justify-center gap-1.5">
+			<div className="flex items-center gap-1.5">
 				<IconBarbellFilled className="size-4 shrink-0" />
 				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
 					{exerciseCount}
 				</span>
 			</div>
 
-			{/* PR Indicator */}
-			<div className="flex items-center justify-end gap-1.5">
+			{/* PR Indicator — invisible placeholder keeps spacing when empty */}
+			<div className="flex items-center gap-1.5">
 				{isPrPending ? (
 					<div
 						aria-hidden
 						className="h-5 w-12 animate-pulse bg-muted"
 					/>
-				) : null}
-				{!isPrPending && pr > 0 ? (
-					<>
+				) : (
+					<div
+						className={cn("flex items-center gap-1.5", pr === 0 && "invisible")}
+						aria-hidden={pr === 0}>
 						<IconTrophyFilled className="size-4 shrink-0 text-primary" />
 						<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none text-primary">
-							<span className="sr-only">Personal records:</span>
-							{pr}
+							{pr > 0 ? (
+								<>
+									<span className="sr-only">Personal records:</span>
+									{pr}
+								</>
+							) : (
+								0
+							)}
 						</span>
-					</>
-				) : null}
+					</div>
+				)}
 			</div>
 		</div>
 	);

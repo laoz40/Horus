@@ -18,11 +18,11 @@ function WorkoutCardSkeleton() {
 				<div className="h-5 w-14 animate-pulse bg-muted" />
 			</div>
 
-			<div className="mt-3 grid min-h-7 grid-cols-4 gap-6">
-				<div className="h-5 animate-pulse bg-muted" />
-				<div className="h-5 animate-pulse bg-muted" />
-				<div className="h-5 animate-pulse bg-muted" />
-				<div className="h-5 animate-pulse bg-muted" />
+			<div className="mt-3 flex min-h-7 items-center justify-between">
+				<div className="h-5 w-12 animate-pulse bg-muted" />
+				<div className="h-5 w-16 animate-pulse bg-muted" />
+				<div className="h-5 w-8 animate-pulse bg-muted" />
+				<div className="h-5 w-10 animate-pulse bg-muted" />
 			</div>
 		</div>
 	);
