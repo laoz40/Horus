@@ -23,9 +23,11 @@ interface SetRowProps {
 // DOM events hand us strings, but editing an existing workout pre-fills numbers.
 const parseOptionalNumber = (value: string | number | null): number | undefined => {
 	const trimmed = String(value ?? "").trim();
+
 	if (trimmed === "") return undefined;
 
 	const parsedValue = Number(trimmed);
+
 	return Number.isFinite(parsedValue) ? parsedValue : undefined;
 };
 
@@ -43,6 +45,7 @@ export default function SetRow({
 		clearErrors,
 		formState: { errors },
 	} = useFormContext<Workout>();
+
 	const checkSetPrMutation = useMutation(
 		orpc.exercises.checkSetPr.mutationOptions({
 			onSuccess: (result, input) => {
@@ -52,6 +55,7 @@ export default function SetRow({
 			},
 		}),
 	);
+
 	const completedFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.completed` as const;
 	const weightFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.weight` as const;
 	const repsFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.reps` as const;
@@ -68,6 +72,7 @@ export default function SetRow({
 
 		if (result.success) {
 			clearErrors([repsFieldName, weightFieldName]);
+
 			return true;
 		}
 
@@ -136,8 +141,10 @@ export default function SetRow({
 									onCheckedChange={(value) => {
 										const nextChecked = !!value;
 										const previousChecked = field.value;
+
 										if (nextChecked && !validateCurrentSetForCompletion()) {
 											field.onChange(false);
+
 											return;
 										}
 
@@ -148,10 +155,12 @@ export default function SetRow({
 										startRestTimer();
 
 										const exerciseName = getValues(exerciseNameFieldName)?.trim();
+
 										if (!exerciseName) return;
 
 										const sets = getValues(exerciseSetsFieldName);
 										const currentSet = sets?.[setIndex];
+
 										if (!currentSet || currentSet.reps === undefined) return;
 
 										const setsForPrCheck = sets.map((set, index) => ({

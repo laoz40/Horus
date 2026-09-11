@@ -13,11 +13,17 @@ import { env } from "@/env";
 import { shortHash } from "@/lib/shortHash";
 
 const resend = new Resend(env.RESEND_API_KEY);
+
 const resendFromEmail = env.RESEND_FROM_EMAIL;
+
 const personalEmail = env.PERSONAL_EMAIL;
+
 const googleClientId = env.GOOGLE_CLIENT_ID;
+
 const googleClientSecret = env.GOOGLE_CLIENT_SECRET;
+
 const githubClientId = env.GITHUB_CLIENT_ID;
+
 const githubClientSecret = env.GITHUB_CLIENT_SECRET;
 
 const redis = new Redis({
@@ -49,12 +55,16 @@ export const auth = betterAuth({
 	secondaryStorage: {
 		get: async (key) => {
 			const value = await redis.get(key);
+
 			if (value === null) return null;
+
 			return redisSessionValueSchema.parse(value);
 		},
 		getAndDelete: async (key) => {
 			const value = await redis.getdel(key);
+
 			if (value === null) return null;
+
 			return redisSessionValueSchema.parse(value);
 		},
 		set: async (key, value, ttl) => {
@@ -69,9 +79,11 @@ export const auth = betterAuth({
 		},
 		increment: async (key: string, ttl?: number) => {
 			const count = await redis.incr(key);
+
 			if (count === 1 && ttl) {
 				await redis.expire(key, ttl);
 			}
+
 			return count;
 		},
 	},
@@ -115,6 +127,7 @@ export const auth = betterAuth({
 				}
 
 				const normalizedEmail = email.trim().toLowerCase();
+
 				// E2E uses a non-deliverable @horus.local address and reads the OTP from Redis.
 				if (normalizedEmail.endsWith("@horus.local")) {
 					return;

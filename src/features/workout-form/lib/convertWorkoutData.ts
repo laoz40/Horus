@@ -15,6 +15,7 @@ export const deduplicateExercises = (groupOne: fetchedExercise[], groupTwo: fetc
 		if (!exercise.normalizedName) return;
 
 		const exerciseMissing = !map.has(exercise.normalizedName);
+
 		if (addAll || exerciseMissing) {
 			map.set(exercise.normalizedName, {
 				id: exercise.id,
@@ -26,6 +27,7 @@ export const deduplicateExercises = (groupOne: fetchedExercise[], groupTwo: fetc
 	};
 
 	for (const exercise of groupOne) addIfMissing(exercise, true);
+
 	for (const exercise of groupTwo) addIfMissing(exercise, false);
 
 	return Array.from(map.values());

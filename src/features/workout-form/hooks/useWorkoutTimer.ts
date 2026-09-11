@@ -17,10 +17,12 @@ export const useWorkoutTimer = ({
 		() => Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000)),
 		[startedAtMs],
 	);
+
 	const [durationSeconds, setDurationSeconds] = useState<number>(initialDurationSeconds);
 
 	// Re-anchor the displayed duration when a restored session changes the initial value.
 	const [prevInitialSeconds, setPrevInitialSeconds] = useState(initialDurationSeconds);
+
 	if (prevInitialSeconds !== initialDurationSeconds) {
 		setPrevInitialSeconds(initialDurationSeconds);
 		setDurationSeconds(initialDurationSeconds);

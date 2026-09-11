@@ -17,6 +17,7 @@ export default function SignOutButton({ className }: { className?: string }) {
 		}
 
 		setIsSigningOut(true);
+
 		try {
 			await authClient.signOut();
 		} finally {

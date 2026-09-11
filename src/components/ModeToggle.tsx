@@ -17,6 +17,7 @@ const emptySubscribe = () => () => {};
 
 export function ModeToggle() {
 	const { theme, resolvedTheme, setTheme } = useTheme();
+
 	const mounted = useSyncExternalStore(
 		emptySubscribe,
 		() => true,

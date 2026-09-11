@@ -27,6 +27,7 @@ const formatElapsedTime = (elapsedMs: number): string => {
 };
 
 const REST_TARGET_MS = 2 * 60 * 1000; // 2 minutes
+
 const REST_TARGET_REMINDER_INTERVAL_MS = 30 * 1000; // 30 seconds
 
 // iOS/Safari only allows permission prompts from a direct user gesture i.e. opening rest timer button.
@@ -56,6 +57,7 @@ const showRestTimerNotification = async (elapsedTime: string): Promise<void> => 
 
 			if (registration) {
 				await registration.showNotification("Rest timer", notificationOptions);
+
 				return;
 			}
 		} catch {

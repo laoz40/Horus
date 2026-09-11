@@ -21,8 +21,13 @@ async function handleRequest(request: Request): Promise<Response> {
 }
 
 export const DELETE = handleRequest;
+
 export const GET = handleRequest;
+
 export const HEAD = handleRequest;
+
 export const PATCH = handleRequest;
+
 export const POST = handleRequest;
+
 export const PUT = handleRequest;

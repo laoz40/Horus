@@ -54,15 +54,18 @@ const fetchOnlineExerciseSuggestions = async (query: string) => {
 export function useExerciseSuggestions(rawQuery: string) {
 	const [debouncedQuery, setDebouncedQuery] = useState("");
 	const [isOnlineSearchLoading, setIsOnlineSearchLoading] = useState(false);
+
 	// Online "fetch more" results are keyed by query so stale results never leak into the dropdown.
 	const [onlineExercisesByQuery, setOnlineExercisesByQuery] = useState<
 		Record<string, ExerciseSuggestion[]>
 	>({});
+
 	const queryClient = useQueryClient();
 
 	const query = rawQuery.trim();
 	// An empty query disables the DB search immediately without clearing the debounced value.
 	const debouncedSearchQuery = query.length === 0 ? "" : debouncedQuery;
+
 	const defaultExercises = useMemo(
 		() => sortExercisesAlphabetically(fetchDefaultExercises(query)),
 		[query],
@@ -73,6 +76,7 @@ export function useExerciseSuggestions(rawQuery: string) {
 		if (query.length === 0) return;
 
 		const timeout = setTimeout(() => setDebouncedQuery(query), 300);
+
 		return () => clearTimeout(timeout);
 	}, [query]);
 
@@ -128,12 +132,15 @@ export function useExerciseSuggestions(rawQuery: string) {
 					switch (code) {
 						case "RATE_LIMITED":
 							showErrorToast("Too many requests. Please try again later.");
+
 							return;
 						case "REQUEST_FAILED":
 							showErrorToast("Failed to fetch exercises.");
+
 							return;
 						case "INVALID_RESPONSE":
 							showErrorToast("The exercise search response was not in the expected format.");
+
 							return;
 						default:
 							throw new Error(`Unhandled app error code: ${String(code satisfies never)}`);

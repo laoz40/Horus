@@ -25,6 +25,7 @@ import { addCompletedBenchSet, saveWorkout } from "./utils/workout-form";
 const RUN_ID = Date.now().toString(36);
 
 const workoutNameRow = z.object({ name: z.string() });
+
 const workoutIdRow = z.object({ id: z.string() });
 
 // Card titles are h2 headings; assert on those because sonner toasts ("Saved …",
@@ -64,6 +65,7 @@ test("edit renames the workout", async ({ page }) => {
 		.poll(async () => {
 			const [workout] = await sql(workoutNameRow)`
 			SELECT name FROM workouts WHERE user_id = ${E2E_USER_ID} ORDER BY created_at DESC LIMIT 1`;
+
 			return workout?.name;
 		})
 		.toBe(`E2E Edited ${RUN_ID}`);
@@ -89,6 +91,7 @@ test("delete removes the workout from the list and DB", async ({ page }) => {
 		.poll(async () => {
 			const rows = await sql(workoutIdRow)`
 			SELECT id FROM workouts WHERE user_id = ${E2E_USER_ID} AND name = ${name}`;
+
 			return rows.length;
 		})
 		.toBe(0);

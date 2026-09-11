@@ -20,7 +20,9 @@ import { addCompletedBenchSet, saveWorkout } from "./utils/workout-form";
 const WORKOUT_NAME = "E2E Bench Day";
 
 const workoutNameRow = z.object({ name: z.string() });
+
 const completedSetRow = z.object({ weight: z.string(), reps: z.string(), completed: z.boolean() });
+
 const workoutIdRow = z.object({ id: z.string() });
 
 test("create and save a workout persists it", async ({ page }) => {
@@ -32,6 +34,7 @@ test("create and save a workout persists it", async ({ page }) => {
 	// Read-back proof: the save path wrote to Neon, not just showed a toast.
 	const [workout] = await sql(workoutNameRow)`
 		SELECT name FROM workouts WHERE user_id = ${E2E_USER_ID} ORDER BY created_at DESC LIMIT 1`;
+
 	expect(workout?.name).toBe(WORKOUT_NAME);
 
 	const [set] = await sql(completedSetRow)`
@@ -42,6 +45,7 @@ test("create and save a workout persists it", async ({ page }) => {
 		WHERE w.user_id = ${E2E_USER_ID}
 		ORDER BY w.created_at DESC, we.position, ws.position
 		LIMIT 1`;
+
 	expect(set).toMatchObject({ weight: "60", reps: "8", completed: true });
 });
 
@@ -56,7 +60,9 @@ test("submitting without weight and reps stays on the form", async ({ page }) =>
 
 	// Validation blocks the save: still on the form, nothing persisted.
 	await expect(page).toHaveURL(/\/workouts\/new$/);
+
 	const rows = await sql(workoutIdRow)`
 		SELECT id FROM workouts WHERE user_id = ${E2E_USER_ID} AND name = 'E2E Invalid Workout'`;
+
 	expect(rows).toHaveLength(0);
 });

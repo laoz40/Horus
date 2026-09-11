@@ -6,6 +6,7 @@ import type {
 } from "@/features/workout-form/lib/validateWorkout";
 
 export type WorkoutFormData = z.infer<typeof WorkoutSchema>;
+
 export type WorkoutForSave = z.infer<typeof WorkoutForSaveSchema>;
 
 export interface ExerciseSuggestion {

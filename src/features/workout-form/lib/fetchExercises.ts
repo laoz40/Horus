@@ -8,6 +8,7 @@ export const fetchDefaultExercises = (query: string) => {
 	const matchedDefaultExercises = DEFAULT_EXERCISES.filter((exercise) =>
 		normalizeName(exercise.name).includes(normalizeName(query)),
 	);
+
 	return matchedDefaultExercises.map(createSuggestionObject);
 };
 
@@ -55,17 +56,24 @@ export const fetchApiExercises = async (query: string) => {
 			const englishTranslation = exercise.translations?.find(
 				(translation) => translation.language === 2 && translation.name.trim().length > 0,
 			);
+
 			if (!englishTranslation) return [];
 
 			const name = englishTranslation.name;
 
 			if (!name) return [];
 
-			const muscleGroups = [...(exercise.muscles ?? []), ...(exercise.muscles_secondary ?? [])]
-				.map((muscle) => muscle.name_en ?? muscle.name)
-				.filter((muscleName): muscleName is string => Boolean(muscleName?.trim()));
+			const muscleGroups = [
+				...(exercise.muscles ?? []),
+				...(exercise.muscles_secondary ?? []),
+			].flatMap((muscle) => {
+				const muscleName = muscle.name_en ?? muscle.name;
+
+				return muscleName?.trim() ? [muscleName] : [];
+			});
 
 			const deduplicatedMuscleGroups = Array.from(new Set(muscleGroups));
+
 			const fallbackMuscleGroups =
 				deduplicatedMuscleGroups.length > 0
 					? deduplicatedMuscleGroups

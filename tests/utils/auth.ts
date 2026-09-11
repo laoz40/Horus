@@ -11,6 +11,7 @@ const noRows = z.object({});
 // standard padded base64, NOT base64url.
 function signedCookieValue(token: string, secret: string): string {
 	const sig = crypto.createHmac("sha256", secret).update(token).digest("base64");
+
 	return `${token}.${sig}`;
 }
 
@@ -44,22 +45,29 @@ export async function mintStorageState(): Promise<string> {
 		],
 		origins: [],
 	};
+
 	return JSON.stringify(storageState, null, "\t");
 }
 
 const upstashGetResponse = z.object({ result: z.string().nullable() });
+
 const otpVerification = z.object({ value: z.string() });
 
 // better-auth's emailOTP plugin (with secondaryStorage) stores the code in Redis under
 // `verification:sign-in-otp-<email>` as JSON `{ value: "<otp>:0", ... }`.
 export async function readSignInOtp(email: string): Promise<string> {
 	const key = encodeURIComponent(`verification:sign-in-otp-${email}`);
+
 	const response = await fetch(`${envVar("UPSTASH_REDIS_REST_URL")}/get/${key}`, {
 		headers: { Authorization: `Bearer ${envVar("UPSTASH_REDIS_REST_TOKEN")}` },
 	});
+
 	const { result } = upstashGetResponse.parse(await response.json());
+
 	if (result === null) throw new Error(`No OTP found in Redis for ${email}`);
 	const [otp] = otpVerification.parse(JSON.parse(result)).value.split(":");
+
 	if (otp === undefined) throw new Error(`Malformed OTP stored for ${email}`);
+
 	return otp;
 }

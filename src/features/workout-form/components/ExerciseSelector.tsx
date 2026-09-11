@@ -33,6 +33,7 @@ export default function ExerciseSelector({ exerciseIds }: ExerciseSelectorProps)
 	const selectedExerciseIndex = exerciseIds.findIndex(
 		(exerciseId) => exerciseId === selectedExerciseId,
 	);
+
 	const selectedExerciseLabel =
 		selectedExerciseIndex >= 0
 			? `${selectedExerciseIndex + 1}: ${

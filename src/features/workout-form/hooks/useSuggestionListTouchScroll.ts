@@ -31,10 +31,12 @@ export const useSuggestionListTouchScroll = (): UseSuggestionListTouchScrollRetu
 
 	const updateTouchScrollState = (touch: Touch) => {
 		const startTouchPoint = touchStartRef.current;
+
 		if (!startTouchPoint) return;
 
 		const movedX = Math.abs(touch.clientX - startTouchPoint.x);
 		const movedY = Math.abs(touch.clientY - startTouchPoint.y);
+
 		if (movedX > 8 || movedY > 8) {
 			didScrollTouchRef.current = true;
 		}
@@ -45,8 +47,10 @@ export const useSuggestionListTouchScroll = (): UseSuggestionListTouchScrollRetu
 
 		const lastTouchY = lastTouchYRef.current;
 		const listbox = listboxRef.current;
+
 		if (lastTouchY === null || !listbox) {
 			lastTouchYRef.current = touch.clientY;
+
 			return;
 		}
 
@@ -63,11 +67,13 @@ export const useSuggestionListTouchScroll = (): UseSuggestionListTouchScrollRetu
 		const shouldHandle = !didScrollTouchRef.current;
 		touchStartRef.current = null;
 		didScrollTouchRef.current = false;
+
 		return shouldHandle;
 	};
 
 	const handleSuggestionListTouchMove = (event: TouchEvent<HTMLDivElement>) => {
 		const touch = event.touches[0];
+
 		if (!touch) return;
 		event.preventDefault();
 		scrollSuggestionList(touch);
@@ -75,6 +81,7 @@ export const useSuggestionListTouchScroll = (): UseSuggestionListTouchScrollRetu
 
 	const handleListboxTouchStart = (event: TouchEvent<HTMLDivElement>) => {
 		const touch = event.touches[0];
+
 		if (!touch) return;
 		startTouch(touch);
 	};

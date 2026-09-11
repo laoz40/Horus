@@ -24,6 +24,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 	const exerciseNamePath = `exercises.${exerciseIndex}.global.name` as const;
 	const query = useWatch({ control, name: exerciseNamePath }) ?? "";
 	const [isOpen, setIsOpen] = useState(false);
+
 	const { suggestions, isDbSearchLoading, isOnlineSearchLoading, fetchMoreSuggestions } =
 		useExerciseSuggestions(query);
 
@@ -32,6 +33,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 	// The search-online touch path lets the browser's synthetic click through, so
 	// the ref marks it handled and the click handler skips the duplicate fetch.
 	const didHandleTouchFetchRef = useRef(false);
+
 	const { listboxRef, listboxTouchProps, shouldHandleTouchTap, stopTouch } =
 		useSuggestionListTouchScroll();
 
@@ -93,6 +95,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 				const fetchMoreSuggestionsFromClick = () => {
 					if (didHandleTouchFetchRef.current) {
 						didHandleTouchFetchRef.current = false;
+
 						return;
 					}
 

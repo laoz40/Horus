@@ -106,6 +106,7 @@ export async function updateSetPrStatuses(tx: Tx, prStatuses: PrSetUpdate[]): Pr
 	// Send calculated statuses in bounded chunks so Neon/PostgreSQL does not exceed its 65,535 parameter limit.
 	// Chunks touch disjoint rows and are submitted in order, so pipelining them is safe.
 	const chunks: PrSetUpdate[][] = [];
+
 	for (let i = 0; i < prStatuses.length; i += SET_PR_STATUSES_CHUNK_SIZE) {
 		chunks.push(prStatuses.slice(i, i + SET_PR_STATUSES_CHUNK_SIZE));
 	}

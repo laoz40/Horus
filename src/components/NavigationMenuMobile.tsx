@@ -14,6 +14,7 @@ const navigationMenuItems = [
 
 function isRouteActive(pathname: string, href: string): boolean {
 	if (href === "/") return pathname === "/";
+
 	return pathname.startsWith(href);
 }
 
@@ -39,6 +40,7 @@ export default function NavigationMenuMobile() {
 				)}>
 				{navigationMenuItems.map((item) => {
 					const active = isRouteActive(pathname, item.href);
+
 					return (
 						<li
 							key={item.title}

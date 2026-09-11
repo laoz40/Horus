@@ -24,9 +24,11 @@ export default function WorkoutFormBottomBar({
 	const isEditing = useWorkoutFormUiStore((state) => state.isEditing);
 
 	const show = exerciseIds.length > 0;
+
 	if (!show) return null;
 
 	const canToggleEdit = Boolean(selectedExerciseId);
+
 	const addOrDelete = isEditing ? (
 		<div className="w-full">
 			<AlertDialogDestructive

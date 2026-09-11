@@ -57,6 +57,7 @@ test.describe("signed out", () => {
 		await page.getByRole("textbox", { name: "Email Code" }).pressSequentially(otp, {
 			delay: 50,
 		});
+
 		if (new URL(page.url()).pathname === "/login") {
 			try {
 				await page.getByRole("button", { name: "Verify code" }).click({ timeout: 5_000 });
