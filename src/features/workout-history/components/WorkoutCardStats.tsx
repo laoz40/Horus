@@ -64,6 +64,7 @@ export default function WorkoutCardStats({
 					<>
 						<Trophy className="size-4 shrink-0 text-primary" />
 						<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none text-primary">
+							<span className="sr-only">Personal records:</span>
 							{pr}
 						</span>
 					</>
