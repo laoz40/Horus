@@ -35,7 +35,11 @@ export default function SignOutButton({ className }: { className?: string }) {
 			onClick={() => {
 				void handleSignOut();
 			}}>
-			{isSigningOut ? <IconLoader2 className="size-4 animate-spin" /> : <IconLogout className="size-4" />}
+			{isSigningOut ? (
+				<IconLoader2 className="size-4 animate-spin" />
+			) : (
+				<IconLogout className="size-4" />
+			)}
 			<span>{isSigningOut ? "Signing out..." : "Sign out"}</span>
 		</Button>
 	);
