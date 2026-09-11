@@ -9,17 +9,18 @@ import {
 	useHistoryUiStore,
 } from "@/features/workout-history/stores/historyUiStore";
 
-import PageLoadingSpinner from "@/components/PageLoadingSpinner";
-
 import WorkoutCard from "@/features/workout-history/components/WorkoutCard";
+import { WorkoutCardSkeletonList } from "@/features/workout-history/components/HistoryWorkoutCardSkeleton";
 
 export default function HistoryList({
 	workouts,
 	isLoading,
+	WORKOUTS_PER_PAGE,
 	isPrPending,
 }: {
 	workouts: WorkoutHistoryItem[];
 	isLoading: boolean;
+	WORKOUTS_PER_PAGE: number;
 	isPrPending: boolean;
 }) {
 	const deletedWorkoutIds = useHistoryUiStore(selectDeletedWorkoutIds);
@@ -36,12 +37,7 @@ export default function HistoryList({
 
 	if (visibleWorkouts.length === 0) {
 		if (isLoading) {
-			return (
-				<PageLoadingSpinner
-					label="Loading workouts"
-					className="min-h-48"
-				/>
-			);
+			return <WorkoutCardSkeletonList count={WORKOUTS_PER_PAGE} />;
 		}
 
 		return (
