@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
-import { Loader2, LogOut } from "lucide-react";
+import { IconLoader2, IconLogout } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +35,7 @@ export default function SignOutButton({ className }: { className?: string }) {
 			onClick={() => {
 				void handleSignOut();
 			}}>
-			{isSigningOut ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4" />}
+			{isSigningOut ? <IconLoader2 className="size-4 animate-spin" /> : <IconLogout className="size-4" />}
 			<span>{isSigningOut ? "Signing out..." : "Sign out"}</span>
 		</Button>
 	);

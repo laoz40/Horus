@@ -1,15 +1,15 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Dumbbell, History, Settings, TrendingUp } from "lucide-react";
+import { IconBarbell, IconHistory, IconSettings, IconTrendingUp } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navigationMenuItems = [
-	{ title: "Workout", href: "/", icon: Dumbbell },
-	{ title: "History", href: "/workouts", icon: History },
-	{ title: "Progress", href: "/progress", icon: TrendingUp },
-	{ title: "Settings", href: "/settings", icon: Settings },
+	{ title: "Workout", href: "/", icon: IconBarbell },
+	{ title: "History", href: "/workouts", icon: IconHistory },
+	{ title: "Progress", href: "/progress", icon: IconTrendingUp },
+	{ title: "Settings", href: "/settings", icon: IconSettings },
 ];
 
 function isRouteActive(pathname: string, href: string): boolean {

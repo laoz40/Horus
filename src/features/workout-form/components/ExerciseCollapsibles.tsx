@@ -2,7 +2,7 @@
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Slider } from "@/components/ui/slider";
-import { BicepsFlexed, ChevronDown, Notebook, type LucideIcon } from "lucide-react";
+import { IconChevronDown, IconFlame, IconNotes, type Icon } from "@tabler/icons-react";
 import { Activity, useState, type ReactNode } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Controller, useFormContext } from "react-hook-form";
@@ -38,7 +38,7 @@ function DifficultySlider({ exerciseIndex }: ExerciseCollapsiblesProps) {
 	return (
 		<CollapsibleFilter
 			title="Difficulty"
-			icon={BicepsFlexed}
+			icon={IconFlame}
 			onOpenChange={initDifficultyValue}>
 			<div className="flex flex-col w-full max-w-sm gap-3">
 				<Controller
@@ -72,7 +72,7 @@ function ExerciseNotes({ exerciseIndex }: ExerciseCollapsiblesProps) {
 	return (
 		<CollapsibleFilter
 			title="Notes"
-			icon={Notebook}>
+			icon={IconNotes}>
 			<div className="flex flex-col gap-1">
 				<Textarea
 					placeholder="Write a note..."
@@ -96,7 +96,7 @@ const CollapsibleFilter = ({
 	onOpenChange,
 }: {
 	title: string;
-	icon?: LucideIcon;
+	icon?: Icon;
 	children: ReactNode;
 	onOpenChange?: (open: boolean) => void;
 }) => {
@@ -116,7 +116,7 @@ const CollapsibleFilter = ({
 				<h3 className="flex items-center gap-2 text-sm leading-none font-semibold text-muted-foreground">
 					{!!Icon && <Icon className="h-5 w-5 text-muted-foreground" />} {title}
 				</h3>
-				<ChevronDown className="h-4 w-4 group-data-[state=open]:rotate-180 transition-transform text-muted-foreground" />
+				<IconChevronDown className="h-4 w-4 group-data-[state=open]:rotate-180 transition-transform text-muted-foreground" />
 			</CollapsibleTrigger>
 
 			<Activity mode={isCollapsibleOpen ? "visible" : "hidden"}>

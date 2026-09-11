@@ -2,7 +2,7 @@
 
 import { type ReactElement } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Trash } from "lucide-react";
+import { IconTrash } from "@tabler/icons-react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -124,7 +124,7 @@ export default function SetRow({
 								className="h-11 w-11"
 								type="button"
 								onClick={handleDeleteSet}>
-								<Trash className="size-6" />
+								<IconTrash className="size-6" />
 							</Button>
 						</div>
 					) : (

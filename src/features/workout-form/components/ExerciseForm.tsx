@@ -1,6 +1,6 @@
 "use client";
 
-import { HistoryIcon, PlusIcon } from "lucide-react";
+import { IconHistory, IconPlus } from "@tabler/icons-react";
 import { forwardRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
@@ -89,7 +89,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 								className="h-11 w-11 shrink-0 justify-end border-none bg-transparent! p-0 text-muted-foreground shadow-none has-[>svg]:px-0"
 								onClick={handleRecentClick}
 								aria-label="Recent exercises">
-								<HistoryIcon className="size-5" />
+								<IconHistory className="size-5" />
 							</Button>
 						)}
 					</div>
@@ -116,7 +116,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 								className="w-full shrink-0 items-center text-muted-foreground text-sm leading-0"
 								type="button"
 								onClick={handleAddSet}>
-								<PlusIcon className="size-4" />
+								<IconPlus className="size-4" />
 								<span className="translate-y-px">Add Set</span>
 							</Button>
 							{setsError && <span className="text-red-500 text-sm">{setsError.message}</span>}

@@ -1,4 +1,5 @@
-import { Clock, Dumbbell, Trophy, Weight } from "lucide-react";
+import { IconBarbellFilled, IconClockFilled, IconTrophyFilled } from "@tabler/icons-react";
+import { IconWeightFilled } from "@/components/icons/IconWeightFilled";
 import { type ReactElement } from "react";
 import { formatDurationSummary } from "@/lib/time";
 import { cn } from "@/lib/utils";
@@ -30,7 +31,7 @@ export default function WorkoutCardStats({
 			)}>
 			{/* Workout Duration */}
 			<div className="flex items-center justify-start gap-1.5">
-				<Clock className="size-4 shrink-0" />
+				<IconClockFilled className="size-4 shrink-0" />
 				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
 					{formatDurationSummary(duration)}
 				</span>
@@ -38,7 +39,7 @@ export default function WorkoutCardStats({
 
 			{/* Total volume lifted */}
 			<div className="flex items-center justify-center gap-1.5">
-				<Weight className="size-4 shrink-0" />
+				<IconWeightFilled className="size-4 shrink-0" />
 				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
 					{displayWorkoutVolume} kg
 				</span>
@@ -46,7 +47,7 @@ export default function WorkoutCardStats({
 
 			{/* Number of exercises */}
 			<div className="flex items-center justify-center gap-1.5">
-				<Dumbbell className="size-4 shrink-0" />
+				<IconBarbellFilled className="size-4 shrink-0" />
 				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
 					{exerciseCount}
 				</span>
@@ -62,7 +63,7 @@ export default function WorkoutCardStats({
 				) : null}
 				{!isPrPending && pr > 0 ? (
 					<>
-						<Trophy className="size-4 shrink-0 text-primary" />
+						<IconTrophyFilled className="size-4 shrink-0 text-primary" />
 						<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none text-primary">
 							<span className="sr-only">Personal records:</span>
 							{pr}

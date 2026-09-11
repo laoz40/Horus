@@ -12,7 +12,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVertical } from "lucide-react";
+import { IconDotsVertical } from "@tabler/icons-react";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { Button } from "@/components/ui/button";
 import { markWorkoutDeleted } from "@/features/workout-history/stores/historyUiStore";
@@ -81,7 +81,7 @@ export default function WorkoutCardOptions({
 						aria-label="Workout options"
 						onClick={(event) => event.stopPropagation()}
 						onPointerDown={(event) => event.stopPropagation()}>
-						<EllipsisVertical className="size-5" />
+						<IconDotsVertical className="size-5" />
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
