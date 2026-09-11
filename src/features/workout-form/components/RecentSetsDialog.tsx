@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { getRelativeTime } from "@/lib/date";
 import { orpc } from "@/lib/orpc/client";
+import { setPrLabels } from "@/features/workout-form/lib/setPr";
 import { cn } from "@/lib/utils";
 
 interface RecentSetsDialogProps {
@@ -21,14 +22,6 @@ interface RecentSetsDialogProps {
 	onOpenChange: (open: boolean) => void;
 	exerciseName: string;
 }
-
-type RecentSetPrType = "weight" | "volume" | "bodyweightReps";
-
-const prTypeLabels = {
-	weight: "Weight PR",
-	volume: "Volume PR",
-	bodyweightReps: "Reps PR",
-} satisfies Record<RecentSetPrType, string>;
 
 function SetSkeletonRow() {
 	return (
@@ -129,7 +122,7 @@ export default function RecentSetsDialog({
 										<span>
 											{primaryPrType ? (
 												<span className="rounded-md border bg-muted px-1.5 py-0.5 text-muted-foreground text-xs whitespace-nowrap">
-													{prTypeLabels[primaryPrType]}
+													{setPrLabels[primaryPrType]}
 												</span>
 											) : null}
 										</span>

@@ -2,7 +2,8 @@
 
 import { isDefinedError } from "@orpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { orpc } from "@/lib/orpc/client";
+
+import { workoutByIdQueryOptions } from "@/features/workout-form/lib/workoutByIdQuery";
 
 import WorkoutForm from "@/features/workout-form/components/WorkoutForm";
 import WorkoutFormPageSkeleton from "@/features/workout-form/components/WorkoutFormPageSkeleton";
@@ -13,29 +14,7 @@ interface EditWorkoutLoaderProps {
 }
 
 export default function EditWorkoutLoader({ workoutId }: EditWorkoutLoaderProps) {
-	const workoutQuery = useQuery(
-		orpc.workouts.getById.queryOptions({
-			input: { id: workoutId },
-			retry: (failureCount, error) => {
-				if (!isDefinedError(error)) {
-					return failureCount < 2;
-				}
-
-				switch (error.code) {
-					case "DATABASE_ERROR":
-						return failureCount < 2;
-					case "NOT_FOUND":
-					case "UNAUTHORIZED":
-						return false;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
-			},
-		}),
-	);
+	const workoutQuery = useQuery(workoutByIdQueryOptions(workoutId));
 
 	if (workoutQuery.isPending) {
 		return <WorkoutFormPageSkeleton />;
