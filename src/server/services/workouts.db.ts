@@ -39,6 +39,7 @@ export type ListWorkoutsQuery = {
 
 export type WorkoutForEdit = {
 	id: string;
+	createdAt: Date;
 	name: string;
 	durationSeconds: number | null;
 	exercises: Array<{
@@ -53,6 +54,9 @@ export type WorkoutForEdit = {
 			weight: number;
 			reps: number;
 			completed: boolean;
+			isWeightPr: boolean;
+			isVolumePr: boolean;
+			isBodyweightRepsPr: boolean;
 		}>;
 	}>;
 };
@@ -72,6 +76,7 @@ function getWorkoutDetails(workoutId: string, userId: string) {
 	return db
 		.select({
 			id: workouts.id,
+			createdAt: workouts.createdAt,
 			name: workouts.name,
 			durationSeconds: workouts.durationSeconds,
 		})
@@ -113,6 +118,9 @@ function getWorkoutSetRows(workoutId: string) {
 			weight: workoutSets.weight,
 			reps: workoutSets.reps,
 			completed: workoutSets.completed,
+			isWeightPr: workoutSets.isWeightPr,
+			isVolumePr: workoutSets.isVolumePr,
+			isBodyweightRepsPr: workoutSets.isBodyweightRepsPr,
 			position: workoutSets.position,
 		})
 		.from(workoutSets)

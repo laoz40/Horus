@@ -78,7 +78,9 @@ export default function WorkoutCardOptions({
 						variant="ghost"
 						size="icon-sm"
 						className="mt-0.5 border border-transparent text-muted-foreground transition-colors hover:border-border/70 hover:text-foreground"
-						aria-label="Workout options">
+						aria-label="Workout options"
+						onClick={(event) => event.stopPropagation()}
+						onPointerDown={(event) => event.stopPropagation()}>
 						<EllipsisVertical className="size-5" />
 					</Button>
 				</DropdownMenuTrigger>

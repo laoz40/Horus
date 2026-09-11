@@ -11,3 +11,6 @@ export const getCurrentDay = (): string => dayjs().format("dddd");
 dayjs.extend(relativeTime);
 
 export const getRelativeTime = (date: Date) => dayjs(date).fromNow();
+
+export const formatWorkoutDate = (date: Date | number): string =>
+	dayjs(date).format("dddd, D MMM YYYY");

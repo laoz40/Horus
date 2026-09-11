@@ -3,21 +3,20 @@
 import { isDefinedError } from "@orpc/client";
 import { useQuery } from "@tanstack/react-query";
 
-import { workoutByIdQueryOptions } from "@/features/workout-form/lib/workoutByIdQuery";
-
-import WorkoutForm from "@/features/workout-form/components/WorkoutForm";
-import WorkoutFormPageSkeleton from "@/features/workout-form/components/WorkoutFormPageSkeleton";
 import WorkoutLoadError from "@/features/workout-form/components/WorkoutLoadError";
+import { workoutByIdQueryOptions } from "@/features/workout-form/lib/workoutByIdQuery";
+import WorkoutView from "@/features/workout-view/components/WorkoutView";
+import WorkoutViewSkeleton from "@/features/workout-view/components/WorkoutViewSkeleton";
 
-interface EditWorkoutLoaderProps {
+interface ViewWorkoutLoaderProps {
 	workoutId: string;
 }
 
-export default function EditWorkoutLoader({ workoutId }: EditWorkoutLoaderProps) {
+export default function ViewWorkoutLoaderComponent({ workoutId }: ViewWorkoutLoaderProps) {
 	const workoutQuery = useQuery(workoutByIdQueryOptions(workoutId));
 
 	if (workoutQuery.isPending) {
-		return <WorkoutFormPageSkeleton />;
+		return <WorkoutViewSkeleton />;
 	}
 
 	if (workoutQuery.isError) {
@@ -63,8 +62,8 @@ export default function EditWorkoutLoader({ workoutId }: EditWorkoutLoaderProps)
 	}
 
 	return (
-		<WorkoutForm
-			initialData={workoutQuery.data}
+		<WorkoutView
+			workout={workoutQuery.data}
 			workoutId={workoutId}
 		/>
 	);

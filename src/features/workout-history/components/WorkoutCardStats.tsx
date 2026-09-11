@@ -1,7 +1,7 @@
-import { Clock, Dumbbell, Weight } from "lucide-react";
+import { Clock, Dumbbell, Trophy, Weight } from "lucide-react";
 import { type ReactElement } from "react";
-import { Badge } from "@/components/ui/badge";
 import { formatDurationSummary } from "@/lib/time";
+import { cn } from "@/lib/utils";
 
 interface WorkoutCardStatsProps {
 	pr: number;
@@ -9,6 +9,7 @@ interface WorkoutCardStatsProps {
 	workoutVolume: number;
 	exerciseCount: number;
 	isPrPending?: boolean;
+	showBorderTop?: boolean;
 }
 
 export default function WorkoutCardStats({
@@ -17,11 +18,16 @@ export default function WorkoutCardStats({
 	workoutVolume,
 	exerciseCount,
 	isPrPending = false,
+	showBorderTop = true,
 }: WorkoutCardStatsProps): ReactElement {
 	const displayWorkoutVolume = Math.floor(workoutVolume);
 
 	return (
-		<div className="mt-2 grid grid-cols-4 items-center gap-x-9 border-t pt-1">
+		<div
+			className={cn(
+				"mt-2 grid grid-cols-4 items-center gap-x-9",
+				showBorderTop && "border-t pt-1",
+			)}>
 			{/* Workout Duration */}
 			<div className="flex items-center justify-start gap-1.5">
 				<Clock className="size-4 shrink-0" />
@@ -55,7 +61,13 @@ export default function WorkoutCardStats({
 					/>
 				) : null}
 				{!isPrPending && pr > 0 ? (
-					<Badge className="text-xs font-semibold text-primary-foreground">{pr} PRs</Badge>
+					<>
+						<Trophy className="size-4 shrink-0 text-primary" />
+						<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none text-primary">
+							<span className="sr-only">Personal records:</span>
+							{pr}
+						</span>
+					</>
 				) : null}
 			</div>
 		</div>

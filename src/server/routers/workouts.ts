@@ -14,6 +14,7 @@ import {
 
 const workoutFormSchema = z.object({
 	name: z.string(),
+	createdAt: z.number(),
 	durationSeconds: z.number().int().nullable(),
 	exercises: z.array(
 		z.object({
@@ -31,6 +32,7 @@ const workoutFormSchema = z.object({
 					weight: z.number(),
 					reps: z.number(),
 					completed: z.boolean(),
+					prTypes: z.array(z.enum(["weight", "volume", "bodyweightReps"])).optional(),
 				}),
 			),
 		}),

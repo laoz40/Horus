@@ -47,6 +47,7 @@ const SetSchema = z.object({
 		.max(MAX_SET_REPS, NUMERIC_MAX_MESSAGE)
 		.optional(),
 	completed: z.boolean(),
+	prTypes: z.array(z.enum(["weight", "volume", "bodyweightReps"])).optional(),
 });
 
 // SetSchema keeps reps optional so fully blank draft rows can exist while editing.

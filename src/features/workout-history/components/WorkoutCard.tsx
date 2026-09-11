@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Card from "@/components/Card";
 import type { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
 import { toTitleCase } from "@/features/workout-form/lib/convertWorkoutData";
@@ -18,14 +19,16 @@ export default function WorkoutCard({ workout, isPrPending = false }: WorkoutCar
 		.map((muscleGroup) => toTitleCase(muscleGroup));
 
 	return (
-		<>
-			<Card>
-				{!isPrPending && workout.totalPrSets > 2 && (
-					<ShineBorder
-						shineColor="#34e1c9"
-						duration={12}
-					/>
-				)}
+		<Card className="transition-colors hover:bg-accent/30">
+			{!isPrPending && workout.totalPrSets > 2 && (
+				<ShineBorder
+					shineColor="#34e1c9"
+					duration={12}
+				/>
+			)}
+			<Link
+				href={`/workouts/${workout.id}`}
+				className="block">
 				<div className="grid grid-cols-[1fr_min-content] items-start gap-x-2">
 					<div className="flex min-w-0 flex-col">
 						<span className="w-fit whitespace-nowrap text-[0.62rem] font-medium uppercase tracking-[0.16em] text-muted-foreground/90">
@@ -35,9 +38,9 @@ export default function WorkoutCard({ workout, isPrPending = false }: WorkoutCar
 							{workout.name}
 						</h2>
 					</div>
-					<WorkoutCardOptions
-						workoutId={workout.id}
-						workoutName={workout.name}
+					<div
+						aria-hidden
+						className="size-8 shrink-0"
 					/>
 				</div>
 
@@ -61,7 +64,13 @@ export default function WorkoutCard({ workout, isPrPending = false }: WorkoutCar
 					exerciseCount={workout.exerciseCount}
 					isPrPending={isPrPending}
 				/>
-			</Card>
-		</>
+			</Link>
+			<div className="absolute top-2.5 right-3">
+				<WorkoutCardOptions
+					workoutId={workout.id}
+					workoutName={workout.name}
+				/>
+			</div>
+		</Card>
 	);
 }

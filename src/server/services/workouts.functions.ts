@@ -3,6 +3,7 @@ import "server-only";
 import { err, ok } from "neverthrow";
 
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
+import { buildSetPrTypes } from "@/features/workout-form/lib/setPr";
 import type { DatabaseTransaction } from "@/lib/db";
 import { normalizeName } from "@/lib/normalizeName";
 import {
@@ -147,6 +148,7 @@ export async function rebuildAffectedPrHistory(
 export function buildWorkoutEditForm(workout: WorkoutForEdit) {
 	return {
 		name: workout.name,
+		createdAt: workout.createdAt.getTime(),
 		durationSeconds: workout.durationSeconds,
 		exercises: workout.exercises.map((exercise) => ({
 			id: exercise.id,
@@ -157,7 +159,13 @@ export function buildWorkoutEditForm(workout: WorkoutForEdit) {
 			},
 			difficulty: exercise.difficulty ?? undefined,
 			notes: exercise.notes || undefined,
-			sets: exercise.sets,
+			sets: exercise.sets.map((set) => ({
+				id: set.id,
+				weight: set.weight,
+				reps: set.reps,
+				completed: set.completed,
+				prTypes: buildSetPrTypes(set),
+			})),
 		})),
 	};
 }
