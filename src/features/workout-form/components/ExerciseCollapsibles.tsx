@@ -27,6 +27,7 @@ function DifficultySlider({ exerciseIndex }: ExerciseCollapsiblesProps) {
 
 	const initDifficultyValue = (openState: boolean) => {
 		const currentValue = getValues(`exercises.${exerciseIndex}.difficulty`);
+
 		if (openState && currentValue === undefined) {
 			setValue(`exercises.${exerciseIndex}.difficulty`, 2);
 		}
@@ -106,6 +107,7 @@ const CollapsibleFilter = ({
 		// if onOpenChange gets passed down, call the function: initDifficultyValue
 		onOpenChange?.(openState);
 	};
+
 	return (
 		<Collapsible
 			open={isCollapsibleOpen}

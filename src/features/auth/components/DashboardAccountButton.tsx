@@ -42,6 +42,7 @@ export default function DashboardAccountButton({
 		}
 
 		setIsSigningOut(true);
+
 		try {
 			await authClient.signOut();
 		} finally {

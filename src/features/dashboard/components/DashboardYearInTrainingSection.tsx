@@ -33,6 +33,7 @@ function DashboardYearInTraining({
 	userId,
 }: DashboardYearInTrainingSectionProps) {
 	const year = new Date().getFullYear();
+
 	const statsQuery = useQuery(
 		orpc.dashboard.yearInTraining.queryOptions({
 			input: { year, userId },
@@ -75,11 +76,17 @@ function DashboardYearInTraining({
 							showMonthLabels
 							classForValue={(value) => {
 								const count = value?.count ?? 0;
+
 								if (count <= 0) return "color-empty";
+
 								if (count <= 3) return "color-scale-1";
+
 								if (count <= 6) return "color-scale-2";
+
 								if (count <= 10) return "color-scale-3";
+
 								if (count <= 15) return "color-scale-4";
+
 								return "color-scale-5";
 							}}
 						/>

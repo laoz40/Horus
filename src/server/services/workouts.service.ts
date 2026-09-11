@@ -43,11 +43,13 @@ function createWorkoutTransaction(createInput: WorkoutWriteInput) {
 		try: () =>
 			runDatabaseTransaction(async (tx): Promise<string> => {
 				const workoutId = await insertWorkoutRow(tx, createInput);
+
 				const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(
 					tx,
 					createInput.userId,
 					createInput.workout.exercises,
 				);
+
 				const newWorkoutSets = buildNewWorkoutPrSets(workoutId, exercisesWithDatabaseIds);
 				const prStatuses = await calculateAppendedPrHistory(tx, createInput.userId, newWorkoutSets);
 				const prStatusesBySetId = new Map(prStatuses.map((status) => [status.setId, status]));
@@ -76,11 +78,13 @@ function updateWorkoutTransaction(
 				}
 
 				const previousExerciseIds = await getWorkoutExerciseIds(tx, updateInput.workoutId);
+
 				const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(
 					tx,
 					updateInput.userId,
 					updateInput.workout.exercises,
 				);
+
 				const affectedExerciseIds = buildAffectedExerciseIds(
 					previousExerciseIds,
 					exercisesWithDatabaseIds.map((exercise) => exercise.exerciseId),

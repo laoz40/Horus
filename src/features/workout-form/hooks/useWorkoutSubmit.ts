@@ -54,6 +54,7 @@ export const useWorkoutSubmit = ({
 					showErrorToast("Failed to save workout.");
 					console.error(error);
 					router.push("/workouts/new");
+
 					return;
 				}
 
@@ -61,17 +62,21 @@ export const useWorkoutSubmit = ({
 					case "INVALID_INPUT":
 						showErrorToast("Invalid workout data.");
 						router.push("/workouts/new");
+
 						return;
 					case "DATABASE_ERROR":
 						showErrorToast("Couldn't access the database. Please try again.");
 						router.push("/workouts/new");
+
 						return;
 					case "UNAUTHORIZED":
 						showErrorToast("You must be signed in to save workouts.");
 						router.push("/login");
+
 						return;
 					default: {
 						const exhaustiveError: never = error;
+
 						return exhaustiveError;
 					}
 				}
@@ -86,6 +91,7 @@ export const useWorkoutSubmit = ({
 
 				const previousHistory =
 					queryClient.getQueryData<WorkoutHistoryInfiniteData>(historyListQueryKey);
+
 				const optimisticFields = buildOptimisticHistoryFields(variables.workout);
 
 				queryClient.setQueryData<WorkoutHistoryInfiniteData>(historyListQueryKey, (current) =>
@@ -118,26 +124,32 @@ export const useWorkoutSubmit = ({
 				if (!isDefinedError(error)) {
 					showErrorToast("Failed to save workout.");
 					console.error(error);
+
 					return;
 				}
 
 				switch (error.code) {
 					case "INVALID_INPUT":
 						showErrorToast("Invalid workout data.");
+
 						return;
 					case "DATABASE_ERROR":
 						showErrorToast("Couldn't access the database. Please try again.");
+
 						return;
 					case "UNAUTHORIZED":
 						showErrorToast("You must be signed in to save workouts.");
 						router.push("/login");
+
 						return;
 					case "NOT_FOUND":
 						showErrorToast("Couldn't find workout in the database.");
 						router.push("/workouts");
+
 						return;
 					default: {
 						const exhaustiveError: never = error;
+
 						return exhaustiveError;
 					}
 				}
@@ -152,6 +164,7 @@ export const useWorkoutSubmit = ({
 		if (!workoutResult.success) {
 			const [firstIssue] = workoutResult.error.issues;
 			showErrorToast(firstIssue?.message ?? "Invalid workout data.");
+
 			return;
 		}
 
@@ -162,6 +175,7 @@ export const useWorkoutSubmit = ({
 				// TODO: The history feed has no optimistic UI yet, so this redirect can
 				// briefly land on a stale list until the invalidation refetch lands.
 				router.push("/workouts");
+
 				return;
 			case "update":
 				updateWorkout.mutate({
@@ -171,9 +185,11 @@ export const useWorkoutSubmit = ({
 				animateCreateWorkoutExit(() => {
 					router.push("/workouts");
 				});
+
 				return;
 			default: {
 				const exhaustiveMode: never = mode;
+
 				return exhaustiveMode;
 			}
 		}

@@ -10,6 +10,7 @@ import { authClient } from "@/lib/auth-client";
 
 export function Providers({ children }: { children: ReactNode }) {
 	const router = useRouter();
+
 	const [queryClient] = useState(
 		() =>
 			new QueryClient({

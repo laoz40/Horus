@@ -1,9 +1,11 @@
 import { toast } from "sonner";
 
 const toastPosition = "top-center";
+
 const topMargin = {
 	top: "40px",
 };
+
 const actionButtonStyle = {
 	background: "var(--muted)",
 	color: "var(--muted-foreground)",

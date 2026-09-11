@@ -33,8 +33,10 @@ export const useExerciseSelection = ({
 
 	useEffect(() => {
 		if (selectedExerciseId && exerciseIds.includes(selectedExerciseId)) return;
+
 		if (exerciseIds.length === 0) {
 			selectExercise(null);
+
 			return;
 		}
 

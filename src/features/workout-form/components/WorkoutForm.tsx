@@ -36,6 +36,7 @@ interface WorkoutFormProps {
 
 // Strip fully empty sets/exercises before RHF validation so blank rows don't block submit.
 const baseResolver = zodResolver(WorkoutSchema);
+
 const workoutResolver: Resolver<Workout> = (values, context, options) =>
 	baseResolver(stripEmptyWorkoutEntries(values), context, options);
 
@@ -79,10 +80,12 @@ export default function WorkoutForm({
 	const handleInvalidSubmit = (errors: FieldErrors<Workout>) => {
 		// find the first invalid exercise
 		const firstInvalidExerciseIndex = getFirstInvalidExerciseIndex(errors);
+
 		if (firstInvalidExerciseIndex === null) return;
 
 		// get the first invalid exercise id and scroll to it
 		const firstInvalidExerciseId = exercises[firstInvalidExerciseIndex]?.id;
+
 		if (!firstInvalidExerciseId) return;
 		setScrollTarget(firstInvalidExerciseId);
 	};

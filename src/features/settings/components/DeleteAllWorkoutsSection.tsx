@@ -10,6 +10,7 @@ import { showErrorToast, showWorkoutsDeletedToast } from "@/lib/toastMessages";
 
 export default function DeleteAllWorkoutsSection() {
 	const queryClient = useQueryClient();
+
 	const deleteAllWorkouts = useMutation(
 		orpc.workouts.deleteAll.mutationOptions({
 			onSuccess: async (result) => {
@@ -22,21 +23,26 @@ export default function DeleteAllWorkoutsSection() {
 				if (!isDefinedError(error)) {
 					showErrorToast("Failed to delete workouts.");
 					console.error(error);
+
 					return;
 				}
 
 				switch (error.code) {
 					case "NO_WORKOUTS":
 						showErrorToast("No workouts to delete.");
+
 						return;
 					case "DATABASE_ERROR":
 						showErrorToast("Couldn't access the database. Please try again.");
+
 						return;
 					case "UNAUTHORIZED":
 						showErrorToast("You must be signed in to delete workouts.");
+
 						return;
 					default: {
 						const exhaustiveError: never = error;
+
 						return exhaustiveError;
 					}
 				}

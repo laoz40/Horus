@@ -13,12 +13,15 @@ import { Toaster as Sonner, type ToasterProps } from "sonner"
 // The app's "glass" theme has no sonner equivalent, so it falls back to dark.
 const resolveToasterTheme = (theme: string): ToasterProps["theme"] => {
   if (theme === "glass") return "dark"
+
   if (theme === "light" || theme === "dark" || theme === "system") return theme
+
   return "system"
 }
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
+
   // Sonner theming is driven by CSS custom properties, which React's CSSProperties type doesn't cover.
   const toasterStyle: React.CSSProperties & Record<`--${string}`, string> = {
     "--normal-bg": "var(--input)",

@@ -57,6 +57,7 @@ export default function RecentSetsDialog({
 		if (!recentSetsQuery.isError) return null;
 
 		const error = recentSetsQuery.error;
+
 		if (!isDefinedError(error)) return "Couldn't load recent sets.";
 
 		switch (error.code) {
@@ -65,6 +66,7 @@ export default function RecentSetsDialog({
 				return "Couldn't load recent sets.";
 			default: {
 				const exhaustiveError: never = error;
+
 				return exhaustiveError;
 			}
 		}
@@ -74,6 +76,7 @@ export default function RecentSetsDialog({
 		...set,
 		time: getRelativeTime(new Date(completedAtMs)),
 	}));
+
 	const errorMessage = getErrorMessage();
 
 	return (

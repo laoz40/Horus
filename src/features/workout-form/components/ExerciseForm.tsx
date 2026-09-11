@@ -56,6 +56,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 			control,
 			name: `exercises.${exerciseIndex}.global.name` as const,
 		});
+
 		const hasExerciseName = Boolean(exerciseName?.trim());
 
 		const exerciseError = errors.exercises?.[exerciseIndex];
@@ -64,6 +65,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 
 		const handleRecentClick = () => {
 			const trimmedName = exerciseName?.trim();
+
 			if (!trimmedName) return;
 
 			openRecentSetsDialog(trimmedName);

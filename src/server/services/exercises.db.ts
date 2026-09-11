@@ -314,6 +314,7 @@ async function createOrGetExercise(
 
 	if (createdExercise) {
 		await insertExerciseMuscleGroups(tx, createdExercise.id, exercise.global.muscleGroups);
+
 		return createdExercise.id;
 	}
 
@@ -324,6 +325,7 @@ async function createOrGetExercise(
 		userId,
 		exercise.global.normalizedName,
 	);
+
 	if (!existingExerciseId) {
 		throw new Error("Exercise conflict did not resolve to an existing row");
 	}
@@ -343,6 +345,7 @@ async function findOrCreateExerciseId(
 			exercise.exerciseId,
 			exercise.global.normalizedName,
 		);
+
 		if (submittedExerciseId) {
 			return submittedExerciseId;
 		}

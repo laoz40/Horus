@@ -26,6 +26,7 @@ export function checkCompletedSetPr(
 			weight: set.weight ?? 0,
 			reps: set.reps ?? 0,
 		};
+
 		const result = calculatePrsForSet(normalizedSet, records);
 
 		if (index === setIndex) {
@@ -43,7 +44,9 @@ export function buildRecentSets(rows: RecentSetRow[]) {
 		const prTypes: RecentSetPrType[] = [];
 
 		if (row.isWeightPr) prTypes.push("weight");
+
 		if (row.isVolumePr) prTypes.push("volume");
+
 		if (row.isBodyweightRepsPr) prTypes.push("bodyweightReps");
 
 		return {

@@ -14,4 +14,5 @@ function Section({ header, children, className }: SectionProps) {
 		</section>
 	);
 }
+
 export default Section;

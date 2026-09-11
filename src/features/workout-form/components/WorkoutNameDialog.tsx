@@ -33,6 +33,7 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 	if (sessionData?.user) {
 		authStatus = "authenticated";
 	}
+
 	if (isPending) {
 		authStatus = "pending";
 	}

@@ -17,6 +17,7 @@ type WelcomeProfileFormData = z.infer<typeof welcomeProfileSchema>;
 
 export default function WelcomeNameForm(): ReactElement {
 	const router = useRouter();
+
 	const {
 		register,
 		handleSubmit,
@@ -34,13 +35,16 @@ export default function WelcomeNameForm(): ReactElement {
 		const nameValue = trimmedName.length === 0 ? "Legend" : trimmedName;
 
 		const { error } = await authClient.updateUser({ name: nameValue });
+
 		if (error) {
 			setError("name", {
 				type: "server",
 				message: "Could not save your name. Please try again.",
 			});
+
 			return;
 		}
+
 		router.replace("/");
 	});
 

@@ -56,6 +56,7 @@ export const useExerciseNavigation = ({
 
 		if (newExerciseAdded) {
 			const latestExerciseId = exerciseIds[exerciseIds.length - 1];
+
 			if (latestExerciseId) {
 				setScrollTarget(latestExerciseId);
 			}
@@ -68,16 +69,19 @@ export const useExerciseNavigation = ({
 	// themselves through registerExerciseRef as they mount and unmount.
 	useEffect(() => {
 		const scrollContainer = exerciseListRef.current;
+
 		if (!scrollContainer) return;
 
 		const observer = new IntersectionObserver(
 			(forms) => {
 				const visible = forms.filter((form) => form.isIntersecting);
+
 				if (visible.length === 0) return;
 
 				const mostVisible = visible.toSorted(
 					(a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0),
 				)[0];
+
 				if (!mostVisible) return;
 
 				const { target } = mostVisible;

@@ -48,6 +48,7 @@ function normalizeMuscleGroups(muscleGroups: string[] | undefined) {
 
 	for (const name of muscleGroups ?? []) {
 		const normalizedName = normalizeName(name);
+
 		if (normalizedName.length === 0 || muscleGroupsByNormalizedName.has(normalizedName)) {
 			continue;
 		}
@@ -64,8 +65,10 @@ function normalizeMuscleGroups(muscleGroups: string[] | undefined) {
 export function validateUniqueWorkoutChildIds(workout: WorkoutForSave) {
 	const workoutExerciseIds = workout.exercises.map((exercise) => exercise.id);
 	const setIds = workout.exercises.flatMap((exercise) => exercise.sets.map((set) => set.id));
+
 	const hasDuplicateWorkoutExerciseId =
 		new Set(workoutExerciseIds).size !== workoutExerciseIds.length;
+
 	const hasDuplicateSetId = new Set(setIds).size !== setIds.length;
 
 	if (hasDuplicateWorkoutExerciseId || hasDuplicateSetId) {
@@ -111,6 +114,7 @@ export async function calculateAppendedPrHistory(
 	sets: PrHistorySet[],
 ): Promise<PrSetUpdate[]> {
 	const exerciseIds = [...new Set(sets.map((set) => set.exerciseId))];
+
 	const previousPrRows: ExercisePrRow[] =
 		exerciseIds.length === 0 ? [] : await getExercisePrRowsByIds(tx, userId, exerciseIds);
 
@@ -129,6 +133,7 @@ export async function rebuildAffectedPrHistory(
 
 	const previousPrRows = await getExercisePrRowsByIds(tx, userId, exerciseIds, cutoff);
 	const historySets = await getAffectedPrHistorySets(tx, userId, exerciseIds, cutoff);
+
 	const { prStatuses, affectedWorkoutIds } = calculateAffectedPrHistory(
 		historySets,
 		previousPrRows,

@@ -16,6 +16,7 @@ export default function ServiceWorkerRegistration(): ReactElement | null {
 		// If the page has already loaded, register now.
 		if (document.readyState === "complete") {
 			register();
+
 			return;
 		}
 

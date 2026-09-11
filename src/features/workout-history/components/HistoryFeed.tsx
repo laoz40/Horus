@@ -32,6 +32,7 @@ export default function HistoryFeed({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 	const isCreatingWorkout = useIsMutating({ mutationKey: orpc.workouts.create.mutationKey() }) > 0;
 	const isUpdatingWorkout = useIsMutating({ mutationKey: orpc.workouts.update.mutationKey() }) > 0;
+
 	const historyQuery = useInfiniteQuery(
 		orpc.workouts.list.infiniteOptions({
 			input: (offset: number) => ({ limit: WORKOUTS_PER_PAGE, offset }),
@@ -40,6 +41,7 @@ function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 			throwOnError: true,
 		}),
 	);
+
 	const workouts = historyQuery.data?.pages.flatMap((page) => page.items) ?? [];
 
 	if (isCreatingWorkout && !historyQuery.data) {

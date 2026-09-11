@@ -29,14 +29,20 @@ const createInitialWorkoutFormUiState = (): WorkoutFormUiState => ({
 });
 
 export const selectSelectedExerciseId = (state: WorkoutFormUiStore) => state.selectedExerciseId;
+
 export const selectCreateWorkoutDraft = (state: WorkoutFormUiStore) => state.createWorkoutDraft;
+
 export const selectScrollTargetId = (state: WorkoutFormUiStore) => state.scrollTargetId;
+
 export const selectIsRecentSetsDialogOpen = (state: WorkoutFormUiStore) =>
 	state.isRecentSetsDialogOpen;
+
 export const selectRecentSetsExerciseName = (state: WorkoutFormUiStore) =>
 	state.recentSetsExerciseName;
+
 export const selectIsRestTimerDrawerOpen = (state: WorkoutFormUiStore) =>
 	state.isRestTimerDrawerOpen;
+
 export const selectRestTimerStartedAtMs = (state: WorkoutFormUiStore) => state.restTimerStartedAtMs;
 
 export const useWorkoutFormUiStore = create<WorkoutFormUiStore>()(() => ({

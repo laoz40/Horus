@@ -3,18 +3,29 @@ import { getCurrentDay } from "@/lib/date";
 import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
 
 const MAX_WORKOUT_NAME_LENGTH = 64;
+
 const MAX_EXERCISE_NAME_LENGTH = 64;
+
 const MAX_EXERCISE_NOTES_LENGTH = 500;
+
 const MAX_SET_WEIGHT = 999999;
+
 const MAX_SET_REPS = 999999;
 
 const EXERCISE_NAME_MIN_MESSAGE = "Please enter a real exercise";
+
 const WORKOUT_NAME_MAX_MESSAGE = `Workout name must be ${MAX_WORKOUT_NAME_LENGTH} characters or less.`;
+
 const EXERCISE_NAME_MAX_MESSAGE = `There's no way that's a real exercise. It's over ${MAX_EXERCISE_NAME_LENGTH} characters.`;
+
 const EXERCISE_NOTES_MAX_MESSAGE = `No essay please. Keep it ${MAX_EXERCISE_NOTES_LENGTH} characters or less.`;
+
 const NUMERIC_MAX_MESSAGE = "Are you serious bro?";
+
 const SET_REPS_MISSING_MESSAGE = "Set doesn't have reps. You can't just do nothing.";
+
 const EXERCISE_NO_SETS_MESSAGE = "Exercise has no sets. Did you even do it?";
+
 const NO_EXERCISES_MESSAGE = "No exercises, silly. Go do your workout.";
 
 const GlobalExerciseInputSchema = z.object({
@@ -117,5 +128,7 @@ export const validateCompletedSet = (set: Set | undefined) => {
 };
 
 export type Set = z.infer<typeof SetSchema>;
+
 export type Exercise = z.infer<typeof ExerciseSchema>;
+
 export type Workout = z.infer<typeof WorkoutSchema>;

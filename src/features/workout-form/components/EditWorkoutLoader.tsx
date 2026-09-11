@@ -29,6 +29,7 @@ export default function EditWorkoutLoader({ workoutId }: EditWorkoutLoaderProps)
 						return false;
 					default: {
 						const exhaustiveError: never = error;
+
 						return exhaustiveError;
 					}
 				}
@@ -76,6 +77,7 @@ export default function EditWorkoutLoader({ workoutId }: EditWorkoutLoaderProps)
 				);
 			default: {
 				const exhaustiveError: never = error;
+
 				return exhaustiveError;
 			}
 		}

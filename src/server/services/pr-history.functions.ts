@@ -76,6 +76,7 @@ export const calculatePrsForSet = (set: PrSet, currentRecords: ExercisePrs): PrR
 	if (currentRecords.hasHistory && set.weight > currentRecords.highestWeight) {
 		prTypes.push("weight");
 	}
+
 	if (currentRecords.hasHistory && volume > currentRecords.highestVolume) {
 		prTypes.push("volume");
 	}
@@ -142,6 +143,7 @@ export function calculateAffectedPrHistory(sets: PrHistorySet[], previousPrRows:
 	const previousPrsByExerciseId = new Map(
 		previousPrRows.map(({ exerciseId, ...prs }) => [exerciseId, prs]),
 	);
+
 	const prStatuses = calculatePrHistory(sets, previousPrsByExerciseId);
 
 	return {

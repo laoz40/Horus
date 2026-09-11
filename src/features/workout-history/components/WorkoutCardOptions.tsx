@@ -29,6 +29,7 @@ export default function WorkoutCardOptions({
 	workoutName,
 }: WorkoutCardOptionsProps): ReactElement {
 	const queryClient = useQueryClient();
+
 	const deleteWorkout = useMutation(
 		orpc.workouts.delete.mutationOptions({
 			onSuccess: async (result) => {
@@ -42,21 +43,26 @@ export default function WorkoutCardOptions({
 				if (!isDefinedError(error)) {
 					showErrorToast("Failed to delete workout.");
 					console.error(error);
+
 					return;
 				}
 
 				switch (error.code) {
 					case "NOT_FOUND":
 						showErrorToast("Couldn't find workout in the database.");
+
 						return;
 					case "DATABASE_ERROR":
 						showErrorToast("Couldn't access the database. Please try again.");
+
 						return;
 					case "UNAUTHORIZED":
 						showErrorToast("You must be signed in to delete workouts.");
+
 						return;
 					default: {
 						const exhaustiveError: never = error;
+
 						return exhaustiveError;
 					}
 				}
