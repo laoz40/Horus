@@ -56,7 +56,10 @@ export default function HistoryPagination({
 			{isLoading ? (
 				<p className="text-sm text-muted-foreground">Loading...</p>
 			) : (
-				<div className="h-px w-full" aria-hidden />
+				<div
+					className="h-px w-full"
+					aria-hidden
+				/>
 			)}
 		</div>
 	);
