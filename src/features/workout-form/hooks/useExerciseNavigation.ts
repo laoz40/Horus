@@ -23,7 +23,7 @@ export const useExerciseNavigation = ({
 	const exerciseListRef = useRef<HTMLDivElement | null>(null);
 	const exerciseFormRefs = useRef<Record<string, HTMLDivElement | null>>({});
 	const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
-	const previousExerciseCount = useRef(exerciseIds.length);
+	const previousExerciseIdsRef = useRef<string[]>([]);
 
 	// store form element by id to find and scroll to it later
 	const registerExerciseRef = (exerciseId: string, exerciseFormElement: HTMLDivElement | null) => {
@@ -51,10 +51,13 @@ export const useExerciseNavigation = ({
 	}, [scrollTargetId]);
 
 	useEffect(() => {
-		const newExerciseAdded =
-			exerciseIds.length > previousExerciseCount.current && exerciseIds.length > 0;
+		const previousExerciseIds = previousExerciseIdsRef.current;
 
-		if (newExerciseAdded) {
+		const appendedExercise =
+			exerciseIds.length === previousExerciseIds.length + 1 &&
+			previousExerciseIds.every((exerciseId, index) => exerciseId === exerciseIds[index]);
+
+		if (appendedExercise) {
 			const latestExerciseId = exerciseIds[exerciseIds.length - 1];
 
 			if (latestExerciseId) {
@@ -62,7 +65,7 @@ export const useExerciseNavigation = ({
 			}
 		}
 
-		previousExerciseCount.current = exerciseIds.length;
+		previousExerciseIdsRef.current = exerciseIds;
 	}, [exerciseIds]);
 
 	// Create the visibility observer once; exercise forms register and unregister
