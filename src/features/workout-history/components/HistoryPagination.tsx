@@ -1,6 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { useEffect, useRef } from "react";
+
 import { cn } from "@/lib/utils";
 
 interface HistoryPaginationProps {
@@ -16,17 +17,47 @@ export default function HistoryPagination({
 	onLoadMore,
 	className,
 }: Readonly<HistoryPaginationProps>) {
-	if (!hasNextPage) return null;
+	const sentinelRef = useRef<HTMLDivElement>(null);
+	const onLoadMoreRef = useRef(onLoadMore);
+	const isLoadingRef = useRef(isLoading);
+
+	onLoadMoreRef.current = onLoadMore;
+	isLoadingRef.current = isLoading;
+
+	useEffect(() => {
+		const sentinel = sentinelRef.current;
+
+		if (!sentinel || !hasNextPage) return;
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0]?.isIntersecting && !isLoadingRef.current) {
+					onLoadMoreRef.current();
+				}
+			},
+			{ rootMargin: "200px" },
+		);
+
+		observer.observe(sentinel);
+
+		return () => {
+			observer.disconnect();
+		};
+	}, [hasNextPage, isLoading]);
+
+	if (!hasNextPage && !isLoading) return null;
 
 	return (
-		<div className={cn("flex justify-center", className)}>
-			<Button
-				onClick={onLoadMore}
-				disabled={isLoading}
-				variant="outline"
-				size="lg">
-				{isLoading ? "Loading..." : "Load more"}
-			</Button>
+		<div
+			ref={sentinelRef}
+			className={cn("flex justify-center py-4", className)}
+			aria-busy={isLoading}
+			aria-live="polite">
+			{isLoading ? (
+				<p className="text-sm text-muted-foreground">Loading...</p>
+			) : (
+				<div className="h-px w-full" aria-hidden />
+			)}
 		</div>
 	);
 }
