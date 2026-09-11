@@ -1,5 +1,5 @@
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { SearchIcon } from "lucide-react";
+import { IconSearch } from "@tabler/icons-react";
 
 export default function SearchBar() {
 	return (
@@ -9,7 +9,7 @@ export default function SearchBar() {
 				className="text-sm placeholder:text-muted-foreground/80"
 			/>
 			<InputGroupAddon className="text-muted-foreground/80">
-				<SearchIcon className="size-4" />
+				<IconSearch className="size-4" />
 			</InputGroupAddon>
 		</InputGroup>
 	);

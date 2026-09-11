@@ -1,15 +1,35 @@
 "use client";
 
+import { IconChartBarPopularFilled } from "@/components/icons/IconChartBarPopularFilled";
 import { cn } from "@/lib/utils";
-import { Dumbbell, History, Settings, TrendingUp } from "lucide-react";
+import {
+	IconBarbell,
+	IconBarbellFilled,
+	IconChartBarPopular,
+	IconClock,
+	IconClockFilled,
+	IconSettings,
+	IconSettingsFilled,
+	type Icon,
+} from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navigationMenuItems = [
-	{ title: "Workout", href: "/", icon: Dumbbell },
-	{ title: "History", href: "/workouts", icon: History },
-	{ title: "Progress", href: "/progress", icon: TrendingUp },
-	{ title: "Settings", href: "/settings", icon: Settings },
+const navigationMenuItems: {
+	title: string;
+	href: string;
+	icon: Icon;
+	iconActive: Icon;
+}[] = [
+	{ title: "Workout", href: "/", icon: IconBarbell, iconActive: IconBarbellFilled },
+	{ title: "History", href: "/workouts", icon: IconClock, iconActive: IconClockFilled },
+	{
+		title: "Progress",
+		href: "/progress",
+		icon: IconChartBarPopular,
+		iconActive: IconChartBarPopularFilled,
+	},
+	{ title: "Settings", href: "/settings", icon: IconSettings, iconActive: IconSettingsFilled },
 ];
 
 function isRouteActive(pathname: string, href: string): boolean {
@@ -40,6 +60,7 @@ export default function NavigationMenuMobile() {
 				)}>
 				{navigationMenuItems.map((item) => {
 					const active = isRouteActive(pathname, item.href);
+					const NavIcon = active ? item.iconActive : item.icon;
 
 					return (
 						<li
@@ -57,7 +78,7 @@ export default function NavigationMenuMobile() {
 									"focus-visible:ring-0 focus-visible:outline-none",
 									active && "text-primary",
 								)}>
-								<item.icon className={cn("mb-1 size-6 text-current")} />
+								<NavIcon className={cn("mb-1 size-6 text-current")} />
 								{item.title}
 							</Link>
 						</li>

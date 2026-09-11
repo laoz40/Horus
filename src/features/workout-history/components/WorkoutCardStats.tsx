@@ -1,4 +1,5 @@
-import { Clock, Dumbbell, Trophy, Weight } from "lucide-react";
+import { IconBarbellFilled, IconClockFilled, IconTrophyFilled } from "@tabler/icons-react";
+import { IconWeightFilled } from "@/components/icons/IconWeightFilled";
 import { type ReactElement } from "react";
 import { formatDurationSummary } from "@/lib/time";
 import { cn } from "@/lib/utils";
@@ -10,6 +11,7 @@ interface WorkoutCardStatsProps {
 	exerciseCount: number;
 	isPrPending?: boolean;
 	showBorderTop?: boolean;
+	className?: string;
 }
 
 export default function WorkoutCardStats({
@@ -19,56 +21,65 @@ export default function WorkoutCardStats({
 	exerciseCount,
 	isPrPending = false,
 	showBorderTop = true,
+	className,
 }: WorkoutCardStatsProps): ReactElement {
 	const displayWorkoutVolume = Math.floor(workoutVolume);
 
 	return (
 		<div
 			className={cn(
-				"mt-2 grid grid-cols-4 items-center gap-x-9",
+				"mt-2 flex items-center justify-between tabular-nums",
 				showBorderTop && "border-t pt-1",
+				className,
 			)}>
 			{/* Workout Duration */}
-			<div className="flex items-center justify-start gap-1.5">
-				<Clock className="size-4 shrink-0" />
+			<div className="flex items-center gap-1">
+				<IconClockFilled className="size-4 shrink-0" />
 				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
 					{formatDurationSummary(duration)}
 				</span>
 			</div>
 
 			{/* Total volume lifted */}
-			<div className="flex items-center justify-center gap-1.5">
-				<Weight className="size-4 shrink-0" />
+			<div className="flex items-center gap-1">
+				<IconWeightFilled className="size-4 shrink-0" />
 				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
 					{displayWorkoutVolume} kg
 				</span>
 			</div>
 
 			{/* Number of exercises */}
-			<div className="flex items-center justify-center gap-1.5">
-				<Dumbbell className="size-4 shrink-0" />
+			<div className="flex items-center gap-1">
+				<IconBarbellFilled className="size-4 shrink-0" />
 				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
 					{exerciseCount}
 				</span>
 			</div>
 
-			{/* PR Indicator */}
-			<div className="flex items-center justify-end gap-1.5">
+			{/* PR Indicator — invisible placeholder keeps spacing when empty */}
+			<div className="flex items-center gap-1">
 				{isPrPending ? (
 					<div
 						aria-hidden
 						className="h-5 w-12 animate-pulse bg-muted"
 					/>
-				) : null}
-				{!isPrPending && pr > 0 ? (
-					<>
-						<Trophy className="size-4 shrink-0 text-primary" />
+				) : (
+					<div
+						className={cn("flex items-center gap-1", pr === 0 && "invisible")}
+						aria-hidden={pr === 0}>
+						<IconTrophyFilled className="size-4 shrink-0 text-primary" />
 						<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none text-primary">
-							<span className="sr-only">Personal records:</span>
-							{pr}
+							{pr > 0 ? (
+								<>
+									<span className="sr-only">Personal records:</span>
+									{pr}
+								</>
+							) : (
+								0
+							)}
 						</span>
-					</>
-				) : null}
+					</div>
+				)}
 			</div>
 		</div>
 	);

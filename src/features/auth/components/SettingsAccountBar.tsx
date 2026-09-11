@@ -1,7 +1,7 @@
 "use client";
 
 import { UserAvatar } from "@daveyplate/better-auth-ui";
-import { ChevronRight } from "lucide-react";
+import { IconChevronRight } from "@tabler/icons-react";
 import Link from "next/link";
 
 interface SettingsAccountBarUser {
@@ -37,7 +37,7 @@ export default function SettingsAccountBar({ initialUser }: SettingsAccountBarPr
 				</div>
 				<div className="flex flex-row items-center gap-1">
 					<span>Account</span>
-					<ChevronRight className="mr-2 size-6" />
+					<IconChevronRight className="mr-2 size-6" />
 				</div>
 			</div>
 		</Link>
@@ -57,7 +57,7 @@ function SignInPrompt() {
 				</div>
 				<div className="flex flex-row gap-1 items-center">
 					<span>Sign In</span>
-					<ChevronRight className="mr-2 size-6" />
+					<IconChevronRight className="mr-2 size-6" />
 				</div>
 			</div>
 		</Link>

@@ -1,17 +1,17 @@
 "use client";
 
+import { IconChevronLeft } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { MouseEvent, ReactNode, ReactElement } from "react";
+import type { MouseEvent, ReactElement } from "react";
 
 import { animateCreateWorkoutExit } from "@/features/workout-form/lib/animateCreateWorkoutExit";
 
 interface WorkoutExitLinkProps {
-	children: ReactNode;
 	href: string;
 }
 
-export default function WorkoutExitLink({ children, href }: WorkoutExitLinkProps): ReactElement {
+export default function WorkoutExitLink({ href }: WorkoutExitLinkProps): ReactElement {
 	const router = useRouter();
 
 	const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -25,8 +25,9 @@ export default function WorkoutExitLink({ children, href }: WorkoutExitLinkProps
 	return (
 		<Link
 			href={href}
-			onClick={handleClick}>
-			{children}
+			onClick={handleClick}
+			aria-label="Back">
+			<IconChevronLeft className="size-7" />
 		</Link>
 	);
 }

@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { NotepadText, Trophy } from "lucide-react";
+import { IconNotes, IconTrophyFilled } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button";
 import type { Exercise } from "@/features/workout-form/lib/validateWorkout";
@@ -32,7 +32,7 @@ export default function ExerciseViewSection({ exercise }: ExerciseViewSectionPro
 								size="icon-sm"
 								className="shrink-0 text-muted-foreground justify-end hover:bg-transparent!"
 								aria-label="View exercise notes">
-								<NotepadText className="size-4" />
+								<IconNotes className="size-4" />
 							</Button>
 						}>
 						<p className="whitespace-pre-wrap">{notes}</p>
@@ -54,7 +54,7 @@ export default function ExerciseViewSection({ exercise }: ExerciseViewSectionPro
 					return (
 						<div
 							key={set.id}
-							className="grid grid-cols-[2rem_1fr_1fr_2rem] items-center gap-2 border-t py-1 text-sm">
+							className="grid grid-cols-[2rem_1fr_1fr_2rem] items-center gap-2 border-t py-1 text-sm tabular-nums">
 							<span className="text-muted-foreground">{index + 1}</span>
 							<span className={cn(hasPr && "font-semibold")}>{set.weight ?? 0}</span>
 							<span className={cn(hasPr && "font-semibold")}>{set.reps ?? 0}</span>
@@ -68,7 +68,7 @@ export default function ExerciseViewSection({ exercise }: ExerciseViewSectionPro
 												size="icon-sm"
 												className="size-7 text-primary justify-end hover:bg-transparent!"
 												aria-label="View personal records">
-												<Trophy className="size-4" />
+												<IconTrophyFilled className="size-4" />
 											</Button>
 										}>
 										<ul className="flex flex-col gap-1">

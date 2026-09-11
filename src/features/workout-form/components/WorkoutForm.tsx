@@ -54,7 +54,7 @@ export default function WorkoutForm({
 		resolver: workoutResolver,
 		mode: "onSubmit",
 		reValidateMode: "onChange",
-		defaultValues: createDefaultWorkoutValues(),
+		defaultValues: initialData ?? createDefaultWorkoutValues(),
 	});
 
 	const { handleSubmit, reset } = methods;

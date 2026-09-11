@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
 import { UserAvatar } from "@daveyplate/better-auth-ui";
-import { Loader2, LogOut, Settings, User } from "lucide-react";
+import { IconLoader2, IconLogout, IconSettings, IconUser } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -82,7 +82,7 @@ export default function DashboardAccountButton({
 					asChild
 					className="min-h-11 text-base sm:min-h-8 sm:text-sm">
 					<Link href="/settings/account">
-						<User className="size-5 sm:size-4" />
+						<IconUser className="size-5 sm:size-4" />
 						<span className="leading-0">Account</span>
 					</Link>
 				</DropdownMenuItem>
@@ -90,7 +90,7 @@ export default function DashboardAccountButton({
 					asChild
 					className="min-h-11 text-base sm:min-h-8 sm:text-sm">
 					<Link href="/settings">
-						<Settings className="size-5 sm:size-4" />
+						<IconSettings className="size-5 sm:size-4" />
 						<span className="leading-0">Settings</span>
 					</Link>
 				</DropdownMenuItem>
@@ -104,9 +104,9 @@ export default function DashboardAccountButton({
 						void handleSignOut();
 					}}>
 					{isSigningOut ? (
-						<Loader2 className="size-5 animate-spin sm:size-4" />
+						<IconLoader2 className="size-5 animate-spin sm:size-4" />
 					) : (
-						<LogOut className="size-5 sm:size-4" />
+						<IconLogout className="size-5 sm:size-4" />
 					)}
 					<span className="leading-0">{isSigningOut ? "Signing out..." : "Sign out"}</span>
 				</DropdownMenuItem>

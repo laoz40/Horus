@@ -10,7 +10,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash2Icon } from "lucide-react";
+import { IconTrash } from "@tabler/icons-react";
 
 interface AlertDialogDestructiveProps {
 	children: React.ReactNode;
@@ -31,7 +31,7 @@ export function AlertDialogDestructive({
 			<AlertDialogContent size="sm">
 				<AlertDialogHeader>
 					<AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
-						<Trash2Icon />
+						<IconTrash />
 					</AlertDialogMedia>
 					<AlertDialogTitle>{title}</AlertDialogTitle>
 					<AlertDialogDescription>{description}</AlertDialogDescription>

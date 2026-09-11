@@ -50,6 +50,9 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: ^0.13.11
         version: 0.13.11(typescript@7.0.2)(zod@4.2.1)
+      '@tabler/icons-react':
+        specifier: ^3.46.0
+        version: 3.46.0(react@19.2.6)
       '@tanstack/react-query':
         specifier: ^5.96.1
         version: 5.96.1(react@19.2.6)
@@ -2506,6 +2509,14 @@ packages:
         optional: true
       zod:
         optional: true
+
+  '@tabler/icons-react@3.46.0':
+    resolution: {integrity: sha512-CCm7xJWhDT2PH4ZIFkP6AgYKtVhq0gpYkjUN+GVh1AzmIQaa77OW0bQPBPQiTE0PsXMR9oSxFqA3qBglzPyrVQ==}
+    peerDependencies:
+      react: '>= 16'
+
+  '@tabler/icons@3.46.0':
+    resolution: {integrity: sha512-f2RYFl3fzPwj5WO82x6en0dmkjefxEfOm16D1ByM6cj/McNiwOkL4VaPUoP9VVIrXAD9WnTSVFr70px703b//A==}
 
   '@tailwindcss/node@4.1.17':
     resolution: {integrity: sha512-csIkHIgLb3JisEFQ0vxr2Y57GUNYh447C8xzwj89U/8fdW8LhProdxvnVH6U8M2Y73QKiTIH+LWbK3V2BBZsAg==}
@@ -5584,6 +5595,13 @@ snapshots:
     optionalDependencies:
       typescript: 7.0.2
       zod: 4.2.1
+
+  '@tabler/icons-react@3.46.0(react@19.2.6)':
+    dependencies:
+      '@tabler/icons': 3.46.0
+      react: 19.2.6
+
+  '@tabler/icons@3.46.0': {}
 
   '@tailwindcss/node@4.1.17':
     dependencies:

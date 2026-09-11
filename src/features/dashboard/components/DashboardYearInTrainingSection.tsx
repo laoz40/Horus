@@ -2,7 +2,7 @@
 
 import CalendarHeatmap from "react-calendar-heatmap";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { orpc } from "@/lib/orpc/client";
 
@@ -113,7 +113,7 @@ function YearInTrainingLoading({ year }: { year: number }) {
 	return (
 		<YearInTrainingShell year={year}>
 			<div className="flex min-h-28 items-center justify-center border bg-card p-3 text-muted-foreground shadow-sm md:min-h-36">
-				<Loader2
+				<IconLoader2
 					className="size-5 animate-spin"
 					aria-label="Loading year in training"
 				/>

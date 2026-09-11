@@ -1,5 +1,6 @@
 "use client";
 
+import { IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { type ReactElement } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -34,19 +35,25 @@ export default function WorkoutFormTopBar({
 }: WorkoutFormTopBarProps): ReactElement {
 	return (
 		<div className="ios-safe-area-top relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen bg-sidebar dark:bg-sidebar glass:backdrop-blur-xs border-b">
-			<div className="max-w-5xl mx-auto px-4 flex flex-row justify-between items-center py-4">
+			<div className="max-w-5xl mx-auto px-4 flex flex-row justify-between items-center py-2">
 				<Button
 					variant="outline"
 					asChild
-					size="sm">
-					<WorkoutExitLink href={workoutId ? "/workouts" : "/"}>Back</WorkoutExitLink>
+					size="icon">
+					<WorkoutExitLink href={workoutId ? "/workouts" : "/"} />
 				</Button>
 				<WorkoutDuration initialDurationSeconds={initialDurationSeconds} />
 				<WorkoutNameDialog>
 					<Button
+						variant="ghost"
 						disabled={isSubmitting}
-						size="sm">
-						{isSubmitting ? "Saving" : "Finish"}
+						size="icon"
+						aria-label={isSubmitting ? "Saving" : "Finish"}>
+						{isSubmitting ? (
+							<IconLoader2 className="size-7 animate-spin text-primary" />
+						) : (
+							<IconCheck className="size-7 text-primary" />
+						)}
 					</Button>
 				</WorkoutNameDialog>
 			</div>

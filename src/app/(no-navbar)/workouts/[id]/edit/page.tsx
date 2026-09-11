@@ -7,5 +7,9 @@ interface EditWorkoutPageProps {
 export default async function EditWorkoutPage({ params }: EditWorkoutPageProps) {
 	const { id } = await params;
 
-	return <EditWorkoutLoader workoutId={id} />;
+	return (
+		<div className="create-workout-page page-slide-up flex min-h-0 flex-1 flex-col">
+			<EditWorkoutLoader workoutId={id} />
+		</div>
+	);
 }

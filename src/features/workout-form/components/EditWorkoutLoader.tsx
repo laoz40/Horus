@@ -5,8 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 
 import { workoutByIdQueryOptions } from "@/features/workout-form/lib/workoutByIdQuery";
 
+import PageLoadingSpinner from "@/components/PageLoadingSpinner";
+
 import WorkoutForm from "@/features/workout-form/components/WorkoutForm";
-import WorkoutFormPageSkeleton from "@/features/workout-form/components/WorkoutFormPageSkeleton";
 import WorkoutLoadError from "@/features/workout-form/components/WorkoutLoadError";
 
 interface EditWorkoutLoaderProps {
@@ -17,7 +18,7 @@ export default function EditWorkoutLoader({ workoutId }: EditWorkoutLoaderProps)
 	const workoutQuery = useQuery(workoutByIdQueryOptions(workoutId));
 
 	if (workoutQuery.isPending) {
-		return <WorkoutFormPageSkeleton />;
+		return <PageLoadingSpinner label="Loading workout" />;
 	}
 
 	if (workoutQuery.isError) {
