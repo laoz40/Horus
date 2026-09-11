@@ -3,10 +3,11 @@
 import { isDefinedError } from "@orpc/client";
 import { useQuery } from "@tanstack/react-query";
 
+import PageLoadingSpinner from "@/components/PageLoadingSpinner";
+
 import WorkoutLoadError from "@/features/workout-form/components/WorkoutLoadError";
 import { workoutByIdQueryOptions } from "@/features/workout-form/lib/workoutByIdQuery";
 import WorkoutView from "@/features/workout-view/components/WorkoutView";
-import WorkoutViewSkeleton from "@/features/workout-view/components/WorkoutViewSkeleton";
 
 interface ViewWorkoutLoaderProps {
 	workoutId: string;
@@ -16,7 +17,7 @@ export default function ViewWorkoutLoaderComponent({ workoutId }: ViewWorkoutLoa
 	const workoutQuery = useQuery(workoutByIdQueryOptions(workoutId));
 
 	if (workoutQuery.isPending) {
-		return <WorkoutViewSkeleton />;
+		return <PageLoadingSpinner label="Loading workout" />;
 	}
 
 	if (workoutQuery.isError) {

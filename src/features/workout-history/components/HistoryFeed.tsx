@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { orpc } from "@/lib/orpc/client";
 
+import PageLoadingSpinner from "@/components/PageLoadingSpinner";
+
 import HistoryList from "@/features/workout-history/components/HistoryList";
 import HistoryPagination from "@/features/workout-history/components/HistoryPagination";
-import { WorkoutCardSkeletonList } from "@/features/workout-history/components/HistoryWorkoutCardSkeleton";
 
 interface HistoryFeedProps {
 	WORKOUTS_PER_PAGE: number;
@@ -19,7 +20,12 @@ export default function HistoryFeed({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 	const { data: sessionData, isPending } = authClient.useSession();
 
 	if (isPending) {
-		return <WorkoutCardSkeletonList count={WORKOUTS_PER_PAGE} />;
+		return (
+			<PageLoadingSpinner
+				label="Loading workouts"
+				className="min-h-48"
+			/>
+		);
 	}
 
 	if (!sessionData) {
@@ -45,7 +51,12 @@ function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 	const workouts = historyQuery.data?.pages.flatMap((page) => page.items) ?? [];
 
 	if (isCreatingWorkout && !historyQuery.data) {
-		return <WorkoutCardSkeletonList count={WORKOUTS_PER_PAGE} />;
+		return (
+			<PageLoadingSpinner
+				label="Loading workouts"
+				className="min-h-48"
+			/>
+		);
 	}
 
 	return (
@@ -53,7 +64,6 @@ function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 			<HistoryList
 				workouts={workouts}
 				isLoading={historyQuery.isPending}
-				WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE}
 				isPrPending={isUpdatingWorkout}
 			/>
 			<HistoryPagination
