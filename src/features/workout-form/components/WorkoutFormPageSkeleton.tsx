@@ -1,6 +1,6 @@
 export default function WorkoutFormPageSkeleton() {
 	return (
-		<div className="create-workout-page page-slide-up flex flex-col h-dvh">
+		<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 			<div className="ios-safe-area-top relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen bg-sidebar dark:bg-sidebar border-b">
 				<div className="max-w-5xl mx-auto px-4 flex items-center justify-between py-2">
 					<div className="h-9 w-16 animate-pulse rounded-md bg-muted" />
