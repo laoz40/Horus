@@ -30,7 +30,7 @@ export default function WorkoutCardStats({
 				showBorderTop && "border-t pt-1",
 			)}>
 			{/* Workout Duration */}
-			<div className="flex items-center gap-1.5">
+			<div className="flex items-center gap-1">
 				<IconClockFilled className="size-4 shrink-0" />
 				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
 					{formatDurationSummary(duration)}
@@ -38,7 +38,7 @@ export default function WorkoutCardStats({
 			</div>
 
 			{/* Total volume lifted */}
-			<div className="flex items-center gap-1.5">
+			<div className="flex items-center gap-1">
 				<IconWeightFilled className="size-4 shrink-0" />
 				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
 					{displayWorkoutVolume} kg
@@ -46,7 +46,7 @@ export default function WorkoutCardStats({
 			</div>
 
 			{/* Number of exercises */}
-			<div className="flex items-center gap-1.5">
+			<div className="flex items-center gap-1">
 				<IconBarbellFilled className="size-4 shrink-0" />
 				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
 					{exerciseCount}
@@ -54,7 +54,7 @@ export default function WorkoutCardStats({
 			</div>
 
 			{/* PR Indicator — invisible placeholder keeps spacing when empty */}
-			<div className="flex items-center gap-1.5">
+			<div className="flex items-center gap-1">
 				{isPrPending ? (
 					<div
 						aria-hidden
@@ -62,7 +62,7 @@ export default function WorkoutCardStats({
 					/>
 				) : (
 					<div
-						className={cn("flex items-center gap-1.5", pr === 0 && "invisible")}
+						className={cn("flex items-center gap-1", pr === 0 && "invisible")}
 						aria-hidden={pr === 0}>
 						<IconTrophyFilled className="size-4 shrink-0 text-primary" />
 						<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none text-primary">
