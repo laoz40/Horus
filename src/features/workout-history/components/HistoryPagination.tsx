@@ -18,12 +18,8 @@ export default function HistoryPagination({
 	className,
 }: Readonly<HistoryPaginationProps>) {
 	const sentinelRef = useRef<HTMLDivElement>(null);
-	const onLoadMoreRef = useRef(onLoadMore);
-	const isLoadingRef = useRef(isLoading);
 
-	onLoadMoreRef.current = onLoadMore;
-	isLoadingRef.current = isLoading;
-
+	// Observe the bottom sentinel and fetch the next page when it nears the viewport.
 	useEffect(() => {
 		const sentinel = sentinelRef.current;
 
@@ -31,8 +27,8 @@ export default function HistoryPagination({
 
 		const observer = new IntersectionObserver(
 			(entries) => {
-				if (entries[0]?.isIntersecting && !isLoadingRef.current) {
-					onLoadMoreRef.current();
+				if (entries[0]?.isIntersecting && !isLoading) {
+					onLoadMore();
 				}
 			},
 			{ rootMargin: "200px" },
@@ -43,7 +39,7 @@ export default function HistoryPagination({
 		return () => {
 			observer.disconnect();
 		};
-	}, [hasNextPage, isLoading]);
+	}, [hasNextPage, isLoading, onLoadMore]);
 
 	if (!hasNextPage && !isLoading) return null;
 
