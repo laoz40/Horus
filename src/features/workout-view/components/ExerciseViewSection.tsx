@@ -54,7 +54,7 @@ export default function ExerciseViewSection({ exercise }: ExerciseViewSectionPro
 					return (
 						<div
 							key={set.id}
-							className="grid grid-cols-[2rem_1fr_1fr_2rem] items-center gap-2 border-t py-1 text-sm">
+							className="grid grid-cols-[2rem_1fr_1fr_2rem] items-center gap-2 border-t py-1 text-sm tabular-nums">
 							<span className="text-muted-foreground">{index + 1}</span>
 							<span className={cn(hasPr && "font-semibold")}>{set.weight ?? 0}</span>
 							<span className={cn(hasPr && "font-semibold")}>{set.reps ?? 0}</span>

@@ -11,6 +11,7 @@ interface WorkoutCardStatsProps {
 	exerciseCount: number;
 	isPrPending?: boolean;
 	showBorderTop?: boolean;
+	className?: string;
 }
 
 export default function WorkoutCardStats({
@@ -20,14 +21,16 @@ export default function WorkoutCardStats({
 	exerciseCount,
 	isPrPending = false,
 	showBorderTop = true,
+	className,
 }: WorkoutCardStatsProps): ReactElement {
 	const displayWorkoutVolume = Math.floor(workoutVolume);
 
 	return (
 		<div
 			className={cn(
-				"mt-2 flex items-center justify-between",
+				"mt-2 flex items-center justify-between tabular-nums",
 				showBorderTop && "border-t pt-1",
+				className,
 			)}>
 			{/* Workout Duration */}
 			<div className="flex items-center gap-1">
