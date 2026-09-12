@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, exists, inArray, sql } from "drizzle-orm";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import { db, type DatabaseTransaction } from "@/lib/db";
 import {
@@ -41,6 +41,46 @@ interface ExercisePrRow {
 	highestWeight: number;
 	highestVolume: number;
 	highestBodyweightReps: number;
+}
+
+export function listExerciseRowsByCategory(userId: string, normalizedMuscleNames: string[]) {
+	return tryPromise({
+		try: () =>
+			db
+				.select({
+					id: exercises.id,
+					name: exercises.name,
+					normalizedName: exercises.normalizedName,
+					muscleGroups: sql<string[]>`coalesce(
+						array_agg(${muscleGroups.name} order by ${muscleGroups.name})
+							filter (where ${muscleGroups.name} is not null),
+						array[]::text[]
+					)`,
+				})
+				.from(exercises)
+				.innerJoin(exerciseMuscleGroups, eq(exerciseMuscleGroups.exerciseId, exercises.id))
+				.innerJoin(muscleGroups, eq(muscleGroups.id, exerciseMuscleGroups.muscleGroupId))
+				.where(
+					and(
+						eq(exercises.userId, userId),
+						exists(
+							db
+								.select({ one: sql`1` })
+								.from(exerciseMuscleGroups)
+								.innerJoin(muscleGroups, eq(muscleGroups.id, exerciseMuscleGroups.muscleGroupId))
+								.where(
+									and(
+										eq(exerciseMuscleGroups.exerciseId, exercises.id),
+										inArray(muscleGroups.normalizedName, normalizedMuscleNames),
+									),
+								),
+						),
+					),
+				)
+				.groupBy(exercises.id)
+				.orderBy(asc(exercises.name)),
+		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	});
 }
 
 export function searchExerciseRows(userId: string, normalizedQuery: string) {

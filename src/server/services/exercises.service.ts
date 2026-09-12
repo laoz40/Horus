@@ -1,9 +1,14 @@
 import "server-only";
 
+import {
+	getNormalizedMuscleNamesForCategory,
+	type MuscleGroupCategory,
+} from "@/features/workout-form/lib/muscleGroupCategories";
 import { normalizeName } from "@/lib/normalizeName";
 import {
 	getExercisePrRows,
 	getRecentSetRows,
+	listExerciseRowsByCategory,
 	searchExerciseRows,
 } from "@/server/services/exercises.db";
 import { buildRecentSets, checkCompletedSetPr } from "@/server/services/exercises.functions";
@@ -13,6 +18,12 @@ export function searchExercises(userId: string, query: string) {
 	const normalizedQuery = normalizeName(query);
 
 	return searchExerciseRows(userId, normalizedQuery);
+}
+
+export function listExercisesByCategory(userId: string, category: MuscleGroupCategory) {
+	const normalizedMuscleNames = getNormalizedMuscleNamesForCategory(category);
+
+	return listExerciseRowsByCategory(userId, normalizedMuscleNames);
 }
 
 export function getRecentSets(userId: string, exerciseName: string) {

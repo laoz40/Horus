@@ -15,7 +15,7 @@ import { expect, test } from "@playwright/test";
 import { z } from "zod";
 
 import { E2E_USER_ID, sql } from "./utils/db";
-import { addCompletedBenchSet, saveWorkout } from "./utils/workout-form";
+import { addCompletedBenchSet, saveWorkout, selectExercise } from "./utils/workout-form";
 
 const WORKOUT_NAME = "E2E Bench Day";
 
@@ -51,8 +51,7 @@ test("create and save a workout persists it", async ({ page }) => {
 
 test("submitting without weight and reps stays on the form", async ({ page }) => {
 	await page.goto("/workouts/new");
-	await page.getByPlaceholder("Enter an exercise...").fill("Bench Press");
-	await page.getByRole("option", { name: "Bench Press", exact: true }).click();
+	await selectExercise(page, "Bench Press");
 
 	await page.getByRole("button", { name: "Finish" }).click();
 	await page.getByRole("textbox", { name: "Enter workout name" }).fill("E2E Invalid Workout");

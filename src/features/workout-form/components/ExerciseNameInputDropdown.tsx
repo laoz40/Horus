@@ -2,9 +2,12 @@ import { useId, useRef, useState } from "react";
 import type { MouseEvent, PointerEvent, TouchEvent } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
+import { IconSearch } from "@tabler/icons-react";
+
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { useExerciseSuggestions } from "@/features/workout-form/hooks/useExerciseSuggestions";
 import { useSuggestionListTouchScroll } from "@/features/workout-form/hooks/useSuggestionListTouchScroll";
+import { applyPickedExercise } from "@/features/workout-form/lib/selectExercise";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 // Keep the input focused when the mouse is used on the dropdown options.
@@ -47,17 +50,19 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 				};
 
 				const selectExercise = (exerciseName: string) => {
-					field.onChange(exerciseName);
-					clearExerciseIdentity();
-
 					const match = suggestions.find((exercise) => exercise.name === exerciseName);
-					setValue(`exercises.${exerciseIndex}.global.muscleGroups`, match?.muscleGroups ?? []);
-					setIsOpen(false);
 
-					// Focus weight so the user can type immediately after picking an exercise.
-					// The timeout defers one tick: the weight input is only rendered by the name
-					// change above, so it does not exist to focus until this handler has finished.
-					setTimeout(() => setFocus(`exercises.${exerciseIndex}.sets.0.weight`), 0);
+					applyPickedExercise({
+						exerciseIndex,
+						setName: field.onChange,
+						setValue,
+						setFocus,
+						exercise: {
+							name: exerciseName,
+							muscleGroups: match?.muscleGroups,
+						},
+					});
+					setIsOpen(false);
 				};
 
 				const handleOptionTouchEnd = (
@@ -102,16 +107,19 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 					void fetchMoreSuggestions();
 				};
 
+				const isEmpty = !query.trim();
+
 				return (
 					<div className="relative">
 						<InputGroup className="h-11 rounded-none border-x-0 border-t-0 border-b border-transparent bg-transparent! shadow-none has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-0">
 							<InputGroupInput
-								placeholder="Enter an exercise..."
-								className="px-0 font-semibold shadow-none"
+								placeholder="Search an exercise..."
+								className="px-0 font-semibold shadow-none placeholder:opacity-0"
 								maxLength={64}
 								value={query}
 								autoComplete="off"
 								role="combobox"
+								aria-label="Exercise name"
 								aria-expanded={shouldShowSuggestions}
 								aria-controls={listboxId}
 								onChange={(e) => {
@@ -133,6 +141,16 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 								}}
 							/>
 						</InputGroup>
+
+						{/* overlays placeholder on input so the search icon to disappear as well */}
+						{isEmpty && (
+							<div
+								className="pointer-events-none absolute inset-y-0 left-0 flex items-center gap-2 text-muted-foreground"
+								aria-hidden="true">
+								<IconSearch className="size-5 shrink-0" />
+								<span className="text-xl font-semibold">Search an exercise...</span>
+							</div>
+						)}
 
 						{shouldShowSuggestions && (
 							<div className="isolate absolute top-full left-0 z-50 mt-1.5 w-full">

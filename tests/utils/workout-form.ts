@@ -1,14 +1,17 @@
 import { expect, type Page } from "@playwright/test";
 
+export async function selectExercise(page: Page, name: string): Promise<void> {
+	// Exercise combobox: type to search, wait for the debounced query, pick the exact
+	// option (partial match also hits "Dumbbell Bench Press" etc.).
+	await page.getByRole("combobox", { name: "Exercise name" }).fill(name);
+	await page.getByRole("option", { name, exact: true }).click();
+}
+
 // Adds one Bench Press exercise with a single logged+completed set on /workouts/new —
 // the shared happy-path prefix for the create/edit/history flows.
 export async function addCompletedBenchSet(page: Page): Promise<void> {
 	await page.goto("/workouts/new");
-
-	// Exercise combobox: type to search, wait for the debounced query, pick the exact
-	// option (partial match also hits "Dumbbell Bench Press" etc.).
-	await page.getByPlaceholder("Enter an exercise...").fill("Bench Press");
-	await page.getByRole("option", { name: "Bench Press", exact: true }).click();
+	await selectExercise(page, "Bench Press");
 
 	await page.getByPlaceholder("kg").first().fill("60");
 	await page.getByPlaceholder("reps").first().fill("8");

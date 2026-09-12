@@ -11,6 +11,7 @@ import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { createDefaultSet } from "@/features/workout-form/lib/WorkoutFormDefaults";
 import ExerciseCollapsibles from "@/features/workout-form/components/ExerciseCollapsibles";
 import { ExerciseNameInputDropdown } from "@/features/workout-form/components/ExerciseNameInputDropdown";
+import { MuscleGroupExercisePicker } from "@/features/workout-form/components/MuscleGroupExercisePicker";
 import SetRow from "@/features/workout-form/components/SetRow";
 
 interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -95,6 +96,12 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 					</div>
 					{nameError && <span className="text-red-500 text-sm">{nameError.message}</span>}
 				</div>
+
+				{!hasExerciseName && (
+					<div className="flex min-h-0 flex-1 flex-col">
+						<MuscleGroupExercisePicker exerciseIndex={exerciseIndex} />
+					</div>
+				)}
 
 				{hasExerciseName && (
 					<div className="flex min-h-0 flex-1 flex-col gap-2">
