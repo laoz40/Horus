@@ -100,7 +100,7 @@ function validateSetCompletion({
 
 interface ApplySetCompletedChangeParams extends ValidateSetCompletionParams {
 	value: boolean | "indeterminate";
-	field: ControllerRenderProps<Workout, CompletedFieldName>["field"];
+	field: ControllerRenderProps<Workout, CompletedFieldName>;
 	exerciseNameFieldName: ExerciseNameFieldName;
 	checkSetPr: (input: {
 		exerciseName: string;
