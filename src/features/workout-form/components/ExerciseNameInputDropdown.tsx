@@ -119,6 +119,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 								value={query}
 								autoComplete="off"
 								role="combobox"
+								aria-label="Exercise name"
 								aria-expanded={shouldShowSuggestions}
 								aria-controls={listboxId}
 								onChange={(e) => {
