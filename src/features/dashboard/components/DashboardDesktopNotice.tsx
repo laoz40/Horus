@@ -4,7 +4,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function DashboardDesktopNotice() {
 	return (
-		<Alert className="hidden border-muted-foreground/20 bg-muted/50 md:block">
+		<Alert className="hidden border-muted-foreground/20 bg-muted/50 min-[1366px]:block">
 			<AlertDescription>
 				<IconAlertCircle className="size-7" />
 				<p className="text-foreground">
