@@ -1,8 +1,14 @@
 import "server-only";
 
 import { z } from "zod";
+import { MUSCLE_GROUP_CATEGORIES } from "@/features/workout-form/lib/muscleGroupCategories";
 import { protectedProcedure } from "@/server/procedures";
-import { checkSetPr, getRecentSets, searchExercises } from "@/server/services/exercises.service";
+import {
+	checkSetPr,
+	getRecentSets,
+	listExercisesByCategory,
+	searchExercises,
+} from "@/server/services/exercises.service";
 
 const databaseError = {
 	DATABASE_ERROR: {
@@ -90,6 +96,43 @@ export const exercisesRouter = {
 					switch (reason) {
 						case "DATABASE_ERROR":
 							console.error("Failed to search exercises", { cause: error.cause });
+							throw errors.DATABASE_ERROR();
+						default: {
+							const exhaustiveReason: never = reason;
+							throw exhaustiveReason;
+						}
+					}
+				},
+			);
+		}),
+	listByCategory: protectedProcedure
+		.errors(databaseError)
+		.input(
+			z.object({
+				category: z.enum(MUSCLE_GROUP_CATEGORIES),
+			}),
+		)
+		.output(
+			z.array(
+				z.object({
+					id: z.uuid(),
+					name: z.string(),
+					normalizedName: z.string(),
+					muscleGroups: z.array(z.string()),
+				}),
+			),
+		)
+		.handler(async ({ input, context, errors }) => {
+			const result = await listExercisesByCategory(context.userId, input.category);
+
+			return result.match(
+				(value) => value,
+				(error) => {
+					const reason = error.reason;
+
+					switch (reason) {
+						case "DATABASE_ERROR":
+							console.error("Failed to list exercises by category", { cause: error.cause });
 							throw errors.DATABASE_ERROR();
 						default: {
 							const exhaustiveReason: never = reason;

@@ -11,7 +11,7 @@ export const MUSCLE_GROUP_CATEGORIES = [
 
 export type MuscleGroupCategory = (typeof MUSCLE_GROUP_CATEGORIES)[number];
 
-export const RAW_MUSCLE_TO_CATEGORY = {
+const RAW_MUSCLE_TO_CATEGORY = {
 	chest: "chest",
 	"upper chest": "chest",
 	lats: "back",
