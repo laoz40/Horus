@@ -2,6 +2,8 @@ import { useId, useRef, useState } from "react";
 import type { MouseEvent, PointerEvent, TouchEvent } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
+import { IconSearch } from "@tabler/icons-react";
+
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { useExerciseSuggestions } from "@/features/workout-form/hooks/useExerciseSuggestions";
 import { useSuggestionListTouchScroll } from "@/features/workout-form/hooks/useSuggestionListTouchScroll";
@@ -102,12 +104,14 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 					void fetchMoreSuggestions();
 				};
 
+				const isEmpty = !query.trim();
+
 				return (
 					<div className="relative">
 						<InputGroup className="h-11 rounded-none border-x-0 border-t-0 border-b border-transparent bg-transparent! shadow-none has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-0">
 							<InputGroupInput
-								placeholder="Enter an exercise..."
-								className="px-0 font-semibold shadow-none"
+								placeholder="Search an exercise..."
+								className="px-0 font-semibold shadow-none placeholder:opacity-0"
 								maxLength={64}
 								value={query}
 								autoComplete="off"
@@ -133,6 +137,16 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 								}}
 							/>
 						</InputGroup>
+
+						{/* overlays placeholder on input so the search icon to disappear as well */}
+						{isEmpty && (
+							<div
+								className="pointer-events-none absolute inset-y-0 left-0 flex items-center gap-2 text-muted-foreground"
+								aria-hidden="true">
+								<IconSearch className="size-5 shrink-0" />
+								<span className="text-xl font-semibold">Search an exercise...</span>
+							</div>
+						)}
 
 						{shouldShowSuggestions && (
 							<div className="isolate absolute top-full left-0 z-50 mt-1.5 w-full">
