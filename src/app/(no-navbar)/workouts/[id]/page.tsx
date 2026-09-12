@@ -8,7 +8,7 @@ export default async function ViewWorkoutPage({ params }: ViewWorkoutPageProps) 
 	const { id } = await params;
 
 	return (
-		<div className="create-workout-page page-slide-up flex min-h-0 flex-1 flex-col">
+		<div className="flex min-h-0 flex-1 flex-col">
 			<ViewWorkoutLoader workoutId={id} />
 		</div>
 	);
