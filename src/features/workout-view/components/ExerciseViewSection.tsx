@@ -4,7 +4,7 @@ import { IconNotes, IconTrophyFilled } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import type { Exercise } from "@/features/workout-form/lib/validateWorkout";
 import { setPrLabels } from "@/features/workout-form/lib/setPr";
-import DetailHoverCard from "@/features/workout-view/components/DetailHoverCard";
+import DetailPopover from "@/features/workout-view/components/DetailPopover";
 import DifficultyBadge from "@/features/workout-view/components/DifficultyBadge";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +24,7 @@ export default function ExerciseViewSection({ exercise }: ExerciseViewSectionPro
 					<DifficultyBadge difficulty={exercise.difficulty} />
 				</div>
 				{notes.length > 0 ? (
-					<DetailHoverCard
+					<DetailPopover
 						trigger={
 							<Button
 								type="button"
@@ -36,7 +36,7 @@ export default function ExerciseViewSection({ exercise }: ExerciseViewSectionPro
 							</Button>
 						}>
 						<p className="whitespace-pre-wrap">{notes}</p>
-					</DetailHoverCard>
+					</DetailPopover>
 				) : null}
 			</div>
 
@@ -60,7 +60,7 @@ export default function ExerciseViewSection({ exercise }: ExerciseViewSectionPro
 							<span className={cn(hasPr && "font-semibold")}>{set.reps ?? 0}</span>
 							<div className="flex justify-end">
 								{hasPr ? (
-									<DetailHoverCard
+									<DetailPopover
 										trigger={
 											<Button
 												type="button"
@@ -76,7 +76,7 @@ export default function ExerciseViewSection({ exercise }: ExerciseViewSectionPro
 												<li key={prType}>{setPrLabels[prType]}</li>
 											))}
 										</ul>
-									</DetailHoverCard>
+									</DetailPopover>
 								) : null}
 							</div>
 						</div>
