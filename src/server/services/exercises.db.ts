@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, exists, inArray, sql } from "drizzle-orm";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import { db, type DatabaseTransaction } from "@/lib/db";
 import {
@@ -63,7 +63,18 @@ export function listExerciseRowsByCategory(userId: string, normalizedMuscleNames
 				.where(
 					and(
 						eq(exercises.userId, userId),
-						inArray(muscleGroups.normalizedName, normalizedMuscleNames),
+						exists(
+							db
+								.select({ one: sql`1` })
+								.from(exerciseMuscleGroups)
+								.innerJoin(muscleGroups, eq(muscleGroups.id, exerciseMuscleGroups.muscleGroupId))
+								.where(
+									and(
+										eq(exerciseMuscleGroups.exerciseId, exercises.id),
+										inArray(muscleGroups.normalizedName, normalizedMuscleNames),
+									),
+								),
+						),
 					),
 				)
 				.groupBy(exercises.id)
