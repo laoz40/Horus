@@ -3,9 +3,9 @@ import { normalizeName } from "@/lib/normalizeName";
 export const MUSCLE_GROUP_CATEGORIES = [
 	"chest",
 	"back",
-	"legs",
-	"shoulders",
 	"arms",
+	"shoulders",
+	"legs",
 	"core",
 ] as const;
 
