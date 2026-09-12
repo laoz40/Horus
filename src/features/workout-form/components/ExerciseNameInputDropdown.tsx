@@ -7,6 +7,7 @@ import { IconSearch } from "@tabler/icons-react";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { useExerciseSuggestions } from "@/features/workout-form/hooks/useExerciseSuggestions";
 import { useSuggestionListTouchScroll } from "@/features/workout-form/hooks/useSuggestionListTouchScroll";
+import { applyPickedExercise } from "@/features/workout-form/lib/selectExercise";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 // Keep the input focused when the mouse is used on the dropdown options.
@@ -49,17 +50,19 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 				};
 
 				const selectExercise = (exerciseName: string) => {
-					field.onChange(exerciseName);
-					clearExerciseIdentity();
-
 					const match = suggestions.find((exercise) => exercise.name === exerciseName);
-					setValue(`exercises.${exerciseIndex}.global.muscleGroups`, match?.muscleGroups ?? []);
-					setIsOpen(false);
 
-					// Focus weight so the user can type immediately after picking an exercise.
-					// The timeout defers one tick: the weight input is only rendered by the name
-					// change above, so it does not exist to focus until this handler has finished.
-					setTimeout(() => setFocus(`exercises.${exerciseIndex}.sets.0.weight`), 0);
+					applyPickedExercise({
+						exerciseIndex,
+						setName: field.onChange,
+						setValue,
+						setFocus,
+						exercise: {
+							name: exerciseName,
+							muscleGroups: match?.muscleGroups,
+						},
+					});
+					setIsOpen(false);
 				};
 
 				const handleOptionTouchEnd = (

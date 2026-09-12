@@ -1,33 +1,39 @@
 "use client";
 
-import { IconChevronLeft } from "@tabler/icons-react";
-import { useMemo, useState } from "react";
+import { IconChevronLeft, IconLoader2 } from "@tabler/icons-react";
+import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
-import { DEFAULT_EXERCISES } from "@/features/workout-form/lib/defaultExercises";
+import { useExercisesByCategory } from "@/features/workout-form/hooks/useExercisesByCategory";
 import {
 	CATEGORY_LABELS,
-	getCategoryForMuscleName,
 	MUSCLE_GROUP_CATEGORIES,
 	type MuscleGroupCategory,
 } from "@/features/workout-form/lib/muscleGroupCategories";
+import { applyPickedExercise } from "@/features/workout-form/lib/selectExercise";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
-
-function getDefaultExercisesForCategory(category: MuscleGroupCategory) {
-	return DEFAULT_EXERCISES.filter((exercise) =>
-		exercise.muscleGroups.some((muscleName) => getCategoryForMuscleName(muscleName) === category),
-	).toSorted((left, right) => left.name.localeCompare(right.name));
-}
 
 function ExerciseCategoryList({
 	category,
 	onSelect,
 }: {
 	category: MuscleGroupCategory;
-	onSelect: (exercise: { name: string; muscleGroups: string[] }) => void;
+	onSelect: (exercise: { name: string; muscleGroups?: string[] }) => void;
 }) {
-	const exercises = useMemo(() => getDefaultExercisesForCategory(category), [category]);
+	const { exercises, isLoading } = useExercisesByCategory(category);
+
+	if (isLoading && exercises.length === 0) {
+		return (
+			<div className="flex items-center gap-2 px-2 text-muted-foreground text-sm">
+				<IconLoader2
+					className="size-4 animate-spin"
+					aria-label="Loading exercises"
+				/>
+				Loading
+			</div>
+		);
+	}
 
 	if (exercises.length === 0) {
 		return <p className="px-2 text-muted-foreground text-sm">No exercises in this category.</p>;
@@ -36,7 +42,7 @@ function ExerciseCategoryList({
 	return (
 		<ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain">
 			{exercises.map((exercise) => (
-				<li key={exercise.id}>
+				<li key={exercise.normalizedName}>
 					<Button
 						type="button"
 						variant="outline"
@@ -59,13 +65,15 @@ export function MuscleGroupExercisePicker({ exerciseIndex }: { exerciseIndex: nu
 	const { setValue, setFocus } = useFormContext<Workout>();
 	const [selectedCategory, setSelectedCategory] = useState<MuscleGroupCategory | null>(null);
 
-	const handleSelectExercise = (exercise: { name: string; muscleGroups: string[] }) => {
-		setValue(`exercises.${exerciseIndex}.global.name`, exercise.name);
-		setValue(`exercises.${exerciseIndex}.exerciseId`, undefined);
-		setValue(`exercises.${exerciseIndex}.global.muscleGroups`, exercise.muscleGroups);
+	const handleSelectExercise = (exercise: { name: string; muscleGroups?: string[] }) => {
+		applyPickedExercise({
+			exerciseIndex,
+			setName: (name) => setValue(`exercises.${exerciseIndex}.global.name`, name),
+			setValue,
+			setFocus,
+			exercise,
+		});
 		setSelectedCategory(null);
-
-		setTimeout(() => setFocus(`exercises.${exerciseIndex}.sets.0.weight`), 0);
 	};
 
 	if (selectedCategory === null) {
