@@ -2,6 +2,7 @@
 
 import { type ReactElement } from "react";
 import DashboardAccountButton from "@/features/auth/components/DashboardAccountButton";
+import DashboardDesktopNotice from "@/features/dashboard/components/DashboardDesktopNotice";
 import DashboardPresetsSection from "@/features/dashboard/components/DashboardPresetsSection";
 import DashboardStartSection from "@/features/dashboard/components/DashboardStartSection";
 import DashboardYearInTrainingSection from "@/features/dashboard/components/DashboardYearInTrainingSection";
@@ -40,6 +41,9 @@ export default function DashboardPage(): ReactElement {
 				)}
 			</div>
 
+			<div className="px-4">
+				<DashboardDesktopNotice />
+			</div>
 			<ErrorBoundary>
 				<DashboardStartSection />
 			</ErrorBoundary>
