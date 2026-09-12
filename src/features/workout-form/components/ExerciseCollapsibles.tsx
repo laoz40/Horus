@@ -23,7 +23,7 @@ const ExerciseCollapsibles = ({ exerciseIndex }: ExerciseCollapsiblesProps) => {
 
 function DifficultySlider({ exerciseIndex }: ExerciseCollapsiblesProps) {
 	// Justify-between spreads the three labels the same way the old spacer-padded row did.
-	const difficultyOptions = ["Too Easy", "Standard", "Nightmare"];
+	const difficultyOptions = ["Too Easy", "Average", "Nightmare"];
 
 	const initDifficultyValue = (openState: boolean) => {
 		const currentValue = getValues(`exercises.${exerciseIndex}.difficulty`);

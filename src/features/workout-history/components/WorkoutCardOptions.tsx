@@ -12,7 +12,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { IconDotsVertical } from "@tabler/icons-react";
+import { IconDotsVertical, IconEdit, IconShare, IconTrash } from "@tabler/icons-react";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { Button } from "@/components/ui/button";
 import { markWorkoutDeleted } from "@/features/workout-history/stores/historyUiStore";
@@ -77,11 +77,11 @@ export default function WorkoutCardOptions({
 					<Button
 						variant="ghost"
 						size="icon-sm"
-						className="mt-0.5 border border-transparent text-muted-foreground transition-colors hover:border-border/70 hover:text-foreground"
+						className="mt-0.5 justify-end items-start border border-transparent text-muted-foreground transition-colors hover:border-border/70 hover:text-foreground"
 						aria-label="Workout options"
 						onClick={(event) => event.stopPropagation()}
 						onPointerDown={(event) => event.stopPropagation()}>
-						<IconDotsVertical className="size-5" />
+						<IconDotsVertical className="size-4" />
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
@@ -90,11 +90,17 @@ export default function WorkoutCardOptions({
 					<DropdownMenuGroup>
 						<DropdownMenuItem
 							asChild
-							className="h-10">
-							<Link href={`/workouts/${workoutId}/edit`}>Edit</Link>
+							className="h-10 gap-1">
+							<Link href={`/workouts/${workoutId}/edit`}>
+								<IconEdit className="size-4" />
+								Edit
+							</Link>
 						</DropdownMenuItem>
 
-						<DropdownMenuItem className="h-10">Share</DropdownMenuItem>
+						<DropdownMenuItem className="h-10 gap-1">
+							<IconShare className="size-4" />
+							Share
+						</DropdownMenuItem>
 
 						<DropdownMenuSeparator />
 
@@ -103,9 +109,10 @@ export default function WorkoutCardOptions({
 							description={`This will permanently delete workout: ${workoutName}`}
 							handleDelete={() => deleteWorkout.mutate({ workoutId })}>
 							<DropdownMenuItem
-								className="h-10"
+								className="h-10 gap-1"
 								variant="destructive"
 								onSelect={(e) => e.preventDefault()}>
+								<IconTrash className="size-4" />
 								Delete
 							</DropdownMenuItem>
 						</AlertDialogDestructive>
