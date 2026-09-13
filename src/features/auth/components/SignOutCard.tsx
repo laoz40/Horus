@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { SettingsCard, type SettingsCardClassNames } from "@daveyplate/better-auth-ui";
 
 import { authClient } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 interface SignOutCardProps {
 	className?: string;
@@ -34,7 +35,13 @@ export default function SignOutCard({ className, classNames }: SignOutCardProps)
 	return (
 		<SettingsCard
 			className={className}
-			classNames={classNames}
+			classNames={{
+				...classNames,
+				button: cn(
+					"bg-secondary text-secondary-foreground hover:bg-secondary/80",
+					classNames?.button,
+				),
+			}}
 			actionLabel="Sign out"
 			description="End this session on this device."
 			isSubmitting={isSigningOut}
