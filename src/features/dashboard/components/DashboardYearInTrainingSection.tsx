@@ -2,6 +2,7 @@
 
 import CalendarHeatmap from "react-calendar-heatmap";
 import { useQuery } from "@tanstack/react-query";
+import { IconLoader2 } from "@tabler/icons-react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { orpc } from "@/lib/orpc/client";
 
@@ -108,38 +109,14 @@ function YearInTrainingShell({ year, children }: { year: number; children: React
 	);
 }
 
-const heatmapWeekCount = 53;
-const heatmapDayCount = 7;
-const heatmapMonthLabelWidths = ["w-5", "w-4", "w-5", "w-4", "w-5", "w-4", "w-5", "w-5", "w-4", "w-5", "w-4", "w-5"];
-
 function YearInTrainingLoading({ year }: { year: number }) {
 	return (
 		<YearInTrainingShell year={year}>
-			<div className="rounded-lg border bg-card p-3 shadow-sm">
-				<div className="overflow-x-auto pb-1">
-					<div className="mb-2 flex gap-10">
-						{heatmapMonthLabelWidths.map((width, index) => (
-							<div
-								key={index}
-								className={`h-2.5 ${width} animate-pulse rounded-sm bg-muted`}
-							/>
-						))}
-					</div>
-					<div className="flex gap-0.5">
-						{Array.from({ length: heatmapWeekCount }, (_, weekIndex) => (
-							<div
-								key={weekIndex}
-								className="flex flex-col gap-0.5">
-								{Array.from({ length: heatmapDayCount }, (_, dayIndex) => (
-									<div
-										key={dayIndex}
-										className="size-2.5 animate-pulse rounded-sm bg-muted"
-									/>
-								))}
-							</div>
-						))}
-					</div>
-				</div>
+			<div className="flex min-h-28 items-center justify-center rounded-lg border bg-card p-3 text-muted-foreground shadow-sm md:min-h-36">
+				<IconLoader2
+					className="size-5 animate-spin"
+					aria-label="Loading year in training"
+				/>
 			</div>
 		</YearInTrainingShell>
 	);
