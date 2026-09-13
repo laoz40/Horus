@@ -78,14 +78,14 @@ export function MuscleGroupExercisePicker({ exerciseIndex }: { exerciseIndex: nu
 
 	if (selectedCategory === null) {
 		return (
-			<div className="flex min-h-0 flex-1 flex-col justify-start">
-				<div className="grid grid-cols-2 gap-2">
+			<div className="flex min-h-0 flex-1 flex-col">
+				<div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-3 gap-2">
 					{MUSCLE_GROUP_CATEGORIES.map((category) => (
 						<Button
 							key={category}
 							type="button"
 							variant="outline"
-							className="aspect-square h-auto w-full text-xl font-semibold"
+							className="h-full min-h-11 w-full text-xl font-semibold"
 							onClick={() => setSelectedCategory(category)}>
 							{CATEGORY_LABELS[category]}
 						</Button>
