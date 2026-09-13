@@ -26,10 +26,10 @@ interface RecentSetsDialogProps {
 function SetSkeletonRow() {
 	return (
 		<div className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 border-b py-2 last:border-b-0">
-			<div className="bg-muted h-4 w-8 animate-pulse" />
-			<div className="bg-muted h-4 w-8 animate-pulse" />
+			<div className="h-4 w-8 animate-pulse rounded-sm bg-muted" />
+			<div className="h-4 w-8 animate-pulse rounded-sm bg-muted" />
 			<div />
-			<div className="ml-auto bg-muted h-4 w-24 animate-pulse" />
+			<div className="ml-auto h-4 w-24 animate-pulse rounded-sm bg-muted" />
 		</div>
 	);
 }

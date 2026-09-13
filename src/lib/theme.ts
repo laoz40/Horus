@@ -5,11 +5,11 @@ import type { ThemeProviderProps } from "next-themes";
 export const themeProviderProps = {
 	attribute: "class",
 	defaultTheme: "system",
-	themes: ["light", "dark", "glass"],
+	themes: ["light", "dark", "black"],
 	value: {
 		light: "light",
 		dark: "dark",
-		glass: "glass",
+		black: "black",
 	},
 	enableSystem: true,
 	disableTransitionOnChange: true,

@@ -48,7 +48,7 @@ function DashboardYearInTraining({
 	if (statsQuery.isError) {
 		return (
 			<YearInTrainingShell year={year}>
-				<div className="border bg-card p-3 text-card-foreground shadow-sm">
+				<div className="border bg-card p-3 rounded-lg text-card-foreground shadow-sm">
 					<p className="py-8 text-center text-sm text-destructive">
 						Failed to load year in training data.
 					</p>
@@ -62,7 +62,7 @@ function DashboardYearInTraining({
 
 	return (
 		<YearInTrainingShell year={year}>
-			<div className="border bg-card p-3 text-card-foreground shadow-sm">
+			<div className="border bg-card p-3 rounded-lg text-card-foreground shadow-sm">
 				{values.length === 0 ? (
 					<p className="py-8 text-center text-sm text-muted-foreground">{emptyText}</p>
 				) : (
@@ -112,7 +112,7 @@ function YearInTrainingShell({ year, children }: { year: number; children: React
 function YearInTrainingLoading({ year }: { year: number }) {
 	return (
 		<YearInTrainingShell year={year}>
-			<div className="flex min-h-28 items-center justify-center border bg-card p-3 text-muted-foreground shadow-sm md:min-h-36">
+			<div className="flex min-h-28 items-center justify-center rounded-lg border bg-card p-3 text-muted-foreground shadow-sm md:min-h-36">
 				<IconLoader2
 					className="size-5 animate-spin"
 					aria-label="Loading year in training"

@@ -16,7 +16,7 @@ export default function SettingsDataSection() {
 					<h2 className="text-muted-foreground mb-1 text-sm">Data</h2>
 					<div className="p-2 border rounded-md bg-card">
 						<div className="flex items-center justify-between">
-							<div className="h-5 w-16 animate-pulse rounded bg-muted" />
+							<div className="h-5 w-16 animate-pulse rounded-sm bg-muted" />
 							<div className="h-9 w-36 animate-pulse rounded-md bg-muted" />
 						</div>
 					</div>

@@ -3,8 +3,8 @@ export default function DashboardLoading() {
 		<div className="flex flex-col gap-3 pt-2 pb-5 animate-pulse">
 			<div className="flex flex-row items-start justify-between px-4 pt-2">
 				<div className="flex flex-col gap-2">
-					<div className="h-4 w-24 rounded bg-muted" />
-					<div className="h-8 w-40 rounded bg-muted" />
+					<div className="h-4 w-24 rounded-sm bg-muted" />
+					<div className="h-8 w-40 rounded-sm bg-muted" />
 				</div>
 				<div className="size-10 rounded-full bg-muted" />
 			</div>

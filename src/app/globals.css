@@ -3,8 +3,7 @@
 @import "@daveyplate/better-auth-ui/css";
 @import "react-calendar-heatmap/dist/styles.css";
 
-@custom-variant dark (&:is(.dark *, .glass *));
-@custom-variant glass (&:is(.glass *));
+@custom-variant dark (&:is(.dark *, .black *));
 
 :root {
 	--background: oklch(0.9674 0.0013 286.3752);
@@ -43,7 +42,7 @@
 	--font-sans: Oxanium, ui-serif, serif;
 	--font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 	--font-mono: monospace;
-	--radius: 0rem;
+	--radius: 0.75rem;
 	--shadow-x: 0;
 	--shadow-y: 1px;
 	--shadow-blur: 1.5px;
@@ -73,8 +72,7 @@
 }
 
 .dark,
-.glass {
-	--background: oklch(0.1822 0 0);
+.black {
 	--foreground: oklch(0.9851 0 0);
 	--card: oklch(0.2046 0 0);
 	--card-foreground: oklch(0.9851 0 0);
@@ -82,7 +80,7 @@
 	--popover-foreground: oklch(0.7348 0 0);
 	--primary: oklch(0.8539 0.1375 181.5707);
 	--primary-foreground: oklch(0.1448 0 0);
-	--secondary: oklch(0.2603 0 0);
+	--secondary: var(--card);
 	--secondary-foreground: oklch(0.9851 0 0);
 	--muted: oklch(0.2739 0.0055 286.0326);
 	--muted-foreground: oklch(0.6492 0.027 265.4913);
@@ -91,7 +89,7 @@
 	--destructive: oklch(0.6435 0.2452 16.501);
 	--destructive-foreground: oklch(0.9368 0.0045 34.3092);
 	--border: oklch(0.329 0 0);
-	--input: oklch(0.2603 0 0);
+	--input: var(--card);
 	--ring: oklch(0.8539 0.1375 181.5707);
 	--chart-1: oklch(0.36 0.045 181.5707);
 	--chart-2: oklch(0.48 0.075 181.5707);
@@ -99,7 +97,6 @@
 	--chart-4: oklch(0.73 0.125 181.5707);
 	--chart-5: oklch(0.8539 0.1375 181.5707);
 	--challenging: oklch(0.78 0.14 52);
-	--sidebar: oklch(0.1822 0 0);
 	--sidebar-foreground: oklch(0.6301 0 0);
 	--sidebar-primary: oklch(0.783 0.1408 181.3751);
 	--sidebar-primary-foreground: oklch(0.9213 0.0135 167.1556);
@@ -118,18 +115,15 @@
 	--shadow-2xl: 0 1px 1.5px 1px hsl(0 0% 0% / 0.22);
 }
 
-.glass {
-	--background: oklch(0.1822 0 0 / 0.95);
-	--card: oklch(0.2603 0 0 / 0.5);
-	--popover: oklch(0.2046 0 0 / 1);
-	--secondary: oklch(0.2603 0 0 / 0.5);
-	--muted: oklch(0.2739 0.0055 286.0326 / 0.28);
-	--accent: oklch(0.2739 0.0055 286.0326 / 0.95);
-	--border: oklch(0.329 0 0 / 1);
-	--input: oklch(0.2603 0 0 / 0.6);
-	--sidebar: oklch(0.1822 0 0 / 0.5);
-	--sidebar-accent: oklch(0.3132 0 0 / 0.3);
-	--sidebar-border: oklch(0.2809 0 0 / 0.6);
+.dark {
+	--background: oklch(0.1822 0 0);
+	--sidebar: oklch(0.1822 0 0);
+}
+
+.black {
+	--background: oklch(0 0 0);
+	--sidebar: oklch(0 0 0);
+	--card: oklch(0.14 0 0);
 }
 
 @theme inline {

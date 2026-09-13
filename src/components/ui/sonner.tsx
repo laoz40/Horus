@@ -10,9 +10,9 @@ import {
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 
-// The app's "glass" theme has no sonner equivalent, so it falls back to dark.
+// The app's "black" theme has no sonner equivalent, so it falls back to dark.
 const resolveToasterTheme = (theme: string): ToasterProps["theme"] => {
-  if (theme === "glass") return "dark"
+  if (theme === "black") return "dark"
 
   if (theme === "light" || theme === "dark" || theme === "system") return theme
 

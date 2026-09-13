@@ -32,7 +32,7 @@ function HistoryFeedErrorFallback({ error, retry }: ErrorInfo) {
 	}, [message]);
 
 	return (
-		<div className="space-y-3 rounded-md border border-border/80 bg-card/50 px-5 py-6 text-center">
+		<div className="space-y-3 rounded-md border border-border/80 bg-card px-5 py-6 text-center">
 			<p className="text-sm text-muted-foreground">{message}</p>
 			<Button
 				type="button"

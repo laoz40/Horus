@@ -68,7 +68,7 @@ function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 
 function SignInPrompt() {
 	return (
-		<div className="flex flex-col items-center justify-center gap-3 rounded-md border border-border/80 bg-card/50 px-5 py-6 text-center">
+		<div className="flex flex-col items-center justify-center gap-3 rounded-md border border-border/80 bg-card px-5 py-6 text-center">
 			<p className="text-sm text-muted-foreground">You need an account to save workouts.</p>
 			<Button asChild>
 				<Link href="/login">Sign in</Link>
