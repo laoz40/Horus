@@ -80,8 +80,9 @@ In the future, I plan to build a native mobile version of this app.
   - [x] fix borders not showing on dark mode
   - [x] fix colours looking off for bg and grey
   - [x] fix glass theme bg on UserButton component
-- [ ] fix grey colours on light mode for inputs and secondary buttons, so it doesn't look disabled
-  - should match select colour
+- [x] fix grey colours on light mode for inputs and secondary buttons, so it doesn't look disabled
+- [x] replace glass theme with pure black theme
+  - glass theme looked like ai slop
 - [x] implement auth (clerk)
   - [x] add chevron to indicate profile bar is clickable without affecting trigger
   - [x] fix div min height on profile bar
@@ -114,6 +115,9 @@ In the future, I plan to build a native mobile version of this app.
 - [x] add webmanifest to support ios app shortcut
   - [x] a bottom margin so that the home button indicator does not cover the nav content
 - [x] add proper error boundaries to entire app to handle unexpected errors
+- [x] change icon pack to one that has a filled variant (Tabler icons)
+- [x] add rounded corners, the square look doesnt work doesnt look intentional
+- [ ] migrate from tailwind to styleX
 
 ### Create Workout Page
 
@@ -176,15 +180,20 @@ In the future, I plan to build a native mobile version of this app.
   - [x] change add exercise button to use text because its unclear
 - [x] fix workouts always save as same day of week
 - [x] add pr notification on set completion
-- [ ] redo difficulty slider, add colour
-- [ ] add check for duplicate exercises, notify user
+- [ ] add way to manage exercises
 - [ ] add a discard workout dialog on exit
+- [x] pick exercises using muscle group categories, with exercises listed without having to search
+- [ ] When wger times out or is unreachable, `fetchApiExercises` throws uncaught → `/api/exercises/search` returns 500 with empty body → client `response.json()` fails.
+- [x] rest timer
+  - [x] browser notifications upon rest timer hitting 2 minutes
+  - [x] add enable and disable options in settings
 
 ### History
 
 - [x] load save workouts from db
 - [x] edit workouts using the same form
-- [ ] make seperate workout view page for past workouts
+- [x] make seperate workout view page for past workouts
+  - [x] replace the hover card component for viewing notes and pr type, it doesnt work on mobile
 - [x] fix card layout when no prs
 - [x] implement muscle groups to display on the workout card
   - [x] workouts need to save muscle groups info
@@ -216,7 +225,7 @@ In the future, I plan to build a native mobile version of this app.
   - [ ] workouts containing specific exercise/muscle group
 - [x] add pagination
 - [x] ensure fixed height on workout card
-- [x] improve update workout loading experience (very slow due to pr recalculation)
+- [x] optimise update workout (very slow due to pr recalculation)
 
 ### Progress
 
