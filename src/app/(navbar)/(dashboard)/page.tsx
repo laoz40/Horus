@@ -24,8 +24,8 @@ export default function DashboardPage(): ReactElement {
 				<div className="flex flex-col">
 					{shouldShowSkeleton ? (
 						<>
-							<div className="mb-1 h-4 w-22 animate-pulse rounded bg-muted" />
-							<div className="h-8 w-32 animate-pulse rounded bg-muted" />
+							<div className="mb-1 h-4 w-22 animate-pulse rounded-sm bg-muted" />
+							<div className="h-8 w-32 animate-pulse rounded-sm bg-muted" />
 						</>
 					) : (
 						<>
