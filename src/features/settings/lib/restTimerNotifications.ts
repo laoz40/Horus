@@ -1,32 +1,39 @@
+import { err, errAsync, ok, okAsync, type Result, type ResultAsync } from "neverthrow";
+
+import { tryPromise } from "@/lib/tryPromise";
+import { trySync } from "@/lib/trySync";
 import { showErrorToast } from "@/lib/toastMessages";
 
 const REST_TIMER_NOTIFICATIONS_STORAGE_KEY = "rest-timer-notifications-enabled";
 
+type LocalStorageError = { reason: "UNAVAILABLE" };
+
 export function readRestTimerNotificationsEnabled(): boolean {
-	try {
-		return localStorage.getItem(REST_TIMER_NOTIFICATIONS_STORAGE_KEY) === "true";
-	} catch {
-		return false;
-	}
+	return trySync({
+		try: () => localStorage.getItem(REST_TIMER_NOTIFICATIONS_STORAGE_KEY),
+		catch: () => ({ reason: "UNAVAILABLE" as const }),
+	})
+		.map((value) => value === "true")
+		.unwrapOr(false);
 }
 
-export function writeRestTimerNotificationsEnabled(enabled: boolean): void {
-	try {
-		localStorage.setItem(REST_TIMER_NOTIFICATIONS_STORAGE_KEY, enabled ? "true" : "false");
-	} catch {
-		// localStorage is unavailable outside the browser.
-	}
+export function writeRestTimerNotificationsEnabled(
+	enabled: boolean,
+): Result<null, LocalStorageError> {
+	return trySync({
+		try: () => {
+			localStorage.setItem(REST_TIMER_NOTIFICATIONS_STORAGE_KEY, enabled ? "true" : "false");
+		},
+		catch: () => ({ reason: "UNAVAILABLE" as const }),
+	}).map(() => null);
 }
 
 // iOS/Safari only allows permission prompts from a direct user gesture.
-export async function requestRestTimerNotificationPermission(): Promise<NotificationPermission | null> {
-	if (!("Notification" in window)) return null;
-
-	try {
-		return await Notification.requestPermission();
-	} catch {
-		return null;
-	}
+function requestRestTimerNotificationPermission(): ResultAsync<NotificationPermission, "failed"> {
+	return tryPromise({
+		try: () => Notification.requestPermission(),
+		catch: () => "failed" as const,
+	});
 }
 
 export type RestTimerNotificationPermissionResult =
@@ -36,56 +43,99 @@ export type RestTimerNotificationPermissionResult =
 	| "dismissed"
 	| "failed";
 
-export async function ensureRestTimerNotificationPermission(): Promise<RestTimerNotificationPermissionResult> {
-	if (!("Notification" in window)) return "unsupported";
+type RestTimerNotificationPermissionError = Exclude<
+	RestTimerNotificationPermissionResult,
+	"granted"
+>;
 
-	if (Notification.permission === "granted") return "granted";
+function mapRequestedPermission(
+	permission: NotificationPermission,
+): Result<true, RestTimerNotificationPermissionError> {
+	if (permission === "granted") return ok(true);
 
-	if (Notification.permission === "denied") return "blocked";
+	if (permission === "denied") return err("blocked");
 
-	const permission = await requestRestTimerNotificationPermission();
+	if (permission === "default") return err("dismissed");
 
-	if (permission === "granted") return "granted";
+	return err("failed");
+}
 
-	if (permission === "denied") return "blocked";
+export function ensureRestTimerNotificationPermission(): ResultAsync<
+	true,
+	RestTimerNotificationPermissionError
+> {
+	if (!("Notification" in window)) return errAsync("unsupported");
 
-	if (permission === "default") return "dismissed";
+	if (Notification.permission === "granted") return okAsync(true);
 
-	return "failed";
+	if (Notification.permission === "denied") return errAsync("blocked");
+
+	return requestRestTimerNotificationPermission().andThen(mapRequestedPermission);
 }
 
 function showRestTimerNotificationPermissionError(
-	permission: Exclude<RestTimerNotificationPermissionResult, "granted">,
+	permission: RestTimerNotificationPermissionError,
 ): void {
-	if (permission === "unsupported") {
-		showErrorToast("Notifications aren't supported in this browser.");
+	switch (permission) {
+		case "unsupported":
+			showErrorToast("Notifications aren't supported in this browser.");
+			break;
+		case "blocked":
+			showErrorToast(
+				"Notifications are blocked in your browser. Allow them in site settings first.",
+			);
+			break;
+		case "dismissed":
+			showErrorToast("Notification permission wasn't granted.");
+			break;
+		case "failed":
+			showErrorToast("Couldn't request notification permission.");
+			break;
+		default: {
+			const exhaustive: never = permission;
 
-		return;
+			return exhaustive;
+		}
 	}
-
-	if (permission === "blocked") {
-		showErrorToast("Notifications are blocked in your browser. Allow them in site settings first.");
-
-		return;
-	}
-
-	if (permission === "dismissed") {
-		showErrorToast("Notification permission wasn't granted.");
-
-		return;
-	}
-
-	showErrorToast("Couldn't request notification permission.");
 }
 
 export async function tryEnableRestTimerNotifications(): Promise<boolean> {
-	const permission = await ensureRestTimerNotificationPermission();
+	const result = await ensureRestTimerNotificationPermission();
 
-	if (permission === "granted") return true;
+	return result.match(
+		() => true,
+		(error) => {
+			showRestTimerNotificationPermissionError(error);
 
-	showRestTimerNotificationPermissionError(permission);
+			return false;
+		},
+	);
+}
 
-	return false;
+function getServiceWorkerRegistration() {
+	return tryPromise({
+		try: () => navigator.serviceWorker.getRegistration(),
+		catch: () => ({ reason: "REGISTRATION_FAILED" as const }),
+	});
+}
+
+function showServiceWorkerNotification(
+	registration: ServiceWorkerRegistration,
+	options: NotificationOptions,
+) {
+	return tryPromise({
+		try: () => registration.showNotification("Rest timer", options),
+		catch: () => ({ reason: "SHOW_FAILED" as const }),
+	});
+}
+
+function showBrowserNotification(options: NotificationOptions) {
+	return trySync({
+		try: () => {
+			void new Notification("Rest timer", options);
+		},
+		catch: () => ({ reason: "SHOW_FAILED" as const }),
+	});
 }
 
 export async function showRestTimerNotification(elapsedTime: string): Promise<void> {
@@ -103,23 +153,18 @@ export async function showRestTimerNotification(elapsedTime: string): Promise<vo
 	// Prefer the service worker notification path when it is available.
 	// This works better for mobile browsers and installed web apps.
 	if ("serviceWorker" in navigator) {
-		try {
-			const registration = await navigator.serviceWorker.getRegistration();
+		const registrationResult = await getServiceWorkerRegistration();
 
-			if (registration) {
-				await registration.showNotification("Rest timer", notificationOptions);
+		if (registrationResult.isOk() && registrationResult.value) {
+			const shown = await showServiceWorkerNotification(
+				registrationResult.value,
+				notificationOptions,
+			);
 
-				return;
-			}
-		} catch {
-			// Fall back to the Notification constructor when service worker notifications are unavailable.
+			if (shown.isOk()) return;
 		}
 	}
 
 	// If there is no service worker yet, try the regular browser notification path.
-	try {
-		void new Notification("Rest timer", notificationOptions);
-	} catch {
-		// Some browsers, including Android Chrome, disallow the Notification constructor.
-	}
+	void showBrowserNotification(notificationOptions);
 }

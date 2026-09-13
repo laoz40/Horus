@@ -9,6 +9,7 @@ import {
 	tryEnableRestTimerNotifications,
 	writeRestTimerNotificationsEnabled,
 } from "@/features/settings/lib/restTimerNotifications";
+import { showErrorToast } from "@/lib/toastMessages";
 
 export default function NotificationsSettingsSection() {
 	const [restTimerNotificationsEnabled, setRestTimerNotificationsEnabled] = useState(
@@ -17,7 +18,14 @@ export default function NotificationsSettingsSection() {
 
 	async function handleRestTimerNotificationsChange(checked: boolean): Promise<void> {
 		if (!checked) {
-			writeRestTimerNotificationsEnabled(false);
+			const writeResult = writeRestTimerNotificationsEnabled(false);
+
+			if (writeResult.isErr()) {
+				showErrorToast("Couldn't save notification preference.");
+
+				return;
+			}
+
 			setRestTimerNotificationsEnabled(false);
 
 			return;
@@ -27,7 +35,14 @@ export default function NotificationsSettingsSection() {
 
 		if (!enabled) return;
 
-		writeRestTimerNotificationsEnabled(true);
+		const writeResult = writeRestTimerNotificationsEnabled(true);
+
+		if (writeResult.isErr()) {
+			showErrorToast("Couldn't save notification preference.");
+
+			return;
+		}
+
 		setRestTimerNotificationsEnabled(true);
 	}
 
