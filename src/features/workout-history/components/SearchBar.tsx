@@ -3,7 +3,7 @@ import { IconSearch } from "@tabler/icons-react";
 
 export default function SearchBar() {
 	return (
-		<InputGroup className="h-11 border-border/70 bg-background/55 shadow-none transition-colors focus-within:border-primary/60">
+		<InputGroup className="h-11 border-border/70 bg-card shadow-none transition-colors focus-within:border-primary/60 dark:bg-card">
 			<InputGroupInput
 				placeholder="Search by workout name"
 				className="text-sm placeholder:text-muted-foreground/80"

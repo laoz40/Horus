@@ -42,7 +42,7 @@ export default function HistoryList({
 
 		return (
 			<div className="space-y-4 md:space-y-5">
-				<div className="border border-border/80 bg-card/50 px-5 py-10 text-center text-sm text-muted-foreground">
+				<div className="border border-border/80 bg-card px-5 py-10 text-center text-sm text-muted-foreground">
 					No saved workouts. Try creating one!
 				</div>
 			</div>
