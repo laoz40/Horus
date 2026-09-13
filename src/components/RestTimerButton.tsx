@@ -10,6 +10,7 @@ import {
 	DrawerTrigger,
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
+import { showRestTimerNotification } from "@/features/settings/lib/restTimerNotifications";
 import {
 	finishRestTimer,
 	selectIsRestTimerDrawerOpen,
@@ -29,49 +30,6 @@ const formatElapsedTime = (elapsedMs: number): string => {
 const REST_TARGET_MS = 2 * 60 * 1000; // 2 minutes
 
 const REST_TARGET_REMINDER_INTERVAL_MS = 30 * 1000; // 30 seconds
-
-// iOS/Safari only allows permission prompts from a direct user gesture i.e. opening rest timer button.
-const requestRestTimerNotificationPermission = async (): Promise<void> => {
-	if (!("Notification" in window)) return;
-
-	try {
-		await Notification.requestPermission();
-	} catch {}
-};
-
-const showRestTimerNotification = async (elapsedTime: string): Promise<void> => {
-	if (!("Notification" in window)) return;
-
-	if (Notification.permission !== "granted") return;
-
-	const notificationOptions: NotificationOptions = {
-		body: `${elapsedTime} rest elapsed. Time for your next set.`,
-		tag: "rest-timer-reminder",
-	};
-
-	// Prefer the service worker notification path when it is available.
-	// This works better for mobile browsers and installed web apps.
-	if ("serviceWorker" in navigator) {
-		try {
-			const registration = await navigator.serviceWorker.getRegistration();
-
-			if (registration) {
-				await registration.showNotification("Rest timer", notificationOptions);
-
-				return;
-			}
-		} catch {
-			// Fall back to the Notification constructor when service worker notifications are unavailable.
-		}
-	}
-
-	// If there is no service worker yet, try the regular browser notification path.
-	try {
-		void new Notification("Rest timer", notificationOptions);
-	} catch {
-		// Some browsers, including Android Chrome, disallow the Notification constructor.
-	}
-};
 
 export default function RestTimerButton(): ReactElement {
 	const isOpen = useWorkoutFormUiStore(selectIsRestTimerDrawerOpen);
@@ -123,8 +81,7 @@ export default function RestTimerButton(): ReactElement {
 						"absolute -left-5 top-2/3 z-50 -translate-y-1/2 rotate-270 rounded-none rounded-b-md border border-t-0 text-sm font-semibold tabular-nums shadow-sm",
 						isOverRestTarget && "text-destructive hover:text-destructive",
 					)}
-					variant="outline"
-					onClick={() => void requestRestTimerNotificationPermission()}>
+					variant="outline">
 					{elapsedTime}
 				</Button>
 			</DrawerTrigger>
