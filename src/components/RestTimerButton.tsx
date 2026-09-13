@@ -120,7 +120,7 @@ export default function RestTimerButton(): ReactElement {
 			<DrawerTrigger asChild>
 				<Button
 					className={cn(
-						"absolute -left-5 top-2/3 z-50 -translate-y-1/2 rotate-270 rounded-l-md border border-t-0 text-sm font-semibold tabular-nums shadow-sm",
+						"absolute -left-5 top-2/3 z-50 -translate-y-1/2 rotate-270 rounded-none rounded-b-md border border-t-0 text-sm font-semibold tabular-nums shadow-sm",
 						isOverRestTarget && "text-destructive hover:text-destructive",
 					)}
 					variant="outline"
