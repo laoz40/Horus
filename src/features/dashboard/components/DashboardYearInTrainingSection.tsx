@@ -48,7 +48,7 @@ function DashboardYearInTraining({
 	if (statsQuery.isError) {
 		return (
 			<YearInTrainingShell year={year}>
-				<div className="border bg-card p-3 text-card-foreground shadow-sm">
+				<div className="border bg-card p-3 rounded-lg text-card-foreground shadow-sm">
 					<p className="py-8 text-center text-sm text-destructive">
 						Failed to load year in training data.
 					</p>
@@ -62,7 +62,7 @@ function DashboardYearInTraining({
 
 	return (
 		<YearInTrainingShell year={year}>
-			<div className="border bg-card p-3 text-card-foreground shadow-sm">
+			<div className="border bg-card p-3 rounded-lg text-card-foreground shadow-sm">
 				{values.length === 0 ? (
 					<p className="py-8 text-center text-sm text-muted-foreground">{emptyText}</p>
 				) : (
