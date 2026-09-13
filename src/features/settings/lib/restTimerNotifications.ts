@@ -36,7 +36,7 @@ function requestRestTimerNotificationPermission(): ResultAsync<NotificationPermi
 	});
 }
 
-export type RestTimerNotificationPermissionResult =
+type RestTimerNotificationPermissionResult =
 	| "granted"
 	| "unsupported"
 	| "blocked"
@@ -60,7 +60,7 @@ function mapRequestedPermission(
 	return err("failed");
 }
 
-export function ensureRestTimerNotificationPermission(): ResultAsync<
+function ensureRestTimerNotificationPermission(): ResultAsync<
 	true,
 	RestTimerNotificationPermissionError
 > {
