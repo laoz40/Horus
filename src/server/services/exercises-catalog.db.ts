@@ -23,27 +23,35 @@ export interface UserExerciseCatalogRow {
 	workoutCount: number;
 }
 
-const userExerciseCatalogSelect = {
-	id: exercises.id,
-	name: exercises.name,
-	muscleGroups: sql<string[]>`coalesce(
-		array_agg(${muscleGroups.name} order by ${muscleGroups.name})
-			filter (where ${muscleGroups.name} is not null),
-		array[]::text[]
-	)`,
-	workoutCount: sql<number>`(
-		select count(*)::integer
-		from ${workoutExercises}
-		where ${workoutExercises.exerciseId} = ${exercises.id}
-	)`,
-};
-
 type DbExecutor = typeof db | Tx;
 
-function userExerciseCatalogQuery(executor: DbExecutor = db) {
+function workoutCountsSubquery(executor: DbExecutor) {
 	return executor
-		.select(userExerciseCatalogSelect)
+		.select({
+			exerciseId: workoutExercises.exerciseId,
+			workoutCount: sql<number>`count(*)::integer`.as("workout_count"),
+		})
+		.from(workoutExercises)
+		.groupBy(workoutExercises.exerciseId)
+		.as("workout_counts");
+}
+
+function userExerciseCatalogQuery(executor: DbExecutor = db) {
+	const workoutCounts = workoutCountsSubquery(executor);
+
+	return executor
+		.select({
+			id: exercises.id,
+			name: exercises.name,
+			muscleGroups: sql<string[]>`coalesce(
+				array_agg(${muscleGroups.name} order by ${muscleGroups.name})
+					filter (where ${muscleGroups.name} is not null),
+				array[]::text[]
+			)`,
+			workoutCount: sql<number>`coalesce(max(${workoutCounts.workoutCount}), 0)`,
+		})
 		.from(exercises)
+		.leftJoin(workoutCounts, eq(workoutCounts.exerciseId, exercises.id))
 		.leftJoin(exerciseMuscleGroups, eq(exerciseMuscleGroups.exerciseId, exercises.id))
 		.leftJoin(muscleGroups, eq(muscleGroups.id, exerciseMuscleGroups.muscleGroupId))
 		.groupBy(exercises.id);
@@ -362,27 +370,7 @@ export function mergeUserExerciseRows(
 export function listUserExerciseRows(userId: string) {
 	return tryPromise({
 		try: () =>
-			db
-				.select({
-					id: exercises.id,
-					name: exercises.name,
-					muscleGroups: sql<string[]>`coalesce(
-						array_agg(${muscleGroups.name} order by ${muscleGroups.name})
-							filter (where ${muscleGroups.name} is not null),
-						array[]::text[]
-					)`,
-					workoutCount: sql<number>`(
-						select count(*)::integer
-						from ${workoutExercises}
-						where ${workoutExercises.exerciseId} = ${exercises.id}
-					)`,
-				})
-				.from(exercises)
-				.leftJoin(exerciseMuscleGroups, eq(exerciseMuscleGroups.exerciseId, exercises.id))
-				.leftJoin(muscleGroups, eq(muscleGroups.id, exerciseMuscleGroups.muscleGroupId))
-				.where(eq(exercises.userId, userId))
-				.groupBy(exercises.id)
-				.orderBy(asc(exercises.name)),
+			userExerciseCatalogQuery(db).where(eq(exercises.userId, userId)).orderBy(asc(exercises.name)),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
 }
