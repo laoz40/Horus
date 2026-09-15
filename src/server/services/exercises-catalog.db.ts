@@ -228,7 +228,12 @@ async function getEarliestAffectedWorkoutCutoff(
 	};
 }
 
-export function mergeUserExerciseRows(userId: string, sourceId: string, targetId: string) {
+export function mergeUserExerciseRows(
+	userId: string,
+	sourceId: string,
+	targetId: string,
+	sourceMuscleGroupsForExercise: Array<{ name: string; normalizedName: string }> | null = null,
+) {
 	return tryPromise({
 		try: () =>
 			runDatabaseTransaction(async (tx): Promise<void> => {
@@ -250,6 +255,10 @@ export function mergeUserExerciseRows(userId: string, sourceId: string, targetId
 
 				if (!source || !target) {
 					throw new Error("Source or target exercise not found");
+				}
+
+				if (sourceMuscleGroupsForExercise !== null) {
+					await replaceExerciseMuscleGroups(tx, sourceId, sourceMuscleGroupsForExercise);
 				}
 
 				const cutoff = await getEarliestAffectedWorkoutCutoff(tx, userId, [sourceId, targetId]);

@@ -120,22 +120,9 @@ export function mergeUserExercises(userId: string, input: MergeExerciseCatalogIn
 
 	return getUserExerciseRow(userId, sourceId)
 		.andThen(requireUserExercise)
-		.andThen((source) => {
-			if (sourceMuscleGroups === null) {
-				return ok(source);
-			}
-
-			return updateUserExerciseRow(
-				userId,
-				sourceId,
-				source.name,
-				normalizeName(source.name),
-				sourceMuscleGroups,
-			).map(() => source);
-		})
 		.andThen(() => getUserExerciseRow(userId, targetId))
 		.andThen(requireUserExercise)
-		.andThen(() => mergeUserExerciseRows(userId, sourceId, targetId))
+		.andThen(() => mergeUserExerciseRows(userId, sourceId, targetId, sourceMuscleGroups))
 		.andThen(() => getUserExerciseRow(userId, targetId))
 		.andThen(requireUserExercise)
 		.map((targetExercise) => ({ targetExercise }));
