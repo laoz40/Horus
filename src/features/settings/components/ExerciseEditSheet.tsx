@@ -1,7 +1,5 @@
 "use client";
 
-import { isDefinedError } from "@orpc/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
 
@@ -16,8 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import ExerciseMergeDialog from "@/features/settings/components/ExerciseMergeDialog";
 import MuscleGroupMultiSelect from "@/features/settings/components/MuscleGroupMultiSelect";
-import { categoriesToMuscleGroups } from "@/features/settings/lib/exerciseCatalogMuscleGroups";
 import {
 	getExerciseEditInitialCategories,
 	getExerciseEditInitialName,
@@ -26,9 +24,10 @@ import {
 	type OpenExerciseEditSheetState,
 } from "@/features/settings/lib/exerciseEditSheet";
 import { formatWorkoutCount } from "@/features/settings/lib/formatExerciseCatalog";
-import { invalidateExerciseQueries } from "@/features/settings/lib/invalidateExerciseQueries";
-import { orpc } from "@/lib/orpc/client";
-import { showErrorToast, showExerciseDeletedToast, showInfoToast } from "@/lib/toastMessages";
+import {
+	type NameCollisionState,
+	useExerciseEditMutations,
+} from "@/features/settings/hooks/useExerciseEditMutations";
 
 interface ExerciseEditSheetProps {
 	state: ExerciseEditSheetState;
@@ -40,173 +39,72 @@ interface ExerciseEditFormProps {
 	onClose: () => void;
 }
 
+interface ExerciseEditDeleteButtonProps {
+	exerciseName: string;
+	workoutCount: number;
+	isSaving: boolean;
+	isDeleting: boolean;
+	isCombining: boolean;
+	onDelete: () => void;
+}
+
+function ExerciseEditDeleteButton({
+	exerciseName,
+	workoutCount,
+	isSaving,
+	isDeleting,
+	isCombining,
+	onDelete,
+}: ExerciseEditDeleteButtonProps) {
+	return (
+		<AlertDialogDestructive
+			title={`Delete ${exerciseName}?`}
+			description="This exercise will be permanently removed."
+			handleDelete={onDelete}>
+			<Button
+				type="button"
+				variant="destructive"
+				disabled={workoutCount > 0 || isSaving || isDeleting || isCombining}>
+				{isDeleting ? (
+					<>
+						<IconLoader2
+							className="size-4 animate-spin"
+							aria-hidden
+						/>
+						Deleting
+					</>
+				) : (
+					"Delete"
+				)}
+			</Button>
+		</AlertDialogDestructive>
+	);
+}
+
 function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
-	const queryClient = useQueryClient();
 	const [name, setName] = useState(() => getExerciseEditInitialName(state));
 	const [categories, setCategories] = useState(() => getExerciseEditInitialCategories(state));
+	const [nameCollision, setNameCollision] = useState<NameCollisionState | null>(null);
 	const workoutCount = state.kind === "edit" ? state.exercise.workoutCount : 0;
 
-	const createExercise = useMutation(
-		orpc.exercises.create.mutationOptions({
-			onSuccess: async () => {
-				showInfoToast("Exercise added");
-				await invalidateExerciseQueries(queryClient);
-				onClose();
-			},
-			onError: (error) => {
-				if (!isDefinedError(error)) {
-					showErrorToast("Failed to add exercise.");
-					console.error(error);
+	const {
+		saveExercise,
+		combineExercises,
+		deleteCurrentExercise,
+		isSaving,
+		isCombining,
+		isDeleting,
+	} = useExerciseEditMutations({
+		state,
+		onClose,
+		onNameCollision: setNameCollision,
+		onClearNameCollision: () => setNameCollision(null),
+	});
 
-					return;
-				}
-
-				switch (error.code) {
-					case "NAME_COLLISION":
-						showErrorToast("An exercise with this name already exists.");
-
-						return;
-					case "EXERCISE_NOT_FOUND":
-						showErrorToast("Couldn't find this exercise.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to add exercises.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
-			},
-		}),
-	);
-
-	const updateExercise = useMutation(
-		orpc.exercises.update.mutationOptions({
-			onSuccess: async () => {
-				showInfoToast("Exercise saved");
-				await invalidateExerciseQueries(queryClient);
-				onClose();
-			},
-			onError: (error) => {
-				if (!isDefinedError(error)) {
-					showErrorToast("Failed to save exercise.");
-					console.error(error);
-
-					return;
-				}
-
-				switch (error.code) {
-					case "NAME_COLLISION":
-						showErrorToast("An exercise with this name already exists.");
-
-						return;
-					case "EXERCISE_NOT_FOUND":
-						showErrorToast("Couldn't find this exercise.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to edit exercises.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
-			},
-		}),
-	);
-
-	const deleteExercise = useMutation(
-		orpc.exercises.delete.mutationOptions({
-			onSuccess: async () => {
-				showExerciseDeletedToast();
-				await invalidateExerciseQueries(queryClient);
-				onClose();
-			},
-			onError: (error) => {
-				if (!isDefinedError(error)) {
-					showErrorToast("Failed to delete exercise.");
-					console.error(error);
-
-					return;
-				}
-
-				switch (error.code) {
-					case "EXERCISE_NOT_FOUND":
-						showErrorToast("Couldn't find this exercise.");
-
-						return;
-					case "EXERCISE_IN_USE":
-						showErrorToast("This exercise is used in workouts and cannot be deleted.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to delete exercises.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
-			},
-		}),
-	);
-
-	const isSaving = createExercise.isPending || updateExercise.isPending;
-	const isDeleting = deleteExercise.isPending;
 	const trimmedName = name.trim();
-	const canSave = trimmedName.length > 0 && !isSaving && !isDeleting;
-
-	function handleSave() {
-		if (!canSave) {
-			return;
-		}
-
-		const muscleGroups = categoriesToMuscleGroups(categories);
-
-		if (state.kind === "create") {
-			createExercise.mutate({
-				name: trimmedName,
-				muscleGroups,
-			});
-
-			return;
-		}
-
-		updateExercise.mutate({
-			id: state.exercise.id,
-			name: trimmedName,
-			muscleGroups,
-		});
-	}
-
-	function handleDelete() {
-		if (state.kind !== "edit") {
-			return;
-		}
-
-		deleteExercise.mutate({ id: state.exercise.id });
-	}
+	const canSave = trimmedName.length > 0 && !isSaving && !isDeleting && !isCombining;
+	const mergeSourceName = state.kind === "edit" ? state.exercise.name : trimmedName;
+	const mergeSourceWorkoutCount = state.kind === "edit" ? state.exercise.workoutCount : 0;
 
 	return (
 		<>
@@ -247,32 +145,19 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 
 			<DialogFooter className="flex-row justify-end gap-2">
 				{state.kind === "edit" ? (
-					<AlertDialogDestructive
-						title={`Delete ${state.exercise.name}?`}
-						description="This exercise will be permanently removed."
-						handleDelete={handleDelete}>
-						<Button
-							type="button"
-							variant="destructive"
-							disabled={workoutCount > 0 || isSaving || isDeleting}>
-							{isDeleting ? (
-								<>
-									<IconLoader2
-										className="size-4 animate-spin"
-										aria-hidden
-									/>
-									Deleting
-								</>
-							) : (
-								"Delete"
-							)}
-						</Button>
-					</AlertDialogDestructive>
+					<ExerciseEditDeleteButton
+						exerciseName={state.exercise.name}
+						workoutCount={workoutCount}
+						isSaving={isSaving}
+						isDeleting={isDeleting}
+						isCombining={isCombining}
+						onDelete={deleteCurrentExercise}
+					/>
 				) : null}
 
 				<Button
 					type="button"
-					onClick={handleSave}
+					onClick={() => saveExercise(trimmedName, categories)}
 					disabled={!canSave}>
 					{isSaving ? (
 						<>
@@ -287,6 +172,23 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 					)}
 				</Button>
 			</DialogFooter>
+
+			{nameCollision ? (
+				<ExerciseMergeDialog
+					open
+					onOpenChange={(open) => {
+						if (!open) {
+							setNameCollision(null);
+						}
+					}}
+					sourceName={mergeSourceName}
+					targetName={nameCollision.existingExercise.name}
+					sourceWorkoutCount={mergeSourceWorkoutCount}
+					kind={state.kind}
+					onCombine={() => combineExercises(nameCollision, categories)}
+					isCombining={isCombining}
+				/>
+			) : null}
 		</>
 	);
 }
