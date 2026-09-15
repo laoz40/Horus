@@ -180,7 +180,7 @@ In the future, I plan to build a native mobile version of this app.
   - [x] change add exercise button to use text because its unclear
 - [x] fix workouts always save as same day of week
 - [x] add pr notification on set completion
-- [ ] add way to manage exercises
+- [x] add way to manage exercises
 - [ ] add a discard workout dialog on exit
 - [x] pick exercises using muscle group categories, with exercises listed without having to search
 - [ ] When wger times out or is unreachable, `fetchApiExercises` throws uncaught → `/api/exercises/search` returns 500 with empty body → client `response.json()` fails.

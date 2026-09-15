@@ -39,11 +39,23 @@ export const CATEGORY_LABELS = {
 export const getCategoryForMuscleName = (muscleName: string): MuscleGroupCategory | undefined => {
 	const normalizedMuscleName = normalizeName(muscleName);
 
+	for (const category of MUSCLE_GROUP_CATEGORIES) {
+		if (category === normalizedMuscleName) {
+			return category;
+		}
+	}
+
 	return Object.entries(RAW_MUSCLE_TO_CATEGORY).find(([key]) => key === normalizedMuscleName)?.[1];
 };
 
 export const getNormalizedMuscleNamesForCategory = (category: MuscleGroupCategory): string[] => {
-	return Object.entries(RAW_MUSCLE_TO_CATEGORY)
+	const muscleNames = Object.entries(RAW_MUSCLE_TO_CATEGORY)
 		.filter(([, mappedCategory]) => mappedCategory === category)
 		.map(([muscleName]) => muscleName);
+
+	if (muscleNames.includes(category)) {
+		return muscleNames;
+	}
+
+	return [category, ...muscleNames];
 };

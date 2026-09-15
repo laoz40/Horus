@@ -1,5 +1,6 @@
 import { ModeToggle } from "@/components/ModeToggle";
 import SettingsAccountSection from "@/features/auth/components/SettingsAccountSection";
+import ExercisesSettingsSection from "@/features/settings/components/ExercisesSettingsSection";
 import NotificationsSettingsSection from "@/features/settings/components/NotificationsSettingsSection";
 import SettingsDataSection from "@/features/settings/components/SettingsDataSection";
 
@@ -24,6 +25,8 @@ export default function SettingsPage() {
 				</section>
 
 				<NotificationsSettingsSection />
+
+				<ExercisesSettingsSection />
 
 				<SettingsDataSection />
 			</div>
