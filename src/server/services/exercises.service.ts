@@ -5,6 +5,7 @@ import {
 	type MuscleGroupCategory,
 } from "@/features/workout-form/lib/muscleGroupCategories";
 import { normalizeName } from "@/lib/normalizeName";
+import { listUserExerciseRows } from "@/server/services/exercises-catalog.db";
 import {
 	getExercisePrRows,
 	getRecentSetRows,
@@ -13,6 +14,10 @@ import {
 } from "@/server/services/exercises.db";
 import { buildRecentSets, checkCompletedSetPr } from "@/server/services/exercises.functions";
 import { emptyExercisePrs } from "@/server/services/pr-history.functions";
+
+export function listUserExercises(userId: string) {
+	return listUserExerciseRows(userId);
+}
 
 export function searchExercises(userId: string, query: string) {
 	const normalizedQuery = normalizeName(query);

@@ -7,6 +7,7 @@ import {
 	checkSetPr,
 	getRecentSets,
 	listExercisesByCategory,
+	listUserExercises,
 	searchExercises,
 } from "@/server/services/exercises.service";
 
@@ -16,7 +17,45 @@ const databaseError = {
 	},
 };
 
+const exerciseCatalogItemSchema = z
+	.object({
+		id: z.uuid(),
+		name: z.string(),
+		muscleGroups: z.array(z.string()),
+		workoutCount: z.number().int().nonnegative(),
+	})
+	.strict();
+
 export const exercisesRouter = {
+	list: protectedProcedure
+		.errors(databaseError)
+		.output(
+			z
+				.object({
+					exercises: z.array(exerciseCatalogItemSchema),
+				})
+				.strict(),
+		)
+		.handler(async ({ context, errors }) => {
+			const result = await listUserExercises(context.userId);
+
+			return result.match(
+				(exercises) => ({ exercises }),
+				(error) => {
+					const reason = error.reason;
+
+					switch (reason) {
+						case "DATABASE_ERROR":
+							console.error("Failed to list exercises", { cause: error.cause });
+							throw errors.DATABASE_ERROR();
+						default: {
+							const exhaustiveReason: never = reason;
+							throw exhaustiveReason;
+						}
+					}
+				},
+			);
+		}),
 	checkSetPr: protectedProcedure
 		.errors(databaseError)
 		.input(
