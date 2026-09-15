@@ -5,9 +5,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { MuscleGroupCategory } from "@/features/workout-form/lib/muscleGroupCategories";
 import {
-	categoriesToMuscleGroups,
-	unionMuscleGroupNames,
-} from "@/features/settings/lib/exerciseCatalogMuscleGroups";
+	unionSelectedCategories,
+	writeSelectedCategories,
+} from "@/features/settings/lib/exerciseMuscleCategories";
 import type {
 	ExerciseCatalogItem,
 	OpenExerciseEditSheetState,
@@ -205,7 +205,7 @@ export function useExerciseEditMutations({
 	);
 
 	function saveExercise(name: string, categories: MuscleGroupCategory[]) {
-		const muscleGroups = categoriesToMuscleGroups(categories);
+		const muscleGroups = writeSelectedCategories(categories);
 
 		if (state.kind === "create") {
 			createExercise.mutate({
@@ -224,14 +224,14 @@ export function useExerciseEditMutations({
 	}
 
 	function combineExercises(nameCollision: NameCollisionState, categories: MuscleGroupCategory[]) {
-		const muscleGroups = categoriesToMuscleGroups(categories);
+		const muscleGroups = writeSelectedCategories(categories);
 		const { existingExercise } = nameCollision;
 
 		if (state.kind === "create") {
 			updateExercise.mutate({
 				id: existingExercise.id,
 				name: existingExercise.name,
-				muscleGroups: unionMuscleGroupNames(existingExercise.muscleGroups, muscleGroups),
+				muscleGroups: unionSelectedCategories(existingExercise.muscleGroups, categories),
 			});
 
 			return;

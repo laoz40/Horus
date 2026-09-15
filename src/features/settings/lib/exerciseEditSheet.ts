@@ -1,4 +1,4 @@
-import { muscleGroupsToCategories } from "@/features/settings/lib/exerciseCatalogMuscleGroups";
+import { readSelectedCategories } from "@/features/settings/lib/exerciseMuscleCategories";
 import type { MuscleGroupCategory } from "@/features/workout-form/lib/muscleGroupCategories";
 
 export interface ExerciseCatalogItem {
@@ -35,7 +35,7 @@ export function getExerciseEditInitialCategories(
 	state: OpenExerciseEditSheetState,
 ): MuscleGroupCategory[] {
 	if (state.kind === "edit") {
-		return muscleGroupsToCategories(state.exercise.muscleGroups);
+		return readSelectedCategories(state.exercise.muscleGroups);
 	}
 
 	return [];
