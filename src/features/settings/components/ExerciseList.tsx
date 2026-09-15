@@ -7,7 +7,6 @@ import {
 	formatMuscleGroups,
 	formatWorkoutCount,
 } from "@/features/settings/lib/formatExerciseCatalog";
-import { toTitleCase } from "@/features/workout-form/lib/convertWorkoutData";
 import { normalizeName } from "@/lib/normalizeName";
 import { IconSearch } from "@tabler/icons-react";
 
@@ -70,7 +69,7 @@ export default function ExerciseList({ exercises, onSelectExercise }: ExerciseLi
 								className="w-full rounded-md border bg-card p-3 text-left transition-colors hover:bg-accent/40">
 								<div className="flex items-start justify-between gap-3">
 									<div className="min-w-0 flex-1">
-										<p className="font-medium leading-tight">{toTitleCase(exercise.name)}</p>
+										<p className="font-medium leading-tight">{exercise.name}</p>
 										<p className="mt-1 text-sm text-muted-foreground">
 											{formatMuscleGroups(exercise.muscleGroups)}
 										</p>
