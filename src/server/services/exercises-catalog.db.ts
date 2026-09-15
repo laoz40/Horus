@@ -88,11 +88,47 @@ async function getOrCreateMuscleGroupId(
 	return existingMuscleGroup.id;
 }
 
+async function getExerciseMuscleGroupNormalizedNames(
+	tx: Tx,
+	exerciseId: string,
+): Promise<string[]> {
+	const rows = await tx
+		.select({ normalizedName: muscleGroups.normalizedName })
+		.from(exerciseMuscleGroups)
+		.innerJoin(muscleGroups, eq(muscleGroups.id, exerciseMuscleGroups.muscleGroupId))
+		.where(eq(exerciseMuscleGroups.exerciseId, exerciseId));
+
+	return rows.map((row) => row.normalizedName).toSorted();
+}
+
+function exerciseMuscleGroupsUnchanged(
+	currentNormalizedNames: string[],
+	muscleGroupsForExercise: Array<{ name: string; normalizedName: string }>,
+): boolean {
+	if (currentNormalizedNames.length !== muscleGroupsForExercise.length) {
+		return false;
+	}
+
+	const incomingNormalizedNames = muscleGroupsForExercise
+		.map((muscleGroup) => muscleGroup.normalizedName)
+		.toSorted();
+
+	return currentNormalizedNames.every(
+		(normalizedName, index) => normalizedName === incomingNormalizedNames[index],
+	);
+}
+
 async function replaceExerciseMuscleGroups(
 	tx: Tx,
 	exerciseId: string,
 	muscleGroupsForExercise: Array<{ name: string; normalizedName: string }>,
 ): Promise<void> {
+	const currentNormalizedNames = await getExerciseMuscleGroupNormalizedNames(tx, exerciseId);
+
+	if (exerciseMuscleGroupsUnchanged(currentNormalizedNames, muscleGroupsForExercise)) {
+		return;
+	}
+
 	await tx.delete(exerciseMuscleGroups).where(eq(exerciseMuscleGroups.exerciseId, exerciseId));
 
 	if (muscleGroupsForExercise.length === 0) {
