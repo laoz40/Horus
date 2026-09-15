@@ -10,6 +10,7 @@ import {
 	getRecentSets,
 	listExercisesByCategory,
 	listUserExercises,
+	mergeUserExercises,
 	searchExercises,
 	updateUserExercise,
 } from "@/server/services/exercises.service";
@@ -329,6 +330,49 @@ export const exercisesRouter = {
 							throw errors.EXERCISE_IN_USE();
 						case "DATABASE_ERROR":
 							console.error("Failed to delete exercise", { cause: error.cause });
+							throw errors.DATABASE_ERROR();
+						default: {
+							const exhaustiveReason: never = reason;
+							throw exhaustiveReason;
+						}
+					}
+				},
+			);
+		}),
+	merge: protectedProcedure
+		.errors({
+			DATABASE_ERROR: exerciseCatalogErrors.DATABASE_ERROR,
+			EXERCISE_NOT_FOUND: exerciseCatalogErrors.EXERCISE_NOT_FOUND,
+		})
+		.input(
+			z
+				.object({
+					sourceId: z.uuid(),
+					targetId: z.uuid(),
+					sourceMuscleGroups: z.array(z.string()).optional(),
+				})
+				.strict(),
+		)
+		.output(
+			z
+				.object({
+					targetExercise: exerciseCatalogItemSchema,
+				})
+				.strict(),
+		)
+		.handler(async ({ input, context, errors }) => {
+			const result = await mergeUserExercises(context.userId, input);
+
+			return result.match(
+				(value) => value,
+				(error) => {
+					const reason = error.reason;
+
+					switch (reason) {
+						case "EXERCISE_NOT_FOUND":
+							throw errors.EXERCISE_NOT_FOUND();
+						case "DATABASE_ERROR":
+							console.error("Failed to merge exercises", { cause: error.cause });
 							throw errors.DATABASE_ERROR();
 						default: {
 							const exhaustiveReason: never = reason;

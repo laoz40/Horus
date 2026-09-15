@@ -13,6 +13,7 @@ import {
 	getUserExerciseRow,
 	insertUserExercise,
 	listUserExerciseRows,
+	mergeUserExerciseRows,
 	updateUserExerciseRow,
 } from "@/server/services/exercises-catalog.db";
 import {
@@ -36,6 +37,12 @@ interface ExerciseCatalogWriteInput {
 
 interface UpdateExerciseCatalogInput extends ExerciseCatalogWriteInput {
 	id: string;
+}
+
+interface MergeExerciseCatalogInput {
+	sourceId: string;
+	targetId: string;
+	sourceMuscleGroups?: string[];
 }
 
 export function listUserExercises(userId: string) {
@@ -94,6 +101,44 @@ export function deleteUserExerciseById(userId: string, exerciseId: string) {
 		.andThen(requireUnusedExercise)
 		.andThen(() => deleteUserExercise(userId, exerciseId))
 		.map(() => ({ deleted: true as const }));
+}
+
+export function mergeUserExercises(userId: string, input: MergeExerciseCatalogInput) {
+	const { sourceId, targetId } = input;
+
+	if (sourceId === targetId) {
+		return getUserExerciseRow(userId, sourceId).andThen(() =>
+			err({
+				reason: "EXERCISE_NOT_FOUND" as const,
+			}),
+		);
+	}
+
+	const sourceMuscleGroups = input.sourceMuscleGroups
+		? normalizeMuscleGroupsForSave(input.sourceMuscleGroups)
+		: null;
+
+	return getUserExerciseRow(userId, sourceId)
+		.andThen(requireUserExercise)
+		.andThen((source) => {
+			if (sourceMuscleGroups === null) {
+				return ok(source);
+			}
+
+			return updateUserExerciseRow(
+				userId,
+				sourceId,
+				source.name,
+				normalizeName(source.name),
+				sourceMuscleGroups,
+			).map(() => source);
+		})
+		.andThen(() => getUserExerciseRow(userId, targetId))
+		.andThen(requireUserExercise)
+		.andThen(() => mergeUserExerciseRows(userId, sourceId, targetId))
+		.andThen(() => getUserExerciseRow(userId, targetId))
+		.andThen(requireUserExercise)
+		.map((targetExercise) => ({ targetExercise }));
 }
 
 export function searchExercises(userId: string, query: string) {
