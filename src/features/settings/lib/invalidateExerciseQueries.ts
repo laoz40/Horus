@@ -73,16 +73,35 @@ export function mergeExercisesInListCache(
 	});
 }
 
+function exerciseQueryIsInUse(queryClient: QueryClient, queryKey: readonly unknown[]) {
+	return queryClient
+		.getQueryCache()
+		.findAll({ queryKey })
+		.some((query) => query.getObserversCount() > 0);
+}
+
 export function invalidateExerciseQueriesInBackground(queryClient: QueryClient) {
-	void Promise.all([
+	const invalidations = [
 		queryClient.invalidateQueries({
 			queryKey: orpc.exercises.list.key(),
 		}),
-		queryClient.invalidateQueries({
-			queryKey: orpc.exercises.listByCategory.key(),
-		}),
-		queryClient.invalidateQueries({
-			queryKey: orpc.exercises.search.key(),
-		}),
-	]);
+	];
+
+	if (exerciseQueryIsInUse(queryClient, orpc.exercises.listByCategory.key())) {
+		invalidations.push(
+			queryClient.invalidateQueries({
+				queryKey: orpc.exercises.listByCategory.key(),
+			}),
+		);
+	}
+
+	if (exerciseQueryIsInUse(queryClient, orpc.exercises.search.key())) {
+		invalidations.push(
+			queryClient.invalidateQueries({
+				queryKey: orpc.exercises.search.key(),
+			}),
+		);
+	}
+
+	void Promise.all(invalidations);
 }
