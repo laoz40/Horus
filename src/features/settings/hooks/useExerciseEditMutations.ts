@@ -12,7 +12,13 @@ import type {
 	ExerciseCatalogItem,
 	OpenExerciseEditSheetState,
 } from "@/features/settings/lib/exerciseEditSheet";
-import { invalidateExerciseQueries } from "@/features/settings/lib/invalidateExerciseQueries";
+import {
+	addExerciseToListCache,
+	invalidateExerciseQueriesInBackground,
+	mergeExercisesInListCache,
+	patchExerciseListCache,
+	removeExerciseFromListCache,
+} from "@/features/settings/lib/invalidateExerciseQueries";
 import { orpc } from "@/lib/orpc/client";
 import { showErrorToast, showExerciseDeletedToast, showInfoToast } from "@/lib/toastMessages";
 
@@ -37,10 +43,11 @@ export function useExerciseEditMutations({
 
 	const createExercise = useMutation(
 		orpc.exercises.create.mutationOptions({
-			onSuccess: async () => {
+			onSuccess: (result) => {
+				addExerciseToListCache(queryClient, result.exercise);
 				showInfoToast("Exercise added");
-				await invalidateExerciseQueries(queryClient);
 				onClose();
+				invalidateExerciseQueriesInBackground(queryClient);
 			},
 			onError: (error) => {
 				if (!isDefinedError(error)) {
@@ -81,10 +88,11 @@ export function useExerciseEditMutations({
 
 	const updateExercise = useMutation(
 		orpc.exercises.update.mutationOptions({
-			onSuccess: async () => {
+			onSuccess: (result) => {
+				patchExerciseListCache(queryClient, result.exercise);
 				showInfoToast("Exercise saved");
-				await invalidateExerciseQueries(queryClient);
 				onClose();
+				invalidateExerciseQueriesInBackground(queryClient);
 			},
 			onError: (error) => {
 				if (!isDefinedError(error)) {
@@ -125,11 +133,12 @@ export function useExerciseEditMutations({
 
 	const mergeExercises = useMutation(
 		orpc.exercises.merge.mutationOptions({
-			onSuccess: async () => {
+			onSuccess: (result, variables) => {
+				mergeExercisesInListCache(queryClient, variables.sourceId, result.targetExercise);
 				showInfoToast("Exercises combined");
-				await invalidateExerciseQueries(queryClient);
 				onClearNameCollision();
 				onClose();
+				invalidateExerciseQueriesInBackground(queryClient);
 			},
 			onError: (error) => {
 				if (!isDefinedError(error)) {
@@ -164,10 +173,11 @@ export function useExerciseEditMutations({
 
 	const deleteExercise = useMutation(
 		orpc.exercises.delete.mutationOptions({
-			onSuccess: async () => {
+			onSuccess: (_result, variables) => {
+				removeExerciseFromListCache(queryClient, variables.id);
 				showExerciseDeletedToast();
-				await invalidateExerciseQueries(queryClient);
 				onClose();
+				invalidateExerciseQueriesInBackground(queryClient);
 			},
 			onError: (error) => {
 				if (!isDefinedError(error)) {
