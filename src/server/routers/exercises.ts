@@ -5,10 +5,13 @@ import { MUSCLE_GROUP_CATEGORIES } from "@/features/workout-form/lib/muscleGroup
 import { protectedProcedure } from "@/server/procedures";
 import {
 	checkSetPr,
+	createUserExercise,
+	deleteUserExerciseById,
 	getRecentSets,
 	listExercisesByCategory,
 	listUserExercises,
 	searchExercises,
+	updateUserExercise,
 } from "@/server/services/exercises.service";
 
 const databaseError = {
@@ -16,6 +19,26 @@ const databaseError = {
 		message: "The database operation failed",
 	},
 };
+
+const exerciseCatalogErrors = {
+	...databaseError,
+	NAME_COLLISION: {
+		message: "An exercise with this name already exists",
+	},
+	EXERCISE_NOT_FOUND: {
+		message: "The exercise was not found",
+	},
+	EXERCISE_IN_USE: {
+		message: "This exercise is used in workouts and cannot be deleted",
+	},
+};
+
+const exerciseCatalogWriteInputSchema = z
+	.object({
+		name: z.string().trim().min(1),
+		muscleGroups: z.array(z.string()),
+	})
+	.strict();
 
 const exerciseCatalogItemSchema = z
 	.object({
@@ -172,6 +195,140 @@ export const exercisesRouter = {
 					switch (reason) {
 						case "DATABASE_ERROR":
 							console.error("Failed to list exercises by category", { cause: error.cause });
+							throw errors.DATABASE_ERROR();
+						default: {
+							const exhaustiveReason: never = reason;
+							throw exhaustiveReason;
+						}
+					}
+				},
+			);
+		}),
+	create: protectedProcedure
+		.errors({
+			DATABASE_ERROR: exerciseCatalogErrors.DATABASE_ERROR,
+			EXERCISE_NOT_FOUND: exerciseCatalogErrors.EXERCISE_NOT_FOUND,
+			NAME_COLLISION: {
+				message: exerciseCatalogErrors.NAME_COLLISION.message,
+				data: z
+					.object({
+						existingExercise: exerciseCatalogItemSchema,
+					})
+					.strict(),
+			},
+		})
+		.input(exerciseCatalogWriteInputSchema)
+		.output(
+			z
+				.object({
+					exercise: exerciseCatalogItemSchema,
+				})
+				.strict(),
+		)
+		.handler(async ({ input, context, errors }) => {
+			const result = await createUserExercise(context.userId, input);
+
+			return result.match(
+				(value) => value,
+				(error) => {
+					const reason = error.reason;
+
+					switch (reason) {
+						case "NAME_COLLISION":
+							throw errors.NAME_COLLISION({
+								data: { existingExercise: error.existingExercise },
+							});
+						case "EXERCISE_NOT_FOUND":
+							throw errors.EXERCISE_NOT_FOUND();
+						case "DATABASE_ERROR":
+							console.error("Failed to create exercise", { cause: error.cause });
+							throw errors.DATABASE_ERROR();
+						default: {
+							const exhaustiveReason: never = reason;
+							throw exhaustiveReason;
+						}
+					}
+				},
+			);
+		}),
+	update: protectedProcedure
+		.errors({
+			DATABASE_ERROR: exerciseCatalogErrors.DATABASE_ERROR,
+			EXERCISE_NOT_FOUND: exerciseCatalogErrors.EXERCISE_NOT_FOUND,
+			NAME_COLLISION: {
+				message: exerciseCatalogErrors.NAME_COLLISION.message,
+				data: z
+					.object({
+						existingExercise: exerciseCatalogItemSchema,
+					})
+					.strict(),
+			},
+		})
+		.input(
+			z
+				.object({
+					id: z.uuid(),
+					name: z.string().trim().min(1),
+					muscleGroups: z.array(z.string()),
+				})
+				.strict(),
+		)
+		.output(
+			z
+				.object({
+					exercise: exerciseCatalogItemSchema,
+				})
+				.strict(),
+		)
+		.handler(async ({ input, context, errors }) => {
+			const result = await updateUserExercise(context.userId, input);
+
+			return result.match(
+				(value) => value,
+				(error) => {
+					const reason = error.reason;
+
+					switch (reason) {
+						case "NAME_COLLISION":
+							throw errors.NAME_COLLISION({
+								data: { existingExercise: error.existingExercise },
+							});
+						case "EXERCISE_NOT_FOUND":
+							throw errors.EXERCISE_NOT_FOUND();
+						case "DATABASE_ERROR":
+							console.error("Failed to update exercise", { cause: error.cause });
+							throw errors.DATABASE_ERROR();
+						default: {
+							const exhaustiveReason: never = reason;
+							throw exhaustiveReason;
+						}
+					}
+				},
+			);
+		}),
+	delete: protectedProcedure
+		.errors({
+			DATABASE_ERROR: exerciseCatalogErrors.DATABASE_ERROR,
+			EXERCISE_NOT_FOUND: exerciseCatalogErrors.EXERCISE_NOT_FOUND,
+			EXERCISE_IN_USE: exerciseCatalogErrors.EXERCISE_IN_USE,
+		})
+		.input(z.object({ id: z.uuid() }).strict())
+		.output(z.object({ deleted: z.literal(true) }).strict())
+		.handler(async ({ input, context, errors }) => {
+			const result = await deleteUserExerciseById(context.userId, input.id);
+
+			return result.match(
+				(value) => value,
+				(error) => {
+					const reason = error.reason;
+
+					switch (reason) {
+						case "EXERCISE_NOT_FOUND":
+							throw errors.EXERCISE_NOT_FOUND();
+						case "EXERCISE_IN_USE":
+							throw errors.EXERCISE_IN_USE();
+						case "DATABASE_ERROR":
+							console.error("Failed to delete exercise", { cause: error.cause });
 							throw errors.DATABASE_ERROR();
 						default: {
 							const exhaustiveReason: never = reason;
