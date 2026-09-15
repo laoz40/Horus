@@ -20,6 +20,7 @@ interface ExerciseListItem {
 
 interface ExerciseListProps {
 	exercises: ExerciseListItem[];
+	onSelectExercise: (exercise: ExerciseListItem) => void;
 }
 
 function filterExercises(exercises: ExerciseListItem[], query: string): ExerciseListItem[] {
@@ -32,7 +33,7 @@ function filterExercises(exercises: ExerciseListItem[], query: string): Exercise
 	return exercises.filter((exercise) => normalizeName(exercise.name).includes(normalizedQuery));
 }
 
-export default function ExerciseList({ exercises }: ExerciseListProps) {
+export default function ExerciseList({ exercises, onSelectExercise }: ExerciseListProps) {
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const filteredExercises = useMemo(
@@ -61,20 +62,24 @@ export default function ExerciseList({ exercises }: ExerciseListProps) {
 			) : (
 				<ul className="flex flex-col gap-3">
 					{filteredExercises.map((exercise) => (
-						<li
-							key={exercise.id}
-							className="rounded-md border bg-card p-3">
-							<div className="flex items-start justify-between gap-3">
-								<div className="min-w-0 flex-1">
-									<p className="font-medium leading-tight">{toTitleCase(exercise.name)}</p>
-									<p className="mt-1 text-sm text-muted-foreground">
-										{formatMuscleGroups(exercise.muscleGroups)}
-									</p>
+						<li key={exercise.id}>
+							<button
+								type="button"
+								aria-label={`Edit ${exercise.name}`}
+								onClick={() => onSelectExercise(exercise)}
+								className="w-full rounded-md border bg-card p-3 text-left transition-colors hover:bg-accent/40">
+								<div className="flex items-start justify-between gap-3">
+									<div className="min-w-0 flex-1">
+										<p className="font-medium leading-tight">{toTitleCase(exercise.name)}</p>
+										<p className="mt-1 text-sm text-muted-foreground">
+											{formatMuscleGroups(exercise.muscleGroups)}
+										</p>
+									</div>
+									<span className="shrink-0 text-sm tabular-nums text-muted-foreground">
+										{formatWorkoutCount(exercise.workoutCount)}
+									</span>
 								</div>
-								<span className="shrink-0 text-sm tabular-nums text-muted-foreground">
-									{formatWorkoutCount(exercise.workoutCount)}
-								</span>
-							</div>
+							</button>
 						</li>
 					))}
 				</ul>
