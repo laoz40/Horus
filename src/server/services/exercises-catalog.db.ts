@@ -23,28 +23,50 @@ export interface UserExerciseCatalogRow {
 	workoutCount: number;
 }
 
-const userExerciseCatalogSelect = {
-	id: exercises.id,
-	name: exercises.name,
-	muscleGroups: sql<string[]>`coalesce(
-		array_agg(${muscleGroups.name} order by ${muscleGroups.name})
-			filter (where ${muscleGroups.name} is not null),
-		array[]::text[]
-	)`,
-	workoutCount: sql<number>`(
-		select count(*)::integer
-		from ${workoutExercises}
-		where ${workoutExercises.exerciseId} = ${exercises.id}
-	)`,
-};
+type DbExecutor = typeof db | Tx;
 
-function userExerciseCatalogQuery() {
-	return db
-		.select(userExerciseCatalogSelect)
+function workoutCountsSubquery(executor: DbExecutor) {
+	return executor
+		.select({
+			exerciseId: workoutExercises.exerciseId,
+			workoutCount: sql<number>`count(*)::integer`.as("workout_count"),
+		})
+		.from(workoutExercises)
+		.groupBy(workoutExercises.exerciseId)
+		.as("workout_counts");
+}
+
+function userExerciseCatalogQuery(executor: DbExecutor = db) {
+	const workoutCounts = workoutCountsSubquery(executor);
+
+	return executor
+		.select({
+			id: exercises.id,
+			name: exercises.name,
+			muscleGroups: sql<string[]>`coalesce(
+				array_agg(${muscleGroups.name} order by ${muscleGroups.name})
+					filter (where ${muscleGroups.name} is not null),
+				array[]::text[]
+			)`,
+			workoutCount: sql<number>`coalesce(max(${workoutCounts.workoutCount}), 0)`,
+		})
 		.from(exercises)
+		.leftJoin(workoutCounts, eq(workoutCounts.exerciseId, exercises.id))
 		.leftJoin(exerciseMuscleGroups, eq(exerciseMuscleGroups.exerciseId, exercises.id))
 		.leftJoin(muscleGroups, eq(muscleGroups.id, exerciseMuscleGroups.muscleGroupId))
 		.groupBy(exercises.id);
+}
+
+async function getUserExerciseCatalogRow(
+	executor: DbExecutor,
+	userId: string,
+	exerciseId: string,
+): Promise<UserExerciseCatalogRow | null> {
+	const [row] = await userExerciseCatalogQuery(executor)
+		.where(and(eq(exercises.userId, userId), eq(exercises.id, exerciseId)))
+		.limit(1);
+
+	return row ?? null;
 }
 
 async function getOrCreateMuscleGroupId(
@@ -74,11 +96,47 @@ async function getOrCreateMuscleGroupId(
 	return existingMuscleGroup.id;
 }
 
+async function getExerciseMuscleGroupNormalizedNames(
+	tx: Tx,
+	exerciseId: string,
+): Promise<string[]> {
+	const rows = await tx
+		.select({ normalizedName: muscleGroups.normalizedName })
+		.from(exerciseMuscleGroups)
+		.innerJoin(muscleGroups, eq(muscleGroups.id, exerciseMuscleGroups.muscleGroupId))
+		.where(eq(exerciseMuscleGroups.exerciseId, exerciseId));
+
+	return rows.map((row) => row.normalizedName).toSorted();
+}
+
+function exerciseMuscleGroupsUnchanged(
+	currentNormalizedNames: string[],
+	muscleGroupsForExercise: Array<{ name: string; normalizedName: string }>,
+): boolean {
+	if (currentNormalizedNames.length !== muscleGroupsForExercise.length) {
+		return false;
+	}
+
+	const incomingNormalizedNames = muscleGroupsForExercise
+		.map((muscleGroup) => muscleGroup.normalizedName)
+		.toSorted();
+
+	return currentNormalizedNames.every(
+		(normalizedName, index) => normalizedName === incomingNormalizedNames[index],
+	);
+}
+
 async function replaceExerciseMuscleGroups(
 	tx: Tx,
 	exerciseId: string,
 	muscleGroupsForExercise: Array<{ name: string; normalizedName: string }>,
 ): Promise<void> {
+	const currentNormalizedNames = await getExerciseMuscleGroupNormalizedNames(tx, exerciseId);
+
+	if (exerciseMuscleGroupsUnchanged(currentNormalizedNames, muscleGroupsForExercise)) {
+		return;
+	}
+
 	await tx.delete(exerciseMuscleGroups).where(eq(exerciseMuscleGroups.exerciseId, exerciseId));
 
 	if (muscleGroupsForExercise.length === 0) {
@@ -95,28 +153,39 @@ async function replaceExerciseMuscleGroups(
 		.onConflictDoNothing();
 }
 
-export function getUserExerciseRow(userId: string, exerciseId: string) {
+export function userExerciseExists(userId: string, exerciseId: string) {
 	return tryPromise({
-		try: async (): Promise<UserExerciseCatalogRow | null> => {
-			const [row] = await userExerciseCatalogQuery()
-				.where(and(eq(exercises.userId, userId), eq(exercises.id, exerciseId)))
+		try: async (): Promise<boolean> => {
+			const [row] = await db
+				.select({ id: exercises.id })
+				.from(exercises)
+				.where(and(eq(exercises.id, exerciseId), eq(exercises.userId, userId)))
 				.limit(1);
 
-			return row ?? null;
+			return row !== undefined;
 		},
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
 }
 
-export function findUserExerciseRowByNormalizedName(userId: string, normalizedName: string) {
+export function findUserExerciseIdByNormalizedName(userId: string, normalizedName: string) {
 	return tryPromise({
-		try: async (): Promise<UserExerciseCatalogRow | null> => {
-			const [row] = await userExerciseCatalogQuery()
+		try: async (): Promise<string | null> => {
+			const [row] = await db
+				.select({ id: exercises.id })
+				.from(exercises)
 				.where(and(eq(exercises.userId, userId), eq(exercises.normalizedName, normalizedName)))
 				.limit(1);
 
-			return row ?? null;
+			return row?.id ?? null;
 		},
+		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	});
+}
+
+export function getUserExerciseRow(userId: string, exerciseId: string) {
+	return tryPromise({
+		try: () => getUserExerciseCatalogRow(db, userId, exerciseId),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
 }
@@ -129,7 +198,7 @@ export function insertUserExercise(
 ) {
 	return tryPromise({
 		try: () =>
-			runDatabaseTransaction(async (tx): Promise<string> => {
+			runDatabaseTransaction(async (tx): Promise<UserExerciseCatalogRow> => {
 				const [createdExercise] = await tx
 					.insert(exercises)
 					.values({
@@ -139,9 +208,17 @@ export function insertUserExercise(
 					})
 					.returning({ id: exercises.id });
 
-				await replaceExerciseMuscleGroups(tx, createdExercise!.id, muscleGroupsForExercise);
+				const exerciseId = createdExercise!.id;
 
-				return createdExercise!.id;
+				await replaceExerciseMuscleGroups(tx, exerciseId, muscleGroupsForExercise);
+
+				const row = await getUserExerciseCatalogRow(tx, userId, exerciseId);
+
+				if (!row) {
+					throw new Error("Created exercise row was not found");
+				}
+
+				return row;
 			}),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
@@ -156,7 +233,7 @@ export function updateUserExerciseRow(
 ) {
 	return tryPromise({
 		try: () =>
-			runDatabaseTransaction(async (tx): Promise<void> => {
+			runDatabaseTransaction(async (tx): Promise<UserExerciseCatalogRow> => {
 				await tx
 					.update(exercises)
 					.set({
@@ -166,6 +243,14 @@ export function updateUserExerciseRow(
 					.where(and(eq(exercises.id, exerciseId), eq(exercises.userId, userId)));
 
 				await replaceExerciseMuscleGroups(tx, exerciseId, muscleGroupsForExercise);
+
+				const row = await getUserExerciseCatalogRow(tx, userId, exerciseId);
+
+				if (!row) {
+					throw new Error("Updated exercise row was not found");
+				}
+
+				return row;
 			}),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
@@ -285,27 +370,7 @@ export function mergeUserExerciseRows(
 export function listUserExerciseRows(userId: string) {
 	return tryPromise({
 		try: () =>
-			db
-				.select({
-					id: exercises.id,
-					name: exercises.name,
-					muscleGroups: sql<string[]>`coalesce(
-						array_agg(${muscleGroups.name} order by ${muscleGroups.name})
-							filter (where ${muscleGroups.name} is not null),
-						array[]::text[]
-					)`,
-					workoutCount: sql<number>`(
-						select count(*)::integer
-						from ${workoutExercises}
-						where ${workoutExercises.exerciseId} = ${exercises.id}
-					)`,
-				})
-				.from(exercises)
-				.leftJoin(exerciseMuscleGroups, eq(exerciseMuscleGroups.exerciseId, exercises.id))
-				.leftJoin(muscleGroups, eq(muscleGroups.id, exerciseMuscleGroups.muscleGroupId))
-				.where(eq(exercises.userId, userId))
-				.groupBy(exercises.id)
-				.orderBy(asc(exercises.name)),
+			userExerciseCatalogQuery(db).where(eq(exercises.userId, userId)).orderBy(asc(exercises.name)),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
 }

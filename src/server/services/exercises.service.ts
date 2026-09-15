@@ -9,12 +9,13 @@ import {
 import { normalizeName } from "@/lib/normalizeName";
 import {
 	deleteUserExercise,
-	findUserExerciseRowByNormalizedName,
+	findUserExerciseIdByNormalizedName,
 	getUserExerciseRow,
 	insertUserExercise,
 	listUserExerciseRows,
 	mergeUserExerciseRows,
 	updateUserExerciseRow,
+	userExerciseExists,
 } from "@/server/services/exercises-catalog.db";
 import {
 	normalizeMuscleGroupsForSave,
@@ -53,20 +54,22 @@ export function createUserExercise(userId: string, input: ExerciseCatalogWriteIn
 	const normalizedName = normalizeName(input.name);
 	const muscleGroups = normalizeMuscleGroupsForSave(input.muscleGroups);
 
-	return findUserExerciseRowByNormalizedName(userId, normalizedName)
-		.andThen((existingExercise) => {
-			if (existingExercise !== null) {
-				return err({
-					reason: "NAME_COLLISION" as const,
-					existingExercise,
-				});
+	return findUserExerciseIdByNormalizedName(userId, normalizedName)
+		.andThen((existingExerciseId) => {
+			if (existingExerciseId === null) {
+				return ok(null);
 			}
 
-			return ok(null);
+			return getUserExerciseRow(userId, existingExerciseId)
+				.andThen(requireUserExercise)
+				.andThen((existingExercise) =>
+					err({
+						reason: "NAME_COLLISION" as const,
+						existingExercise,
+					}),
+				);
 		})
 		.andThen(() => insertUserExercise(userId, input.name.trim(), normalizedName, muscleGroups))
-		.andThen((exerciseId) => getUserExerciseRow(userId, exerciseId))
-		.andThen(requireUserExercise)
 		.map((exercise) => ({ exercise }));
 }
 
@@ -74,24 +77,32 @@ export function updateUserExercise(userId: string, input: UpdateExerciseCatalogI
 	const normalizedName = normalizeName(input.name);
 	const muscleGroups = normalizeMuscleGroupsForSave(input.muscleGroups);
 
-	return getUserExerciseRow(userId, input.id)
-		.andThen(requireUserExercise)
-		.andThen(() => findUserExerciseRowByNormalizedName(userId, normalizedName))
-		.andThen((existingExercise) => {
-			if (existingExercise !== null && existingExercise.id !== input.id) {
-				return err({
-					reason: "NAME_COLLISION" as const,
-					existingExercise,
-				});
+	return userExerciseExists(userId, input.id)
+		.andThen((exists) => {
+			if (!exists) {
+				return err({ reason: "EXERCISE_NOT_FOUND" as const });
 			}
 
 			return ok(null);
 		})
+		.andThen(() => findUserExerciseIdByNormalizedName(userId, normalizedName))
+		.andThen((existingExerciseId) => {
+			if (existingExerciseId === null || existingExerciseId === input.id) {
+				return ok(null);
+			}
+
+			return getUserExerciseRow(userId, existingExerciseId)
+				.andThen(requireUserExercise)
+				.andThen((existingExercise) =>
+					err({
+						reason: "NAME_COLLISION" as const,
+						existingExercise,
+					}),
+				);
+		})
 		.andThen(() =>
 			updateUserExerciseRow(userId, input.id, input.name.trim(), normalizedName, muscleGroups),
 		)
-		.andThen(() => getUserExerciseRow(userId, input.id))
-		.andThen(requireUserExercise)
 		.map((exercise) => ({ exercise }));
 }
 
