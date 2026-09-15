@@ -38,13 +38,27 @@ const userExerciseCatalogSelect = {
 	)`,
 };
 
-function userExerciseCatalogQuery() {
-	return db
+type DbExecutor = typeof db | Tx;
+
+function userExerciseCatalogQuery(executor: DbExecutor = db) {
+	return executor
 		.select(userExerciseCatalogSelect)
 		.from(exercises)
 		.leftJoin(exerciseMuscleGroups, eq(exerciseMuscleGroups.exerciseId, exercises.id))
 		.leftJoin(muscleGroups, eq(muscleGroups.id, exerciseMuscleGroups.muscleGroupId))
 		.groupBy(exercises.id);
+}
+
+async function getUserExerciseCatalogRow(
+	executor: DbExecutor,
+	userId: string,
+	exerciseId: string,
+): Promise<UserExerciseCatalogRow | null> {
+	const [row] = await userExerciseCatalogQuery(executor)
+		.where(and(eq(exercises.userId, userId), eq(exercises.id, exerciseId)))
+		.limit(1);
+
+	return row ?? null;
 }
 
 async function getOrCreateMuscleGroupId(
@@ -95,28 +109,39 @@ async function replaceExerciseMuscleGroups(
 		.onConflictDoNothing();
 }
 
-export function getUserExerciseRow(userId: string, exerciseId: string) {
+export function userExerciseExists(userId: string, exerciseId: string) {
 	return tryPromise({
-		try: async (): Promise<UserExerciseCatalogRow | null> => {
-			const [row] = await userExerciseCatalogQuery()
-				.where(and(eq(exercises.userId, userId), eq(exercises.id, exerciseId)))
+		try: async (): Promise<boolean> => {
+			const [row] = await db
+				.select({ id: exercises.id })
+				.from(exercises)
+				.where(and(eq(exercises.id, exerciseId), eq(exercises.userId, userId)))
 				.limit(1);
 
-			return row ?? null;
+			return row !== undefined;
 		},
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
 }
 
-export function findUserExerciseRowByNormalizedName(userId: string, normalizedName: string) {
+export function findUserExerciseIdByNormalizedName(userId: string, normalizedName: string) {
 	return tryPromise({
-		try: async (): Promise<UserExerciseCatalogRow | null> => {
-			const [row] = await userExerciseCatalogQuery()
+		try: async (): Promise<string | null> => {
+			const [row] = await db
+				.select({ id: exercises.id })
+				.from(exercises)
 				.where(and(eq(exercises.userId, userId), eq(exercises.normalizedName, normalizedName)))
 				.limit(1);
 
-			return row ?? null;
+			return row?.id ?? null;
 		},
+		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	});
+}
+
+export function getUserExerciseRow(userId: string, exerciseId: string) {
+	return tryPromise({
+		try: () => getUserExerciseCatalogRow(db, userId, exerciseId),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
 }
@@ -129,7 +154,7 @@ export function insertUserExercise(
 ) {
 	return tryPromise({
 		try: () =>
-			runDatabaseTransaction(async (tx): Promise<string> => {
+			runDatabaseTransaction(async (tx): Promise<UserExerciseCatalogRow> => {
 				const [createdExercise] = await tx
 					.insert(exercises)
 					.values({
@@ -139,9 +164,17 @@ export function insertUserExercise(
 					})
 					.returning({ id: exercises.id });
 
-				await replaceExerciseMuscleGroups(tx, createdExercise!.id, muscleGroupsForExercise);
+				const exerciseId = createdExercise!.id;
 
-				return createdExercise!.id;
+				await replaceExerciseMuscleGroups(tx, exerciseId, muscleGroupsForExercise);
+
+				const row = await getUserExerciseCatalogRow(tx, userId, exerciseId);
+
+				if (!row) {
+					throw new Error("Created exercise row was not found");
+				}
+
+				return row;
 			}),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
@@ -156,7 +189,7 @@ export function updateUserExerciseRow(
 ) {
 	return tryPromise({
 		try: () =>
-			runDatabaseTransaction(async (tx): Promise<void> => {
+			runDatabaseTransaction(async (tx): Promise<UserExerciseCatalogRow> => {
 				await tx
 					.update(exercises)
 					.set({
@@ -166,6 +199,14 @@ export function updateUserExerciseRow(
 					.where(and(eq(exercises.id, exerciseId), eq(exercises.userId, userId)));
 
 				await replaceExerciseMuscleGroups(tx, exerciseId, muscleGroupsForExercise);
+
+				const row = await getUserExerciseCatalogRow(tx, userId, exerciseId);
+
+				if (!row) {
+					throw new Error("Updated exercise row was not found");
+				}
+
+				return row;
 			}),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
