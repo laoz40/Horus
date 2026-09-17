@@ -4,11 +4,11 @@ export const MUSCLE_GROUP_CATEGORIES = [
 	"chest",
 	"back",
 	"shoulders",
+	"core",
 	"biceps",
 	"triceps",
-	"legs",
 	"glutes",
-	"core",
+	"legs",
 ] as const;
 
 export type MuscleGroupCategory = (typeof MUSCLE_GROUP_CATEGORIES)[number];
