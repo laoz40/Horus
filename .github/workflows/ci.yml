@@ -98,7 +98,9 @@ jobs:
           pnpm db:generate
 
       - name: Build
-        run: pnpm build
+        run: |
+          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
+          pnpm build
 
   e2e:
     name: E2E tests
