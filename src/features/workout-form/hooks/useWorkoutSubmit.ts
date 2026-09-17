@@ -6,6 +6,7 @@ import { animateCreateWorkoutExit } from "@/features/workout-form/lib/animateCre
 import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { parseWorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
+import { invalidateExerciseQueriesInBackground } from "@/features/settings/lib/invalidateExerciseQueries";
 import {
 	buildOptimisticHistoryFields,
 	patchWorkoutInHistoryCache,
@@ -46,6 +47,7 @@ export const useWorkoutSubmit = ({
 					queryKey: orpc.workouts.list.key({ type: "infinite" }),
 				});
 
+				invalidateExerciseQueriesInBackground(queryClient);
 				setCreateWorkoutDraft(null);
 				showWorkoutSavedToast(result.workout.name);
 			},
@@ -114,6 +116,7 @@ export const useWorkoutSubmit = ({
 					}),
 				});
 
+				invalidateExerciseQueriesInBackground(queryClient);
 				showWorkoutSavedToast(result.workout.name);
 			},
 			onError: (error, _variables, context) => {

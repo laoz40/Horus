@@ -19,7 +19,8 @@ export function useExercisesByCategory(category: MuscleGroupCategory) {
 	const categoryQuery = useQuery(
 		orpc.exercises.listByCategory.queryOptions({
 			input: { category },
-			staleTime: 60_000,
+			// Exercises only change via settings or after saving a workout; neither happens mid-form.
+			staleTime: Number.POSITIVE_INFINITY,
 		}),
 	);
 
@@ -36,5 +37,6 @@ export function useExercisesByCategory(category: MuscleGroupCategory) {
 	return {
 		exercises,
 		isLoading: categoryQuery.isLoading,
+		isFetching: categoryQuery.isFetching,
 	};
 }

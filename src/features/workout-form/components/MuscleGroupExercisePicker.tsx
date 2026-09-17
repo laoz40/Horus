@@ -14,50 +14,67 @@ import {
 import { applyPickedExercise } from "@/features/workout-form/lib/selectExercise";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
-function ExerciseCategoryList({
+function ExerciseCategoryView({
 	category,
+	onBack,
 	onSelect,
 }: {
 	category: MuscleGroupCategory;
+	onBack: () => void;
 	onSelect: (exercise: { name: string; muscleGroups?: string[] }) => void;
 }) {
-	const { exercises, isLoading } = useExercisesByCategory(category);
-
-	if (isLoading && exercises.length === 0) {
-		return (
-			<div className="flex items-center gap-2 px-2 text-muted-foreground text-sm">
-				<IconLoader2
-					className="size-4 animate-spin"
-					aria-label="Loading exercises"
-				/>
-				Loading
-			</div>
-		);
-	}
-
-	if (exercises.length === 0) {
-		return <p className="px-2 text-muted-foreground text-sm">No exercises in this category.</p>;
-	}
+	const { exercises, isLoading, isFetching } = useExercisesByCategory(category);
 
 	return (
-		<ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain">
-			{exercises.map((exercise) => (
-				<li key={exercise.normalizedName}>
-					<Button
-						type="button"
-						variant="outline"
-						className="min-h-11 w-full justify-start px-2 text-base font-normal"
-						onClick={() =>
-							onSelect({
-								name: exercise.name,
-								muscleGroups: exercise.muscleGroups,
-							})
-						}>
-						{exercise.name}
-					</Button>
-				</li>
-			))}
-		</ul>
+		<div className="flex min-h-0 flex-1 flex-col gap-2">
+			<button
+				type="button"
+				className="hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground flex min-h-11 w-full shrink-0 items-center gap-1 rounded-sm px-0 py-2 text-left outline-hidden"
+				onClick={onBack}
+				aria-label="Back to categories">
+				<IconChevronLeft className="size-5 shrink-0 -translate-x-1" />
+				<span className="font-bold text-base">{CATEGORY_LABELS[category]}</span>
+				{isFetching ? (
+					<span className="flex items-center gap-1 text-muted-foreground text-sm">
+						<IconLoader2
+							className="size-4 animate-spin"
+							aria-hidden
+						/>
+						Loading
+					</span>
+				) : null}
+			</button>
+			{isLoading && exercises.length === 0 ? (
+				<div className="flex items-center gap-2 px-2 text-muted-foreground text-sm">
+					<IconLoader2
+						className="size-4 animate-spin"
+						aria-label="Loading exercises"
+					/>
+					Loading
+				</div>
+			) : exercises.length === 0 ? (
+				<p className="px-2 text-muted-foreground text-sm">No exercises in this category.</p>
+			) : (
+				<ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain">
+					{exercises.map((exercise) => (
+						<li key={exercise.normalizedName}>
+							<Button
+								type="button"
+								variant="outline"
+								className="min-h-11 w-full justify-start px-2 text-base font-normal"
+								onClick={() =>
+									onSelect({
+										name: exercise.name,
+										muscleGroups: exercise.muscleGroups,
+									})
+								}>
+								{exercise.name}
+							</Button>
+						</li>
+					))}
+				</ul>
+			)}
+		</div>
 	);
 }
 
@@ -96,19 +113,10 @@ export function MuscleGroupExercisePicker({ exerciseIndex }: { exerciseIndex: nu
 	}
 
 	return (
-		<div className="flex min-h-0 flex-1 flex-col gap-2">
-			<button
-				type="button"
-				className="hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground grid min-h-11 w-full shrink-0 grid-cols-[auto_1fr] items-center gap-x-1 rounded-sm px-0 py-2 text-left outline-hidden"
-				onClick={() => setSelectedCategory(null)}
-				aria-label="Back to categories">
-				<IconChevronLeft className="size-5 shrink-0 -translate-x-1" />
-				<span className="font-bold text-base">{CATEGORY_LABELS[selectedCategory]}</span>
-			</button>
-			<ExerciseCategoryList
-				category={selectedCategory}
-				onSelect={handleSelectExercise}
-			/>
-		</div>
+		<ExerciseCategoryView
+			category={selectedCategory}
+			onBack={() => setSelectedCategory(null)}
+			onSelect={handleSelectExercise}
+		/>
 	);
 }

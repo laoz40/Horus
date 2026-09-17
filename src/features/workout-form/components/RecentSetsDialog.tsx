@@ -43,6 +43,8 @@ export default function RecentSetsDialog({
 		orpc.exercises.recentSets.queryOptions({
 			input: { exerciseName },
 			enabled: open && exerciseName.length > 0,
+			// Recent sets only change after saving a workout, not mid-form.
+			staleTime: Number.POSITIVE_INFINITY,
 		}),
 	);
 
@@ -95,7 +97,7 @@ export default function RecentSetsDialog({
 						<span className="truncate text-right">Completed</span>
 					</div>
 
-					{recentSetsQuery.isFetching ? (
+					{recentSetsQuery.isLoading ? (
 						<div className="flex flex-col">
 							<SetSkeletonRow />
 							<SetSkeletonRow />
