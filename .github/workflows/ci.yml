@@ -85,7 +85,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        run: |
+          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
+          pnpm build
 
   e2e:
     name: E2E tests
@@ -133,6 +135,7 @@ jobs:
           umask 077
           {
             printf 'DATABASE_URL=%s\n' "$DATABASE_URL"
+            printf 'DATABASE_URL_UNPOOLED=%s\n' "${DATABASE_URL//-pooler/}"
             printf 'SITE_URL=http://localhost:8000\n'
             printf 'RESEND_API_KEY=%s\n' "$RESEND_API_KEY"
             printf 'RESEND_FROM_EMAIL=%s\n' "$RESEND_FROM_EMAIL"
@@ -206,7 +209,9 @@ jobs:
           UPSTASH_REDIS_REST_URL: ${{ vars.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-        run: pnpm dlx vercel build --prod --token="$VERCEL_TOKEN"
+        run: |
+          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
+          pnpm dlx vercel build --prod --token="$VERCEL_TOKEN"
 
       - name: Deploy prebuilt output to Vercel
         env:
