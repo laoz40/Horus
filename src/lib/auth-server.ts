@@ -1,14 +1,13 @@
 import "server-only";
 
 import { Redis } from "@upstash/redis";
-import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins";
 import { Resend } from "resend";
 import { z } from "zod";
 
-import { db } from "@/lib/db";
-import * as schema from "@/lib/db/schema";
+import { prisma } from "@/lib/db";
 import { env } from "@/env";
 import { shortHash } from "@/lib/shortHash";
 
@@ -47,10 +46,8 @@ const extraTrustedOrigins =
 export const auth = betterAuth({
 	baseURL: env.SITE_URL,
 	trustedOrigins: extraTrustedOrigins,
-	database: drizzleAdapter(db, {
-		provider: "pg",
-		schema,
-		usePlural: true,
+	database: prismaAdapter(prisma, {
+		provider: "postgresql",
 	}),
 	secondaryStorage: {
 		get: async (key) => {
@@ -94,6 +91,14 @@ export const auth = betterAuth({
 		storeSessionInDatabase: true,
 		expiresIn: 60 * 60 * 24 * 14,
 		updateAge: 60 * 60 * 24 * 7,
+		fields: {
+			expiresAt: "expires_at",
+			createdAt: "created_at",
+			updatedAt: "updated_at",
+			ipAddress: "ip_address",
+			userAgent: "user_agent",
+			userId: "user_id",
+		},
 	},
 	emailAndPassword: {
 		enabled: false,
@@ -101,6 +106,25 @@ export const auth = betterAuth({
 	account: {
 		accountLinking: {
 			enabled: true,
+		},
+		fields: {
+			accountId: "account_id",
+			providerId: "provider_id",
+			userId: "user_id",
+			accessToken: "access_token",
+			refreshToken: "refresh_token",
+			idToken: "id_token",
+			accessTokenExpiresAt: "access_token_expires_at",
+			refreshTokenExpiresAt: "refresh_token_expires_at",
+			createdAt: "created_at",
+			updatedAt: "updated_at",
+		},
+	},
+	verification: {
+		fields: {
+			expiresAt: "expires_at",
+			createdAt: "created_at",
+			updatedAt: "updated_at",
 		},
 	},
 	socialProviders: {
@@ -116,6 +140,11 @@ export const auth = betterAuth({
 	user: {
 		deleteUser: {
 			enabled: true,
+		},
+		fields: {
+			emailVerified: "email_verified",
+			createdAt: "created_at",
+			updatedAt: "updated_at",
 		},
 	},
 	plugins: [
