@@ -3,10 +3,12 @@ import { normalizeName } from "@/lib/normalizeName";
 export const MUSCLE_GROUP_CATEGORIES = [
 	"chest",
 	"back",
-	"arms",
 	"shoulders",
-	"legs",
 	"core",
+	"biceps",
+	"triceps",
+	"glutes",
+	"legs",
 ] as const;
 
 export type MuscleGroupCategory = (typeof MUSCLE_GROUP_CATEGORIES)[number];
@@ -22,17 +24,20 @@ const RAW_MUSCLE_TO_CATEGORY = {
 	hamstrings: "legs",
 	calves: "legs",
 	deltoids: "shoulders",
-	biceps: "arms",
-	triceps: "arms",
+	biceps: "biceps",
+	triceps: "triceps",
+	"gluteus maximus": "glutes",
 	abdominals: "core",
 } satisfies Record<string, MuscleGroupCategory>;
 
 export const CATEGORY_LABELS = {
 	chest: "Chest",
 	back: "Back",
-	legs: "Legs",
 	shoulders: "Shoulders",
-	arms: "Arms",
+	biceps: "Biceps",
+	triceps: "Triceps",
+	legs: "Legs",
+	glutes: "Glutes",
 	core: "Core",
 } satisfies Record<MuscleGroupCategory, string>;
 
