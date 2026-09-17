@@ -21,6 +21,7 @@ jobs:
   quality:
     name: Lint & typecheck
     runs-on: ubuntu-latest
+    environment: Production
     steps:
       - uses: actions/checkout@v5
 
@@ -35,6 +36,13 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client with typed SQL
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
+          pnpm db:generate
 
       - name: Check formatting
         run: pnpm format:check
@@ -84,10 +92,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
+      - name: Generate Prisma client with typed SQL
         run: |
           export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
-          pnpm build
+          pnpm db:generate
+
+      - name: Build
+        run: pnpm build
 
   e2e:
     name: E2E tests
@@ -96,6 +107,7 @@ jobs:
     environment: Production
     env:
       CI: true
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v5
 
@@ -113,6 +125,11 @@ jobs:
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
+
+      - name: Generate Prisma client with typed SQL
+        run: |
+          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
+          pnpm db:generate
 
       - name: Write .env.local for tests
         env:
@@ -182,6 +199,13 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client with typed SQL
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
+          pnpm db:generate
 
       - name: Pull Vercel production env
         env:
