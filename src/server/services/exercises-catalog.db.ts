@@ -2,7 +2,8 @@ import "server-only";
 
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 
-import { db, runDatabaseTransaction, type DatabaseTransaction } from "@/lib/db";
+import { listUserExerciseCatalog } from "@/generated/prisma/sql";
+import { db, prisma, runDatabaseTransaction, type DatabaseTransaction } from "@/lib/db";
 import {
 	exerciseMuscleGroups,
 	exercises,
@@ -369,8 +370,16 @@ export function mergeUserExerciseRows(
 
 export function listUserExerciseRows(userId: string) {
 	return tryPromise({
-		try: () =>
-			userExerciseCatalogQuery(db).where(eq(exercises.userId, userId)).orderBy(asc(exercises.name)),
+		try: async (): Promise<UserExerciseCatalogRow[]> => {
+			const rows = await prisma.$queryRawTyped(listUserExerciseCatalog(userId));
+
+			return rows.map((row) => ({
+				id: row.id,
+				name: row.name,
+				muscleGroups: row.muscle_groups ?? [],
+				workoutCount: row.workout_count ?? 0,
+			}));
+		},
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
 }
