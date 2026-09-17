@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model account {
+  id                       String    @id
+  account_id               String
+  provider_id              String
+  user_id                  String
+  access_token             String?
+  refresh_token            String?
+  id_token                 String?
+  access_token_expires_at  DateTime? @db.Timestamptz(6)
+  refresh_token_expires_at DateTime? @db.Timestamptz(6)
+  scope                    String?
+  password                 String?
+  created_at               DateTime  @db.Timestamptz(6)
+  updated_at               DateTime  @db.Timestamptz(6)
+  issuer                   String
+  user                     user      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "account_user_id_user_id_fk")
+
+  @@unique([issuer, account_id], map: "account_issuer_account_unique")
+  @@index([user_id], map: "account_user_id_index")
+}
+
+model exercise_muscle_groups {
+  exercise_id     String        @db.Uuid
+  muscle_group_id String        @db.Uuid
+  exercises       exercises     @relation(fields: [exercise_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "exercise_muscle_groups_exercise_id_exercises_id_fk")
+  muscle_groups   muscle_groups @relation(fields: [muscle_group_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "exercise_muscle_groups_muscle_group_id_muscle_groups_id_fk")
+
+  @@id([exercise_id, muscle_group_id], map: "exercise_muscle_groups_primary_key")
+  @@index([muscle_group_id], map: "exercise_muscle_groups_muscle_group_id_index")
+}
+
+model exercises {
+  id                     String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                String
+  name                   String
+  normalized_name        String
+  exercise_muscle_groups exercise_muscle_groups[]
+  user                   user                     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "exercises_user_id_user_id_fk")
+  workout_exercises      workout_exercises[]
+
+  @@unique([user_id, normalized_name], map: "exercises_user_id_normalized_name_unique")
+}
+
+model muscle_groups {
+  id                     String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                   String
+  normalized_name        String                   @unique(map: "muscle_groups_normalized_name_unique")
+  exercise_muscle_groups exercise_muscle_groups[]
+}
+
+model session {
+  id         String   @id
+  expires_at DateTime @db.Timestamptz(6)
+  token      String   @unique(map: "session_token_unique")
+  created_at DateTime @db.Timestamptz(6)
+  updated_at DateTime @db.Timestamptz(6)
+  ip_address String?
+  user_agent String?
+  user_id    String
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "session_user_id_user_id_fk")
+
+  @@index([user_id], map: "session_user_id_index")
+}
+
+model user {
+  id             String      @id
+  name           String
+  email          String      @unique(map: "user_email_unique")
+  email_verified Boolean
+  image          String?
+  created_at     DateTime    @db.Timestamptz(6)
+  updated_at     DateTime    @db.Timestamptz(6)
+  account        account[]
+  exercises      exercises[]
+  session        session[]
+  workouts       workouts[]
+}
+
+model verification {
+  id         String   @id
+  identifier String
+  value      String
+  expires_at DateTime @db.Timestamptz(6)
+  created_at DateTime @db.Timestamptz(6)
+  updated_at DateTime @db.Timestamptz(6)
+
+  @@index([identifier], map: "verification_identifier_index")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model workout_exercises {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workout_id   String         @db.Uuid
+  exercise_id  String         @db.Uuid
+  position     Int
+  difficulty   Decimal?       @db.Decimal
+  notes        String         @default("")
+  exercises    exercises      @relation(fields: [exercise_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "workout_exercises_exercise_id_exercises_id_fk")
+  workouts     workouts       @relation(fields: [workout_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "workout_exercises_workout_id_workouts_id_fk")
+  workout_sets workout_sets[]
+
+  @@unique([workout_id, position], map: "workout_exercises_workout_id_position_unique")
+  @@index([exercise_id], map: "workout_exercises_exercise_id_index")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model workout_sets {
+  id                    String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workout_exercise_id   String            @db.Uuid
+  position              Int
+  weight                Decimal           @db.Decimal
+  reps                  Decimal           @db.Decimal
+  completed             Boolean           @default(false)
+  is_weight_pr          Boolean           @default(false)
+  is_volume_pr          Boolean           @default(false)
+  is_bodyweight_reps_pr Boolean           @default(false)
+  workout_exercises     workout_exercises @relation(fields: [workout_exercise_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "workout_sets_workout_exercise_id_workout_exercises_id_fk")
+
+  @@unique([workout_exercise_id, position], map: "workout_sets_workout_exercise_id_position_unique")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model workouts {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String
+  name              String
+  duration_seconds  Int?
+  created_at        DateTime            @default(now()) @db.Timestamptz(6)
+  total_pr_sets     Int                 @default(0)
+  workout_exercises workout_exercises[]
+  user              user                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "workouts_user_id_user_id_fk")
+
+  @@index([user_id, created_at], map: "workouts_user_id_created_at_index")
+}

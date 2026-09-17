@@ -52,3 +52,5 @@ dev.db
 
 AGENTS.md
 plans/
+
+/src/generated/prisma
