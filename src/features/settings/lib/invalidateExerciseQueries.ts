@@ -87,13 +87,11 @@ export function invalidateExerciseQueriesInBackground(queryClient: QueryClient) 
 		}),
 	];
 
-	if (exerciseQueryIsInUse(queryClient, orpc.exercises.listByCategory.key())) {
-		invalidations.push(
-			queryClient.invalidateQueries({
-				queryKey: orpc.exercises.listByCategory.key(),
-			}),
-		);
-	}
+	invalidations.push(
+		queryClient.invalidateQueries({
+			queryKey: orpc.exercises.listByCategory.key(),
+		}),
+	);
 
 	if (exerciseQueryIsInUse(queryClient, orpc.exercises.search.key())) {
 		invalidations.push(
