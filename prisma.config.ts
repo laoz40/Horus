@@ -5,11 +5,13 @@ config({ path: ".env.local" });
 
 function datasourceUrl(): string {
 	const unpooled = process.env.DATABASE_URL_UNPOOLED;
+
 	if (unpooled) {
 		return unpooled;
 	}
 
 	const pooled = process.env.DATABASE_URL;
+
 	if (pooled) {
 		return pooled.replace("-pooler", "");
 	}
