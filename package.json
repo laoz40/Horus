@@ -5,7 +5,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev --hostname 127.0.0.1 --port 8000",
-		"db:generate": "prisma generate",
+		"db:generate": "prisma generate --sql",
 		"db:migrate": "prisma migrate deploy",
 		"build": "next build",
 		"start": "next start",
