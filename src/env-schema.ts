@@ -18,6 +18,4 @@ export const serverEnvironmentFields = {
 	UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
 };
 
-export const serverEnvironmentSchema = z.object(serverEnvironmentFields);
-
 export const clientEnvironmentSchema = {};
