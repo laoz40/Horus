@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const serverEnvironmentFields = {
 	DATABASE_URL: z.url(),
+	// Direct Neon connection for Prisma CLI (migrate, db pull)
+	DATABASE_URL_UNPOOLED: z.url(),
 	SITE_URL: z.url(),
 	// Comma-separated extra origins (e.g. the Tailscale serve URL) allowed to call auth endpoints
 	EXTRA_TRUSTED_ORIGINS: z.string().optional(),
@@ -15,7 +17,5 @@ export const serverEnvironmentFields = {
 	UPSTASH_REDIS_REST_URL: z.url(),
 	UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
 };
-
-export const serverEnvironmentSchema = z.object(serverEnvironmentFields);
 
 export const clientEnvironmentSchema = {};

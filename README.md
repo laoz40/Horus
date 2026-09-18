@@ -32,7 +32,7 @@ super inefficient, laggy and doesn't scale well.
 - React 19
 - TypeScript
 - PostgreSQL (Neon)
-- Drizzle ORM
+- Prisma + TypedSQL
 - oRPC
 - Better Auth
 - Redis
@@ -117,7 +117,8 @@ In the future, I plan to build a native mobile version of this app.
 - [x] add proper error boundaries to entire app to handle unexpected errors
 - [x] change icon pack to one that has a filled variant (Tabler icons)
 - [x] add rounded corners, the square look doesnt work doesnt look intentional
-- [ ] migrate from tailwind to styleX
+- [ ] migrate from tailwind to styleX or use shadcn/lint
+- [x] migrate from drizzle to Prisma TypedSQL to use raw SQL (i hate the layer of abstraction of drizzle)
 
 ### Create Workout Page
 
