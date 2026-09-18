@@ -30,8 +30,6 @@ jobs:
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     environment: Production
-    outputs:
-      database_url: ${{ steps.resolve.outputs.database_url }}
     steps:
       - name: Set branch expiration
         if: github.event_name == 'pull_request'
@@ -59,17 +57,24 @@ jobs:
           parent: true
           api_key: ${{ secrets.NEON_API_KEY }}
 
-      - name: Resolve database URL
-        id: resolve
+      # Job outputs strip values that look like secrets. Pass the URL via artifact instead.
+      - name: Save database URL
         env:
           PROD_DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEON_DATABASE_URL: ${{ steps.neon-reset.outputs.db_url || steps.neon.outputs.db_url }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "database_url=${NEON_DATABASE_URL}" >> "$GITHUB_OUTPUT"
+            printf '%s' "$NEON_DATABASE_URL" > database-url.txt
           else
-            echo "database_url=${PROD_DATABASE_URL}" >> "$GITHUB_OUTPUT"
+            printf '%s' "$PROD_DATABASE_URL" > database-url.txt
           fi
+
+      - name: Upload database URL
+        uses: actions/upload-artifact@v5
+        with:
+          name: database-url
+          path: database-url.txt
+          retention-days: 1
 
   neon-cleanup:
     name: Delete Neon PR branch
@@ -104,17 +109,21 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Download database URL
+        uses: actions/download-artifact@v5
+        with:
+          name: database-url
+
+      - name: Set DATABASE_URL
+        run: echo "DATABASE_URL=$(cat database-url.txt)" >> "$GITHUB_ENV"
+
       - name: Apply migrations
         if: github.event_name == 'pull_request'
-        env:
-          DATABASE_URL: ${{ needs.database.outputs.database_url }}
         run: |
           export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
           pnpm db:migrate
 
       - name: Generate Prisma client with typed SQL
-        env:
-          DATABASE_URL: ${{ needs.database.outputs.database_url }}
         run: |
           export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
           pnpm db:generate
@@ -143,7 +152,6 @@ jobs:
     if: github.event.action != 'closed'
     environment: Production
     env:
-      DATABASE_URL: ${{ needs.database.outputs.database_url }}
       SITE_URL: ${{ vars.SITE_URL }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       RESEND_FROM_EMAIL: ${{ vars.RESEND_FROM_EMAIL }}
@@ -169,6 +177,14 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Download database URL
+        uses: actions/download-artifact@v5
+        with:
+          name: database-url
+
+      - name: Set DATABASE_URL
+        run: echo "DATABASE_URL=$(cat database-url.txt)" >> "$GITHUB_ENV"
 
       - name: Apply migrations
         if: github.event_name == 'pull_request'
@@ -196,7 +212,6 @@ jobs:
     environment: Production
     env:
       CI: true
-      DATABASE_URL: ${{ needs.database.outputs.database_url }}
     steps:
       - uses: actions/checkout@v5
 
@@ -214,6 +229,14 @@ jobs:
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
+
+      - name: Download database URL
+        uses: actions/download-artifact@v5
+        with:
+          name: database-url
+
+      - name: Set DATABASE_URL
+        run: echo "DATABASE_URL=$(cat database-url.txt)" >> "$GITHUB_ENV"
 
       - name: Apply migrations
         if: github.event_name == 'pull_request'
