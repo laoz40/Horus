@@ -121,6 +121,8 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
+          # Forked Neon branches copy production schema but may lack _prisma_migrations.
+          pnpm exec prisma migrate resolve --applied 0_init || true
           pnpm db:migrate
 
       - name: Generate Prisma client with typed SQL
@@ -186,12 +188,6 @@ jobs:
       - name: Set DATABASE_URL
         run: echo "DATABASE_URL=$(cat database-url.txt)" >> "$GITHUB_ENV"
 
-      - name: Apply migrations
-        if: github.event_name == 'pull_request'
-        run: |
-          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
-          pnpm db:migrate
-
       - name: Generate Prisma client with typed SQL
         run: |
           export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
@@ -237,12 +233,6 @@ jobs:
 
       - name: Set DATABASE_URL
         run: echo "DATABASE_URL=$(cat database-url.txt)" >> "$GITHUB_ENV"
-
-      - name: Apply migrations
-        if: github.event_name == 'pull_request'
-        run: |
-          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
-          pnpm db:migrate
 
       - name: Generate Prisma client with typed SQL
         run: |
