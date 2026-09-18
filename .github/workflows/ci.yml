@@ -2,6 +2,11 @@ name: CI
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
     branches:
       - production
   push:
@@ -18,8 +23,70 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Ephemeral Postgres per PR. Push to production keeps using Production DATABASE_URL.
+  # Requires repo secret NEON_API_KEY and variable NEON_PROJECT_ID (Neon GitHub integration sets both).
+  database:
+    name: Database
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    environment: Production
+    outputs:
+      database_url: ${{ steps.resolve.outputs.database_url }}
+    steps:
+      - name: Set branch expiration
+        if: github.event_name == 'pull_request'
+        run: echo "EXPIRES_AT=$(date -u --date '+7 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
+
+      - name: Create Neon branch
+        if: github.event_name == 'pull_request'
+        id: neon
+        uses: neondatabase/create-branch-action@v6
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch_name: pr-${{ github.event.pull_request.number }}
+          parent_branch: production
+          api_key: ${{ secrets.NEON_API_KEY }}
+          expires_at: ${{ env.EXPIRES_AT }}
+
+      # Re-sync from production on every new push so the branch picks up merged migrations.
+      - name: Reset Neon branch to production
+        if: github.event_name == 'pull_request' && steps.neon.outputs.created == 'false'
+        id: neon-reset
+        uses: neondatabase/reset-branch-action@v1
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: pr-${{ github.event.pull_request.number }}
+          parent: true
+          api_key: ${{ secrets.NEON_API_KEY }}
+
+      - name: Resolve database URL
+        id: resolve
+        env:
+          PROD_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEON_DATABASE_URL: ${{ steps.neon-reset.outputs.db_url || steps.neon.outputs.db_url }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "database_url=${NEON_DATABASE_URL}" >> "$GITHUB_OUTPUT"
+          else
+            echo "database_url=${PROD_DATABASE_URL}" >> "$GITHUB_OUTPUT"
+          fi
+
+  neon-cleanup:
+    name: Delete Neon PR branch
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete Neon branch
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: pr-${{ github.event.pull_request.number }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+
   quality:
     name: Lint & typecheck
+    needs: database
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     environment: Production
     steps:
@@ -37,9 +104,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Apply migrations
+        if: github.event_name == 'pull_request'
+        env:
+          DATABASE_URL: ${{ needs.database.outputs.database_url }}
+        run: |
+          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
+          pnpm db:migrate
+
       - name: Generate Prisma client with typed SQL
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ needs.database.outputs.database_url }}
         run: |
           export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
           pnpm db:generate
@@ -62,10 +137,13 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: quality
+    needs:
+      - database
+      - quality
+    if: github.event.action != 'closed'
     environment: Production
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL: ${{ needs.database.outputs.database_url }}
       SITE_URL: ${{ vars.SITE_URL }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       RESEND_FROM_EMAIL: ${{ vars.RESEND_FROM_EMAIL }}
@@ -92,6 +170,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Apply migrations
+        if: github.event_name == 'pull_request'
+        run: |
+          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
+          pnpm db:migrate
+
       - name: Generate Prisma client with typed SQL
         run: |
           export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
@@ -105,11 +189,14 @@ jobs:
   e2e:
     name: E2E tests
     runs-on: ubuntu-latest
-    needs: quality
+    needs:
+      - database
+      - quality
+    if: github.event.action != 'closed'
     environment: Production
     env:
       CI: true
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL: ${{ needs.database.outputs.database_url }}
     steps:
       - uses: actions/checkout@v5
 
@@ -128,6 +215,12 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
+      - name: Apply migrations
+        if: github.event_name == 'pull_request'
+        run: |
+          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
+          pnpm db:migrate
+
       - name: Generate Prisma client with typed SQL
         run: |
           export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
@@ -135,7 +228,6 @@ jobs:
 
       - name: Write .env.local for tests
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM_EMAIL: ${{ vars.RESEND_FROM_EMAIL }}
           PERSONAL_EMAIL: ${{ vars.PERSONAL_EMAIL }}
