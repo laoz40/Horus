@@ -1,15 +1,15 @@
 # Workout history
 
-`/workouts` is a feed of past workouts (7 per page) with cards showing name, date, and set stats, a search bar filtering by workout name, per-card options (Edit, Share, Delete), and pagination.
+`/workouts` is a feed of past workouts (7 per page, infinite scroll) with cards showing name, date, muscle-group badges, and set stats, a search bar (UI only — not wired yet), per-card options (Edit, Share, Delete), and a scroll sentinel that loads more pages.
 
 ## Sub-features
 
 - `list` — cards render for the user's workouts, newest first.
-- `search` — the search bar filters cards by name (client/server filtered feed).
+- `search-ui` — search input with placeholder "Search by workout name" is visible but does not filter the feed yet.
 - `edit` — card options → "Edit" opens `/workouts/<id>/edit`; saving there updates the row.
 - `delete` — card options → "Delete" asks "Delete workout?"; confirming removes the card and the row.
-- `share` — "Share" menu item (may be a stub — verify whatever it does and report).
-- `pagination` — with more than 7 workouts, HistoryPagination offers more pages.
+- `share` — "Share" menu item is a stub with no action.
+- `infinite-scroll` — with more than 7 workouts, scrolling near the bottom loads the next page via `HistoryPagination` sentinel (no prev/next buttons).
 
 ## How to get to it (user POV)
 
@@ -19,15 +19,15 @@
 
 Preconditions: doctor authenticated; ideally one workout exists (run `create-workout.md` first).
 
-- **List:** `flow --out history --steps '[{"goto":"/workouts"},{"expectText":"Search by workout name"},{"snapshot":true},{"screenshot":"01-history.png"}]'` → cards visible; snapshot names the card structure.
-- **Search:** same, then `{"fill":{"placeholder":"Search by workout name","value":"Verify Run Workout"}},{"wait":600},{"expectText":"Verify Run Workout"}` → only matching cards remain; also test a garbage term and the empty state.
-- **Edit:** `{"click":{"aria"?}}` — click `{"role":"button","name":"Workout options"}` (aria-label) on a card, then `{"click":{"role":"menuitem","name":"Edit"}}`, `{"expectUrl":"/edit"}` → edit form loads; change something and Finish/Save as in `create-workout.md`, then verify the updated value in history and DB.
-- **Delete:** options → `{"click":{"role":"menuitem","name":"Delete"}}` → dialog titled "Delete workout?" with description "This will permanently delete workout: <name>" → confirm → card disappears; DB query for that id returns `[]`.
-- **Pagination:** only meaningful with 8+ workouts; drive HistoryPagination controls from the snapshot.
+- **List:** `flow --out history --steps '[{"goto":"/workouts"},{"expectText":"Verify Run Workout"},{"screenshot":"01-history.png"},{"snapshot":true}]'` → workout card visible. Do not assert placeholder text with `expectText` (placeholders are not in the DOM as text).
+- **Delete:** `{"goto":"/workouts"},{"expectText":"Verify Run Workout"},{"click":{"role":"button","name":"Workout options"}},{"click":{"role":"menuitem","name":"Delete"}},{"expectText":"Delete workout?"},{"click":{"name":"Delete"}}` → toast "Deleted …" (fires only after the server succeeds). Note the workout `id` before delete, then `db-query.mjs --sql "SELECT id FROM workouts WHERE id = '<id>'"` → `[]`. Use `click` for the options menu (`aria-label="Workout options"`), not `expectText`.
+- **Edit:** options → `{"click":{"role":"menuitem","name":"Edit"}}`, `{"expectUrl":"/edit"}` → edit form loads; change something and Finish/Save as in `create-workout.md`, then verify the updated value in history and DB.
+- **Infinite scroll:** only meaningful with 8+ workouts; scroll the feed until the sentinel loads more cards (check snapshot for additional card names).
 
 ## Gotchas
 
-- Deleting is destructive and global per workout — only delete workouts you created as the verify user (check the card name before confirming; the dialog description echoes the name).
-- "Workout options" matches every card; scope clicks by picking `.first()` behavior of the harness or target a card found via search first.
+- Search does not filter yet — do not claim search behavior as verified.
+- Deleting is destructive — only delete workouts you created as the verify user (the dialog description echoes the name).
+- "Workout options" is an `aria-label`, not visible text — drive it with `click`.
 - The feed renders through an error boundary with a skeleton; `expectText` polling handles the load delay.
-- The search bar's empty results state differs from the loading skeleton — capture a snapshot for whichever you claim.
+- Card hide is client-side (`historyUiStore`); the toast still means the mutation succeeded. Re-running `create-workout.md` without cleanup can leave duplicate names — `count(*)` alone is ambiguous; always confirm delete by the specific `id` you targeted.

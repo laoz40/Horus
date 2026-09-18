@@ -6,7 +6,7 @@ Horus has no passwords: users sign in with an email OTP (delivered by Resend) or
 
 - `doctor-session` — the profile cookie yields a valid session (`/api/auth/get-session` returns a user).
 - `mint-session` — `drive.mjs auth` creates/reuses the verify user and injects a working session cookie.
-- `otp-login` — manual: enter email on `/login`, receive OTP by email, enter code, land on `/welcome`.
+- `otp-login` — manual: enter email on `/login`, receive OTP by email, enter code; users without a name land on `/welcome`, others redirect to `/`.
 - `sign-out` — from `/settings/account`, ends the session on this device.
 
 ## How to get to it (user POV)
@@ -20,8 +20,8 @@ Preconditions: app up; profile at `/tmp/horus-verify-profile` exists (created on
 
 - **Check session (precondition for all other features):**
   `node .agents/skills/verify-horus/helpers/drive.mjs doctor`
-  → `app: up`, `session: authenticated: verify-agent@horus.local`. If `NOT authenticated`, run `auth` (then `auth --signed` if still unauthenticated) and re-run `doctor`.
-- **Mint session:** `node .agents/skills/verify-horus/helpers/drive.mjs auth` → "Minted plain session for verify-agent@horus.local".
+  → `app: up`, `session: authenticated: verify-agent@horus.local`. If `NOT authenticated`, run `auth` and re-run `doctor`.
+- **Mint session:** `node .agents/skills/verify-horus/helpers/drive.mjs auth` → `Minted session for verify-agent@horus.local and injected signed cookie into profile.`
 - **OTP login (manual, headed):** `node .agents/skills/verify-horus/helpers/drive.mjs login` → window opens at `/login`; complete it by hand; script exits once get-session returns the user. Note: this signs in as the **user's real account**.
 - **Sign out flow:**
   `flow --out signout --steps '[{"goto":"/settings/account"},{"click":{"name":"Sign out"}},{"expectText":"Welcome"},{"sessionDump":true}]'`

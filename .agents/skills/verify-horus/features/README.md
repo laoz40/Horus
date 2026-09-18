@@ -39,8 +39,8 @@ Keep implementation details out: user paths, stable handles, required state, com
 ## Features
 
 - [Session and auth](./session-auth.md) — session precondition, OTP login, sign out.
-- [Dashboard](./dashboard.md) — greeting, Start Workout, presets stub, Year in Training heatmap.
-- [Create a workout](./create-workout.md) — add exercises, sets, save, DB persistence, PR toast.
-- [Workout history](./workout-history.md) — list, search, edit, delete, pagination.
+- [Dashboard](./dashboard.md) — greeting, Start Workout, preset stubs (Start + Presets sections), Year in Training heatmap.
+- [Create a workout](./create-workout.md) — muscle-group picker or combobox search, sets, save, DB persistence, PR on set completion.
+- [Workout history](./workout-history.md) — list, search UI (not wired), edit, delete, infinite scroll.
 - [Progress](./progress.md) — Year in Training page.
-- [Settings](./settings.md) — account bar, theme, data management, sign out, account deletion.
+- [Settings](./settings.md) — account bar, theme, notifications, exercises catalog, data management, sign out, account deletion.

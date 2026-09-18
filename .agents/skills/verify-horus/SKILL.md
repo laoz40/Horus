@@ -13,6 +13,7 @@ The app is a Next.js 16 dev server on `http://localhost:8000` (`pnpm dev`, binds
 
 - **Attach first**: the user usually has the dev server running. Check with `curl -s -o /dev/null -w "%{http_code}" http://localhost:8000` — `200`/`307` means attach to it. **Never start a second instance** and never kill one you didn't start.
 - Only if nothing answers: start `pnpm dev` from the repo root in the background, note the PID, and wait until the port answers. Tear that instance down on cleanup by killing the PID you recorded. Port 8000 is also claimed by `tailscale serve` (HTTPS on the tailnet IP); that is a proxy, not the app — do not touch it.
+- If RPC routes fail with `Can't resolve '@/generated/prisma/sql'`, run `pnpm db:generate` once from the repo root (TypedSQL output is gitignored; `postinstall` normally generates it).
 - Env lives in `.env.local` (t3env-validated). External deps are real: Neon dev Postgres, Upstash Redis, Resend, OAuth. Writing rows is acceptable (dev DB), but only as the verify user (see Doctor).
 
 ## Doctor
@@ -39,7 +40,7 @@ Steps (JSON objects), all grounded in this repo's UI:
 
 - `{"goto": "/workouts/new"}` — relative to `http://localhost:8000`
 - `{"click": {"name": "Finish"}}` — role defaults to `button`; add `"role"` for links (`{"role": "link", "name": "Start Workout"}`) or `"exact": true`
-- `{"fill": {"placeholder": "kg", "value": "60"}}` — or by `{"label": ...}` / `{"name": ...}` (accessible name)
+- `{"fill": {"placeholder": "kg", "value": "60"}}` — or by `{"label": ...}` / `{"name": ...}` (textbox accessible name) / `{"combobox": "Exercise name", "value": "..."}` (combobox)
 - `{"press": "Enter"}`
 - `{"expectText": "Year in Training"}`, `{"expectToast": "Saved ..."}` (sonner toasts), `{"expectUrl": "/workouts"}`
 - `{"screenshot": "01-after-save.png"}` (full-page, into the evidence dir)
@@ -47,7 +48,7 @@ Steps (JSON objects), all grounded in this repo's UI:
 - `{"text": true}` — prints `document.body.innerText`
 - `{"wait": 500}`, `{"sessionDump": true}` (prints get-session JSON)
 
-Prefer accessible names — this repo has few stable handles: `aria-label="Main navigation"` (nav), `aria-label="Workout options"` (history card menu), `aria-label="Recent exercises"` (form dropdown), placeholders `Search by workout name`, `Enter an exercise...`, `kg`, `reps`. Radix selects/dialogs need two clicks (trigger, then option/dialog content) — allow a `{"wait": 300}` between if flaky.
+Prefer accessible names — this repo has few stable handles: `aria-label="Main navigation"` (nav), `aria-label="Workout options"` (history card menu; use `click`, not `expectText`), muscle-group buttons (`Chest`, `Back`, …), combobox `Exercise name`, placeholders `kg`, `reps`. Input placeholders are not visible to `expectText`. Radix selects/dialogs need two clicks (trigger, then option/dialog content) — allow a `{"wait": 300}` between if flaky.
 
 ## Evidence
 

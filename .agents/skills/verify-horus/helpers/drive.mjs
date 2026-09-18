@@ -235,7 +235,9 @@ async function runStep(page, step, outDir, n) {
 			? page.getByPlaceholder(step.fill.placeholder)
 			: step.fill.label
 				? page.getByLabel(step.fill.label)
-				: page.getByRole("textbox", { name: step.fill.name });
+				: step.fill.combobox
+					? page.getByRole("combobox", { name: step.fill.combobox })
+					: page.getByRole("textbox", { name: step.fill.name });
 		await locator.first().fill(step.fill.value);
 	} else if (step.press) {
 		await page.keyboard.press(step.press);
