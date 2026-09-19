@@ -1,10 +1,9 @@
 "use client";
 
-import { IconHistory, IconPlus } from "@tabler/icons-react";
+import { IconBackspace, IconPlus } from "@tabler/icons-react";
 import { forwardRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
-import { openRecentSetsDialog } from "@/features/workout-form/stores/workoutFormUiStore";
 import { showSetDeletedToast } from "@/lib/toastMessages";
 import { cn } from "@/lib/utils";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
@@ -23,6 +22,8 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 	({ className, exerciseIndex, isEditing }, ref) => {
 		const {
 			control,
+			setFocus,
+			setValue,
 			trigger,
 			formState: { errors },
 		} = useFormContext<Workout>();
@@ -59,17 +60,17 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 		});
 
 		const hasExerciseName = Boolean(exerciseName?.trim());
+		const hasExerciseNameInput = Boolean(exerciseName);
 
 		const exerciseError = errors.exercises?.[exerciseIndex];
 		const nameError = exerciseError?.global?.name;
 		const setsError = exerciseError?.sets?.root;
 
-		const handleRecentClick = () => {
-			const trimmedName = exerciseName?.trim();
-
-			if (!trimmedName) return;
-
-			openRecentSetsDialog(trimmedName);
+		const handleClearName = () => {
+			setValue(`exercises.${exerciseIndex}.global.name`, "");
+			setValue(`exercises.${exerciseIndex}.exerciseId`, undefined);
+			setValue(`exercises.${exerciseIndex}.global.muscleGroups`, []);
+			setFocus(`exercises.${exerciseIndex}.global.name`);
 		};
 
 		return (
@@ -82,15 +83,15 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 						<div className="flex-1">
 							<ExerciseNameInputDropdown exerciseIndex={exerciseIndex} />
 						</div>
-						{hasExerciseName && (
+						{hasExerciseNameInput && (
 							<Button
 								variant="outline"
 								size="default"
 								type="button"
 								className="h-11 w-11 shrink-0 justify-end border-none bg-transparent! p-0 text-muted-foreground shadow-none has-[>svg]:px-0"
-								onClick={handleRecentClick}
-								aria-label="Recent exercises">
-								<IconHistory className="size-5" />
+								onClick={handleClearName}
+								aria-label="Clear exercise name">
+								<IconBackspace className="size-4" />
 							</Button>
 						)}
 					</div>
