@@ -13,7 +13,7 @@ The app is a Next.js 16 dev server on `http://localhost:8000` (`pnpm dev`, binds
 
 - **Attach first**: the user usually has the dev server running. Check with `curl -s -o /dev/null -w "%{http_code}" http://localhost:8000` — `200`/`307` means attach to it. **Never start a second instance** and never kill one you didn't start.
 - Only if nothing answers: start `pnpm dev` from the repo root in the background, note the PID, and wait until the port answers. Tear that instance down on cleanup by killing the PID you recorded. Port 8000 is also claimed by `tailscale serve` (HTTPS on the tailnet IP); that is a proxy, not the app — do not touch it.
-- If RPC routes fail with `Can't resolve '@/generated/prisma/sql'`, run `pnpm db:generate` once from the repo root (TypedSQL output is gitignored; `postinstall` runs `db:generate`).
+- If RPC routes fail with `Can't resolve '@/generated/prisma/sql'`, run `pnpm db:generate` once from the repo root (TypedSQL output is gitignored; `postinstall` normally generates the Prisma client only).
 - Env lives in `.env.local` (t3env-validated). External deps are real: Neon dev Postgres, Upstash Redis, Resend, OAuth. Writing rows is acceptable (dev DB), but only as the verify user (see Doctor).
 
 ## Doctor
