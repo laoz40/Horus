@@ -131,10 +131,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 									setValue(`exercises.${exerciseIndex}.global.muscleGroups`, []);
 								}}
 								onFocus={() => setIsOpen(true)}
-								onClick={(e) => {
-									e.currentTarget.select();
-									setIsOpen(true);
-								}}
+								onClick={() => setIsOpen(true)}
 								onBlur={() => {
 									field.onBlur();
 									setIsOpen(false);
