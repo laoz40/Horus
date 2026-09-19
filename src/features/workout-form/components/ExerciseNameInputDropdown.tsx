@@ -2,9 +2,14 @@ import { useId, useRef, useState } from "react";
 import type { MouseEvent, PointerEvent, TouchEvent } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
-import { IconSearch } from "@tabler/icons-react";
+import { IconSearch, IconXboxX } from "@tabler/icons-react";
 
-import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupButton,
+	InputGroupInput,
+} from "@/components/ui/input-group";
 import { useExerciseSuggestions } from "@/features/workout-form/hooks/useExerciseSuggestions";
 import { useSuggestionListTouchScroll } from "@/features/workout-form/hooks/useSuggestionListTouchScroll";
 import { applyPickedExercise } from "@/features/workout-form/lib/selectExercise";
@@ -107,11 +112,19 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 					void fetchMoreSuggestions();
 				};
 
+				const handleClearName = () => {
+					field.onChange("");
+					setValue(`exercises.${exerciseIndex}.exerciseId`, undefined);
+					setValue(`exercises.${exerciseIndex}.global.muscleGroups`, []);
+					setFocus(exerciseNamePath);
+					setIsOpen(false);
+				};
+
 				const isEmpty = !query.trim();
 
 				return (
-					<div className="relative">
-						<InputGroup className="h-11 rounded-none border-x-0 border-t-0 border-b border-transparent bg-transparent! shadow-none has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+					<div className="relative w-full">
+						<InputGroup className="h-11 w-full rounded-none border-x-0 border-t-0 border-b border-transparent bg-transparent! shadow-none has-[>[data-align=inline-end]]:[&>input]:pr-0 has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-0">
 							<InputGroupInput
 								placeholder="Search an exercise..."
 								className="px-0 font-semibold shadow-none placeholder:opacity-0"
@@ -131,15 +144,25 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 									setValue(`exercises.${exerciseIndex}.global.muscleGroups`, []);
 								}}
 								onFocus={() => setIsOpen(true)}
-								onClick={(e) => {
-									e.currentTarget.select();
-									setIsOpen(true);
-								}}
+								onClick={() => setIsOpen(true)}
 								onBlur={() => {
 									field.onBlur();
 									setIsOpen(false);
 								}}
 							/>
+							{query && (
+								<InputGroupAddon
+									align="inline-end"
+									className="pr-0">
+									<InputGroupButton
+										size="icon-sm"
+										aria-label="Clear exercise name"
+										onMouseDown={preventMouseBlur}
+										onClick={handleClearName}>
+										<IconXboxX />
+									</InputGroupButton>
+								</InputGroupAddon>
+							)}
 						</InputGroup>
 
 						{/* overlays placeholder on input so the search icon to disappear as well */}
