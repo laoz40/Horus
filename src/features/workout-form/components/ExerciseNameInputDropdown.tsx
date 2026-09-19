@@ -4,7 +4,12 @@ import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import { IconSearch, IconXboxX } from "@tabler/icons-react";
 
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupButton,
+	InputGroupInput,
+} from "@/components/ui/input-group";
 import { useExerciseSuggestions } from "@/features/workout-form/hooks/useExerciseSuggestions";
 import { useSuggestionListTouchScroll } from "@/features/workout-form/hooks/useSuggestionListTouchScroll";
 import { applyPickedExercise } from "@/features/workout-form/lib/selectExercise";
@@ -146,7 +151,9 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 								}}
 							/>
 							{query && (
-								<InputGroupAddon align="inline-end" className="pr-0">
+								<InputGroupAddon
+									align="inline-end"
+									className="pr-0">
 									<InputGroupButton
 										size="icon-sm"
 										aria-label="Clear exercise name"
