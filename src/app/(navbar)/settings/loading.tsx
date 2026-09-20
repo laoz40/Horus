@@ -6,8 +6,8 @@ export default function SettingsLoading() {
 			</div>
 
 			<div className="flex flex-col gap-3">
-				<section className="flex flex-col pr-4 pl-4 mb-3">
-					<div className="p-2 border rounded-md bg-card">
+				<section className="mb-3 flex flex-col pr-4 pl-4">
+					<div className="rounded-md border bg-card p-2">
 						<div className="flex items-center justify-between">
 							<div className="flex items-center gap-2">
 								<div className="size-10 rounded-full bg-muted" />
@@ -21,9 +21,9 @@ export default function SettingsLoading() {
 					</div>
 				</section>
 
-				<section className="flex flex-col pr-4 pl-4 mb-3">
-					<h2 className="text-muted-foreground mb-1 text-sm">Appearance</h2>
-					<div className="p-2 border rounded-md bg-card">
+				<section className="mb-3 flex flex-col pr-4 pl-4">
+					<h2 className="mb-1 text-sm text-muted-foreground">Appearance</h2>
+					<div className="rounded-md border bg-card p-2">
 						<div className="flex items-center justify-between">
 							<div className="h-5 w-16 rounded-sm bg-muted" />
 							<div className="h-9 w-20 rounded-md bg-muted" />
@@ -31,9 +31,9 @@ export default function SettingsLoading() {
 					</div>
 				</section>
 
-				<section className="flex flex-col pr-4 pl-4 mb-3">
-					<h2 className="text-muted-foreground mb-1 text-sm">Data</h2>
-					<div className="p-2 border rounded-md bg-card">
+				<section className="mb-3 flex flex-col pr-4 pl-4">
+					<h2 className="mb-1 text-sm text-muted-foreground">Data</h2>
+					<div className="rounded-md border bg-card p-2">
 						<div className="flex items-center justify-between">
 							<div className="h-5 w-16 rounded-sm bg-muted" />
 							<div className="h-9 w-36 rounded-md bg-muted" />

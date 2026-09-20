@@ -40,7 +40,7 @@ function DifficultySlider({ exerciseIndex }: ExerciseCollapsiblesProps) {
 			title="Difficulty"
 			icon={IconFlame}
 			onOpenChange={initDifficultyValue}>
-			<div className="flex flex-col w-full max-w-sm gap-3">
+			<div className="flex w-full max-w-sm flex-col gap-3">
 				<Controller
 					control={control}
 					name={`exercises.${exerciseIndex}.difficulty`}
@@ -53,7 +53,7 @@ function DifficultySlider({ exerciseIndex }: ExerciseCollapsiblesProps) {
 						/>
 					)}
 				/>
-				<div className="flex flex-row items-center justify-between text-muted-foreground text-xs">
+				<div className="flex flex-row items-center justify-between text-xs text-muted-foreground">
 					{difficultyOptions.map((difficulty) => (
 						<span key={difficulty}>{difficulty}</span>
 					))}
@@ -80,7 +80,7 @@ function ExerciseNotes({ exerciseIndex }: ExerciseCollapsiblesProps) {
 					{...register(`exercises.${exerciseIndex}.notes`)}
 				/>
 				{errors.exercises?.[exerciseIndex]?.notes && (
-					<span className="text-red-500 text-sm">
+					<span className="text-sm text-red-500">
 						{errors.exercises[exerciseIndex]?.notes?.message}
 					</span>
 				)}
@@ -116,7 +116,7 @@ const CollapsibleFilter = ({
 				<h3 className="flex items-center gap-2 text-sm leading-none font-semibold text-muted-foreground">
 					{!!Icon && <Icon className="h-5 w-5 text-muted-foreground" />} {title}
 				</h3>
-				<IconChevronDown className="h-4 w-4 group-data-[state=open]:rotate-180 transition-transform text-muted-foreground" />
+				<IconChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
 			</CollapsibleTrigger>
 
 			<Activity mode={isCollapsibleOpen ? "visible" : "hidden"}>

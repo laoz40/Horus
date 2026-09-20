@@ -17,7 +17,7 @@ export default function GlobalError({
 		<html
 			lang="en"
 			suppressHydrationWarning>
-			<body className="flex flex-col items-center justify-center h-dvh gap-3">
+			<body className="flex h-dvh flex-col items-center justify-center gap-3">
 				<ThemeProvider {...themeProviderProps}>
 					<p className="text-sm text-muted-foreground">Something went wrong.</p>
 					<Button

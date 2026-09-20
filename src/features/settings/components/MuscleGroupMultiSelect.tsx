@@ -36,7 +36,7 @@ export default function MuscleGroupMultiSelect({
 						type="button"
 						aria-pressed={isSelected}
 						onClick={() => onChange(toggleCategory(selectedCategories, option.category))}
-						className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+						className="rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
 						<Badge
 							variant={isSelected ? "default" : "outline"}
 							className={cn(

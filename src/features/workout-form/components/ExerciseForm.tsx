@@ -68,9 +68,9 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				ref={ref}
 				className={cn("flex min-h-full flex-col gap-3 p-4", className)}>
 				{/* Exercise Name */}
-				<div className="shrink-0 flex flex-col gap-2">
+				<div className="flex shrink-0 flex-col gap-2">
 					<ExerciseNameInputDropdown exerciseIndex={exerciseIndex} />
-					{nameError && <span className="text-red-500 text-sm">{nameError.message}</span>}
+					{nameError && <span className="text-sm text-red-500">{nameError.message}</span>}
 				</div>
 
 				{!hasExerciseName && (
@@ -82,7 +82,7 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 				{hasExerciseName && (
 					<div className="flex min-h-0 flex-1 flex-col gap-2">
 						{/* Set Rows */}
-						<div className="-mx-1 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-1 no-scrollbar">
+						<div className="no-scrollbar -mx-1 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-1">
 							<div className="flex flex-col gap-3 pt-0.5">
 								{sets.map((set, setIndex) => (
 									<SetRow
@@ -96,13 +96,13 @@ const ExerciseForm = forwardRef<HTMLDivElement, ExerciseFormProps>(
 							</div>
 							<Button
 								variant="ghost"
-								className="w-full shrink-0 items-center text-muted-foreground text-sm leading-0"
+								className="w-full shrink-0 items-center text-sm leading-0 text-muted-foreground"
 								type="button"
 								onClick={handleAddSet}>
 								<IconPlus className="size-4" />
 								<span className="translate-y-px">Add Set</span>
 							</Button>
-							{setsError && <span className="text-red-500 text-sm">{setsError.message}</span>}
+							{setsError && <span className="text-sm text-red-500">{setsError.message}</span>}
 						</div>
 
 						{/* Difficulty and Notes */}

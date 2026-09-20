@@ -83,14 +83,14 @@ export default function RecentSetsDialog({
 				className="sm:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>Most Recent Sets</DialogTitle>
-					<DialogDescription className="text-balance leading-snug">
+					<DialogDescription className="leading-snug text-balance">
 						Your recently completed sets for&nbsp;
 						<span className="font-bold">{exerciseName}</span>
 					</DialogDescription>
 				</DialogHeader>
 
 				<div className="flex flex-col gap-3">
-					<div className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 text-muted-foreground text-xs uppercase tracking-wide">
+					<div className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 text-xs tracking-wide text-muted-foreground uppercase">
 						<span>Weight</span>
 						<span>Reps</span>
 						<span />
@@ -107,9 +107,9 @@ export default function RecentSetsDialog({
 							<SetSkeletonRow />
 						</div>
 					) : errorMessage ? (
-						<p className="text-destructive text-sm">{errorMessage}</p>
+						<p className="text-sm text-destructive">{errorMessage}</p>
 					) : sets.length === 0 ? (
-						<p className="text-muted-foreground text-sm">No recent completed sets found.</p>
+						<p className="text-sm text-muted-foreground">No recent completed sets found.</p>
 					) : (
 						<div className="flex flex-col">
 							{sets.map((set) => {
@@ -123,7 +123,7 @@ export default function RecentSetsDialog({
 										<span className={cn(set.isPr && "font-semibold")}>{set.reps}</span>
 										<span>
 											{primaryPrType ? (
-												<span className="rounded-md border bg-muted px-1.5 py-0.5 text-muted-foreground text-xs whitespace-nowrap">
+												<span className="rounded-md border bg-muted px-1.5 py-0.5 text-xs whitespace-nowrap text-muted-foreground">
 													{setPrLabels[primaryPrType]}
 												</span>
 											) : null}

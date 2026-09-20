@@ -119,7 +119,7 @@ export default function WorkoutForm({
 					{/* Exercise Form */}
 					<section
 						ref={exerciseListRef}
-						className="flex min-h-0 flex-1 flex-col overflow-y-auto snap-y snap-mandatory">
+						className="flex min-h-0 flex-1 snap-y snap-mandatory flex-col overflow-y-auto">
 						{exercises.map((exercise, exerciseIndex) => (
 							<ExerciseForm
 								key={exercise.id}
@@ -127,7 +127,7 @@ export default function WorkoutForm({
 								ref={(exerciseFormElement) => {
 									registerExerciseRef(exercise.id, exerciseFormElement);
 								}}
-								className="snap-start min-h-full"
+								className="min-h-full snap-start"
 								isEditing={isEditing && selectedExerciseId === exercise.id}
 							/>
 						))}

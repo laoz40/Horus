@@ -7,8 +7,8 @@ import {
 
 export default function AccountPage() {
 	return (
-		<div className="flex justify-center py-12 px-4">
-			<div className="flex flex-col gap-4 w-full max-w-xl">
+		<div className="flex justify-center px-4 py-12">
+			<div className="flex w-full max-w-xl flex-col gap-4">
 				<span className="text-sm text-gray-500">User</span>
 				<AccountSettingsCards
 					classNames={{
@@ -18,7 +18,7 @@ export default function AccountPage() {
 						},
 					}}
 				/>
-				<span className="text-sm text-gray-500 pt-4">Account</span>
+				<span className="pt-4 text-sm text-gray-500">Account</span>
 				<SecuritySettingsCards
 					classNames={{
 						card: {

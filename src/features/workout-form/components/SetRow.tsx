@@ -281,7 +281,7 @@ export default function SetRow({
 
 	return (
 		<div className="flex flex-col gap-1">
-			<div className="grid grid-cols-[1fr_min-content_1fr_min-content] gap-5 place-items-center">
+			<div className="grid grid-cols-[1fr_min-content_1fr_min-content] place-items-center gap-5">
 				<NumberInput
 					variant="decimal"
 					placeholder="kg"
@@ -313,7 +313,7 @@ export default function SetRow({
 					checkSetPr={checkSetPrMutation.mutate}
 				/>
 			</div>
-			{repsErrorMessage ? <span className="text-red-500 text-sm">{repsErrorMessage}</span> : null}
+			{repsErrorMessage ? <span className="text-sm text-red-500">{repsErrorMessage}</span> : null}
 		</div>
 	);
 }

@@ -41,10 +41,10 @@ export default function WorkoutViewSummary({ workout }: WorkoutViewSummaryProps)
 	const { totalVolume, totalPrSets, exerciseCount } = getWorkoutViewStats(workout);
 
 	return (
-		<section className="flex flex-col gap-2 px-4 pb-6 pt-4">
+		<section className="flex flex-col gap-2 px-4 pt-4 pb-6">
 			<div className="flex flex-col gap-0.5">
-				<h1 className="text-2xl font-semibold leading-tight">{workout.name}</h1>
-				<p className="text-muted-foreground text-sm tabular-nums">
+				<h1 className="text-2xl leading-tight font-semibold">{workout.name}</h1>
+				<p className="text-sm text-muted-foreground tabular-nums">
 					{formatWorkoutDate(workout.createdAt)}
 				</p>
 			</div>

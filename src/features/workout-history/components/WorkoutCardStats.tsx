@@ -35,7 +35,7 @@ export default function WorkoutCardStats({
 			{/* Workout Duration */}
 			<div className="flex items-center gap-1">
 				<IconClockFilled className="size-4 shrink-0" />
-				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
+				<span className="relative top-px text-xs leading-none font-medium whitespace-nowrap">
 					{formatDurationSummary(duration)}
 				</span>
 			</div>
@@ -43,7 +43,7 @@ export default function WorkoutCardStats({
 			{/* Total volume lifted */}
 			<div className="flex items-center gap-1">
 				<IconWeightFilled className="size-4 shrink-0" />
-				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
+				<span className="relative top-px text-xs leading-none font-medium whitespace-nowrap">
 					{displayWorkoutVolume} kg
 				</span>
 			</div>
@@ -51,7 +51,7 @@ export default function WorkoutCardStats({
 			{/* Number of exercises */}
 			<div className="flex items-center gap-1">
 				<IconBarbellFilled className="size-4 shrink-0" />
-				<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none">
+				<span className="relative top-px text-xs leading-none font-medium whitespace-nowrap">
 					{exerciseCount}
 				</span>
 			</div>
@@ -68,7 +68,7 @@ export default function WorkoutCardStats({
 						className={cn("flex items-center gap-1", pr === 0 && "invisible")}
 						aria-hidden={pr === 0}>
 						<IconTrophyFilled className="size-4 shrink-0 text-primary" />
-						<span className="relative top-px whitespace-nowrap text-xs font-medium leading-none text-primary">
+						<span className="relative top-px text-xs leading-none font-medium whitespace-nowrap text-primary">
 							{pr > 0 ? (
 								<>
 									<span className="sr-only">Personal records:</span>

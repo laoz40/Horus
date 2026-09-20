@@ -78,7 +78,7 @@ export default function RestTimerButton(): ReactElement {
 			<DrawerTrigger asChild>
 				<Button
 					className={cn(
-						"absolute -left-5 top-2/3 z-50 -translate-y-1/2 rotate-270 rounded-none rounded-b-md border border-t-0 text-sm font-semibold tabular-nums shadow-sm",
+						"absolute top-2/3 -left-5 z-50 -translate-y-1/2 rotate-270 rounded-none rounded-b-md border border-t-0 text-sm font-semibold tabular-nums shadow-sm",
 						isOverRestTarget && "text-destructive hover:text-destructive",
 					)}
 					variant="outline">
@@ -93,7 +93,7 @@ export default function RestTimerButton(): ReactElement {
 				</DrawerHeader>
 				<div
 					className={cn(
-						"mb-4 text-center text-4xl font-semibold tabular-nums text-foreground",
+						"mb-4 text-center text-4xl font-semibold text-foreground tabular-nums",
 						isOverRestTarget && "text-destructive",
 					)}>
 					{elapsedTime}

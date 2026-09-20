@@ -3,9 +3,9 @@ import type { ReactNode, ReactElement } from "react";
 
 export default function NavLayout({ children }: { children: ReactNode }): ReactElement {
 	return (
-		<div className="flex flex-col md:flex-row flex-1 min-h-0">
-			<main className="ios-safe-area-top flex flex-1 flex-col w-full align-center overflow-y-auto no-scrollbar relative">
-				<div className="w-full max-w-5xl mx-auto flex flex-col flex-1">{children}</div>
+		<div className="flex min-h-0 flex-1 flex-col md:flex-row">
+			<main className="ios-safe-area-top align-center no-scrollbar relative flex w-full flex-1 flex-col overflow-y-auto">
+				<div className="mx-auto flex w-full max-w-5xl flex-1 flex-col">{children}</div>
 			</main>
 			<NavigationMenuMobile />
 		</div>

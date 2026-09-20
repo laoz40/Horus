@@ -71,7 +71,7 @@ export default function WorkoutFormBottomBar({
 	);
 
 	return (
-		<div className="ios-safe-area-bottom relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-t bg-sidebar dark:bg-sidebar">
+		<div className="ios-safe-area-bottom relative right-1/2 left-1/2 -mr-[50vw] -ml-[50vw] w-screen border-t bg-sidebar dark:bg-sidebar">
 			<div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-4">
 				<div className="flex items-center gap-2">
 					<div className="min-w-0 flex-1">

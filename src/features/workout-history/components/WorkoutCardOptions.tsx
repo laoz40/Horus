@@ -77,7 +77,7 @@ export default function WorkoutCardOptions({
 					<Button
 						variant="ghost"
 						size="icon-sm"
-						className="mt-0.5 justify-end items-start border border-transparent text-muted-foreground transition-colors hover:border-border/70 hover:text-foreground"
+						className="mt-0.5 items-start justify-end border border-transparent text-muted-foreground transition-colors hover:border-border/70 hover:text-foreground"
 						aria-label="Workout options"
 						onClick={(event) => event.stopPropagation()}
 						onPointerDown={(event) => event.stopPropagation()}>
