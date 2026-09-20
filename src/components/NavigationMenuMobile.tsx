@@ -44,7 +44,7 @@ export default function NavigationMenuMobile() {
 	return (
 		<nav
 			aria-label="Main navigation"
-			className="ios-safe-area-bottom relative order-2 flex w-full max-w-full max-w-max items-center justify-around border-t bg-sidebar md:order-first md:h-full md:w-16 md:flex-col md:border-t-0 md:border-r dark:bg-sidebar">
+			className="ios-safe-area-bottom relative order-2 flex w-full max-w-full items-center justify-around border-t bg-sidebar md:order-first md:h-full md:w-16 md:flex-col md:border-t-0 md:border-r dark:bg-sidebar">
 			<ul className="flex w-full flex-1 list-none items-center justify-around gap-1 md:h-full md:flex-col md:justify-center md:gap-2">
 				{navigationMenuItems.map((item) => {
 					const active = isRouteActive(pathname, item.href);
