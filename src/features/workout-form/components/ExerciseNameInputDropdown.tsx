@@ -124,7 +124,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 
 				return (
 					<div className="relative w-full">
-						<InputGroup className="h-11 w-full rounded-none border-x-0 border-t-0 border-b border-transparent bg-transparent! shadow-none has-[>[data-align=inline-end]]:[&>input]:pr-0 has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+						<InputGroup className="h-11 w-full rounded-none border-x-0 border-t-0 border-b border-transparent bg-transparent! shadow-none has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-[>[data-align=inline-end]]:[&>input]:pr-0">
 							<InputGroupInput
 								placeholder="Search an exercise..."
 								className="px-0 font-semibold shadow-none placeholder:opacity-0"
@@ -176,8 +176,8 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 						)}
 
 						{shouldShowSuggestions && (
-							<div className="isolate absolute top-full left-0 z-50 mt-1.5 w-full">
-								<div className="bg-popover text-popover-foreground ring-foreground/10 group/combobox-content relative max-h-96 w-full overflow-hidden rounded-md shadow-md ring-1">
+							<div className="absolute top-full left-0 isolate z-50 mt-1.5 w-full">
+								<div className="group/combobox-content relative max-h-96 w-full overflow-hidden rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10">
 									<div
 										ref={listboxRef}
 										id={listboxId}
@@ -190,7 +190,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 												type="button"
 												role="option"
 												aria-selected={exercise.name === query}
-												className="hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-left text-base outline-hidden select-none"
+												className="relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-left text-base outline-hidden select-none hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
 												onPointerDown={preventMousePointerBlur}
 												onMouseDown={preventMouseBlur}
 												onTouchEnd={(event) => handleOptionTouchEnd(event, exercise.name)}

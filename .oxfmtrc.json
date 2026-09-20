@@ -13,6 +13,10 @@
 	"bracketSameLine": true,
 	"singleAttributePerLine": true,
 	"sortPackageJson": false,
+	"sortTailwindcss": {
+		"stylesheet": "src/app/globals.css",
+		"functions": ["cn"]
+	},
 	"ignorePatterns": [
 		"dist",
 		"node_modules",

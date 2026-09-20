@@ -34,8 +34,8 @@ export default function WorkoutFormTopBar({
 	isSubmitting,
 }: WorkoutFormTopBarProps): ReactElement {
 	return (
-		<div className="ios-safe-area-top relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen bg-sidebar dark:bg-sidebar border-b">
-			<div className="max-w-5xl mx-auto px-4 flex flex-row justify-between items-center py-2">
+		<div className="ios-safe-area-top relative right-1/2 left-1/2 -mr-[50vw] -ml-[50vw] w-screen border-b bg-sidebar dark:bg-sidebar">
+			<div className="mx-auto flex max-w-5xl flex-row items-center justify-between px-4 py-2">
 				<Button
 					variant="outline"
 					asChild

@@ -22,7 +22,7 @@ export default function WorkoutView({ workout, workoutId }: WorkoutViewProps): R
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-			<div className="ios-safe-area-top relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-b bg-sidebar dark:bg-sidebar">
+			<div className="ios-safe-area-top relative right-1/2 left-1/2 -mr-[50vw] -ml-[50vw] w-screen border-b bg-sidebar dark:bg-sidebar">
 				<div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-2">
 					<Button
 						variant="outline"
@@ -43,9 +43,9 @@ export default function WorkoutView({ workout, workoutId }: WorkoutViewProps): R
 				</div>
 			</div>
 
-			<div className="flex min-h-0 flex-1 flex-col overflow-y-auto no-scrollbar">
+			<div className="no-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto">
 				<WorkoutViewSummary workout={workout} />
-				<div className="flex flex-col gap-2 px-4 pb-4 pt-1">
+				<div className="flex flex-col gap-2 px-4 pt-1 pb-4">
 					{exercisesWithCompletedSets.map((exercise) => (
 						<ExerciseViewSection
 							key={exercise.id}

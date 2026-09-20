@@ -69,12 +69,12 @@ export default function ExerciseList({ exercises, onSelectExercise }: ExerciseLi
 								className="w-full rounded-md border bg-card p-3 text-left transition-colors hover:bg-accent/40">
 								<div className="flex items-start justify-between gap-3">
 									<div className="min-w-0 flex-1">
-										<p className="font-medium leading-tight">{exercise.name}</p>
+										<p className="leading-tight font-medium">{exercise.name}</p>
 										<p className="mt-1 text-sm text-muted-foreground">
 											{formatMuscleGroups(exercise.muscleGroups)}
 										</p>
 									</div>
-									<span className="shrink-0 text-sm tabular-nums text-muted-foreground">
+									<span className="shrink-0 text-sm text-muted-foreground tabular-nums">
 										{formatWorkoutCount(exercise.workoutCount)}
 									</span>
 								</div>

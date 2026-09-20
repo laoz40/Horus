@@ -39,7 +39,7 @@ export default function RootLayout({
 			lang="en"
 			className={oxanium.className}
 			suppressHydrationWarning>
-			<body className="flex flex-col h-dvh w-full dark:bg-background relative">
+			<body className="relative flex h-dvh w-full flex-col dark:bg-background">
 				<DeferredToaster />
 				<ServiceWorkerRegistration />
 				<ThemeProvider {...themeProviderProps}>

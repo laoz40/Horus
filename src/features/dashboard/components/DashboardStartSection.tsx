@@ -9,7 +9,7 @@ import Link from "next/link";
 export default function DashboardStartSection() {
 	return (
 		<Section header="Start">
-			<div className="flex flex-row w-full flex-wrap items-center justify-center gap-2">
+			<div className="flex w-full flex-row flex-wrap items-center justify-center gap-2">
 				<Button
 					asChild
 					size="lg"

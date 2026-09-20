@@ -44,20 +44,8 @@ export default function NavigationMenuMobile() {
 	return (
 		<nav
 			aria-label="Main navigation"
-			className={cn(
-				"relative flex max-w-max w-full items-center justify-around",
-				"w-full max-w-full bg-sidebar dark:bg-sidebar ios-safe-area-bottom",
-				// bottom bar
-				"border-t order-2",
-				// left sidebar
-				"md:order-first md:border-t-0 md:border-r md:w-16 md:h-full md:flex-col",
-			)}>
-			<ul
-				className={cn(
-					"flex flex-1 list-none items-center justify-around gap-1 w-full",
-					// left sidebar
-					"md:flex-col md:justify-center md:h-full md:gap-2",
-				)}>
+			className="ios-safe-area-bottom relative order-2 flex w-full max-w-full max-w-max items-center justify-around border-t bg-sidebar md:order-first md:h-full md:w-16 md:flex-col md:border-t-0 md:border-r dark:bg-sidebar">
+			<ul className="flex w-full flex-1 list-none items-center justify-around gap-1 md:h-full md:flex-col md:justify-center md:gap-2">
 				{navigationMenuItems.map((item) => {
 					const active = isRouteActive(pathname, item.href);
 					const NavIcon = active ? item.iconActive : item.icon;
@@ -65,20 +53,15 @@ export default function NavigationMenuMobile() {
 					return (
 						<li
 							key={item.title}
-							className="relative flex-1 md:flex-initial md:w-full">
+							className="relative flex-1 md:w-full md:flex-initial">
 							<Link
 								href={item.href}
 								aria-current={active ? "page" : undefined}
 								className={cn(
-									"flex flex-col h-auto items-center justify-center w-full rounded-none px-3 py-2.5",
-									"bg-transparent! text-muted-foreground text-xs",
-									"transition-colors duration-150",
-									"hover:bg-transparent hover:text-primary",
-									"focus:bg-transparent focus:text-primary",
-									"focus-visible:ring-0 focus-visible:outline-none",
+									"flex h-auto w-full flex-col items-center justify-center rounded-none bg-transparent! px-3 py-2.5 text-xs text-muted-foreground transition-colors duration-150 hover:bg-transparent hover:text-primary focus:bg-transparent focus:text-primary focus-visible:ring-0 focus-visible:outline-none",
 									active && "text-primary",
 								)}>
-								<NavIcon className={cn("mb-1 size-6 text-current")} />
+								<NavIcon className="mb-1 size-6 text-current" />
 								{item.title}
 							</Link>
 						</li>

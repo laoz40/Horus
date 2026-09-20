@@ -31,10 +31,10 @@ export default function WorkoutCard({ workout, isPrPending = false }: WorkoutCar
 				className="block pt-1">
 				<div className="grid grid-cols-[1fr_min-content] items-start gap-x-2">
 					<div className="flex min-w-0 flex-col">
-						<h2 className="max-w-full truncate text-base font-semibold leading-tight">
+						<h2 className="max-w-full truncate text-base leading-tight font-semibold">
 							{workout.name}
 						</h2>
-						<span className="mt-0.5 w-fit whitespace-nowrap text-xs font-medium text-muted-foreground/90">
+						<span className="mt-0.5 w-fit text-xs font-medium whitespace-nowrap text-muted-foreground/90">
 							{getRelativeTime(new Date(workout.createdAt))}
 						</span>
 					</div>
