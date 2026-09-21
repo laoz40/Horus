@@ -1,7 +1,7 @@
 "use client";
 
 import { IconPlus } from "@tabler/icons-react";
-import { useEffect, type Ref } from "react";
+import { type Ref } from "react";
 import { Button } from "@/components/ui/button";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { showSetDeletedToast } from "@/lib/toastMessages";
@@ -39,17 +39,17 @@ function ExerciseForm({ className, exerciseIndex, isEditing, ref }: ExerciseForm
 		void trigger(`exercises.${exerciseIndex}.sets`);
 	};
 
-	useEffect(() => {
-		if (sets.length > 0) return;
-
-		append(createDefaultSet());
-		void trigger(`exercises.${exerciseIndex}.sets`);
-	}, [append, exerciseIndex, sets.length, trigger]);
-
 	// BUG: when loading a workout to edit, adding new sets after deleting sets loads previous data
 	const handleDeleteSet = (setIndex: number) => {
+		const isLastSet = sets.length === 1;
 		remove(setIndex);
+
+		if (isLastSet) {
+			append(createDefaultSet(), { shouldFocus: false });
+		}
+
 		showSetDeletedToast();
+		void trigger(`exercises.${exerciseIndex}.sets`);
 	};
 
 	const exerciseName = useWatch({
