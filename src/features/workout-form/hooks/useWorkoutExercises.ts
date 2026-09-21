@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useFieldArray } from "react-hook-form";
 import type { Control, UseFieldArrayReturn } from "react-hook-form";
 
@@ -16,8 +15,8 @@ interface UseWorkoutExercisesReturn extends Pick<
 	handleAddExercise: () => void;
 }
 
-// Manages the dynamic list of exercises in the workout form, including the
-// "add exercise" action and keeping at least one exercise row present.
+// Manages the dynamic list of exercises in the workout form, including the "add exercise" action.
+// New workouts get one exercise from createDefaultWorkoutValues() defaultValues.
 export const useWorkoutExercises = ({
 	control,
 }: UseWorkoutExercisesProps): UseWorkoutExercisesReturn => {
@@ -37,17 +36,6 @@ export const useWorkoutExercises = ({
 			{ shouldFocus: false },
 		);
 	};
-
-	// Seed one exercise row so the form is never empty.
-	useEffect(() => {
-		if (exercises.length > 0) return;
-
-		append(
-			createDefaultExercise(),
-			// prevent insta scrolling
-			{ shouldFocus: false },
-		);
-	}, [append, exercises.length]);
 
 	return { fields: exercises, remove, handleAddExercise };
 };
