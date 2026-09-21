@@ -201,6 +201,7 @@ jobs:
   e2e:
     name: E2E tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs:
       - database
       - quality
@@ -272,6 +273,11 @@ jobs:
             printf 'UPSTASH_REDIS_REST_TOKEN=%s\n' "$UPSTASH_REDIS_REST_TOKEN"
             printf 'BETTER_AUTH_SECRET=%s\n' "$BETTER_AUTH_SECRET"
           } > .env.local
+
+      - name: Build app for E2E
+        run: |
+          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
+          pnpm build
 
       - name: Run Playwright tests
         run: pnpm test

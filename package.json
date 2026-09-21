@@ -8,7 +8,7 @@
 		"db:generate": "prisma generate --sql",
 		"db:migrate": "prisma migrate deploy",
 		"build": "next build",
-		"start": "next start",
+		"start": "next start --hostname 127.0.0.1 --port 8000",
 		"test": "playwright test",
 		"postinstall": "playwright install chromium",
 		"format": "oxfmt",
