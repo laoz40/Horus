@@ -1,8 +1,15 @@
-import { forwardRef } from "react";
 import type { IconProps } from "@tabler/icons-react";
 
-export const IconChartBarPopularFilled = forwardRef<SVGSVGElement, IconProps>(
-	({ size = 24, className, stroke: _stroke, ...props }, ref) => (
+type IconChartBarPopularFilledProps = IconProps & { ref?: React.Ref<SVGSVGElement> };
+
+export function IconChartBarPopularFilled({
+	size = 24,
+	className,
+	stroke: _stroke,
+	ref,
+	...props
+}: IconChartBarPopularFilledProps) {
+	return (
 		<svg
 			ref={ref}
 			xmlns="http://www.w3.org/2000/svg"
@@ -23,7 +30,5 @@ export const IconChartBarPopularFilled = forwardRef<SVGSVGElement, IconProps>(
 			<path d="M9.5 21a1.5 1.5 0 0 1 -1.5 -1.5L8 19.5L8 8.5a1.5 1.5 0 0 1 1.5 -1.5L9.5 7L14.5 7a1.5 1.5 0 0 1 1.5 1.5L16 8.5L16 19.5a1.5 1.5 0 0 1 -1.5 1.5L14.5 21L9.5 21Z" />
 			<path d="M15.5 21a1.5 1.5 0 0 1 -1.5 -1.5L14 19.5L14 4.5a1.5 1.5 0 0 1 1.5 -1.5L15.5 3L20.5 3a1.5 1.5 0 0 1 1.5 1.5L22 4.5L22 19.5a1.5 1.5 0 0 1 -1.5 1.5L20.5 21L15.5 21Z" />
 		</svg>
-	),
-);
-
-IconChartBarPopularFilled.displayName = "IconChartBarPopularFilled";
+	);
+}
