@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type ReactElement } from "react";
+import type { ReactElement } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, type FieldErrors, type Resolver } from "react-hook-form";
 
@@ -91,7 +91,7 @@ export default function WorkoutForm({
 	};
 
 	// exercise ids to pass to the exercise selector
-	const exerciseIds = useMemo(() => exercises.map((exercise) => exercise.id), [exercises]);
+	const exerciseIds = exercises.map((exercise) => exercise.id);
 	const { selectedExerciseId, selectedExerciseIndex } = useExerciseSelection({ exerciseIds });
 
 	const handleDeleteExercise = () => {
