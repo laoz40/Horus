@@ -1,10 +1,10 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, type PlaywrightTestConfig } from "@playwright/test";
 
 const BASE_URL = "http://localhost:8000";
 
 const isCI = Boolean(process.env.CI);
 
-export default defineConfig({
+const config: PlaywrightTestConfig = {
 	testDir: "./tests",
 	globalSetup: "./tests/global-setup.ts",
 	// Keep run artifacts (traces, screenshots, HTML report) inside tests/.
@@ -23,16 +23,17 @@ export default defineConfig({
 		viewport: { width: 390, height: 844 },
 		storageState: "tests/.auth/user.json",
 	},
-	// CI starts the server in the workflow so Playwright is not stuck waiting on webServer
-	// teardown after all tests pass (pnpm/next child processes can outlive SIGKILL on GHA).
-	...(isCI
-		? {}
-		: {
-				webServer: {
-					command: "pnpm dev",
-					url: BASE_URL,
-					reuseExistingServer: true,
-					timeout: 120_000,
-				},
-			}),
-});
+};
+
+// CI starts the server in the workflow so Playwright is not stuck waiting on webServer
+// teardown after all tests pass (pnpm/next child processes can outlive SIGKILL on GHA).
+if (!isCI) {
+	config.webServer = {
+		command: "pnpm dev",
+		url: BASE_URL,
+		reuseExistingServer: true,
+		timeout: 120_000,
+	};
+}
+
+export default defineConfig(config);
