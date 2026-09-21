@@ -23,11 +23,16 @@ export default defineConfig({
 		viewport: { width: 390, height: 844 },
 		storageState: "tests/.auth/user.json",
 	},
-	webServer: {
-		// `next dev` can leave child processes alive on GHA and stall Playwright shutdown.
-		command: isCI ? "pnpm start" : "pnpm dev",
-		url: BASE_URL,
-		reuseExistingServer: !isCI,
-		timeout: 120_000,
-	},
+	// CI starts the server in the workflow so Playwright is not stuck waiting on webServer
+	// teardown after all tests pass (pnpm/next child processes can outlive SIGKILL on GHA).
+	...(isCI
+		? {}
+		: {
+				webServer: {
+					command: "pnpm dev",
+					url: BASE_URL,
+					reuseExistingServer: true,
+					timeout: 120_000,
+				},
+			}),
 });
