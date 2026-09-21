@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface UseWorkoutTimerOptions {
 	initialDurationSeconds: number;
@@ -13,11 +13,6 @@ export const useWorkoutTimer = ({
 	initialDurationSeconds,
 	startedAtMs,
 }: UseWorkoutTimerOptions): UseWorkoutTimerReturn => {
-	const getElapsedSeconds = useCallback(
-		() => Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000)),
-		[startedAtMs],
-	);
-
 	const [durationSeconds, setDurationSeconds] = useState<number>(initialDurationSeconds);
 
 	// Re-anchor the displayed duration when a restored session changes the initial value.
@@ -30,7 +25,7 @@ export const useWorkoutTimer = ({
 
 	useEffect(() => {
 		const updateDuration = () => {
-			setDurationSeconds(getElapsedSeconds());
+			setDurationSeconds(Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000)));
 		};
 
 		updateDuration();
@@ -42,7 +37,7 @@ export const useWorkoutTimer = ({
 		return () => {
 			window.clearInterval(interval);
 		};
-	}, [getElapsedSeconds]);
+	}, [startedAtMs]);
 
 	return { durationSeconds };
 };

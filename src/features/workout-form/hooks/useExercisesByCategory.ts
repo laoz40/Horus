@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import {
@@ -24,15 +23,12 @@ export function useExercisesByCategory(category: MuscleGroupCategory) {
 		}),
 	);
 
-	const exercises = useMemo(() => {
-		const fromDefaults = DEFAULT_EXERCISES.filter((exercise) =>
-			exercise.muscleGroups.some((muscleName) => getCategoryForMuscleName(muscleName) === category),
-		).map(createSuggestionObject);
+	const fromDefaults = DEFAULT_EXERCISES.filter((exercise) =>
+		exercise.muscleGroups.some((muscleName) => getCategoryForMuscleName(muscleName) === category),
+	).map(createSuggestionObject);
 
-		const fromDb = categoryQuery.data ?? [];
-
-		return sortExercisesAlphabetically(deduplicateExercises(fromDefaults, fromDb));
-	}, [category, categoryQuery.data]);
+	const fromDb = categoryQuery.data ?? [];
+	const exercises = sortExercisesAlphabetically(deduplicateExercises(fromDefaults, fromDb));
 
 	return {
 		exercises,

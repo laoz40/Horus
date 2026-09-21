@@ -201,6 +201,7 @@ jobs:
   e2e:
     name: E2E tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs:
       - database
       - quality
@@ -273,8 +274,37 @@ jobs:
             printf 'BETTER_AUTH_SECRET=%s\n' "$BETTER_AUTH_SECRET"
           } > .env.local
 
+      - name: Build app for E2E
+        run: |
+          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
+          pnpm build
+
       - name: Run Playwright tests
-        run: pnpm test
+        run: |
+          pnpm start &
+          server_pid=$!
+          for _ in $(seq 1 60); do
+            if curl -fsS http://localhost:8000 >/dev/null; then
+              break
+            fi
+            if ! kill -0 "$server_pid" 2>/dev/null; then
+              echo "next start exited before the server became ready"
+              exit 1
+            fi
+            sleep 2
+          done
+          if ! curl -fsS http://localhost:8000 >/dev/null; then
+            echo "Timed out waiting for http://localhost:8000"
+            kill "$server_pid" 2>/dev/null || true
+            exit 1
+          fi
+
+          pnpm test
+          test_status=$?
+
+          kill "$server_pid" 2>/dev/null || true
+          wait "$server_pid" 2>/dev/null || true
+          exit "$test_status"
 
       - name: Upload Playwright report
         if: failure()

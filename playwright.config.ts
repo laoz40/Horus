@@ -1,13 +1,17 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, type PlaywrightTestConfig } from "@playwright/test";
 
 const BASE_URL = "http://localhost:8000";
 
-export default defineConfig({
+const isCI = Boolean(process.env.CI);
+
+const config: PlaywrightTestConfig = {
 	testDir: "./tests",
 	globalSetup: "./tests/global-setup.ts",
 	// Keep run artifacts (traces, screenshots, HTML report) inside tests/.
 	outputDir: "./tests/test-results",
-	reporter: [["list"], ["html", { outputFolder: "tests/playwright-report", open: "never" }]],
+	reporter: isCI
+		? [["list"]]
+		: [["list"], ["html", { outputFolder: "tests/playwright-report", open: "never" }]],
 	timeout: 60_000,
 	// Every test shares the dev Neon DB through the app — keep runs serial.
 	workers: 1,
@@ -19,10 +23,17 @@ export default defineConfig({
 		viewport: { width: 390, height: 844 },
 		storageState: "tests/.auth/user.json",
 	},
-	webServer: {
+};
+
+// CI starts the server in the workflow so Playwright is not stuck waiting on webServer
+// teardown after all tests pass (pnpm/next child processes can outlive SIGKILL on GHA).
+if (!isCI) {
+	config.webServer = {
 		command: "pnpm dev",
 		url: BASE_URL,
-		reuseExistingServer: !process.env.CI,
+		reuseExistingServer: true,
 		timeout: 120_000,
-	},
-});
+	};
+}
+
+export default defineConfig(config);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { showErrorToast } from "@/lib/toastMessages";
 import { deduplicateExercises } from "@/features/workout-form/lib/convertWorkoutData";
@@ -51,8 +51,25 @@ const fetchOnlineExerciseSuggestions = async (query: string) => {
 	return ok(parsedResponse.data);
 };
 
+function buildExerciseSuggestions(
+	query: string,
+	deferredQuery: string,
+	dbSearchResults: ExerciseSuggestion[] | undefined,
+	defaultExercises: ExerciseSuggestion[],
+	onlineExercisesByQuery: Record<string, ExerciseSuggestion[]>,
+): ExerciseSuggestion[] {
+	// Only use database results when they belong to the text currently in the input.
+	// This prevents results for an older deferred query from appearing after the user types more.
+	const isDbResultCurrent = query.length > 0 && deferredQuery === query;
+	const dbExercises = isDbResultCurrent ? (dbSearchResults ?? []) : [];
+	const onlineExercises = onlineExercisesByQuery[query] ?? [];
+
+	return sortExercisesAlphabetically(
+		deduplicateExercises(deduplicateExercises(defaultExercises, dbExercises), onlineExercises),
+	);
+}
+
 export function useExerciseSuggestions(rawQuery: string) {
-	const [debouncedQuery, setDebouncedQuery] = useState("");
 	const [isOnlineSearchLoading, setIsOnlineSearchLoading] = useState(false);
 
 	// Online "fetch more" results are keyed by query so stale results never leak into the dropdown.
@@ -63,46 +80,30 @@ export function useExerciseSuggestions(rawQuery: string) {
 	const queryClient = useQueryClient();
 
 	const query = rawQuery.trim();
-	// An empty query disables the DB search immediately without clearing the debounced value.
-	const debouncedSearchQuery = query.length === 0 ? "" : debouncedQuery;
+	const deferredQuery = useDeferredValue(query);
+	// An empty query disables the DB search immediately.
+	const dbSearchQuery = query.length === 0 ? "" : deferredQuery;
 
-	const defaultExercises = useMemo(
-		() => sortExercisesAlphabetically(fetchDefaultExercises(query)),
-		[query],
-	);
-
-	// Debounce PostgreSQL searches while keeping local defaults immediate.
-	useEffect(() => {
-		if (query.length === 0) return;
-
-		const timeout = setTimeout(() => setDebouncedQuery(query), 300);
-
-		return () => clearTimeout(timeout);
-	}, [query]);
+	const defaultExercises = sortExercisesAlphabetically(fetchDefaultExercises(query));
 
 	const exerciseSearch = useQuery(
 		orpc.exercises.search.queryOptions({
-			input: { query: debouncedSearchQuery },
-			enabled: debouncedSearchQuery.length > 0,
+			input: { query: dbSearchQuery },
+			enabled: dbSearchQuery.length > 0,
 		}),
 	);
 
 	// Combine instant local matches with PostgreSQL matches, remove duplicates, and sort the dropdown.
-	const suggestions = useMemo(() => {
-		// Only use database results when they belong to the text currently in the input.
-		// This prevents results for an older debounced query from appearing after the user types more.
-		const isDbResultCurrent = query.length > 0 && debouncedSearchQuery === query;
-		const dbExercises = isDbResultCurrent ? (exerciseSearch.data ?? []) : [];
-
-		const onlineExercises = onlineExercisesByQuery[query] ?? [];
-
-		return sortExercisesAlphabetically(
-			deduplicateExercises(deduplicateExercises(defaultExercises, dbExercises), onlineExercises),
-		);
-	}, [query, debouncedSearchQuery, exerciseSearch.data, defaultExercises, onlineExercisesByQuery]);
+	const suggestions = buildExerciseSuggestions(
+		query,
+		dbSearchQuery,
+		exerciseSearch.data,
+		defaultExercises,
+		onlineExercisesByQuery,
+	);
 
 	const isDbSearchLoading =
-		query.length > 0 && (debouncedQuery !== query || exerciseSearch.isFetching);
+		query.length > 0 && (deferredQuery !== query || exerciseSearch.isFetching);
 
 	const fetchMoreSuggestions = async () => {
 		if (query.length === 0) return;

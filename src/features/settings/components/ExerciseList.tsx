@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import {
@@ -35,10 +35,7 @@ function filterExercises(exercises: ExerciseListItem[], query: string): Exercise
 export default function ExerciseList({ exercises, onSelectExercise }: ExerciseListProps) {
 	const [searchQuery, setSearchQuery] = useState("");
 
-	const filteredExercises = useMemo(
-		() => filterExercises(exercises, searchQuery),
-		[exercises, searchQuery],
-	);
+	const filteredExercises = filterExercises(exercises, searchQuery);
 
 	return (
 		<div className="flex flex-col gap-3">
