@@ -5,22 +5,29 @@ export async function selectExercise(page: Page, name: string): Promise<void> {
 	// option (partial match also hits "Dumbbell Bench Press" etc.).
 	const combobox = page.getByRole("combobox", { name: "Exercise name" });
 	await combobox.fill(name);
-	await page.getByRole("option", { name, exact: true }).click();
-	await expect(combobox).toHaveValue(name);
+
+	const option = page.getByRole("option", { name, exact: true });
+	await expect(option).toBeVisible({ timeout: 10_000 });
+	await option.click();
+
+	await expect(page.getByPlaceholder("kg")).toBeVisible({ timeout: 10_000 });
 }
 
 async function dismissRestTimer(page: Page): Promise<void> {
 	const finishRest = page.getByRole("button", { name: "FINISH REST" });
+	const timerTab = page.getByRole("button", { name: /^\d{2}:\d{2}$/ });
 
-	try {
-		await finishRest.click({ timeout: 5_000 });
+	await expect(finishRest.or(timerTab)).toBeVisible({ timeout: 15_000 });
+
+	if (await finishRest.isVisible()) {
+		await finishRest.click();
 
 		return;
-	} catch {
-		// Drawer auto-open can lag in headless CI; the side tab still opens it.
-		await page.getByRole("button", { name: /^\d{2}:\d{2}$/ }).click();
-		await finishRest.click();
 	}
+
+	// Drawer auto-open can lag in headless CI; the side tab still opens it.
+	await timerTab.click();
+	await finishRest.click();
 }
 
 // Adds one Bench Press exercise with a single logged+completed set on /workouts/new —
@@ -29,21 +36,15 @@ export async function addCompletedBenchSet(page: Page): Promise<void> {
 	await page.goto("/workouts/new");
 	await selectExercise(page, "Bench Press");
 
-	const weightInput = page.getByPlaceholder("kg").first();
-	const repsInput = page.getByPlaceholder("reps").first();
-	const completedCheckbox = page.getByRole("checkbox", { name: "Color success" }).first();
+	const weightInput = page.getByPlaceholder("kg");
+	const repsInput = page.getByPlaceholder("reps");
 
 	await weightInput.fill("60");
 	await repsInput.fill("8");
-	// Blur so RHF has reps/weight before the completion checkbox validates the row.
-	await repsInput.blur();
+	await repsInput.press("Tab");
 
 	// Completing a set opens the Rest Timer dialog, which blocks the page until dismissed.
-	await expect(async () => {
-		await completedCheckbox.click();
-		await expect(completedCheckbox).toBeChecked();
-	}).toPass({ timeout: 10_000 });
-
+	await page.getByRole("checkbox", { name: "Color success" }).click();
 	await dismissRestTimer(page);
 }
 
