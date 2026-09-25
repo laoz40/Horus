@@ -36,12 +36,10 @@ export default function WorkoutFormTopBar({
 	return (
 		<div className="ios-safe-area-top relative right-1/2 left-1/2 -mr-[50vw] -ml-[50vw] w-screen border-b bg-sidebar dark:bg-sidebar">
 			<div className="mx-auto flex max-w-5xl flex-row items-center justify-between px-4 py-2">
-				<Button
-					variant="outline"
-					asChild
-					size="icon">
-					<WorkoutExitLink href={workoutId ? "/workouts" : "/"} />
-				</Button>
+				<WorkoutExitLink
+					href={workoutId ? "/workouts" : "/"}
+					isCreate={!workoutId}
+				/>
 				<WorkoutDuration initialDurationSeconds={initialDurationSeconds} />
 				<WorkoutNameDialog>
 					<Button
