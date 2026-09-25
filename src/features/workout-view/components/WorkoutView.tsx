@@ -1,12 +1,11 @@
 "use client";
 
-import { IconEdit } from "@tabler/icons-react";
+import { IconChevronLeft, IconEdit } from "@tabler/icons-react";
 import Link from "next/link";
 import type { ReactElement } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { WorkoutFormData } from "@/features/workout-form/lib/types";
-import WorkoutExitLink from "@/features/workout-form/components/WorkoutExitLink";
 import ExerciseViewSection from "@/features/workout-view/components/ExerciseViewSection";
 import WorkoutViewSummary from "@/features/workout-view/components/WorkoutViewSummary";
 
@@ -28,7 +27,11 @@ export default function WorkoutView({ workout, workoutId }: WorkoutViewProps): R
 						variant="outline"
 						asChild
 						size="icon">
-						<WorkoutExitLink href="/workouts" />
+						<Link
+							href="/workouts"
+							aria-label="Back">
+							<IconChevronLeft className="size-7" />
+						</Link>
 					</Button>
 					<Button
 						variant="ghost"
