@@ -24,7 +24,6 @@ export default function NumberInput({
 	placeholder,
 	className,
 	onChange,
-	onClick,
 	value,
 	...props
 }: InputProps) {
@@ -49,11 +48,6 @@ export default function NumberInput({
 		onChange?.(e);
 	};
 
-	const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
-		e.currentTarget.select();
-		onClick?.(e);
-	};
-
 	return (
 		<Input
 			inputMode={config.inputMode}
@@ -62,7 +56,6 @@ export default function NumberInput({
 			className={className}
 			type="text"
 			onChange={handleChange}
-			onClick={handleClick}
 			value={value}
 			{...props}
 			onBeforeInput={handleBeforeInput}></Input>
