@@ -278,15 +278,13 @@ body {
 	scrollbar-width: none;
 }
 
-/* iOS safe area */
-@media (display-mode: standalone) {
-	.ios-safe-area-top {
-		padding-top: env(safe-area-inset-top);
-	}
+/* iOS safe area (viewport-fit=cover in root layout) */
+.ios-safe-area-top {
+	padding-top: env(safe-area-inset-top);
+}
 
-	.ios-safe-area-bottom {
-		padding-bottom: env(safe-area-inset-bottom);
-	}
+.ios-safe-area-bottom {
+	padding-bottom: env(safe-area-inset-bottom);
 }
 
 @keyframes page-slide-up {
