@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getYearInTraining } from "@/generated/prisma/sql";
+import { getOldestWorkoutCreatedAt, getYearInTraining } from "@/generated/prisma/sql";
 import { prisma } from "@/lib/db";
 import { tryPromise } from "@/lib/tryPromise";
 
@@ -8,6 +8,23 @@ export type YearInTrainingQuery = {
 	userId: string;
 	year: number;
 };
+
+export function getTrainingYearRangeRows(userId: string) {
+	return tryPromise({
+		try: async () => {
+			const currentYear = new Date().getUTCFullYear();
+			const [row] = await prisma.$queryRawTyped(getOldestWorkoutCreatedAt(userId));
+
+			const oldestYear = row?.oldest_created_at?.getUTCFullYear() ?? currentYear;
+
+			return {
+				firstYear: Math.min(oldestYear, currentYear),
+				lastYear: currentYear,
+			};
+		},
+		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	});
+}
 
 export function getYearInTrainingRows({ userId, year }: YearInTrainingQuery) {
 	const start = new Date(`${year}-01-01T00:00:00.000Z`);
