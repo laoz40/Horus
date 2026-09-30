@@ -15,6 +15,7 @@ export default function ProgressPage(): ReactElement {
 				isAuthPending={isPending}
 				isSignedIn={isSignedIn}
 				userId={sessionData?.user?.id}
+				yearSelectable
 			/>
 		</div>
 	);
