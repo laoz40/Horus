@@ -16,11 +16,11 @@ on:
 permissions:
   contents: read
 
-# One run per branch/PR ref. New PR pushes cancel the previous run.
-# Production pushes queue instead of canceling, so a deploy is not killed mid-flight.
+# PR runs are grouped per PR number so merge (closed + push) does not share a group.
+# New PR commits cancel the previous run on that PR; production pushes queue (no cancel).
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
 
 jobs:
   # Ephemeral Postgres per PR. Push to production keeps using Production DATABASE_URL.
