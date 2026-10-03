@@ -1,4 +1,12 @@
-import type { ExercisePersonalRecordsRow, RecentSetRow } from "@/server/services/exercises.db";
+import {
+	markExerciseWeightProgressionPeriodPeaks,
+	type ExerciseWeightProgressionPoint,
+} from "@/features/progress/lib/exerciseWeightProgression";
+import type {
+	ExercisePersonalRecordsRow,
+	RecentSetRow,
+	WeeklyWeightProgressionRow,
+} from "@/server/services/exercises.db";
 import type { SetPrType } from "@/features/workout-form/lib/setPr";
 import {
 	calculatePrsForSet,
@@ -71,6 +79,12 @@ export function buildExercisePersonalRecords(row: ExercisePersonalRecordsRow) {
 		hasHistory: row.hasHistory,
 		records,
 	};
+}
+
+export function buildWeeklyWeightProgression(
+	rows: WeeklyWeightProgressionRow[],
+): ExerciseWeightProgressionPoint[] {
+	return markExerciseWeightProgressionPeriodPeaks(rows);
 }
 
 export function buildRecentSets(rows: RecentSetRow[]) {

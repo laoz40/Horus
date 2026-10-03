@@ -11,13 +11,13 @@ import { getRelativeTime } from "@/lib/date";
 import { orpc } from "@/lib/orpc/client";
 import { cn } from "@/lib/utils";
 
-interface ProgressExerciseRecentSetsSectionProps {
+interface RecentSetsSectionProps {
 	exerciseName: string;
 }
 
 function RecentSetsContent({
 	exerciseName,
-}: ProgressExerciseRecentSetsSectionProps): ReactElement {
+}: RecentSetsSectionProps): ReactElement {
 	const recentSetsQuery = useQuery(
 		orpc.exercises.recentSets.queryOptions({
 			input: { exerciseName },
@@ -26,9 +26,11 @@ function RecentSetsContent({
 		}),
 	);
 
+	const queryError = recentSetsQuery.error instanceof Error ? recentSetsQuery.error : null;
+
 	const errorMessage = orpcQueryErrorMessage(
 		recentSetsQuery.isError,
-		recentSetsQuery.error,
+		queryError,
 		"Couldn't load recent sets.",
 	);
 
@@ -89,9 +91,9 @@ function RecentSetsContent({
 	);
 }
 
-export default function ProgressExerciseRecentSetsSection({
+export default function RecentSetsSection({
 	exerciseName,
-}: ProgressExerciseRecentSetsSectionProps): ReactElement {
+}: RecentSetsSectionProps): ReactElement {
 	return (
 		<ProgressExerciseDetailCard title="Recent sets">
 			<RecentSetsContent exerciseName={exerciseName} />

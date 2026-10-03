@@ -5,6 +5,7 @@ import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import {
 	getExercisePersonalRecords,
 	getExercisePr,
+	getExerciseWeeklyWeightProgression,
 	getRecentSets,
 	listExercisesByCategory,
 	searchExercises,
@@ -163,6 +164,37 @@ export function getExercisePersonalRecordRows(userId: string, normalizedExercise
 					row.bodyweight_reps_reps,
 					row.bodyweight_reps_completed_at_ms,
 				),
+			}));
+		},
+		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	});
+}
+
+export interface WeeklyWeightProgressionRow {
+	weekStartMs: number;
+	maxWeight: number;
+}
+
+export function getExerciseWeeklyWeightProgressionRows(
+	userId: string,
+	normalizedExerciseName: string,
+	sinceCreatedAt: Date,
+	minReps: number,
+) {
+	return tryPromise({
+		try: async (): Promise<WeeklyWeightProgressionRow[]> => {
+			const rows = await prisma.$queryRawTyped(
+				getExerciseWeeklyWeightProgression(
+					userId,
+					normalizedExerciseName,
+					sinceCreatedAt,
+					minReps,
+				),
+			);
+
+			return rows.map((row) => ({
+				weekStartMs: row.week_start?.getTime() ?? 0,
+				maxWeight: row.max_weight ?? 0,
 			}));
 		},
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),

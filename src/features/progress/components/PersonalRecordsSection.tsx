@@ -10,13 +10,13 @@ import { setPrLabels } from "@/features/workout-form/lib/setPr";
 import { getRelativeTime } from "@/lib/date";
 import { orpc } from "@/lib/orpc/client";
 
-interface ProgressExercisePersonalRecordsSectionProps {
+interface PersonalRecordsSectionProps {
 	exerciseName: string;
 }
 
 function PersonalRecordsContent({
 	exerciseName,
-}: ProgressExercisePersonalRecordsSectionProps): ReactElement {
+}: PersonalRecordsSectionProps): ReactElement {
 	const personalRecordsQuery = useQuery(
 		orpc.exercises.personalRecords.queryOptions({
 			input: { exerciseName },
@@ -25,9 +25,12 @@ function PersonalRecordsContent({
 		}),
 	);
 
+	const queryError =
+		personalRecordsQuery.error instanceof Error ? personalRecordsQuery.error : null;
+
 	const errorMessage = orpcQueryErrorMessage(
 		personalRecordsQuery.isError,
-		personalRecordsQuery.error,
+		queryError,
 		"Couldn't load personal records.",
 	);
 
@@ -82,9 +85,9 @@ function PersonalRecordsContent({
 	);
 }
 
-export default function ProgressExercisePersonalRecordsSection({
+export default function PersonalRecordsSection({
 	exerciseName,
-}: ProgressExercisePersonalRecordsSectionProps): ReactElement {
+}: PersonalRecordsSectionProps): ReactElement {
 	return (
 		<ProgressExerciseDetailCard title="Personal records">
 			<PersonalRecordsContent exerciseName={exerciseName} />

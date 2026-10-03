@@ -23,8 +23,14 @@ import {
 	requireUserExercise,
 } from "@/server/services/exercises-catalog.functions";
 import {
+	EXERCISE_WEIGHT_PROGRESSION_MIN_REPS,
+	exerciseWeightProgressionSince,
+	type ExerciseWeightProgressionRange,
+} from "@/features/progress/lib/exerciseWeightProgression";
+import {
 	getExercisePersonalRecordRows,
 	getExercisePrRows,
+	getExerciseWeeklyWeightProgressionRows,
 	getRecentSetRows,
 	listExerciseRowsByCategory,
 	searchExerciseRows,
@@ -32,6 +38,7 @@ import {
 import {
 	buildExercisePersonalRecords,
 	buildRecentSets,
+	buildWeeklyWeightProgression,
 	checkCompletedSetPr,
 } from "@/server/services/exercises.functions";
 import { emptyExercisePrs } from "@/server/services/pr-history.functions";
@@ -173,6 +180,22 @@ export function getExercisePersonalRecords(userId: string, exerciseName: string)
 			bodyweightReps: null,
 		}),
 	);
+}
+
+export function getExerciseWeeklyWeightProgression(
+	userId: string,
+	exerciseName: string,
+	range: ExerciseWeightProgressionRange,
+) {
+	const normalizedExerciseName = normalizeName(exerciseName);
+	const sinceCreatedAt = exerciseWeightProgressionSince(range);
+
+	return getExerciseWeeklyWeightProgressionRows(
+		userId,
+		normalizedExerciseName,
+		sinceCreatedAt,
+		EXERCISE_WEIGHT_PROGRESSION_MIN_REPS,
+	).map(buildWeeklyWeightProgression);
 }
 
 interface CheckSetPrInput {
