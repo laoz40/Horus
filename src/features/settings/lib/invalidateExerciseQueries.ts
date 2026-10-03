@@ -94,6 +94,9 @@ export function invalidateExerciseQueriesInBackground(queryClient: QueryClient) 
 		queryClient.invalidateQueries({
 			queryKey: orpc.exercises.recentSets.key(),
 		}),
+		queryClient.invalidateQueries({
+			queryKey: orpc.exercises.personalRecords.key(),
+		}),
 	);
 
 	if (exerciseQueryIsInUse(queryClient, orpc.exercises.search.key())) {

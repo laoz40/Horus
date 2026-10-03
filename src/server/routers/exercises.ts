@@ -7,6 +7,7 @@ import {
 	checkSetPr,
 	createUserExercise,
 	deleteUserExerciseById,
+	getExercisePersonalRecords,
 	getRecentSets,
 	listExercisesByCategory,
 	listUserExercises,
@@ -410,6 +411,47 @@ export const exercisesRouter = {
 					switch (reason) {
 						case "DATABASE_ERROR":
 							console.error("Failed to get recent sets", { cause: error.cause });
+							throw errors.DATABASE_ERROR();
+						default: {
+							const exhaustiveReason: never = reason;
+							throw exhaustiveReason;
+						}
+					}
+				},
+			);
+		}),
+	personalRecords: protectedProcedure
+		.errors(databaseError)
+		.input(z.object({ exerciseName: z.string().trim().min(1) }).strict())
+		.output(
+			z
+				.object({
+					hasHistory: z.boolean(),
+					records: z.array(
+						z
+							.object({
+								type: z.enum(["weight", "volume", "bodyweightReps"]),
+								id: z.uuid(),
+								weight: z.number(),
+								reps: z.number(),
+								completedAtMs: z.number(),
+							})
+							.strict(),
+					),
+				})
+				.strict(),
+		)
+		.handler(async ({ input, context, errors }) => {
+			const result = await getExercisePersonalRecords(context.userId, input.exerciseName);
+
+			return result.match(
+				(value) => value,
+				(error) => {
+					const reason = error.reason;
+
+					switch (reason) {
+						case "DATABASE_ERROR":
+							console.error("Failed to get exercise personal records", { cause: error.cause });
 							throw errors.DATABASE_ERROR();
 						default: {
 							const exhaustiveReason: never = reason;

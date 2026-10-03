@@ -23,12 +23,17 @@ import {
 	requireUserExercise,
 } from "@/server/services/exercises-catalog.functions";
 import {
+	getExercisePersonalRecordRows,
 	getExercisePrRows,
 	getRecentSetRows,
 	listExerciseRowsByCategory,
 	searchExerciseRows,
 } from "@/server/services/exercises.db";
-import { buildRecentSets, checkCompletedSetPr } from "@/server/services/exercises.functions";
+import {
+	buildExercisePersonalRecords,
+	buildRecentSets,
+	checkCompletedSetPr,
+} from "@/server/services/exercises.functions";
 import { emptyExercisePrs } from "@/server/services/pr-history.functions";
 
 interface ExerciseCatalogWriteInput {
@@ -155,6 +160,19 @@ export function getRecentSets(userId: string, exerciseName: string) {
 	const normalizedExerciseName = normalizeName(exerciseName);
 
 	return getRecentSetRows(userId, normalizedExerciseName).map(buildRecentSets);
+}
+
+export function getExercisePersonalRecords(userId: string, exerciseName: string) {
+	const normalizedExerciseName = normalizeName(exerciseName);
+
+	return getExercisePersonalRecordRows(userId, normalizedExerciseName).map((rows) =>
+		buildExercisePersonalRecords(rows[0] ?? {
+			hasHistory: false,
+			weight: null,
+			volume: null,
+			bodyweightReps: null,
+		}),
+	);
 }
 
 interface CheckSetPrInput {
