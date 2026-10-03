@@ -243,6 +243,16 @@ body {
 	fill: var(--chart-5);
 }
 
+@layer components {
+	.exercise-set-grid-header {
+		@apply grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 text-xs tracking-wide text-muted-foreground uppercase;
+	}
+
+	.exercise-set-grid-row {
+		@apply grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] items-center gap-1 border-b py-2 text-sm last:border-b-0;
+	}
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/70;

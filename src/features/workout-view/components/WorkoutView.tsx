@@ -4,6 +4,7 @@ import { IconChevronLeft, IconEdit } from "@tabler/icons-react";
 import Link from "next/link";
 import type { ReactElement } from "react";
 
+import { BackNavButton, backNavIconClassName } from "@/components/BackNavButton";
 import { Button } from "@/components/ui/button";
 import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 import ExerciseViewSection from "@/features/workout-view/components/ExerciseViewSection";
@@ -23,16 +24,13 @@ export default function WorkoutView({ workout, workoutId }: WorkoutViewProps): R
 		<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 			<div className="ios-safe-area-top relative right-1/2 left-1/2 -mr-[50vw] -ml-[50vw] w-screen border-b bg-sidebar dark:bg-sidebar">
 				<div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-2">
-					<Button
-						variant="outline"
-						asChild
-						size="icon">
+					<BackNavButton asChild>
 						<Link
 							href="/workouts"
 							aria-label="Back">
-							<IconChevronLeft className="size-7" />
+							<IconChevronLeft className={backNavIconClassName} />
 						</Link>
-					</Button>
+					</BackNavButton>
 					<Button
 						variant="ghost"
 						asChild

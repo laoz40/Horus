@@ -4,6 +4,8 @@ import { IconChevronLeft } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import type { ReactElement } from "react";
 
+import { BackNavButton, backNavIconClassName } from "@/components/BackNavButton";
+
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -15,7 +17,6 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
 import { animateCreateWorkoutExit } from "@/features/workout-form/lib/animateCreateWorkoutExit";
 import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
 
@@ -44,13 +45,11 @@ export default function WorkoutExitLink({ href, isCreate }: WorkoutExitLinkProps
 	return (
 		<AlertDialog>
 			<AlertDialogTrigger asChild>
-				<Button
-					variant="outline"
-					size="icon"
+				<BackNavButton
 					type="button"
 					aria-label="Back">
-					<IconChevronLeft className="size-7" />
-				</Button>
+					<IconChevronLeft className={backNavIconClassName} />
+				</BackNavButton>
 			</AlertDialogTrigger>
 			<AlertDialogContent size="sm">
 				<AlertDialogHeader>

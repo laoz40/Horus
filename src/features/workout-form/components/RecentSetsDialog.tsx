@@ -25,7 +25,7 @@ interface RecentSetsDialogProps {
 
 function SetSkeletonRow() {
 	return (
-		<div className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 border-b py-2 last:border-b-0">
+		<div className="exercise-set-grid-row">
 			<div className="h-4 w-8 animate-pulse rounded-sm bg-muted" />
 			<div className="h-4 w-8 animate-pulse rounded-sm bg-muted" />
 			<div />
@@ -90,7 +90,7 @@ export default function RecentSetsDialog({
 				</DialogHeader>
 
 				<div className="flex flex-col gap-3">
-					<div className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 text-xs tracking-wide text-muted-foreground uppercase">
+					<div className="exercise-set-grid-header">
 						<span>Weight</span>
 						<span>Reps</span>
 						<span />
@@ -118,7 +118,7 @@ export default function RecentSetsDialog({
 								return (
 									<div
 										key={set.id}
-										className="grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] items-center gap-1 border-b py-2 text-sm last:border-b-0">
+										className="exercise-set-grid-row">
 										<span className={cn(set.isPr && "font-semibold")}>{set.weight}</span>
 										<span className={cn(set.isPr && "font-semibold")}>{set.reps}</span>
 										<span>

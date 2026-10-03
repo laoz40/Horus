@@ -1,11 +1,18 @@
-import type { RecentSetRow } from "@/server/services/exercises.db";
+import {
+	markExerciseWeightProgressionPeriodPeaks,
+	type ExerciseWeightProgressionPoint,
+} from "@/features/progress/lib/exerciseWeightProgression";
+import type {
+	ExercisePersonalRecordsRow,
+	RecentSetRow,
+	WeeklyWeightProgressionRow,
+} from "@/server/services/exercises.db";
+import type { SetPrType } from "@/features/workout-form/lib/setPr";
 import {
 	calculatePrsForSet,
 	emptyExercisePrs,
 	type ExercisePrs,
 } from "@/server/services/pr-history.functions";
-
-type RecentSetPrType = "weight" | "volume" | "bodyweightReps";
 
 interface DraftSet {
 	completed: boolean;
@@ -39,9 +46,50 @@ export function checkCompletedSetPr(
 	return { prType: null };
 }
 
+const personalRecordEntries: {
+	type: SetPrType;
+	key: keyof Pick<ExercisePersonalRecordsRow, "weight" | "volume" | "bodyweightReps">;
+}[] = [
+	{ type: "weight", key: "weight" },
+	{ type: "volume", key: "volume" },
+	{ type: "bodyweightReps", key: "bodyweightReps" },
+];
+
+export function buildExercisePersonalRecords(row: ExercisePersonalRecordsRow) {
+	const records: {
+		type: SetPrType;
+		id: string;
+		weight: number;
+		reps: number;
+		completedAtMs: number;
+	}[] = [];
+
+	for (const entry of personalRecordEntries) {
+		const record = row[entry.key];
+
+		if (!record) continue;
+
+		records.push({
+			type: entry.type,
+			...record,
+		});
+	}
+
+	return {
+		hasHistory: row.hasHistory,
+		records,
+	};
+}
+
+export function buildWeeklyWeightProgression(
+	rows: WeeklyWeightProgressionRow[],
+): ExerciseWeightProgressionPoint[] {
+	return markExerciseWeightProgressionPeriodPeaks(rows);
+}
+
 export function buildRecentSets(rows: RecentSetRow[]) {
 	return rows.map((row) => {
-		const prTypes: RecentSetPrType[] = [];
+		const prTypes: SetPrType[] = [];
 
 		if (row.isWeightPr) prTypes.push("weight");
 

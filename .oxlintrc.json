@@ -19,7 +19,8 @@
 		"build/**",
 		"next-env.d.ts",
 		"tools/oxlint/anti-slop/**",
-		".agents/**"
+		".agents/**",
+		"src/components/ui/chart.tsx"
 	],
 	"rules": {
 		"anti-slop/no-chained-type-assertions": "error",
