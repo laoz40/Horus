@@ -11,7 +11,7 @@ export default function ProgressPage(): ReactElement {
 	const isSignedIn = sessionData?.user !== undefined && sessionData.user !== null;
 
 	return (
-		<div className="flex h-full w-full flex-1 flex-col pt-4">
+		<div className="max-md:pb-20 flex h-full w-full flex-1 flex-col pt-4">
 			<DashboardYearInTrainingSection
 				isAuthPending={isPending}
 				isSignedIn={isSignedIn}

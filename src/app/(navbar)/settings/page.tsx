@@ -6,7 +6,7 @@ import SettingsDataSection from "@/features/settings/components/SettingsDataSect
 
 export default function SettingsPage() {
 	return (
-		<>
+		<div className="max-md:pb-20">
 			<div className="p-4">
 				<h1 className="text-2xl font-semibold">Settings</h1>
 			</div>
@@ -30,6 +30,6 @@ export default function SettingsPage() {
 
 				<SettingsDataSection />
 			</div>
-		</>
+		</div>
 	);
 }

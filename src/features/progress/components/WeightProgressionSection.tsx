@@ -91,7 +91,7 @@ export default function WeightProgressionSection({
 					}}>
 					<SelectTrigger
 						size="sm"
-						className="h-8 w-28 shrink-0"
+						className="h-auto shrink-0 border-0 bg-transparent px-0 text-muted-foreground shadow-none hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent"
 						aria-label="Progression time range">
 						<SelectValue />
 					</SelectTrigger>
@@ -108,7 +108,7 @@ export default function WeightProgressionSection({
 					</SelectContent>
 				</Select>
 			</div>
-			<div className="rounded-md border bg-card px-3 pt-3 pb-0">
+			<div className="rounded-md border bg-card px-3 py-3">
 				<ProgressionChartContent
 					exerciseName={exerciseName}
 					range={range}

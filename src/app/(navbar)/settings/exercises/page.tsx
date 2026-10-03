@@ -73,7 +73,7 @@ function ExercisesPageShell({
 	onAddExercise: () => void;
 }) {
 	return (
-		<div className="flex flex-col gap-4 p-4">
+		<div className="max-md:pb-20 flex flex-col gap-4 p-4">
 			<div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
 				<Link
 					href="/settings"

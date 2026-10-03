@@ -13,7 +13,7 @@ export default async function ProgressExerciseDetailPage({
 	const exerciseName = decodeURIComponent(encodedExerciseName);
 
 	return (
-		<div className="flex h-full w-full flex-1 flex-col pt-4">
+		<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 			<ProgressExerciseDetail exerciseName={exerciseName} />
 		</div>
 	);

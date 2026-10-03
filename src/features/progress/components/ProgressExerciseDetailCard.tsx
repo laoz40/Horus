@@ -12,7 +12,7 @@ export default function ProgressExerciseDetailCard({
 	return (
 		<section className="mb-6 flex flex-col">
 			<h2 className="mb-1 text-muted-foreground">{title}</h2>
-			<div className="rounded-md border bg-card px-3 pt-3 pb-0">{children}</div>
+			<div className="rounded-md border bg-card px-3 py-3">{children}</div>
 		</section>
 	);
 }

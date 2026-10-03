@@ -19,7 +19,7 @@ export default function DashboardPage(): ReactElement {
 	const shouldShowSkeleton = isPending && sessionData === null;
 
 	return (
-		<div className="flex flex-col gap-3 pt-2 pb-5">
+		<div className="max-md:pb-20 flex flex-col gap-3 pt-2 pb-5">
 			<div className="flex flex-row items-start justify-between px-4 pt-2">
 				<div className="flex flex-col">
 					{shouldShowSkeleton ? (
