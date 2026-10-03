@@ -41,8 +41,7 @@ function ProgressionChartContent({
 		}),
 	);
 
-	const queryError =
-		progressionQuery.error instanceof Error ? progressionQuery.error : null;
+	const queryError = progressionQuery.error instanceof Error ? progressionQuery.error : null;
 
 	const errorMessage = orpcQueryErrorMessage(
 		progressionQuery.isError,

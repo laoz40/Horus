@@ -15,9 +15,7 @@ interface RecentSetsSectionProps {
 	exerciseName: string;
 }
 
-function RecentSetsContent({
-	exerciseName,
-}: RecentSetsSectionProps): ReactElement {
+function RecentSetsContent({ exerciseName }: RecentSetsSectionProps): ReactElement {
 	const recentSetsQuery = useQuery(
 		orpc.exercises.recentSets.queryOptions({
 			input: { exerciseName },
@@ -48,9 +46,7 @@ function RecentSetsContent({
 	}));
 
 	if (recentSets.length === 0) {
-		return (
-			<p className="pb-3 text-sm text-muted-foreground">No recent completed sets found.</p>
-		);
+		return <p className="pb-3 text-sm text-muted-foreground">No recent completed sets found.</p>;
 	}
 
 	return (
@@ -91,9 +87,7 @@ function RecentSetsContent({
 	);
 }
 
-export default function RecentSetsSection({
-	exerciseName,
-}: RecentSetsSectionProps): ReactElement {
+export default function RecentSetsSection({ exerciseName }: RecentSetsSectionProps): ReactElement {
 	return (
 		<ProgressExerciseDetailCard title="Recent sets">
 			<RecentSetsContent exerciseName={exerciseName} />

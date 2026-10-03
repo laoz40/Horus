@@ -4,8 +4,7 @@ import type { ComponentProps, ReactElement } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export const backNavButtonClassName =
-	"h-auto shrink-0 justify-start gap-0 px-0 py-1 has-[>svg]:px-0";
+const backNavButtonClassName = "h-auto shrink-0 justify-start gap-0 px-0 py-1 has-[>svg]:px-0";
 
 export const backNavIconClassName = "size-7 shrink-0 -ms-2";
 

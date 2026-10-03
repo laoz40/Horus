@@ -14,9 +14,7 @@ interface PersonalRecordsSectionProps {
 	exerciseName: string;
 }
 
-function PersonalRecordsContent({
-	exerciseName,
-}: PersonalRecordsSectionProps): ReactElement {
+function PersonalRecordsContent({ exerciseName }: PersonalRecordsSectionProps): ReactElement {
 	const personalRecordsQuery = useQuery(
 		orpc.exercises.personalRecords.queryOptions({
 			input: { exerciseName },
@@ -48,9 +46,7 @@ function PersonalRecordsContent({
 	}));
 
 	if (personalRecords.length === 0) {
-		return (
-			<p className="pb-3 text-sm text-muted-foreground">No completed sets logged yet.</p>
-		);
+		return <p className="pb-3 text-sm text-muted-foreground">No completed sets logged yet.</p>;
 	}
 
 	return (

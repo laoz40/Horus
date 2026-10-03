@@ -173,12 +173,14 @@ export function getExercisePersonalRecords(userId: string, exerciseName: string)
 	const normalizedExerciseName = normalizeName(exerciseName);
 
 	return getExercisePersonalRecordRows(userId, normalizedExerciseName).map((rows) =>
-		buildExercisePersonalRecords(rows[0] ?? {
-			hasHistory: false,
-			weight: null,
-			volume: null,
-			bodyweightReps: null,
-		}),
+		buildExercisePersonalRecords(
+			rows[0] ?? {
+				hasHistory: false,
+				weight: null,
+				volume: null,
+				bodyweightReps: null,
+			},
+		),
 	);
 }
 

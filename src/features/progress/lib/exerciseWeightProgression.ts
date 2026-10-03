@@ -3,8 +3,7 @@ export const EXERCISE_WEIGHT_PROGRESSION_MIN_REPS = 4;
 
 export const exerciseWeightProgressionRanges = ["3m", "6m", "1y", "all"] as const;
 
-export type ExerciseWeightProgressionRange =
-	(typeof exerciseWeightProgressionRanges)[number];
+export type ExerciseWeightProgressionRange = (typeof exerciseWeightProgressionRanges)[number];
 
 export const exerciseWeightProgressionRangeLabels = {
 	"3m": "3 months",

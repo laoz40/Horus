@@ -85,10 +85,10 @@ function ExerciseCategoryView({
 			<Button
 				type="button"
 				variant="ghost"
-				className="h-auto min-h-9 w-full shrink-0 justify-start gap-0.5 px-0 py-1 has-[>svg]:px-0 text-left text-base font-bold"
+				className="h-auto min-h-9 w-full shrink-0 justify-start gap-0.5 px-0 py-1 text-left text-base font-bold has-[>svg]:px-0"
 				onClick={onBack}
 				aria-label="Back to categories">
-				<IconChevronLeft className="size-5 shrink-0 -ms-1.5" />
+				<IconChevronLeft className="-ms-1.5 size-5 shrink-0" />
 				{CATEGORY_LABELS[category]}
 				{isFetching ? (
 					<span className="flex items-center gap-1 text-sm font-normal text-muted-foreground">

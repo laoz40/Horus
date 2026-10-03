@@ -184,12 +184,7 @@ export function getExerciseWeeklyWeightProgressionRows(
 	return tryPromise({
 		try: async (): Promise<WeeklyWeightProgressionRow[]> => {
 			const rows = await prisma.$queryRawTyped(
-				getExerciseWeeklyWeightProgression(
-					userId,
-					normalizedExerciseName,
-					sinceCreatedAt,
-					minReps,
-				),
+				getExerciseWeeklyWeightProgression(userId, normalizedExerciseName, sinceCreatedAt, minReps),
 			);
 
 			return rows.map((row) => ({
