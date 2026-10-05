@@ -7,6 +7,10 @@ import { exercisesProgressProcedures } from "@/server/routers/exercises-progress
 import {
 	checkSetPr,
 	createUserExercise,
+	normalizeExerciseInput,
+	validateExerciseNameAvailability,
+	getUserExercise,
+	getUnusedUserExercise,
 	deleteUserExerciseById,
 	listExercisesByCategory,
 	listUserExercises,
@@ -227,7 +231,14 @@ export const exercisesRouter = {
 				.strict(),
 		)
 		.handler(async ({ input, context, errors }) => {
-			const result = await createUserExercise(context.userId, input);
+			const normalizedExercise = normalizeExerciseInput(input);
+
+			const result = await validateExerciseNameAvailability({
+				userId: context.userId,
+				normalizedName: normalizedExercise.normalizedName,
+			})
+				.andThen(() => createUserExercise({ userId: context.userId, exercise: normalizedExercise }))
+				.map((exercise) => ({ exercise }));
 
 			return result.match(
 				(value) => value,
@@ -282,7 +293,24 @@ export const exercisesRouter = {
 				.strict(),
 		)
 		.handler(async ({ input, context, errors }) => {
-			const result = await updateUserExercise(context.userId, input);
+			const normalizedExercise = normalizeExerciseInput(input);
+
+			const result = await getUserExercise(context.userId, input.id)
+				.andThen(() =>
+					validateExerciseNameAvailability({
+						userId: context.userId,
+						normalizedName: normalizedExercise.normalizedName,
+						excludingExerciseId: input.id,
+					}),
+				)
+				.andThen(() =>
+					updateUserExercise({
+						userId: context.userId,
+						exerciseId: input.id,
+						exercise: normalizedExercise,
+					}),
+				)
+				.map((exercise) => ({ exercise }));
 
 			return result.match(
 				(value) => value,
@@ -316,7 +344,9 @@ export const exercisesRouter = {
 		.input(z.object({ id: z.uuid() }).strict())
 		.output(z.object({ deleted: z.literal(true) }).strict())
 		.handler(async ({ input, context, errors }) => {
-			const result = await deleteUserExerciseById(context.userId, input.id);
+			const result = await getUnusedUserExercise(context.userId, input.id).andThen((exercise) =>
+				deleteUserExerciseById(context.userId, exercise.id),
+			);
 
 			return result.match(
 				(value) => value,

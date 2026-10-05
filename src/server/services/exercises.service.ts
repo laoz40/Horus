@@ -1,6 +1,9 @@
 import "server-only";
 
 import { err, ok } from "neverthrow";
+import { runDatabaseTransaction } from "@/lib/db";
+import { tryPromise } from "@/lib/tryPromise";
+import { recalculateExercisePrHistory } from "@/server/services/pr-history.service";
 
 import {
 	getNormalizedMuscleNamesForCategory,
@@ -15,7 +18,6 @@ import {
 	listUserExerciseRows,
 	mergeUserExerciseRows,
 	updateUserExerciseRow,
-	userExerciseExists,
 } from "@/server/services/exercises-catalog.db";
 import {
 	normalizeMuscleGroupsForSave,
@@ -48,10 +50,6 @@ interface ExerciseCatalogWriteInput {
 	muscleGroups: string[];
 }
 
-interface UpdateExerciseCatalogInput extends ExerciseCatalogWriteInput {
-	id: string;
-}
-
 interface MergeExerciseCatalogInput {
 	sourceId: string;
 	targetId: string;
@@ -62,68 +60,98 @@ export function listUserExercises(userId: string) {
 	return listUserExerciseRows(userId);
 }
 
-export function createUserExercise(userId: string, input: ExerciseCatalogWriteInput) {
-	const normalizedName = normalizeName(input.name);
-	const muscleGroups = normalizeMuscleGroupsForSave(input.muscleGroups);
-
-	return findUserExerciseIdByNormalizedName(userId, normalizedName)
-		.andThen((existingExerciseId) => {
-			if (existingExerciseId === null) {
-				return ok(null);
-			}
-
-			return getUserExerciseRow(userId, existingExerciseId)
-				.andThen(requireUserExercise)
-				.andThen((existingExercise) =>
-					err({
-						reason: "NAME_COLLISION" as const,
-						existingExercise,
-					}),
-				);
-		})
-		.andThen(() => insertUserExercise(userId, input.name.trim(), normalizedName, muscleGroups))
-		.map((exercise) => ({ exercise }));
+export function normalizeExerciseInput(input: ExerciseCatalogWriteInput) {
+	return {
+		name: input.name.trim(),
+		normalizedName: normalizeName(input.name),
+		muscleGroups: normalizeMuscleGroupsForSave(input.muscleGroups),
+	};
 }
 
-export function updateUserExercise(userId: string, input: UpdateExerciseCatalogInput) {
-	const normalizedName = normalizeName(input.name);
-	const muscleGroups = normalizeMuscleGroupsForSave(input.muscleGroups);
+type NormalizedExercise = ReturnType<typeof normalizeExerciseInput>;
 
-	return userExerciseExists(userId, input.id)
-		.andThen((exists) => {
-			if (!exists) {
-				return err({ reason: "EXERCISE_NOT_FOUND" as const });
-			}
+interface ExerciseNameQuery {
+	userId: string;
+	normalizedName: string;
+	excludingExerciseId?: string;
+}
 
-			return ok(null);
-		})
-		.andThen(() => findUserExerciseIdByNormalizedName(userId, normalizedName))
-		.andThen((existingExerciseId) => {
-			if (existingExerciseId === null || existingExerciseId === input.id) {
+export function getUserExercise(userId: string, exerciseId: string) {
+	return getUserExerciseRow(userId, exerciseId).andThen(requireUserExercise);
+}
+
+export function validateExerciseNameAvailability({
+	userId,
+	normalizedName,
+	excludingExerciseId,
+}: ExerciseNameQuery) {
+	return findUserExerciseIdByNormalizedName(userId, normalizedName).andThen(
+		(existingExerciseId) => {
+			if (existingExerciseId === null || existingExerciseId === excludingExerciseId) {
 				return ok(null);
 			}
 
-			return getUserExerciseRow(userId, existingExerciseId)
-				.andThen(requireUserExercise)
-				.andThen((existingExercise) =>
-					err({
-						reason: "NAME_COLLISION" as const,
-						existingExercise,
-					}),
-				);
-		})
-		.andThen(() =>
-			updateUserExerciseRow(userId, input.id, input.name.trim(), normalizedName, muscleGroups),
-		)
-		.map((exercise) => ({ exercise }));
+			return getUserExercise(userId, existingExerciseId).andThen((existingExercise) =>
+				err({ reason: "NAME_COLLISION" as const, existingExercise }),
+			);
+		},
+	);
+}
+
+interface CreateExerciseInput {
+	userId: string;
+	exercise: NormalizedExercise;
+}
+
+export function createUserExercise({ userId, exercise }: CreateExerciseInput) {
+	return insertUserExercise(userId, exercise.name, exercise.normalizedName, exercise.muscleGroups);
+}
+
+interface UpdateExerciseInput extends CreateExerciseInput {
+	exerciseId: string;
+}
+
+export function updateUserExercise({ userId, exerciseId, exercise }: UpdateExerciseInput) {
+	return updateUserExerciseRow(
+		userId,
+		exerciseId,
+		exercise.name,
+		exercise.normalizedName,
+		exercise.muscleGroups,
+	);
+}
+
+export function getUnusedUserExercise(userId: string, exerciseId: string) {
+	return getUserExercise(userId, exerciseId).andThen(requireUnusedExercise);
 }
 
 export function deleteUserExerciseById(userId: string, exerciseId: string) {
-	return getUserExerciseRow(userId, exerciseId)
-		.andThen(requireUserExercise)
-		.andThen(requireUnusedExercise)
-		.andThen(() => deleteUserExercise(userId, exerciseId))
-		.map(() => ({ deleted: true as const }));
+	return deleteUserExercise(userId, exerciseId).map(() => ({ deleted: true as const }));
+}
+
+function mergeExercisesAndRecalculatePrs(
+	userId: string,
+	sourceId: string,
+	targetId: string,
+	sourceMuscleGroups: ReturnType<typeof normalizeMuscleGroupsForSave> | null,
+) {
+	return tryPromise({
+		try: () =>
+			runDatabaseTransaction(async (tx) => {
+				const cutoff = await mergeUserExerciseRows(
+					tx,
+					userId,
+					sourceId,
+					targetId,
+					sourceMuscleGroups,
+				);
+
+				if (cutoff) {
+					await recalculateExercisePrHistory(tx, userId, [sourceId, targetId], cutoff);
+				}
+			}),
+		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	});
 }
 
 export function mergeUserExercises(userId: string, input: MergeExerciseCatalogInput) {
@@ -141,13 +169,10 @@ export function mergeUserExercises(userId: string, input: MergeExerciseCatalogIn
 		? normalizeMuscleGroupsForSave(input.sourceMuscleGroups)
 		: null;
 
-	return getUserExerciseRow(userId, sourceId)
-		.andThen(requireUserExercise)
-		.andThen(() => getUserExerciseRow(userId, targetId))
-		.andThen(requireUserExercise)
-		.andThen(() => mergeUserExerciseRows(userId, sourceId, targetId, sourceMuscleGroups))
-		.andThen(() => getUserExerciseRow(userId, targetId))
-		.andThen(requireUserExercise)
+	return getUserExercise(userId, sourceId)
+		.andThen(() => getUserExercise(userId, targetId))
+		.andThen(() => mergeExercisesAndRecalculatePrs(userId, sourceId, targetId, sourceMuscleGroups))
+		.andThen(() => getUserExercise(userId, targetId))
 		.map((targetExercise) => ({ targetExercise }));
 }
 

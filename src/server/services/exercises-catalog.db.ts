@@ -7,7 +7,6 @@ import {
 import { prisma, runDatabaseTransaction, type DatabaseTransaction } from "@/lib/db";
 import { tryPromise } from "@/lib/tryPromise";
 import type { PrHistoryCutoff } from "@/server/services/pr-history.functions";
-import { rebuildAffectedPrHistory } from "@/server/services/workouts.functions";
 
 type Tx = DatabaseTransaction;
 
@@ -116,23 +115,6 @@ async function replaceExerciseMuscleGroups(
 			muscle_group_id: muscleGroupId,
 		})),
 		skipDuplicates: true,
-	});
-}
-
-export function userExerciseExists(userId: string, exerciseId: string) {
-	return tryPromise({
-		try: async (): Promise<boolean> => {
-			const row = await prisma.exercises.findFirst({
-				where: {
-					id: exerciseId,
-					user_id: userId,
-				},
-				select: { id: true },
-			});
-
-			return row !== null;
-		},
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
 }
 
@@ -295,66 +277,59 @@ async function getEarliestAffectedWorkoutCutoff(
 	};
 }
 
-export function mergeUserExerciseRows(
+export async function mergeUserExerciseRows(
+	tx: Tx,
 	userId: string,
 	sourceId: string,
 	targetId: string,
 	sourceMuscleGroupsForExercise: Array<{ name: string; normalizedName: string }> | null = null,
 ) {
-	return tryPromise({
-		try: () =>
-			runDatabaseTransaction(async (tx): Promise<void> => {
-				if (sourceId === targetId) {
-					throw new Error("Cannot merge an exercise into itself");
-				}
+	if (sourceId === targetId) {
+		throw new Error("Cannot merge an exercise into itself");
+	}
 
-				const [source, target] = await Promise.all([
-					tx.exercises.findFirst({
-						where: {
-							id: sourceId,
-							user_id: userId,
-						},
-						select: { id: true },
-					}),
-					tx.exercises.findFirst({
-						where: {
-							id: targetId,
-							user_id: userId,
-						},
-						select: { id: true },
-					}),
-				]);
+	const [source, target] = await Promise.all([
+		tx.exercises.findFirst({
+			where: {
+				id: sourceId,
+				user_id: userId,
+			},
+			select: { id: true },
+		}),
+		tx.exercises.findFirst({
+			where: {
+				id: targetId,
+				user_id: userId,
+			},
+			select: { id: true },
+		}),
+	]);
 
-				if (!source || !target) {
-					throw new Error("Source or target exercise not found");
-				}
+	if (!source || !target) {
+		throw new Error("Source or target exercise not found");
+	}
 
-				if (sourceMuscleGroupsForExercise !== null) {
-					await replaceExerciseMuscleGroups(tx, sourceId, sourceMuscleGroupsForExercise);
-				}
+	if (sourceMuscleGroupsForExercise !== null) {
+		await replaceExerciseMuscleGroups(tx, sourceId, sourceMuscleGroupsForExercise);
+	}
 
-				const cutoff = await getEarliestAffectedWorkoutCutoff(tx, userId, [sourceId, targetId]);
+	const cutoff = await getEarliestAffectedWorkoutCutoff(tx, userId, [sourceId, targetId]);
 
-				await unionSourceMuscleGroupsOntoTarget(tx, sourceId, targetId);
+	await unionSourceMuscleGroupsOntoTarget(tx, sourceId, targetId);
 
-				await tx.workout_exercises.updateMany({
-					where: { exercise_id: sourceId },
-					data: { exercise_id: targetId },
-				});
-
-				await tx.exercises.deleteMany({
-					where: {
-						id: sourceId,
-						user_id: userId,
-					},
-				});
-
-				if (cutoff) {
-					await rebuildAffectedPrHistory(tx, userId, [sourceId, targetId], cutoff);
-				}
-			}),
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	await tx.workout_exercises.updateMany({
+		where: { exercise_id: sourceId },
+		data: { exercise_id: targetId },
 	});
+
+	await tx.exercises.deleteMany({
+		where: {
+			id: sourceId,
+			user_id: userId,
+		},
+	});
+
+	return cutoff;
 }
 
 export function listUserExerciseRows(userId: string) {

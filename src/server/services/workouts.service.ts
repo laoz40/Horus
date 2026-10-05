@@ -23,6 +23,10 @@ import {
 	type WorkoutWriteInput,
 } from "@/server/services/workouts.db";
 import {
+	calculateSetPrsFromHistory,
+	recalculateExercisePrHistory,
+} from "@/server/services/pr-history.service";
+import {
 	buildAffectedExerciseIds,
 	buildPrTotalsByWorkoutId,
 } from "@/server/services/pr-history.functions";
@@ -31,14 +35,12 @@ import {
 	buildWorkoutEditForm,
 	buildWorkoutHistoryPage,
 	normalizeWorkoutForWrite,
-	calculateAppendedPrHistory,
-	rebuildAffectedPrHistory,
 	requireDeletedWorkouts,
 	requireWorkout,
 	validateUniqueWorkoutChildIds,
 } from "@/server/services/workouts.functions";
 
-function createWorkoutTransaction(createInput: WorkoutWriteInput) {
+export function createWorkout(createInput: WorkoutWriteInput) {
 	return tryPromise({
 		try: () =>
 			runDatabaseTransaction(async (tx): Promise<string> => {
@@ -51,7 +53,7 @@ function createWorkoutTransaction(createInput: WorkoutWriteInput) {
 				);
 
 				const newWorkoutSets = buildNewWorkoutPrSets(workoutId, exercisesWithDatabaseIds);
-				const prStatuses = await calculateAppendedPrHistory(tx, createInput.userId, newWorkoutSets);
+				const prStatuses = await calculateSetPrsFromHistory(tx, createInput.userId, newWorkoutSets);
 				const prStatusesBySetId = new Map(prStatuses.map((status) => [status.setId, status]));
 				const totalPrSets = buildPrTotalsByWorkoutId(prStatuses).get(workoutId) ?? 0;
 
@@ -65,7 +67,7 @@ function createWorkoutTransaction(createInput: WorkoutWriteInput) {
 	});
 }
 
-function updateWorkoutTransaction(
+function updateWorkoutAndRecalculatePrs(
 	updateInput: WorkoutUpdateInput,
 ): ResultAsync<string | null, { reason: "DATABASE_ERROR"; cause: unknown }> {
 	return tryPromise({
@@ -94,7 +96,7 @@ function updateWorkoutTransaction(
 				await deleteWorkoutChildren(tx, updateInput.workoutId);
 				await insertWorkoutExerciseRows(tx, updateInput.workoutId, exercisesWithDatabaseIds);
 				await insertWorkoutSetRows(tx, exercisesWithDatabaseIds);
-				await rebuildAffectedPrHistory(tx, updateInput.userId, affectedExerciseIds, {
+				await recalculateExercisePrHistory(tx, updateInput.userId, affectedExerciseIds, {
 					workoutId: workout.id,
 					createdAt: workout.createdAt,
 				});
@@ -105,7 +107,7 @@ function updateWorkoutTransaction(
 	});
 }
 
-function deleteWorkoutTransaction(workoutId: string, userId: string) {
+function deleteWorkoutAndRecalculatePrs(workoutId: string, userId: string) {
 	return tryPromise({
 		try: () =>
 			runDatabaseTransaction(async (tx) => {
@@ -117,7 +119,7 @@ function deleteWorkoutTransaction(workoutId: string, userId: string) {
 
 				const exerciseIds = await getWorkoutExerciseIds(tx, workoutId);
 				await deleteWorkoutById(tx, workoutId, userId);
-				await rebuildAffectedPrHistory(tx, userId, exerciseIds, {
+				await recalculateExercisePrHistory(tx, userId, exerciseIds, {
 					workoutId: workout.id,
 					createdAt: workout.createdAt,
 				});
@@ -137,34 +139,17 @@ export function listWorkouts(query: ListWorkoutsQuery) {
 }
 
 export function deleteWorkout(workoutId: string, userId: string) {
-	return deleteWorkoutTransaction(workoutId, userId).andThen(requireWorkout);
+	return deleteWorkoutAndRecalculatePrs(workoutId, userId).andThen(requireWorkout);
 }
 
 export function deleteAllWorkouts(userId: string) {
 	return deleteAllWorkoutRows(userId).andThen(requireDeletedWorkouts);
 }
 
-export function createWorkout(userId: string, workout: WorkoutForSave) {
-	return validateUniqueWorkoutChildIds(workout)
-		.map(() => ({
-			userId,
-			workout: normalizeWorkoutForWrite(workout),
-		}))
-		.asyncAndThen(createWorkoutTransaction)
-		.map((workoutId) => ({ workoutId, workout }));
+export function validateAndNormalizeWorkout(workout: WorkoutForSave) {
+	return validateUniqueWorkoutChildIds(workout).map(() => normalizeWorkoutForWrite(workout));
 }
 
-export function updateWorkout(workoutId: string, userId: string, workout: WorkoutForSave) {
-	return validateUniqueWorkoutChildIds(workout)
-		.map(() => ({
-			workoutId,
-			userId,
-			workout: normalizeWorkoutForWrite(workout),
-		}))
-		.asyncAndThen((updateInput) =>
-			updateWorkoutTransaction(updateInput).andThen((updatedWorkoutId) =>
-				requireWorkout(updatedWorkoutId),
-			),
-		)
-		.map(() => ({ workoutId, workout }));
+export function updateWorkout(updateInput: WorkoutUpdateInput) {
+	return updateWorkoutAndRecalculatePrs(updateInput).andThen(requireWorkout);
 }
