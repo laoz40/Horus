@@ -40,7 +40,7 @@ import {
 	validateUniqueWorkoutChildIds,
 } from "@/server/services/workouts.functions";
 
-function createWorkoutTransaction(createInput: WorkoutWriteInput) {
+export function createWorkout(createInput: WorkoutWriteInput) {
 	return tryPromise({
 		try: () =>
 			runDatabaseTransaction(async (tx): Promise<string> => {
@@ -67,7 +67,7 @@ function createWorkoutTransaction(createInput: WorkoutWriteInput) {
 	});
 }
 
-function updateWorkoutTransaction(
+function updateWorkoutAndRecalculatePrs(
 	updateInput: WorkoutUpdateInput,
 ): ResultAsync<string | null, { reason: "DATABASE_ERROR"; cause: unknown }> {
 	return tryPromise({
@@ -107,7 +107,7 @@ function updateWorkoutTransaction(
 	});
 }
 
-function deleteWorkoutTransaction(workoutId: string, userId: string) {
+function deleteWorkoutAndRecalculatePrs(workoutId: string, userId: string) {
 	return tryPromise({
 		try: () =>
 			runDatabaseTransaction(async (tx) => {
@@ -139,34 +139,17 @@ export function listWorkouts(query: ListWorkoutsQuery) {
 }
 
 export function deleteWorkout(workoutId: string, userId: string) {
-	return deleteWorkoutTransaction(workoutId, userId).andThen(requireWorkout);
+	return deleteWorkoutAndRecalculatePrs(workoutId, userId).andThen(requireWorkout);
 }
 
 export function deleteAllWorkouts(userId: string) {
 	return deleteAllWorkoutRows(userId).andThen(requireDeletedWorkouts);
 }
 
-export function createWorkout(userId: string, workout: WorkoutForSave) {
-	return validateUniqueWorkoutChildIds(workout)
-		.map(() => ({
-			userId,
-			workout: normalizeWorkoutForWrite(workout),
-		}))
-		.asyncAndThen(createWorkoutTransaction)
-		.map((workoutId) => ({ workoutId, workout }));
+export function validateAndNormalizeWorkout(workout: WorkoutForSave) {
+	return validateUniqueWorkoutChildIds(workout).map(() => normalizeWorkoutForWrite(workout));
 }
 
-export function updateWorkout(workoutId: string, userId: string, workout: WorkoutForSave) {
-	return validateUniqueWorkoutChildIds(workout)
-		.map(() => ({
-			workoutId,
-			userId,
-			workout: normalizeWorkoutForWrite(workout),
-		}))
-		.asyncAndThen((updateInput) =>
-			updateWorkoutTransaction(updateInput).andThen((updatedWorkoutId) =>
-				requireWorkout(updatedWorkoutId),
-			),
-		)
-		.map(() => ({ workoutId, workout }));
+export function updateWorkout(updateInput: WorkoutUpdateInput) {
+	return updateWorkoutAndRecalculatePrs(updateInput).andThen(requireWorkout);
 }

@@ -9,6 +9,7 @@ import {
 	deleteWorkout,
 	getWorkoutById,
 	listWorkouts,
+	validateAndNormalizeWorkout,
 	updateWorkout,
 } from "@/server/services/workouts.service";
 
@@ -124,7 +125,9 @@ const historySchema = z.object({
 
 export const workoutsRouter = {
 	create: createWorkoutProcedure.handler(async ({ input, context, errors }) => {
-		const result = await createWorkout(context.userId, input.workout);
+		const result = await validateAndNormalizeWorkout(input.workout)
+			.asyncAndThen((workout) => createWorkout({ userId: context.userId, workout }))
+			.map((workoutId) => ({ workoutId, workout: input.workout }));
 
 		return result.match(
 			(value) => value,
@@ -215,7 +218,11 @@ export const workoutsRouter = {
 			);
 		}),
 	update: updateWorkoutProcedure.handler(async ({ input, context, errors }) => {
-		const result = await updateWorkout(input.workoutId, context.userId, input.workout);
+		const result = await validateAndNormalizeWorkout(input.workout)
+			.asyncAndThen((workout) =>
+				updateWorkout({ workoutId: input.workoutId, userId: context.userId, workout }),
+			)
+			.map(() => ({ workoutId: input.workoutId, workout: input.workout }));
 
 		return result.match(
 			(value) => value,
