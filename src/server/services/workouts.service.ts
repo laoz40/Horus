@@ -23,6 +23,10 @@ import {
 	type WorkoutWriteInput,
 } from "@/server/services/workouts.db";
 import {
+	calculateSetPrsFromHistory,
+	recalculateExercisePrHistory,
+} from "@/server/services/pr-history.service";
+import {
 	buildAffectedExerciseIds,
 	buildPrTotalsByWorkoutId,
 } from "@/server/services/pr-history.functions";
@@ -31,8 +35,6 @@ import {
 	buildWorkoutEditForm,
 	buildWorkoutHistoryPage,
 	normalizeWorkoutForWrite,
-	calculateAppendedPrHistory,
-	rebuildAffectedPrHistory,
 	requireDeletedWorkouts,
 	requireWorkout,
 	validateUniqueWorkoutChildIds,
@@ -51,7 +53,7 @@ function createWorkoutTransaction(createInput: WorkoutWriteInput) {
 				);
 
 				const newWorkoutSets = buildNewWorkoutPrSets(workoutId, exercisesWithDatabaseIds);
-				const prStatuses = await calculateAppendedPrHistory(tx, createInput.userId, newWorkoutSets);
+				const prStatuses = await calculateSetPrsFromHistory(tx, createInput.userId, newWorkoutSets);
 				const prStatusesBySetId = new Map(prStatuses.map((status) => [status.setId, status]));
 				const totalPrSets = buildPrTotalsByWorkoutId(prStatuses).get(workoutId) ?? 0;
 
@@ -94,7 +96,7 @@ function updateWorkoutTransaction(
 				await deleteWorkoutChildren(tx, updateInput.workoutId);
 				await insertWorkoutExerciseRows(tx, updateInput.workoutId, exercisesWithDatabaseIds);
 				await insertWorkoutSetRows(tx, exercisesWithDatabaseIds);
-				await rebuildAffectedPrHistory(tx, updateInput.userId, affectedExerciseIds, {
+				await recalculateExercisePrHistory(tx, updateInput.userId, affectedExerciseIds, {
 					workoutId: workout.id,
 					createdAt: workout.createdAt,
 				});
@@ -117,7 +119,7 @@ function deleteWorkoutTransaction(workoutId: string, userId: string) {
 
 				const exerciseIds = await getWorkoutExerciseIds(tx, workoutId);
 				await deleteWorkoutById(tx, workoutId, userId);
-				await rebuildAffectedPrHistory(tx, userId, exerciseIds, {
+				await recalculateExercisePrHistory(tx, userId, exerciseIds, {
 					workoutId: workout.id,
 					createdAt: workout.createdAt,
 				});

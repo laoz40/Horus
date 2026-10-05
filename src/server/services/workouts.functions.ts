@@ -4,29 +4,13 @@ import { err, ok } from "neverthrow";
 
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import { buildSetPrTypes } from "@/features/workout-form/lib/setPr";
-import type { DatabaseTransaction } from "@/lib/db";
 import { normalizeName } from "@/lib/normalizeName";
-import {
-	getAffectedPrHistorySets,
-	getExercisePrRowsByIds,
-	updateSetPrStatuses,
-	updateWorkoutPrTotals,
-} from "@/server/services/pr-history.db";
-import {
-	calculateAffectedPrHistory,
-	type ExercisePrRow,
-	type PrHistoryCutoff,
-	type PrHistorySet,
-	type PrSetUpdate,
-} from "@/server/services/pr-history.functions";
 import type { WorkoutExerciseWithDatabaseId } from "@/server/services/exercises.db";
 import type {
 	ListWorkoutsQuery,
 	WorkoutForEdit,
 	WorkoutHistoryRow,
 } from "@/server/services/workouts.db";
-
-type Tx = DatabaseTransaction;
 
 export function requireWorkout<T>(workout: T | null) {
 	if (workout === null) {
@@ -107,42 +91,6 @@ export function buildNewWorkoutPrSets(
 			completed: set.completed,
 		})),
 	);
-}
-
-export async function calculateAppendedPrHistory(
-	tx: Tx,
-	userId: string,
-	sets: PrHistorySet[],
-): Promise<PrSetUpdate[]> {
-	const exerciseIds = [...new Set(sets.map((set) => set.exerciseId))];
-
-	const previousPrRows: ExercisePrRow[] =
-		exerciseIds.length === 0 ? [] : await getExercisePrRowsByIds(tx, userId, exerciseIds);
-
-	return calculateAffectedPrHistory(sets, previousPrRows).prStatuses;
-}
-
-export async function rebuildAffectedPrHistory(
-	tx: Tx,
-	userId: string,
-	exerciseIds: string[],
-	cutoff: PrHistoryCutoff,
-): Promise<void> {
-	if (exerciseIds.length === 0) {
-		return;
-	}
-
-	const previousPrRows = await getExercisePrRowsByIds(tx, userId, exerciseIds, cutoff);
-	const historySets = await getAffectedPrHistorySets(tx, userId, exerciseIds, cutoff);
-
-	const { prStatuses, affectedWorkoutIds } = calculateAffectedPrHistory(
-		historySets,
-		previousPrRows,
-	);
-
-	await updateSetPrStatuses(tx, prStatuses);
-	// Count all sets in touched workouts because unchanged exercises may also contribute PRs.
-	await updateWorkoutPrTotals(tx, userId, affectedWorkoutIds);
 }
 
 export function buildWorkoutEditForm(workout: WorkoutForEdit) {

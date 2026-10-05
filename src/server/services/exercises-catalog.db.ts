@@ -7,7 +7,7 @@ import {
 import { prisma, runDatabaseTransaction, type DatabaseTransaction } from "@/lib/db";
 import { tryPromise } from "@/lib/tryPromise";
 import type { PrHistoryCutoff } from "@/server/services/pr-history.functions";
-import { rebuildAffectedPrHistory } from "@/server/services/workouts.functions";
+import { recalculateExercisePrHistory } from "@/server/services/pr-history.service";
 
 type Tx = DatabaseTransaction;
 
@@ -350,7 +350,7 @@ export function mergeUserExerciseRows(
 				});
 
 				if (cutoff) {
-					await rebuildAffectedPrHistory(tx, userId, [sourceId, targetId], cutoff);
+					await recalculateExercisePrHistory(tx, userId, [sourceId, targetId], cutoff);
 				}
 			}),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
