@@ -10,7 +10,10 @@ import {
 	updateWorkoutPrTotalsByIds as updateWorkoutPrTotalsByIdsQuery,
 } from "@/generated/prisma/sql";
 import { type DatabaseTransaction } from "@/lib/db";
-import { type PrHistoryCutoff, type PrSetUpdate } from "@/server/services/pr-history.functions";
+import {
+	type PrHistoryCutoff,
+	type PrSetUpdate,
+} from "@/server/exercises/pr-history/pr-history.functions";
 
 type Tx = DatabaseTransaction;
 

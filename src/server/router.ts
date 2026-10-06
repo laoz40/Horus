@@ -1,6 +1,6 @@
-import { exercisesRouter } from "@/server/routers/exercises";
-import { dashboardRouter } from "@/server/routers/dashboard";
-import { workoutsRouter } from "@/server/routers/workouts";
+import { exercisesRouter } from "@/server/exercises/exercises.router";
+import { dashboardRouter } from "@/server/dashboard/dashboard.router";
+import { workoutsRouter } from "@/server/workouts/workouts.router";
 
 export const appRouter = {
 	dashboard: dashboardRouter,

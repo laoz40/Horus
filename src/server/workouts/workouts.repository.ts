@@ -12,11 +12,11 @@ import {
 } from "@/generated/prisma/sql";
 import { prisma, type DatabaseTransaction } from "@/lib/db";
 import { tryPromise } from "@/lib/tryPromise";
+import type { PrSetUpdate } from "@/server/exercises/pr-history/pr-history.functions";
 import type {
 	PreparedWorkoutWriteExercise,
 	WorkoutExerciseWithDatabaseId,
-} from "@/server/services/exercises.db";
-import type { PrSetUpdate } from "@/server/services/pr-history.functions";
+} from "@/server/exercises/library/workout-exercises.repository";
 
 type Tx = DatabaseTransaction;
 

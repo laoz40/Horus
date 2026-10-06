@@ -3,9 +3,9 @@ import "server-only";
 import { z } from "zod";
 import { MUSCLE_GROUP_CATEGORIES } from "@/features/workout-form/lib/muscleGroupCategories";
 import { protectedProcedure } from "@/server/procedures";
-import { exercisesProgressProcedures } from "@/server/routers/exercises-progress";
+import { exercisesProgressProcedures } from "@/server/exercises/progress/progress.router";
+import { checkSetPr } from "@/server/exercises/progress/progress.service";
 import {
-	checkSetPr,
 	createUserExercise,
 	normalizeExerciseInput,
 	validateExerciseNameAvailability,
@@ -17,7 +17,7 @@ import {
 	mergeUserExercises,
 	searchExercises,
 	updateUserExercise,
-} from "@/server/services/exercises.service";
+} from "@/server/exercises/library/library.service";
 
 const databaseError = {
 	DATABASE_ERROR: {
@@ -25,7 +25,7 @@ const databaseError = {
 	},
 };
 
-const exerciseCatalogErrors = {
+const exerciseLibraryErrors = {
 	...databaseError,
 	NAME_COLLISION: {
 		message: "An exercise with this name already exists",
@@ -38,14 +38,14 @@ const exerciseCatalogErrors = {
 	},
 };
 
-const exerciseCatalogWriteInputSchema = z
+const exerciseLibraryWriteInputSchema = z
 	.object({
 		name: z.string().trim().min(1),
 		muscleGroups: z.array(z.string()),
 	})
 	.strict();
 
-const exerciseCatalogItemSchema = z
+const exerciseLibraryItemSchema = z
 	.object({
 		id: z.uuid(),
 		name: z.string(),
@@ -60,7 +60,7 @@ export const exercisesRouter = {
 		.output(
 			z
 				.object({
-					exercises: z.array(exerciseCatalogItemSchema),
+					exercises: z.array(exerciseLibraryItemSchema),
 				})
 				.strict(),
 		)
@@ -211,22 +211,22 @@ export const exercisesRouter = {
 		}),
 	create: protectedProcedure
 		.errors({
-			DATABASE_ERROR: exerciseCatalogErrors.DATABASE_ERROR,
-			EXERCISE_NOT_FOUND: exerciseCatalogErrors.EXERCISE_NOT_FOUND,
+			DATABASE_ERROR: exerciseLibraryErrors.DATABASE_ERROR,
+			EXERCISE_NOT_FOUND: exerciseLibraryErrors.EXERCISE_NOT_FOUND,
 			NAME_COLLISION: {
-				message: exerciseCatalogErrors.NAME_COLLISION.message,
+				message: exerciseLibraryErrors.NAME_COLLISION.message,
 				data: z
 					.object({
-						existingExercise: exerciseCatalogItemSchema,
+						existingExercise: exerciseLibraryItemSchema,
 					})
 					.strict(),
 			},
 		})
-		.input(exerciseCatalogWriteInputSchema)
+		.input(exerciseLibraryWriteInputSchema)
 		.output(
 			z
 				.object({
-					exercise: exerciseCatalogItemSchema,
+					exercise: exerciseLibraryItemSchema,
 				})
 				.strict(),
 		)
@@ -265,13 +265,13 @@ export const exercisesRouter = {
 		}),
 	update: protectedProcedure
 		.errors({
-			DATABASE_ERROR: exerciseCatalogErrors.DATABASE_ERROR,
-			EXERCISE_NOT_FOUND: exerciseCatalogErrors.EXERCISE_NOT_FOUND,
+			DATABASE_ERROR: exerciseLibraryErrors.DATABASE_ERROR,
+			EXERCISE_NOT_FOUND: exerciseLibraryErrors.EXERCISE_NOT_FOUND,
 			NAME_COLLISION: {
-				message: exerciseCatalogErrors.NAME_COLLISION.message,
+				message: exerciseLibraryErrors.NAME_COLLISION.message,
 				data: z
 					.object({
-						existingExercise: exerciseCatalogItemSchema,
+						existingExercise: exerciseLibraryItemSchema,
 					})
 					.strict(),
 			},
@@ -288,7 +288,7 @@ export const exercisesRouter = {
 		.output(
 			z
 				.object({
-					exercise: exerciseCatalogItemSchema,
+					exercise: exerciseLibraryItemSchema,
 				})
 				.strict(),
 		)
@@ -337,9 +337,9 @@ export const exercisesRouter = {
 		}),
 	delete: protectedProcedure
 		.errors({
-			DATABASE_ERROR: exerciseCatalogErrors.DATABASE_ERROR,
-			EXERCISE_NOT_FOUND: exerciseCatalogErrors.EXERCISE_NOT_FOUND,
-			EXERCISE_IN_USE: exerciseCatalogErrors.EXERCISE_IN_USE,
+			DATABASE_ERROR: exerciseLibraryErrors.DATABASE_ERROR,
+			EXERCISE_NOT_FOUND: exerciseLibraryErrors.EXERCISE_NOT_FOUND,
+			EXERCISE_IN_USE: exerciseLibraryErrors.EXERCISE_IN_USE,
 		})
 		.input(z.object({ id: z.uuid() }).strict())
 		.output(z.object({ deleted: z.literal(true) }).strict())
@@ -371,8 +371,8 @@ export const exercisesRouter = {
 		}),
 	merge: protectedProcedure
 		.errors({
-			DATABASE_ERROR: exerciseCatalogErrors.DATABASE_ERROR,
-			EXERCISE_NOT_FOUND: exerciseCatalogErrors.EXERCISE_NOT_FOUND,
+			DATABASE_ERROR: exerciseLibraryErrors.DATABASE_ERROR,
+			EXERCISE_NOT_FOUND: exerciseLibraryErrors.EXERCISE_NOT_FOUND,
 		})
 		.input(
 			z
@@ -386,7 +386,7 @@ export const exercisesRouter = {
 		.output(
 			z
 				.object({
-					targetExercise: exerciseCatalogItemSchema,
+					targetExercise: exerciseLibraryItemSchema,
 				})
 				.strict(),
 		)

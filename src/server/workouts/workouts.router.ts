@@ -11,7 +11,7 @@ import {
 	listWorkouts,
 	validateAndNormalizeWorkout,
 	updateWorkout,
-} from "@/server/services/workouts.service";
+} from "@/server/workouts/workouts.service";
 
 const workoutFormSchema = z.object({
 	name: z.string(),

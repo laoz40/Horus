@@ -1,28 +1,30 @@
 import "server-only";
 
 import {
-	getUserExerciseCatalogRow as getUserExerciseCatalogRowQuery,
+	getUserExerciseCatalogRow as getUserExerciseLibraryRowQuery,
 	listUserExerciseCatalog,
+	listExercisesByCategory,
+	searchExercises,
 } from "@/generated/prisma/sql";
 import { prisma, runDatabaseTransaction, type DatabaseTransaction } from "@/lib/db";
 import { tryPromise } from "@/lib/tryPromise";
-import type { PrHistoryCutoff } from "@/server/services/pr-history.functions";
+import type { PrHistoryCutoff } from "@/server/exercises/pr-history/pr-history.functions";
 
 type Tx = DatabaseTransaction;
 
-export interface UserExerciseCatalogRow {
+export interface UserExerciseLibraryRow {
 	id: string;
 	name: string;
 	muscleGroups: string[];
 	workoutCount: number;
 }
 
-async function getUserExerciseCatalogRow(
+async function getUserExerciseLibraryRow(
 	tx: Tx,
 	userId: string,
 	exerciseId: string,
-): Promise<UserExerciseCatalogRow | null> {
-	const [row] = await tx.$queryRawTyped(getUserExerciseCatalogRowQuery(userId, exerciseId));
+): Promise<UserExerciseLibraryRow | null> {
+	const [row] = await tx.$queryRawTyped(getUserExerciseLibraryRowQuery(userId, exerciseId));
 
 	if (!row) {
 		return null;
@@ -36,7 +38,7 @@ async function getUserExerciseCatalogRow(
 	};
 }
 
-async function getOrCreateMuscleGroupId(
+export async function getOrCreateMuscleGroupId(
 	tx: Tx,
 	muscleGroup: { name: string; normalizedName: string },
 ): Promise<string> {
@@ -137,7 +139,7 @@ export function findUserExerciseIdByNormalizedName(userId: string, normalizedNam
 
 export function getUserExerciseRow(userId: string, exerciseId: string) {
 	return tryPromise({
-		try: () => getUserExerciseCatalogRow(prisma, userId, exerciseId),
+		try: () => getUserExerciseLibraryRow(prisma, userId, exerciseId),
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
 	});
 }
@@ -150,7 +152,7 @@ export function insertUserExercise(
 ) {
 	return tryPromise({
 		try: () =>
-			runDatabaseTransaction(async (tx): Promise<UserExerciseCatalogRow> => {
+			runDatabaseTransaction(async (tx): Promise<UserExerciseLibraryRow> => {
 				const createdExercise = await tx.exercises.create({
 					data: {
 						user_id: userId,
@@ -162,7 +164,7 @@ export function insertUserExercise(
 
 				await replaceExerciseMuscleGroups(tx, createdExercise.id, muscleGroupsForExercise);
 
-				const row = await getUserExerciseCatalogRow(tx, userId, createdExercise.id);
+				const row = await getUserExerciseLibraryRow(tx, userId, createdExercise.id);
 
 				if (!row) {
 					throw new Error("Created exercise row was not found");
@@ -183,7 +185,7 @@ export function updateUserExerciseRow(
 ) {
 	return tryPromise({
 		try: () =>
-			runDatabaseTransaction(async (tx): Promise<UserExerciseCatalogRow> => {
+			runDatabaseTransaction(async (tx): Promise<UserExerciseLibraryRow> => {
 				await tx.exercises.updateMany({
 					where: {
 						id: exerciseId,
@@ -197,7 +199,7 @@ export function updateUserExerciseRow(
 
 				await replaceExerciseMuscleGroups(tx, exerciseId, muscleGroupsForExercise);
 
-				const row = await getUserExerciseCatalogRow(tx, userId, exerciseId);
+				const row = await getUserExerciseLibraryRow(tx, userId, exerciseId);
 
 				if (!row) {
 					throw new Error("Updated exercise row was not found");
@@ -334,7 +336,7 @@ export async function mergeUserExerciseRows(
 
 export function listUserExerciseRows(userId: string) {
 	return tryPromise({
-		try: async (): Promise<UserExerciseCatalogRow[]> => {
+		try: async (): Promise<UserExerciseLibraryRow[]> => {
 			const rows = await prisma.$queryRawTyped(listUserExerciseCatalog(userId));
 
 			return rows.map((row) => ({
@@ -342,6 +344,40 @@ export function listUserExerciseRows(userId: string) {
 				name: row.name,
 				muscleGroups: row.muscle_groups ?? [],
 				workoutCount: row.workout_count ?? 0,
+			}));
+		},
+		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	});
+}
+
+export function listExerciseRowsByCategory(userId: string, normalizedMuscleNames: string[]) {
+	return tryPromise({
+		try: async () => {
+			const rows = await prisma.$queryRawTyped(
+				listExercisesByCategory(userId, normalizedMuscleNames),
+			);
+
+			return rows.map((row) => ({
+				id: row.id,
+				name: row.name,
+				normalizedName: row.normalized_name,
+				muscleGroups: row.muscle_groups ?? [],
+			}));
+		},
+		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	});
+}
+
+export function searchExerciseRows(userId: string, normalizedQuery: string) {
+	return tryPromise({
+		try: async () => {
+			const rows = await prisma.$queryRawTyped(searchExercises(userId, normalizedQuery));
+
+			return rows.map((row) => ({
+				id: row.id,
+				name: row.name,
+				normalizedName: row.normalized_name,
+				muscleGroups: row.muscle_groups ?? [],
 			}));
 		},
 		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),

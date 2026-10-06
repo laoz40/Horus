@@ -3,7 +3,7 @@ import "server-only";
 import { err, ok } from "neverthrow";
 
 import { normalizeName } from "@/lib/normalizeName";
-import type { UserExerciseCatalogRow } from "@/server/services/exercises-catalog.db";
+import type { UserExerciseLibraryRow } from "@/server/exercises/library/library.repository";
 
 export function normalizeMuscleGroupsForSave(muscleGroups: string[]) {
 	const muscleGroupsByNormalizedName = new Map<string, { name: string; normalizedName: string }>();
@@ -24,7 +24,7 @@ export function normalizeMuscleGroupsForSave(muscleGroups: string[]) {
 	return [...muscleGroupsByNormalizedName.values()];
 }
 
-export function requireUserExercise(exercise: UserExerciseCatalogRow | null) {
+export function requireUserExercise(exercise: UserExerciseLibraryRow | null) {
 	if (exercise === null) {
 		return err({ reason: "EXERCISE_NOT_FOUND" as const });
 	}
@@ -32,7 +32,7 @@ export function requireUserExercise(exercise: UserExerciseCatalogRow | null) {
 	return ok(exercise);
 }
 
-export function requireUnusedExercise(exercise: UserExerciseCatalogRow) {
+export function requireUnusedExercise(exercise: UserExerciseLibraryRow) {
 	if (exercise.workoutCount > 0) {
 		return err({ reason: "EXERCISE_IN_USE" as const });
 	}

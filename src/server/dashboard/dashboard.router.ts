@@ -2,7 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 import { protectedProcedure } from "@/server/procedures";
-import { getTrainingYearRange, getYearInTraining } from "@/server/services/dashboard.service";
+import { getTrainingYearRange, getYearInTraining } from "@/server/dashboard/dashboard.service";
 
 const yearInTrainingInputSchema = z
 	.object({

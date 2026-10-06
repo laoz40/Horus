@@ -5,12 +5,12 @@ import { err, ok } from "neverthrow";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import { buildSetPrTypes } from "@/features/workout-form/lib/setPr";
 import { normalizeName } from "@/lib/normalizeName";
-import type { WorkoutExerciseWithDatabaseId } from "@/server/services/exercises.db";
+import type { WorkoutExerciseWithDatabaseId } from "@/server/exercises/library/workout-exercises.repository";
 import type {
 	ListWorkoutsQuery,
 	WorkoutForEdit,
 	WorkoutHistoryRow,
-} from "@/server/services/workouts.db";
+} from "@/server/workouts/workouts.repository";
 
 export function requireWorkout<T>(workout: T | null) {
 	if (workout === null) {
