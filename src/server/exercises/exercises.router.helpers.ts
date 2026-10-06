@@ -31,7 +31,7 @@ export const exerciseLibraryItemSchema = z
 	})
 	.strict();
 
-export const exerciseCatalogItemSchema = z.object({
+const exerciseCatalogItemSchema = z.object({
 	id: z.uuid(),
 	name: z.string(),
 	normalizedName: z.string(),
