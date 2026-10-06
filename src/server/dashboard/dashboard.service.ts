@@ -4,7 +4,7 @@ import {
 	getTrainingYearRangeRows,
 	getYearInTrainingRows,
 	type YearInTrainingQuery,
-} from "@/server/services/dashboard.db";
+} from "@/server/dashboard/dashboard.repository";
 
 export function getYearInTraining(query: YearInTrainingQuery) {
 	return getYearInTrainingRows(query);

@@ -6,13 +6,13 @@ import type {
 	ExercisePersonalRecordsRow,
 	RecentSetRow,
 	WeeklyWeightProgressionRow,
-} from "@/server/services/exercises.db";
+} from "@/server/exercises/progress/progress.repository";
 import type { SetPrType } from "@/features/workout-form/lib/setPr";
 import {
 	calculatePrsForSet,
 	emptyExercisePrs,
 	type ExercisePrs,
-} from "@/server/services/pr-history.functions";
+} from "@/server/exercises/pr-history/pr-history.functions";
 
 interface DraftSet {
 	completed: boolean;

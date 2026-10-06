@@ -4,7 +4,7 @@ import type { ResultAsync } from "neverthrow";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import { runDatabaseTransaction } from "@/lib/db";
 import { tryPromise } from "@/lib/tryPromise";
-import { findOrCreateWorkoutExercises } from "@/server/services/exercises.db";
+import { findOrCreateWorkoutExercises } from "@/server/exercises/library/workout-exercises.repository";
 import {
 	deleteWorkoutById,
 	deleteAllWorkoutRows,
@@ -21,15 +21,15 @@ import {
 	type ListWorkoutsQuery,
 	type WorkoutUpdateInput,
 	type WorkoutWriteInput,
-} from "@/server/services/workouts.db";
+} from "@/server/workouts/workouts.repository";
 import {
 	calculateSetPrsFromHistory,
 	recalculateExercisePrHistory,
-} from "@/server/services/pr-history.service";
+} from "@/server/exercises/pr-history/pr-history.service";
 import {
 	buildAffectedExerciseIds,
 	buildPrTotalsByWorkoutId,
-} from "@/server/services/pr-history.functions";
+} from "@/server/exercises/pr-history/pr-history.functions";
 import {
 	buildNewWorkoutPrSets,
 	buildWorkoutEditForm,
@@ -38,7 +38,7 @@ import {
 	requireDeletedWorkouts,
 	requireWorkout,
 	validateUniqueWorkoutChildIds,
-} from "@/server/services/workouts.functions";
+} from "@/server/workouts/workouts.functions";
 
 export function createWorkout(createInput: WorkoutWriteInput) {
 	return tryPromise({

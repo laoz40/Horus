@@ -3,7 +3,7 @@ import "server-only";
 import { err, ok } from "neverthrow";
 import { runDatabaseTransaction } from "@/lib/db";
 import { tryPromise } from "@/lib/tryPromise";
-import { recalculateExercisePrHistory } from "@/server/services/pr-history.service";
+import { recalculateExercisePrHistory } from "@/server/exercises/pr-history/pr-history.service";
 
 import {
 	getNormalizedMuscleNamesForCategory,
@@ -18,39 +18,23 @@ import {
 	listUserExerciseRows,
 	mergeUserExerciseRows,
 	updateUserExerciseRow,
-} from "@/server/services/exercises-catalog.db";
+} from "@/server/exercises/library/library.repository";
 import {
 	normalizeMuscleGroupsForSave,
 	requireUnusedExercise,
 	requireUserExercise,
-} from "@/server/services/exercises-catalog.functions";
+} from "@/server/exercises/library/library.functions";
 import {
-	EXERCISE_WEIGHT_PROGRESSION_MIN_REPS,
-	exerciseWeightProgressionSince,
-	type ExerciseWeightProgressionRange,
-} from "@/features/progress/lib/exerciseWeightProgression";
-import {
-	getExercisePersonalRecordRows,
-	getExercisePrRows,
-	getExerciseWeeklyWeightProgressionRows,
-	getRecentSetRows,
 	listExerciseRowsByCategory,
 	searchExerciseRows,
-} from "@/server/services/exercises.db";
-import {
-	buildExercisePersonalRecords,
-	buildRecentSets,
-	buildWeeklyWeightProgression,
-	checkCompletedSetPr,
-} from "@/server/services/exercises.functions";
-import { emptyExercisePrs } from "@/server/services/pr-history.functions";
+} from "@/server/exercises/library/library.repository";
 
-interface ExerciseCatalogWriteInput {
+interface ExerciseLibraryWriteInput {
 	name: string;
 	muscleGroups: string[];
 }
 
-interface MergeExerciseCatalogInput {
+interface MergeExerciseLibraryInput {
 	sourceId: string;
 	targetId: string;
 	sourceMuscleGroups?: string[];
@@ -60,7 +44,7 @@ export function listUserExercises(userId: string) {
 	return listUserExerciseRows(userId);
 }
 
-export function normalizeExerciseInput(input: ExerciseCatalogWriteInput) {
+export function normalizeExerciseInput(input: ExerciseLibraryWriteInput) {
 	return {
 		name: input.name.trim(),
 		normalizedName: normalizeName(input.name),
@@ -154,7 +138,7 @@ function mergeExercisesAndRecalculatePrs(
 	});
 }
 
-export function mergeUserExercises(userId: string, input: MergeExerciseCatalogInput) {
+export function mergeUserExercises(userId: string, input: MergeExerciseLibraryInput) {
 	const { sourceId, targetId } = input;
 
 	if (sourceId === targetId) {
@@ -186,56 +170,4 @@ export function listExercisesByCategory(userId: string, category: MuscleGroupCat
 	const normalizedMuscleNames = getNormalizedMuscleNamesForCategory(category);
 
 	return listExerciseRowsByCategory(userId, normalizedMuscleNames);
-}
-
-export function getRecentSets(userId: string, exerciseName: string) {
-	const normalizedExerciseName = normalizeName(exerciseName);
-
-	return getRecentSetRows(userId, normalizedExerciseName).map(buildRecentSets);
-}
-
-export function getExercisePersonalRecords(userId: string, exerciseName: string) {
-	const normalizedExerciseName = normalizeName(exerciseName);
-
-	return getExercisePersonalRecordRows(userId, normalizedExerciseName).map((rows) =>
-		buildExercisePersonalRecords(
-			rows[0] ?? {
-				hasHistory: false,
-				weight: null,
-				volume: null,
-				bodyweightReps: null,
-			},
-		),
-	);
-}
-
-export function getExerciseWeeklyWeightProgression(
-	userId: string,
-	exerciseName: string,
-	range: ExerciseWeightProgressionRange,
-) {
-	const normalizedExerciseName = normalizeName(exerciseName);
-	const sinceCreatedAt = exerciseWeightProgressionSince(range);
-
-	return getExerciseWeeklyWeightProgressionRows(
-		userId,
-		normalizedExerciseName,
-		sinceCreatedAt,
-		EXERCISE_WEIGHT_PROGRESSION_MIN_REPS,
-	).map(buildWeeklyWeightProgression);
-}
-
-interface CheckSetPrInput {
-	userId: string;
-	exerciseName: string;
-	sets: { completed: boolean; weight?: number; reps?: number }[];
-	setIndex: number;
-}
-
-export function checkSetPr({ userId, exerciseName, sets, setIndex }: CheckSetPrInput) {
-	const normalizedExerciseName = normalizeName(exerciseName);
-
-	return getExercisePrRows(userId, normalizedExerciseName).map((rows) =>
-		checkCompletedSetPr(sets, setIndex, rows[0] ?? emptyExercisePrs()),
-	);
 }

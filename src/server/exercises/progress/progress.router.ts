@@ -7,7 +7,7 @@ import {
 	getExercisePersonalRecords,
 	getExerciseWeeklyWeightProgression,
 	getRecentSets,
-} from "@/server/services/exercises.service";
+} from "@/server/exercises/progress/progress.service";
 
 const databaseError = {
 	DATABASE_ERROR: {

@@ -6,14 +6,14 @@ import {
 	getExercisePrRowsByIds,
 	updateSetPrStatuses,
 	updateWorkoutPrTotals,
-} from "@/server/services/pr-history.db";
+} from "@/server/exercises/pr-history/pr-history.repository";
 import {
 	calculateAffectedPrHistory,
 	type ExercisePrRow,
 	type PrHistoryCutoff,
 	type PrHistorySet,
 	type PrSetUpdate,
-} from "@/server/services/pr-history.functions";
+} from "@/server/exercises/pr-history/pr-history.functions";
 
 type Tx = DatabaseTransaction;
 
