@@ -50,6 +50,7 @@ export const exercisesRouter = {
 			const result = await listUserExercises(context.userId);
 
 			const exercises = matchDatabaseResult(result, errors, "Failed to list exercises");
+
 			return { exercises };
 		}),
 	checkSetPr: protectedProcedure
