@@ -18,39 +18,21 @@ import {
 	searchExercises,
 	updateUserExercise,
 } from "@/server/exercises/library/library.service";
-
-const databaseError = {
-	DATABASE_ERROR: {
-		message: "The database operation failed",
-	},
-};
-
-const exerciseLibraryErrors = {
-	...databaseError,
-	NAME_COLLISION: {
-		message: "An exercise with this name already exists",
-	},
-	EXERCISE_NOT_FOUND: {
-		message: "The exercise was not found",
-	},
-	EXERCISE_IN_USE: {
-		message: "This exercise is used in workouts and cannot be deleted",
-	},
-};
+import {
+	databaseError,
+	exerciseCatalogItemsSchema,
+	exerciseLibraryErrors,
+	exerciseLibraryItemSchema,
+	exerciseLibraryWriteOutputSchema,
+	exerciseLibraryWriteProcedureErrors,
+	matchDatabaseResult,
+	matchExerciseLibraryWriteResult,
+} from "@/server/exercises/exercises.router.helpers";
 
 const exerciseLibraryWriteInputSchema = z
 	.object({
 		name: z.string().trim().min(1),
 		muscleGroups: z.array(z.string()),
-	})
-	.strict();
-
-const exerciseLibraryItemSchema = z
-	.object({
-		id: z.uuid(),
-		name: z.string(),
-		muscleGroups: z.array(z.string()),
-		workoutCount: z.number().int().nonnegative(),
 	})
 	.strict();
 
@@ -67,22 +49,8 @@ export const exercisesRouter = {
 		.handler(async ({ context, errors }) => {
 			const result = await listUserExercises(context.userId);
 
-			return result.match(
-				(exercises) => ({ exercises }),
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "DATABASE_ERROR":
-							console.error("Failed to list exercises", { cause: error.cause });
-							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
-			);
+			const exercises = matchDatabaseResult(result, errors, "Failed to list exercises");
+			return { exercises };
 		}),
 	checkSetPr: protectedProcedure
 		.errors(databaseError)
@@ -118,22 +86,7 @@ export const exercisesRouter = {
 				setIndex: input.setIndex,
 			});
 
-			return result.match(
-				(value) => value,
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "DATABASE_ERROR":
-							console.error("Failed to check set PR", { cause: error.cause });
-							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
-			);
+			return matchDatabaseResult(result, errors, "Failed to check set PR");
 		}),
 	search: protectedProcedure
 		.errors(databaseError)
@@ -142,35 +95,11 @@ export const exercisesRouter = {
 				query: z.string(),
 			}),
 		)
-		.output(
-			z.array(
-				z.object({
-					id: z.uuid(),
-					name: z.string(),
-					normalizedName: z.string(),
-					muscleGroups: z.array(z.string()),
-				}),
-			),
-		)
+		.output(exerciseCatalogItemsSchema)
 		.handler(async ({ input, context, errors }) => {
 			const result = await searchExercises(context.userId, input.query);
 
-			return result.match(
-				(value) => value,
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "DATABASE_ERROR":
-							console.error("Failed to search exercises", { cause: error.cause });
-							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
-			);
+			return matchDatabaseResult(result, errors, "Failed to search exercises");
 		}),
 	listByCategory: protectedProcedure
 		.errors(databaseError)
@@ -179,57 +108,16 @@ export const exercisesRouter = {
 				category: z.enum(MUSCLE_GROUP_CATEGORIES),
 			}),
 		)
-		.output(
-			z.array(
-				z.object({
-					id: z.uuid(),
-					name: z.string(),
-					normalizedName: z.string(),
-					muscleGroups: z.array(z.string()),
-				}),
-			),
-		)
+		.output(exerciseCatalogItemsSchema)
 		.handler(async ({ input, context, errors }) => {
 			const result = await listExercisesByCategory(context.userId, input.category);
 
-			return result.match(
-				(value) => value,
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "DATABASE_ERROR":
-							console.error("Failed to list exercises by category", { cause: error.cause });
-							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
-			);
+			return matchDatabaseResult(result, errors, "Failed to list exercises by category");
 		}),
 	create: protectedProcedure
-		.errors({
-			DATABASE_ERROR: exerciseLibraryErrors.DATABASE_ERROR,
-			EXERCISE_NOT_FOUND: exerciseLibraryErrors.EXERCISE_NOT_FOUND,
-			NAME_COLLISION: {
-				message: exerciseLibraryErrors.NAME_COLLISION.message,
-				data: z
-					.object({
-						existingExercise: exerciseLibraryItemSchema,
-					})
-					.strict(),
-			},
-		})
+		.errors(exerciseLibraryWriteProcedureErrors)
 		.input(exerciseLibraryWriteInputSchema)
-		.output(
-			z
-				.object({
-					exercise: exerciseLibraryItemSchema,
-				})
-				.strict(),
-		)
+		.output(exerciseLibraryWriteOutputSchema)
 		.handler(async ({ input, context, errors }) => {
 			const normalizedExercise = normalizeExerciseInput(input);
 
@@ -240,42 +128,10 @@ export const exercisesRouter = {
 				.andThen(() => createUserExercise({ userId: context.userId, exercise: normalizedExercise }))
 				.map((exercise) => ({ exercise }));
 
-			return result.match(
-				(value) => value,
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "NAME_COLLISION":
-							throw errors.NAME_COLLISION({
-								data: { existingExercise: error.existingExercise },
-							});
-						case "EXERCISE_NOT_FOUND":
-							throw errors.EXERCISE_NOT_FOUND();
-						case "DATABASE_ERROR":
-							console.error("Failed to create exercise", { cause: error.cause });
-							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
-			);
+			return matchExerciseLibraryWriteResult(result, errors, "Failed to create exercise");
 		}),
 	update: protectedProcedure
-		.errors({
-			DATABASE_ERROR: exerciseLibraryErrors.DATABASE_ERROR,
-			EXERCISE_NOT_FOUND: exerciseLibraryErrors.EXERCISE_NOT_FOUND,
-			NAME_COLLISION: {
-				message: exerciseLibraryErrors.NAME_COLLISION.message,
-				data: z
-					.object({
-						existingExercise: exerciseLibraryItemSchema,
-					})
-					.strict(),
-			},
-		})
+		.errors(exerciseLibraryWriteProcedureErrors)
 		.input(
 			z
 				.object({
@@ -285,13 +141,7 @@ export const exercisesRouter = {
 				})
 				.strict(),
 		)
-		.output(
-			z
-				.object({
-					exercise: exerciseLibraryItemSchema,
-				})
-				.strict(),
-		)
+		.output(exerciseLibraryWriteOutputSchema)
 		.handler(async ({ input, context, errors }) => {
 			const normalizedExercise = normalizeExerciseInput(input);
 
@@ -312,28 +162,7 @@ export const exercisesRouter = {
 				)
 				.map((exercise) => ({ exercise }));
 
-			return result.match(
-				(value) => value,
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "NAME_COLLISION":
-							throw errors.NAME_COLLISION({
-								data: { existingExercise: error.existingExercise },
-							});
-						case "EXERCISE_NOT_FOUND":
-							throw errors.EXERCISE_NOT_FOUND();
-						case "DATABASE_ERROR":
-							console.error("Failed to update exercise", { cause: error.cause });
-							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
-			);
+			return matchExerciseLibraryWriteResult(result, errors, "Failed to update exercise");
 		}),
 	delete: protectedProcedure
 		.errors({
