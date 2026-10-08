@@ -19,9 +19,3 @@ function getPrismaClient(): PrismaClient {
 export const prisma = getPrismaClient();
 
 export type DatabaseTransaction = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
-
-export async function runDatabaseTransaction<T>(
-	transaction: (tx: DatabaseTransaction) => Promise<T>,
-): Promise<T> {
-	return prisma.$transaction(transaction);
-}
