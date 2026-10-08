@@ -26,7 +26,7 @@ export function normalizeMuscleGroupsForSave(muscleGroups: string[]) {
 
 export class ExerciseNotFoundError extends Data.TaggedError("ExerciseNotFoundError") {}
 
-export class ExerciseInUseError extends Data.TaggedError("ExerciseInUseError") {}
+class ExerciseInUseError extends Data.TaggedError("ExerciseInUseError") {}
 
 export class ExerciseNameCollisionError extends Data.TaggedError("ExerciseNameCollisionError")<{
 	existingExercise: UserExerciseLibraryRow;

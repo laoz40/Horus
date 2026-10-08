@@ -7,9 +7,9 @@ import { createSuggestionObject } from "@/features/workout-form/lib/convertWorko
 import type { ExerciseSuggestion } from "@/features/workout-form/lib/types";
 import { WgerExerciseResponseSchema } from "@/features/workout-form/lib/wgerTypes";
 
-export class RateLimitedError extends Data.TaggedError("RATE_LIMITED") {}
+class RateLimitedError extends Data.TaggedError("RATE_LIMITED") {}
 
-export class RequestFailedError extends Data.TaggedError("REQUEST_FAILED") {}
+class RequestFailedError extends Data.TaggedError("REQUEST_FAILED") {}
 
 export type FetchApiExercisesError = RateLimitedError | RequestFailedError;
 
