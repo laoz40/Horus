@@ -1,7 +1,5 @@
-import { err, errAsync, ok, okAsync, type Result, type ResultAsync } from "neverthrow";
+import { Effect } from "effect";
 
-import { tryPromise } from "@/lib/tryPromise";
-import { trySync } from "@/lib/trySync";
 import { showErrorToast } from "@/lib/toastMessages";
 
 const REST_TIMER_NOTIFICATIONS_STORAGE_KEY = "rest-timer-notifications-enabled";
@@ -9,68 +7,84 @@ const REST_TIMER_NOTIFICATIONS_STORAGE_KEY = "rest-timer-notifications-enabled";
 type LocalStorageError = { reason: "UNAVAILABLE" };
 
 export function readRestTimerNotificationsEnabled(): boolean {
-	return trySync({
+	const readPreference = Effect.try({
 		try: () => localStorage.getItem(REST_TIMER_NOTIFICATIONS_STORAGE_KEY),
-		catch: () => ({ reason: "UNAVAILABLE" as const }),
-	})
-		.map((value) => value === "true")
-		.unwrapOr(false);
+		catch: (): LocalStorageError => ({ reason: "UNAVAILABLE" }),
+	});
+
+	return Effect.runSync(
+		Effect.match(
+			Effect.map(readPreference, (value) => value === "true"),
+			{
+				onFailure: () => false,
+				onSuccess: (enabled) => enabled,
+			},
+		),
+	);
 }
 
-export function writeRestTimerNotificationsEnabled(
-	enabled: boolean,
-): Result<null, LocalStorageError> {
-	return trySync({
+export function writeRestTimerNotificationsEnabled(enabled: boolean): boolean {
+	const writePreference = Effect.try({
 		try: () => {
 			localStorage.setItem(REST_TIMER_NOTIFICATIONS_STORAGE_KEY, enabled ? "true" : "false");
 		},
-		catch: () => ({ reason: "UNAVAILABLE" as const }),
-	}).map(() => null);
+		catch: (): LocalStorageError => ({ reason: "UNAVAILABLE" }),
+	});
+
+	return Effect.runSync(
+		Effect.match(writePreference, {
+			onFailure: () => false,
+			onSuccess: () => true,
+		}),
+	);
 }
 
+type RestTimerNotificationPermissionError = "unsupported" | "blocked" | "dismissed" | "failed";
+
 // iOS/Safari only allows permission prompts from a direct user gesture.
-function requestRestTimerNotificationPermission(): ResultAsync<NotificationPermission, "failed"> {
-	return tryPromise({
+function requestRestTimerNotificationPermission(): Effect.Effect<NotificationPermission, "failed"> {
+	const permissionRequest = Effect.try({
 		try: () => Notification.requestPermission(),
+		catch: () => "failed" as const,
+	}).pipe(
+		Effect.match({
+			onFailure: () => ({ ok: false as const }),
+			onSuccess: (permissionPromise) => ({ ok: true as const, permissionPromise }),
+		}),
+		Effect.runSync,
+	);
+
+	if (!permissionRequest.ok) return Effect.fail("failed");
+
+	return Effect.tryPromise({
+		try: () => permissionRequest.permissionPromise,
 		catch: () => "failed" as const,
 	});
 }
 
-type RestTimerNotificationPermissionResult =
-	| "granted"
-	| "unsupported"
-	| "blocked"
-	| "dismissed"
-	| "failed";
-
-type RestTimerNotificationPermissionError = Exclude<
-	RestTimerNotificationPermissionResult,
-	"granted"
->;
-
 function mapRequestedPermission(
 	permission: NotificationPermission,
-): Result<true, RestTimerNotificationPermissionError> {
-	if (permission === "granted") return ok(true);
+): Effect.Effect<true, RestTimerNotificationPermissionError> {
+	if (permission === "granted") return Effect.succeed(true);
 
-	if (permission === "denied") return err("blocked");
+	if (permission === "denied") return Effect.fail("blocked");
 
-	if (permission === "default") return err("dismissed");
+	if (permission === "default") return Effect.fail("dismissed");
 
-	return err("failed");
+	return Effect.fail("failed");
 }
 
-function ensureRestTimerNotificationPermission(): ResultAsync<
+function ensureRestTimerNotificationPermission(): Effect.Effect<
 	true,
 	RestTimerNotificationPermissionError
 > {
-	if (!("Notification" in window)) return errAsync("unsupported");
+	if (!("Notification" in window)) return Effect.fail("unsupported");
 
-	if (Notification.permission === "granted") return okAsync(true);
+	if (Notification.permission === "granted") return Effect.succeed(true);
 
-	if (Notification.permission === "denied") return errAsync("blocked");
+	if (Notification.permission === "denied") return Effect.fail("blocked");
 
-	return requestRestTimerNotificationPermission().andThen(mapRequestedPermission);
+	return Effect.flatMap(requestRestTimerNotificationPermission(), mapRequestedPermission);
 }
 
 function showRestTimerNotificationPermissionError(
@@ -99,21 +113,21 @@ function showRestTimerNotificationPermissionError(
 	}
 }
 
-export async function tryEnableRestTimerNotifications(): Promise<boolean> {
-	const result = await ensureRestTimerNotificationPermission();
+export function tryEnableRestTimerNotifications(): Promise<boolean> {
+	return Effect.runPromise(
+		Effect.match(ensureRestTimerNotificationPermission(), {
+			onSuccess: () => true,
+			onFailure: (error) => {
+				showRestTimerNotificationPermissionError(error);
 
-	return result.match(
-		() => true,
-		(error) => {
-			showRestTimerNotificationPermissionError(error);
-
-			return false;
-		},
+				return false;
+			},
+		}),
 	);
 }
 
 function getServiceWorkerRegistration() {
-	return tryPromise({
+	return Effect.tryPromise({
 		try: () => navigator.serviceWorker.getRegistration(),
 		catch: () => ({ reason: "REGISTRATION_FAILED" as const }),
 	});
@@ -123,14 +137,14 @@ function showServiceWorkerNotification(
 	registration: ServiceWorkerRegistration,
 	options: NotificationOptions,
 ) {
-	return tryPromise({
+	return Effect.tryPromise({
 		try: () => registration.showNotification("Rest timer", options),
 		catch: () => ({ reason: "SHOW_FAILED" as const }),
 	});
 }
 
 function showBrowserNotification(options: NotificationOptions) {
-	return trySync({
+	return Effect.try({
 		try: () => {
 			void new Notification("Rest timer", options);
 		},
@@ -153,18 +167,31 @@ export async function showRestTimerNotification(elapsedTime: string): Promise<vo
 	// Prefer the service worker notification path when it is available.
 	// This works better for mobile browsers and installed web apps.
 	if ("serviceWorker" in navigator) {
-		const registrationResult = await getServiceWorkerRegistration();
+		const showWithServiceWorker = Effect.gen(function* () {
+			const registration = yield* getServiceWorkerRegistration();
 
-		if (registrationResult.isOk() && registrationResult.value) {
-			const shown = await showServiceWorkerNotification(
-				registrationResult.value,
-				notificationOptions,
-			);
+			if (!registration) return false;
 
-			if (shown.isOk()) return;
-		}
+			yield* showServiceWorkerNotification(registration, notificationOptions);
+
+			return true;
+		});
+
+		const didShow = await Effect.runPromise(
+			Effect.match(showWithServiceWorker, {
+				onFailure: () => false,
+				onSuccess: (shown) => shown,
+			}),
+		);
+
+		if (didShow) return;
 	}
 
 	// If there is no service worker yet, try the regular browser notification path.
-	void showBrowserNotification(notificationOptions);
+	Effect.runSync(
+		Effect.match(showBrowserNotification(notificationOptions), {
+			onFailure: () => undefined,
+			onSuccess: () => undefined,
+		}),
+	);
 }
