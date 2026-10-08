@@ -127,30 +127,34 @@ const historySchema = z.object({
 });
 
 export const workoutsRouter = {
-	create: createWorkoutProcedure.handler(async ({ input, context, errors }) => {
-		const result = await validateAndNormalizeWorkout(input.workout)
-			.asyncAndThen((workout) => createWorkout({ userId: context.userId, workout }))
-			.map((workoutId) => ({ workoutId, workout: input.workout }));
+	create: createWorkoutProcedure.handler(({ input, context, errors }) =>
+		Effect.runPromise(
+			Effect.gen(function* () {
+				const workout = yield* validateAndNormalizeWorkout(input.workout);
+				const workoutId = yield* createWorkout({ userId: context.userId, workout });
 
-		return result.match(
-			(value) => value,
-			(error) => {
-				const reason = error.reason;
+				return { workoutId, workout: input.workout };
+			}).pipe(
+				Effect.provideService(Database, { prisma }),
+				Effect.match({
+					onSuccess: (value) => value,
+					onFailure: (error) => {
+						if ("reason" in error) {
+							switch (error.reason) {
+								case "INVALID_INPUT":
+									throw errors.INVALID_INPUT();
+								default:
+									throw errors.DATABASE_ERROR();
+							}
+						}
 
-				switch (reason) {
-					case "INVALID_INPUT":
-						throw errors.INVALID_INPUT();
-					case "DATABASE_ERROR":
 						console.error("Failed to create workout", { cause: error.cause });
 						throw errors.DATABASE_ERROR();
-					default: {
-						const exhaustiveReason: never = reason;
-						throw exhaustiveReason;
-					}
-				}
-			},
-		);
-	}),
+					},
+				}),
+			),
+		),
+	),
 	deleteAll: protectedProcedure
 		.errors({
 			NO_WORKOUTS: {
@@ -162,28 +166,31 @@ export const workoutsRouter = {
 		})
 		.input(z.object({}).strict())
 		.output(deleteAllWorkoutsOutputSchema)
-		.handler(async ({ context, errors }) => {
-			const result = await deleteAllWorkouts(context.userId);
+		.handler(({ context, errors }) =>
+			Effect.runPromise(
+				deleteAllWorkouts(context.userId).pipe(
+					Effect.provideService(Database, { prisma }),
+					Effect.match({
+						onSuccess: (value) => value,
+						onFailure: (error) => {
+							if ("reason" in error) {
+								switch (error.reason) {
+									case "NO_WORKOUTS":
+										throw errors.NO_WORKOUTS();
+									default: {
+										const exhaustiveReason: never = error.reason;
+										throw exhaustiveReason;
+									}
+								}
+							}
 
-			return result.match(
-				(value) => value,
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "NO_WORKOUTS":
-							throw errors.NO_WORKOUTS();
-						case "DATABASE_ERROR":
 							console.error("Failed to delete all workouts", { cause: error.cause });
 							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
-			);
-		}),
+						},
+					}),
+				),
+			),
+		),
 	delete: protectedProcedure
 		.errors({
 			NOT_FOUND: {
@@ -195,59 +202,64 @@ export const workoutsRouter = {
 		})
 		.input(deleteWorkoutInputSchema)
 		.output(deleteWorkoutOutputSchema)
-		.handler(async ({ input, context, errors }) => {
-			const result = await deleteWorkout(input.workoutId, context.userId);
+		.handler(({ input, context, errors }) =>
+			Effect.runPromise(
+				deleteWorkout(input.workoutId, context.userId).pipe(
+					Effect.provideService(Database, { prisma }),
+					Effect.match({
+						onSuccess: (workout) => ({
+							deletedWorkoutId: workout.id,
+							deletedWorkoutName: workout.name,
+						}),
+						onFailure: (error) => {
+							if ("reason" in error) {
+								switch (error.reason) {
+									case "NOT_FOUND":
+										throw errors.NOT_FOUND();
+									default: {
+										const exhaustiveReason: never = error.reason;
+										throw exhaustiveReason;
+									}
+								}
+							}
 
-			return result.match(
-				(workout) => ({
-					deletedWorkoutId: workout.id,
-					deletedWorkoutName: workout.name,
-				}),
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "NOT_FOUND":
-							throw errors.NOT_FOUND();
-						case "DATABASE_ERROR":
 							console.error("Failed to delete workout", { cause: error.cause });
 							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
+						},
+					}),
+				),
+			),
+		),
+	update: updateWorkoutProcedure.handler(({ input, context, errors }) =>
+		Effect.runPromise(
+			Effect.gen(function* () {
+				const workout = yield* validateAndNormalizeWorkout(input.workout);
+				yield* updateWorkout({ workoutId: input.workoutId, userId: context.userId, workout });
+
+				return { workoutId: input.workoutId, workout: input.workout };
+			}).pipe(
+				Effect.provideService(Database, { prisma }),
+				Effect.match({
+					onSuccess: (value) => value,
+					onFailure: (error) => {
+						if ("reason" in error) {
+							switch (error.reason) {
+								case "NOT_FOUND":
+									throw errors.NOT_FOUND();
+								case "INVALID_INPUT":
+									throw errors.INVALID_INPUT();
+								default:
+									throw errors.DATABASE_ERROR();
+							}
 						}
-					}
-				},
-			);
-		}),
-	update: updateWorkoutProcedure.handler(async ({ input, context, errors }) => {
-		const result = await validateAndNormalizeWorkout(input.workout)
-			.asyncAndThen((workout) =>
-				updateWorkout({ workoutId: input.workoutId, userId: context.userId, workout }),
-			)
-			.map(() => ({ workoutId: input.workoutId, workout: input.workout }));
 
-		return result.match(
-			(value) => value,
-			(error) => {
-				const reason = error.reason;
-
-				switch (reason) {
-					case "NOT_FOUND":
-						throw errors.NOT_FOUND();
-					case "INVALID_INPUT":
-						throw errors.INVALID_INPUT();
-					case "DATABASE_ERROR":
 						console.error("Failed to update workout", { cause: error.cause });
 						throw errors.DATABASE_ERROR();
-					default: {
-						const exhaustiveReason: never = reason;
-						throw exhaustiveReason;
-					}
-				}
-			},
-		);
-	}),
+					},
+				}),
+			),
+		),
+	),
 	getById: protectedProcedure
 		.errors({
 			NOT_FOUND: {
@@ -259,28 +271,31 @@ export const workoutsRouter = {
 		})
 		.input(z.object({ id: z.uuid() }))
 		.output(workoutFormSchema)
-		.handler(async ({ input, context, errors }) => {
-			const result = await getWorkoutById(input.id, context.userId);
+		.handler(({ input, context, errors }) =>
+			Effect.runPromise(
+				getWorkoutById(input.id, context.userId).pipe(
+					Effect.provideService(Database, { prisma }),
+					Effect.match({
+						onSuccess: (value) => value,
+						onFailure: (error) => {
+							if ("reason" in error) {
+								switch (error.reason) {
+									case "NOT_FOUND":
+										throw errors.NOT_FOUND();
+									default: {
+										const exhaustiveReason: never = error.reason;
+										throw exhaustiveReason;
+									}
+								}
+							}
 
-			return result.match(
-				(value) => value,
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "NOT_FOUND":
-							throw errors.NOT_FOUND();
-						case "DATABASE_ERROR":
 							console.error("Failed to load workout", { cause: error.cause });
 							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
-			);
-		}),
+						},
+					}),
+				),
+			),
+		),
 	list: protectedProcedure
 		.errors({
 			DATABASE_ERROR: {
@@ -297,7 +312,6 @@ export const workoutsRouter = {
 						onSuccess: (value) => value,
 						onFailure: (error) => {
 							console.error("Failed to list workouts", { cause: error.cause });
-
 							throw errors.DATABASE_ERROR();
 						},
 					}),
