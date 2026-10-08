@@ -45,6 +45,14 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 	const { listboxRef, listboxTouchProps, shouldHandleTouchTap, stopTouch } =
 		useSuggestionListTouchScroll();
 
+	const getSearchLabel = () => {
+		if (isDbSearchLoading) return "Searching database...";
+
+		if (isOnlineSearchLoading) return "Loading...";
+
+		return "Search Online";
+	};
+
 	return (
 		<Controller
 			name={exerciseNamePath}
@@ -206,11 +214,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 											onMouseDown={preventMouseBlur}
 											onTouchEnd={handleSearchOnlineTouchEnd}
 											onClick={fetchMoreSuggestionsFromClick}>
-											{isDbSearchLoading
-												? "Searching database..."
-												: isOnlineSearchLoading
-													? "Loading..."
-													: "Search Online"}
+											{getSearchLabel()}
 										</button>
 									</div>
 								</div>

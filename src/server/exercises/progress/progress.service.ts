@@ -1,5 +1,6 @@
 import "server-only";
 
+import { Effect } from "effect";
 import { normalizeName } from "@/lib/normalizeName";
 import {
 	EXERCISE_WEIGHT_PROGRESSION_MIN_REPS,
@@ -20,42 +21,46 @@ import {
 } from "@/server/exercises/progress/progress.functions";
 import { emptyExercisePrs } from "@/server/exercises/pr-history/pr-history.functions";
 
-export function getRecentSets(userId: string, exerciseName: string) {
-	const normalizedExerciseName = normalizeName(exerciseName);
+export const getRecentSets = (userId: string, exerciseName: string) =>
+	Effect.gen(function* () {
+		const normalizedExerciseName = normalizeName(exerciseName);
 
-	return getRecentSetRows(userId, normalizedExerciseName).map(buildRecentSets);
-}
+		return buildRecentSets(yield* getRecentSetRows(userId, normalizedExerciseName));
+	});
 
-export function getExercisePersonalRecords(userId: string, exerciseName: string) {
-	const normalizedExerciseName = normalizeName(exerciseName);
+export const getExercisePersonalRecords = (userId: string, exerciseName: string) =>
+	Effect.gen(function* () {
+		const normalizedExerciseName = normalizeName(exerciseName);
+		const rows = yield* getExercisePersonalRecordRows(userId, normalizedExerciseName);
 
-	return getExercisePersonalRecordRows(userId, normalizedExerciseName).map((rows) =>
-		buildExercisePersonalRecords(
+		return buildExercisePersonalRecords(
 			rows[0] ?? {
 				hasHistory: false,
 				weight: null,
 				volume: null,
 				bodyweightReps: null,
 			},
-		),
-	);
-}
+		);
+	});
 
-export function getExerciseWeeklyWeightProgression(
+export const getExerciseWeeklyWeightProgression = (
 	userId: string,
 	exerciseName: string,
 	range: ExerciseWeightProgressionRange,
-) {
-	const normalizedExerciseName = normalizeName(exerciseName);
-	const sinceCreatedAt = exerciseWeightProgressionSince(range);
+) =>
+	Effect.gen(function* () {
+		const normalizedExerciseName = normalizeName(exerciseName);
+		const sinceCreatedAt = exerciseWeightProgressionSince(range);
 
-	return getExerciseWeeklyWeightProgressionRows(
-		userId,
-		normalizedExerciseName,
-		sinceCreatedAt,
-		EXERCISE_WEIGHT_PROGRESSION_MIN_REPS,
-	).map(buildWeeklyWeightProgression);
-}
+		const rows = yield* getExerciseWeeklyWeightProgressionRows(
+			userId,
+			normalizedExerciseName,
+			sinceCreatedAt,
+			EXERCISE_WEIGHT_PROGRESSION_MIN_REPS,
+		);
+
+		return buildWeeklyWeightProgression(rows);
+	});
 
 interface CheckSetPrInput {
 	userId: string;
@@ -64,10 +69,10 @@ interface CheckSetPrInput {
 	setIndex: number;
 }
 
-export function checkSetPr({ userId, exerciseName, sets, setIndex }: CheckSetPrInput) {
-	const normalizedExerciseName = normalizeName(exerciseName);
+export const checkSetPr = ({ userId, exerciseName, sets, setIndex }: CheckSetPrInput) =>
+	Effect.gen(function* () {
+		const normalizedExerciseName = normalizeName(exerciseName);
+		const rows = yield* getExercisePrRows(userId, normalizedExerciseName);
 
-	return getExercisePrRows(userId, normalizedExerciseName).map((rows) =>
-		checkCompletedSetPr(sets, setIndex, rows[0] ?? emptyExercisePrs()),
-	);
-}
+		return checkCompletedSetPr(sets, setIndex, rows[0] ?? emptyExercisePrs());
+	});

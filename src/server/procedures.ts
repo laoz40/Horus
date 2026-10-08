@@ -8,7 +8,9 @@ interface ORPCContext {
 	headers: Headers;
 }
 
-const baseProcedure = os.$context<ORPCContext>().errors({
+const publicProcedure = os.$context<ORPCContext>();
+
+const baseProcedure = publicProcedure.errors({
 	UNAUTHORIZED: {
 		message: "Authentication is required",
 	},
@@ -31,3 +33,5 @@ const requireAuthenticatedUser = baseProcedure.middleware(async ({ context, erro
 });
 
 export const protectedProcedure = baseProcedure.use(requireAuthenticatedUser);
+
+export { publicProcedure };

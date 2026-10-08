@@ -1,6 +1,6 @@
 import "server-only";
 
-import { err, ok } from "neverthrow";
+import { Data, Effect } from "effect";
 
 import { normalizeName } from "@/lib/normalizeName";
 import type { UserExerciseLibraryRow } from "@/server/exercises/library/library.repository";
@@ -24,18 +24,26 @@ export function normalizeMuscleGroupsForSave(muscleGroups: string[]) {
 	return [...muscleGroupsByNormalizedName.values()];
 }
 
+export class ExerciseNotFoundError extends Data.TaggedError("ExerciseNotFoundError") {}
+
+class ExerciseInUseError extends Data.TaggedError("ExerciseInUseError") {}
+
+export class ExerciseNameCollisionError extends Data.TaggedError("ExerciseNameCollisionError")<{
+	existingExercise: UserExerciseLibraryRow;
+}> {}
+
 export function requireUserExercise(exercise: UserExerciseLibraryRow | null) {
 	if (exercise === null) {
-		return err({ reason: "EXERCISE_NOT_FOUND" as const });
+		return Effect.fail(new ExerciseNotFoundError());
 	}
 
-	return ok(exercise);
+	return Effect.succeed(exercise);
 }
 
 export function requireUnusedExercise(exercise: UserExerciseLibraryRow) {
 	if (exercise.workoutCount > 0) {
-		return err({ reason: "EXERCISE_IN_USE" as const });
+		return Effect.fail(new ExerciseInUseError());
 	}
 
-	return ok(exercise);
+	return Effect.succeed(exercise);
 }

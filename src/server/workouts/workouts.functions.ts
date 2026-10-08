@@ -1,6 +1,6 @@
 import "server-only";
 
-import { err, ok } from "neverthrow";
+import { Effect } from "effect";
 
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import { buildSetPrTypes } from "@/features/workout-form/lib/setPr";
@@ -14,18 +14,18 @@ import type {
 
 export function requireWorkout<T>(workout: T | null) {
 	if (workout === null) {
-		return err({ reason: "NOT_FOUND" as const });
+		return Effect.fail({ reason: "NOT_FOUND" as const });
 	}
 
-	return ok(workout);
+	return Effect.succeed(workout);
 }
 
 export function requireDeletedWorkouts(result: { deletedCount: number }) {
 	if (result.deletedCount === 0) {
-		return err({ reason: "NO_WORKOUTS" as const });
+		return Effect.fail({ reason: "NO_WORKOUTS" as const });
 	}
 
-	return ok(result);
+	return Effect.succeed(result);
 }
 
 function normalizeMuscleGroups(muscleGroups: string[] | undefined) {
@@ -57,10 +57,10 @@ export function validateUniqueWorkoutChildIds(workout: WorkoutForSave) {
 	const hasDuplicateSetId = new Set(setIds).size !== setIds.length;
 
 	if (hasDuplicateWorkoutExerciseId || hasDuplicateSetId) {
-		return err({ reason: "INVALID_INPUT" as const });
+		return Effect.fail({ reason: "INVALID_INPUT" as const });
 	}
 
-	return ok(null);
+	return Effect.succeed(null);
 }
 
 export function normalizeWorkoutForWrite(workout: WorkoutForSave) {

@@ -26,15 +26,19 @@ export function ModeToggle() {
 
 	const activeTheme = theme === "system" ? resolvedTheme : theme;
 
-	const label = !mounted
-		? "Theme"
-		: activeTheme === "black"
-			? "Black"
-			: activeTheme === "dark"
-				? "Dark"
-				: activeTheme === "light"
-					? "Light"
-					: "System";
+	const getLabel = () => {
+		if (!mounted) return "Theme";
+
+		if (activeTheme === "black") return "Black";
+
+		if (activeTheme === "dark") return "Dark";
+
+		if (activeTheme === "light") return "Light";
+
+		return "System";
+	};
+
+	const label = getLabel();
 
 	return (
 		<DropdownMenu>

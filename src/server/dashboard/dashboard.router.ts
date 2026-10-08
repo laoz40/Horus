@@ -1,6 +1,9 @@
 import "server-only";
 
+import { Effect } from "effect";
 import { z } from "zod";
+import { prisma } from "@/lib/db";
+import { Database } from "@/lib/db/database";
 import { protectedProcedure } from "@/server/procedures";
 import { getTrainingYearRange, getYearInTraining } from "@/server/dashboard/dashboard.service";
 
@@ -34,26 +37,21 @@ export const dashboardRouter = {
 		})
 		.input(z.object({}).strict())
 		.output(trainingYearRangeOutputSchema)
-		.handler(async ({ context, errors }) => {
-			const result = await getTrainingYearRange(context.userId);
-
-			return result.match(
-				(value) => value,
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "DATABASE_ERROR":
+		.handler(({ context, errors }) =>
+			Effect.runPromise(
+				getTrainingYearRange(context.userId).pipe(
+					Effect.provideService(Database, { prisma }),
+					Effect.match({
+						onSuccess: (value) => value,
+						onFailure: (error) => {
 							console.error("Failed to load training year range", { cause: error.cause });
+
 							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
-			);
-		}),
+						},
+					}),
+				),
+			),
+		),
 
 	yearInTraining: protectedProcedure
 		.errors({
@@ -63,24 +61,19 @@ export const dashboardRouter = {
 		})
 		.input(yearInTrainingInputSchema)
 		.output(yearInTrainingOutputSchema)
-		.handler(async ({ input, context, errors }) => {
-			const result = await getYearInTraining({ userId: context.userId, year: input.year });
-
-			return result.match(
-				(value) => value,
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "DATABASE_ERROR":
+		.handler(({ input, context, errors }) =>
+			Effect.runPromise(
+				getYearInTraining({ userId: context.userId, year: input.year }).pipe(
+					Effect.provideService(Database, { prisma }),
+					Effect.match({
+						onSuccess: (value) => value,
+						onFailure: (error) => {
 							console.error("Failed to load year in training", { cause: error.cause });
+
 							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
-			);
-		}),
+						},
+					}),
+				),
+			),
+		),
 };

@@ -18,9 +18,9 @@ export default function NotificationsSettingsSection() {
 
 	async function handleRestTimerNotificationsChange(checked: boolean): Promise<void> {
 		if (!checked) {
-			const writeResult = writeRestTimerNotificationsEnabled(false);
+			const saved = writeRestTimerNotificationsEnabled(false);
 
-			if (writeResult.isErr()) {
+			if (!saved) {
 				showErrorToast("Couldn't save notification preference.");
 
 				return;
@@ -35,9 +35,9 @@ export default function NotificationsSettingsSection() {
 
 		if (!enabled) return;
 
-		const writeResult = writeRestTimerNotificationsEnabled(true);
+		const saved = writeRestTimerNotificationsEnabled(true);
 
-		if (writeResult.isErr()) {
+		if (!saved) {
 			showErrorToast("Couldn't save notification preference.");
 
 			return;

@@ -31,7 +31,8 @@ super inefficient, laggy and doesn't scale well.
 - Next.js 16
 - React 19
 - TypeScript
-- PostgreSQL (Neon)
+- Effect TS
+- PostgreSQL
 - Prisma + TypedSQL
 - oRPC
 - Better Auth
@@ -119,6 +120,7 @@ In the future, I plan to build a native mobile version of this app.
 - [x] add rounded corners, the square look doesnt work doesnt look intentional
 - [ ] migrate from tailwind to styleX or use shadcn/lint
 - [x] migrate from drizzle to Prisma TypedSQL to use raw SQL (i hate the layer of abstraction of drizzle)
+- [x] migrate from neverthrow to Effect (I am Effect pilled now)
 
 ### Create Workout Page
 
@@ -129,7 +131,6 @@ In the future, I plan to build a native mobile version of this app.
   - [x] fix not loading previous data in edit mode
   - [x] fix exercises loading in reverse order
   - [x] fix autoscroll behaviour not working
-  - need to get the id since it doesnt exist yet, cant use same var
   - [x] fix not smooth scrolling
   - [x] implement deleting sets/exercises
   - [x] add toggle for edit mode
@@ -230,7 +231,7 @@ In the future, I plan to build a native mobile version of this app.
 
 ### Progress
 
-- [ ] graphs to show progression over time
+- [x] graphs to show progression over time
 - [ ] [filter stats](workout-tracker.md#stats-to-calculate)
 - [x] frequency heatmap to show sessions per time period
 - [ ] weekly summary

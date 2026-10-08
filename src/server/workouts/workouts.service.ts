@@ -1,9 +1,8 @@
 import "server-only";
 
-import type { ResultAsync } from "neverthrow";
+import { Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
-import { runDatabaseTransaction } from "@/lib/db";
-import { tryPromise } from "@/lib/tryPromise";
+import { Database, DatabaseError } from "@/lib/db/database";
 import { findOrCreateWorkoutExercises } from "@/server/exercises/library/workout-exercises.repository";
 import {
 	deleteWorkoutById,
@@ -40,116 +39,148 @@ import {
 	validateUniqueWorkoutChildIds,
 } from "@/server/workouts/workouts.functions";
 
-export function createWorkout(createInput: WorkoutWriteInput) {
-	return tryPromise({
-		try: () =>
-			runDatabaseTransaction(async (tx): Promise<string> => {
-				const workoutId = await insertWorkoutRow(tx, createInput);
+export const createWorkout = (createInput: WorkoutWriteInput) =>
+	Effect.gen(function* () {
+		const { prisma } = yield* Database;
 
-				const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(
-					tx,
-					createInput.userId,
-					createInput.workout.exercises,
-				);
+		return yield* Effect.tryPromise({
+			try: () =>
+				prisma.$transaction(async (tx) => {
+					const workoutId = await insertWorkoutRow(tx, createInput);
 
-				const newWorkoutSets = buildNewWorkoutPrSets(workoutId, exercisesWithDatabaseIds);
-				const prStatuses = await calculateSetPrsFromHistory(tx, createInput.userId, newWorkoutSets);
-				const prStatusesBySetId = new Map(prStatuses.map((status) => [status.setId, status]));
-				const totalPrSets = buildPrTotalsByWorkoutId(prStatuses).get(workoutId) ?? 0;
+					const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(
+						tx,
+						createInput.userId,
+						createInput.workout.exercises,
+					);
 
-				await insertWorkoutExerciseRows(tx, workoutId, exercisesWithDatabaseIds);
-				await insertWorkoutSetRows(tx, exercisesWithDatabaseIds, prStatusesBySetId);
-				await updateWorkoutPrTotal(tx, workoutId, totalPrSets);
+					const newWorkoutSets = buildNewWorkoutPrSets(workoutId, exercisesWithDatabaseIds);
 
-				return workoutId;
-			}),
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+					const prStatuses = await calculateSetPrsFromHistory(
+						tx,
+						createInput.userId,
+						newWorkoutSets,
+					);
+
+					const prStatusesBySetId = new Map(prStatuses.map((status) => [status.setId, status]));
+					const totalPrSets = buildPrTotalsByWorkoutId(prStatuses).get(workoutId) ?? 0;
+
+					await insertWorkoutExerciseRows(tx, workoutId, exercisesWithDatabaseIds);
+					await insertWorkoutSetRows(tx, exercisesWithDatabaseIds, prStatusesBySetId);
+					await updateWorkoutPrTotal(tx, workoutId, totalPrSets);
+
+					return workoutId;
+				}),
+			catch: (cause) => new DatabaseError({ cause }),
+		});
 	});
-}
 
-function updateWorkoutAndRecalculatePrs(
-	updateInput: WorkoutUpdateInput,
-): ResultAsync<string | null, { reason: "DATABASE_ERROR"; cause: unknown }> {
-	return tryPromise({
-		try: () =>
-			runDatabaseTransaction(async (tx): Promise<string | null> => {
-				const workout = await getWorkout(tx, updateInput.workoutId, updateInput.userId);
+const updateWorkoutAndRecalculatePrs = (updateInput: WorkoutUpdateInput) =>
+	Effect.gen(function* () {
+		const { prisma } = yield* Database;
 
-				if (!workout) {
-					return null;
-				}
+		return yield* Effect.tryPromise({
+			try: () =>
+				prisma.$transaction(async (tx): Promise<string | null> => {
+					const workout = await getWorkout(tx, updateInput.workoutId, updateInput.userId);
 
-				const previousExerciseIds = await getWorkoutExerciseIds(tx, updateInput.workoutId);
+					if (!workout) {
+						return null;
+					}
 
-				const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(
-					tx,
-					updateInput.userId,
-					updateInput.workout.exercises,
-				);
+					const previousExerciseIds = await getWorkoutExerciseIds(tx, updateInput.workoutId);
 
-				const affectedExerciseIds = buildAffectedExerciseIds(
-					previousExerciseIds,
-					exercisesWithDatabaseIds.map((exercise) => exercise.exerciseId),
-				);
+					const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(
+						tx,
+						updateInput.userId,
+						updateInput.workout.exercises,
+					);
 
-				await updateWorkoutFields(tx, updateInput);
-				await deleteWorkoutChildren(tx, updateInput.workoutId);
-				await insertWorkoutExerciseRows(tx, updateInput.workoutId, exercisesWithDatabaseIds);
-				await insertWorkoutSetRows(tx, exercisesWithDatabaseIds);
-				await recalculateExercisePrHistory(tx, updateInput.userId, affectedExerciseIds, {
-					workoutId: workout.id,
-					createdAt: workout.createdAt,
-				});
+					const affectedExerciseIds = buildAffectedExerciseIds(
+						previousExerciseIds,
+						exercisesWithDatabaseIds.map((exercise) => exercise.exerciseId),
+					);
 
-				return workout.id;
-			}),
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+					await updateWorkoutFields(tx, updateInput);
+					await deleteWorkoutChildren(tx, updateInput.workoutId);
+					await insertWorkoutExerciseRows(tx, updateInput.workoutId, exercisesWithDatabaseIds);
+					await insertWorkoutSetRows(tx, exercisesWithDatabaseIds);
+					await recalculateExercisePrHistory(tx, updateInput.userId, affectedExerciseIds, {
+						workoutId: workout.id,
+						createdAt: workout.createdAt,
+					});
+
+					return workout.id;
+				}),
+			catch: (cause) => new DatabaseError({ cause }),
+		});
 	});
-}
 
-function deleteWorkoutAndRecalculatePrs(workoutId: string, userId: string) {
-	return tryPromise({
-		try: () =>
-			runDatabaseTransaction(async (tx) => {
-				const workout = await getWorkout(tx, workoutId, userId);
+const deleteWorkoutAndRecalculatePrs = (workoutId: string, userId: string) =>
+	Effect.gen(function* () {
+		const { prisma } = yield* Database;
 
-				if (!workout) {
-					return null;
-				}
+		return yield* Effect.tryPromise({
+			try: () =>
+				prisma.$transaction(async (tx) => {
+					const workout = await getWorkout(tx, workoutId, userId);
 
-				const exerciseIds = await getWorkoutExerciseIds(tx, workoutId);
-				await deleteWorkoutById(tx, workoutId, userId);
-				await recalculateExercisePrHistory(tx, userId, exerciseIds, {
-					workoutId: workout.id,
-					createdAt: workout.createdAt,
-				});
+					if (!workout) {
+						return null;
+					}
 
-				return { id: workout.id, name: workout.name };
-			}),
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+					const exerciseIds = await getWorkoutExerciseIds(tx, workoutId);
+					await deleteWorkoutById(tx, workoutId, userId);
+					await recalculateExercisePrHistory(tx, userId, exerciseIds, {
+						workoutId: workout.id,
+						createdAt: workout.createdAt,
+					});
+
+					return { id: workout.id, name: workout.name };
+				}),
+			catch: (cause) => new DatabaseError({ cause }),
+		});
 	});
-}
 
-export function getWorkoutById(workoutId: string, userId: string) {
-	return getWorkoutForEdit(workoutId, userId).andThen(requireWorkout).map(buildWorkoutEditForm);
-}
+export const getWorkoutById = (workoutId: string, userId: string) =>
+	Effect.gen(function* () {
+		const workout = yield* getWorkoutForEdit(workoutId, userId);
+		const requiredWorkout = yield* requireWorkout(workout);
 
-export function listWorkouts(query: ListWorkoutsQuery) {
-	return listWorkoutRows(query).map((rows) => buildWorkoutHistoryPage(rows, query));
-}
+		return buildWorkoutEditForm(requiredWorkout);
+	});
 
-export function deleteWorkout(workoutId: string, userId: string) {
-	return deleteWorkoutAndRecalculatePrs(workoutId, userId).andThen(requireWorkout);
-}
+export const listWorkouts = (query: ListWorkoutsQuery) =>
+	Effect.gen(function* () {
+		const rows = yield* listWorkoutRows(query);
 
-export function deleteAllWorkouts(userId: string) {
-	return deleteAllWorkoutRows(userId).andThen(requireDeletedWorkouts);
-}
+		return buildWorkoutHistoryPage(rows, query);
+	});
 
-export function validateAndNormalizeWorkout(workout: WorkoutForSave) {
-	return validateUniqueWorkoutChildIds(workout).map(() => normalizeWorkoutForWrite(workout));
-}
+export const deleteWorkout = (workoutId: string, userId: string) =>
+	Effect.gen(function* () {
+		const workout = yield* deleteWorkoutAndRecalculatePrs(workoutId, userId);
 
-export function updateWorkout(updateInput: WorkoutUpdateInput) {
-	return updateWorkoutAndRecalculatePrs(updateInput).andThen(requireWorkout);
-}
+		return yield* requireWorkout(workout);
+	});
+
+export const deleteAllWorkouts = (userId: string) =>
+	Effect.gen(function* () {
+		const result = yield* deleteAllWorkoutRows(userId);
+
+		return yield* requireDeletedWorkouts(result);
+	});
+
+export const validateAndNormalizeWorkout = (workout: WorkoutForSave) =>
+	Effect.gen(function* () {
+		yield* validateUniqueWorkoutChildIds(workout);
+
+		return normalizeWorkoutForWrite(workout);
+	});
+
+export const updateWorkout = (updateInput: WorkoutUpdateInput) =>
+	Effect.gen(function* () {
+		const workoutId = yield* updateWorkoutAndRecalculatePrs(updateInput);
+
+		return yield* requireWorkout(workoutId);
+	});

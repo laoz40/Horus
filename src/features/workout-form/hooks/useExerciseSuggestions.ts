@@ -1,55 +1,33 @@
 "use client";
 
+import { ORPCError } from "@orpc/client";
 import { useDeferredValue, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Data, Effect } from "effect";
 import { showErrorToast } from "@/lib/toastMessages";
 import { deduplicateExercises } from "@/features/workout-form/lib/convertWorkoutData";
 import { fetchDefaultExercises } from "@/features/workout-form/lib/fetchExercises";
 import { sortExercisesAlphabetically } from "@/features/workout-form/lib/sortExercises";
 import type { ExerciseSuggestion } from "@/features/workout-form/lib/types";
 import { orpc } from "@/lib/orpc/client";
-import { err, ok } from "neverthrow";
-import * as z from "zod";
 
-// The /api/exercises/search response is untrusted network data; parse it at the boundary.
-const ExerciseSearchResponseSchema = z.discriminatedUnion("success", [
-	z.object({
-		success: z.literal(true),
-		exercises: z.array(
-			z.object({
-				id: z.string(),
-				name: z.string(),
-				normalizedName: z.string(),
-				muscleGroups: z.array(z.string()).optional(),
-			}),
-		),
-	}),
-	z.object({
-		success: z.literal(false),
-		error: z.string().optional(),
-	}),
-]);
+class RateLimitedSearchError extends Data.TaggedError("RATE_LIMITED") {}
 
-const fetchOnlineExerciseSuggestions = async (query: string) => {
-	const response = await fetch(`/api/exercises/search?query=${encodeURIComponent(query)}`);
+class FailedOnlineSearchError extends Data.TaggedError("REQUEST_FAILED") {}
 
-	const parsedResponse = ExerciseSearchResponseSchema.safeParse(await response.json());
+class UnexpectedOnlineSearchError extends Data.TaggedError("UNEXPECTED") {}
 
-	if (!parsedResponse.success) {
-		return err({
-			code: "INVALID_RESPONSE",
-		} as const);
+function classifyOnlineSearchError(cause: unknown) {
+	if (!(cause instanceof ORPCError) || !cause.defined) {
+		return new UnexpectedOnlineSearchError();
 	}
 
-	// The route answers failures with a JSON body rather than throwing.
-	if (!parsedResponse.data.success) {
-		return err({
-			code: response.status === 429 ? "RATE_LIMITED" : "REQUEST_FAILED",
-		} as const);
-	}
+	if (cause.code === "RATE_LIMITED") return new RateLimitedSearchError();
 
-	return ok(parsedResponse.data);
-};
+	if (cause.code === "REQUEST_FAILED") return new FailedOnlineSearchError();
+
+	return new UnexpectedOnlineSearchError();
+}
 
 function buildExerciseSuggestions(
 	query: string,
@@ -105,52 +83,43 @@ export function useExerciseSuggestions(rawQuery: string) {
 	const isDbSearchLoading =
 		query.length > 0 && (deferredQuery !== query || exerciseSearch.isFetching);
 
-	const fetchMoreSuggestions = async () => {
-		if (query.length === 0) return;
+	const fetchMoreSuggestions = () => {
+		if (query.length === 0) return Promise.resolve();
 
-		setIsOnlineSearchLoading(true);
+		return Effect.runPromise(
+			Effect.gen(function* () {
+				yield* Effect.sync(() => setIsOnlineSearchLoading(true));
 
-		try {
-			const result = await queryClient.fetchQuery({
-				queryKey: ["exercise-search-online", query],
-				queryFn: () => fetchOnlineExerciseSuggestions(query),
-				staleTime: 1000 * 60 * 1,
-				gcTime: 1000 * 60 * 3,
-			});
+				const exercises = yield* Effect.tryPromise({
+					try: () =>
+						queryClient.fetchQuery(
+							orpc.exercises.searchOnline.queryOptions({
+								input: { query },
+								staleTime: 1000 * 60 * 1,
+								gcTime: 1000 * 60 * 3,
+							}),
+						),
+					catch: classifyOnlineSearchError,
+				});
 
-			result.match(
-				(data) => {
-					if (data.exercises.length > 0) {
+				if (exercises.length > 0) {
+					yield* Effect.sync(() =>
 						setOnlineExercisesByQuery((prev) => ({
 							...prev,
-							[query]: deduplicateExercises(prev[query] ?? [], data.exercises),
-						}));
-					}
-				},
-				(error) => {
-					const code = error.code;
-
-					switch (code) {
-						case "RATE_LIMITED":
-							showErrorToast("Too many requests. Please try again later.");
-
-							return;
-						case "REQUEST_FAILED":
-							showErrorToast("Failed to fetch exercises.");
-
-							return;
-						case "INVALID_RESPONSE":
-							showErrorToast("The exercise search response was not in the expected format.");
-
-							return;
-						default:
-							throw new Error(`Unhandled app error code: ${String(code satisfies never)}`);
-					}
-				},
-			);
-		} finally {
-			setIsOnlineSearchLoading(false);
-		}
+							[query]: deduplicateExercises(prev[query] ?? [], exercises),
+						})),
+					);
+				}
+			}).pipe(
+				Effect.catchTags({
+					RATE_LIMITED: () =>
+						Effect.sync(() => showErrorToast("Too many requests. Please try again later.")),
+					REQUEST_FAILED: () => Effect.sync(() => showErrorToast("Failed to fetch exercises.")),
+					UNEXPECTED: () => Effect.sync(() => showErrorToast("Failed to fetch exercises.")),
+				}),
+				Effect.ensuring(Effect.sync(() => setIsOnlineSearchLoading(false))),
+			),
+		);
 	};
 
 	const isLoading = isDbSearchLoading || isOnlineSearchLoading;

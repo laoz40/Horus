@@ -1,6 +1,5 @@
 import "server-only";
 
-import type { Result } from "neverthrow";
 import { z } from "zod";
 
 export const databaseError = {
@@ -8,6 +7,26 @@ export const databaseError = {
 		message: "The database operation failed",
 	},
 };
+
+export const onlineExerciseSearchErrors = {
+	RATE_LIMITED: {
+		message: "Too many requests. Please try again later.",
+	},
+	REQUEST_FAILED: {
+		message: "Failed to fetch exercises.",
+	},
+};
+
+export const onlineExerciseSuggestionsSchema = z.array(
+	z
+		.object({
+			id: z.string(),
+			name: z.string(),
+			normalizedName: z.string(),
+			muscleGroups: z.array(z.string()).optional(),
+		})
+		.strict(),
+);
 
 export const exerciseLibraryErrors = {
 	...databaseError,
@@ -58,74 +77,3 @@ export const exerciseLibraryWriteProcedureErrors = {
 			.strict(),
 	},
 };
-
-type DatabaseError = { reason: "DATABASE_ERROR"; cause: unknown };
-
-type ExerciseLibraryWriteError =
-	| { reason: "NAME_COLLISION"; existingExercise: z.infer<typeof exerciseLibraryItemSchema> }
-	| { reason: "EXERCISE_NOT_FOUND" }
-	| DatabaseError;
-
-interface DatabaseProcedureErrors {
-	DATABASE_ERROR: () => Error;
-}
-
-interface ExerciseLibraryWriteProcedureErrors {
-	NAME_COLLISION: (input: {
-		data: { existingExercise: z.infer<typeof exerciseLibraryItemSchema> };
-	}) => Error;
-	EXERCISE_NOT_FOUND: () => Error;
-	DATABASE_ERROR: () => Error;
-}
-
-export function matchDatabaseResult<T>(
-	result: Result<T, DatabaseError>,
-	errors: DatabaseProcedureErrors,
-	logLabel: string,
-): T {
-	return result.match(
-		(value) => value,
-		(error) => {
-			const reason = error.reason;
-
-			switch (reason) {
-				case "DATABASE_ERROR":
-					console.error(logLabel, { cause: error.cause });
-					throw errors.DATABASE_ERROR();
-				default: {
-					const exhaustiveReason: never = reason;
-					throw exhaustiveReason;
-				}
-			}
-		},
-	);
-}
-
-export function matchExerciseLibraryWriteResult<T>(
-	result: Result<T, ExerciseLibraryWriteError>,
-	errors: ExerciseLibraryWriteProcedureErrors,
-	logLabel: string,
-): T {
-	return result.match(
-		(value) => value,
-		(error) => {
-			const reason = error.reason;
-
-			switch (reason) {
-				case "NAME_COLLISION":
-					throw errors.NAME_COLLISION({
-						data: { existingExercise: error.existingExercise },
-					});
-				case "EXERCISE_NOT_FOUND":
-					throw errors.EXERCISE_NOT_FOUND();
-				case "DATABASE_ERROR":
-					console.error(logLabel, { cause: error.cause });
-					throw errors.DATABASE_ERROR();
-				default: {
-					const exhaustiveReason: never = reason;
-					throw exhaustiveReason;
-				}
-			}
-		},
-	);
-}
