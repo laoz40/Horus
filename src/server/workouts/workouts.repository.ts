@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { Decimal } from "@prisma/client/runtime/client";
+import { Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import {
 	getWorkoutDetails,
@@ -11,6 +12,7 @@ import {
 	listWorkoutHistory,
 } from "@/generated/prisma/sql";
 import { prisma, type DatabaseTransaction } from "@/lib/db";
+import { Database, DatabaseError } from "@/lib/db/database";
 import { tryPromise } from "@/lib/tryPromise";
 import type { PrSetUpdate } from "@/server/exercises/pr-history/pr-history.functions";
 import type {
@@ -250,24 +252,27 @@ export function getWorkoutForEdit(workoutId: string, userId: string) {
 	});
 }
 
-export function listWorkoutRows(query: ListWorkoutsQuery) {
-	return tryPromise({
-		try: async (): Promise<WorkoutHistoryRow[]> => {
-			const rows = await prisma.$queryRawTyped(
-				listWorkoutHistory(query.userId, query.limit + 1, query.offset),
-			);
+export const listWorkoutRows = Effect.fn("workouts.listWorkoutRows")(function* (
+	query: ListWorkoutsQuery,
+) {
+	const { prisma: database } = yield* Database;
 
-			return rows.map((row) => ({
-				id: row.id,
-				createdAt: row.created_at,
-				name: row.name,
-				durationSeconds: row.duration_seconds,
-				totalPrSets: row.total_pr_sets,
-				exerciseCount: row.exercise_count ?? 0,
-				totalVolume: row.total_volume ?? 0,
-				muscleGroups: row.muscle_groups ?? [],
-			}));
-		},
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	const rows = yield* Effect.tryPromise({
+		try: () =>
+			database.$queryRawTyped(listWorkoutHistory(query.userId, query.limit + 1, query.offset)),
+		catch: (cause) => new DatabaseError({ cause }),
 	});
-}
+
+	return rows.map(
+		(row): WorkoutHistoryRow => ({
+			id: row.id,
+			createdAt: row.created_at,
+			name: row.name,
+			durationSeconds: row.duration_seconds,
+			totalPrSets: row.total_pr_sets,
+			exerciseCount: row.exercise_count ?? 0,
+			totalVolume: row.total_volume ?? 0,
+			muscleGroups: row.muscle_groups ?? [],
+		}),
+	);
+});

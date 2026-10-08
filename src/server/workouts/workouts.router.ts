@@ -1,7 +1,10 @@
 import "server-only";
 
+import { Effect } from "effect";
 import { z } from "zod";
 import { WorkoutForSaveSchema } from "@/features/workout-form/lib/validateWorkout";
+import { prisma } from "@/lib/db";
+import { Database } from "@/lib/db/database";
 import { protectedProcedure } from "@/server/procedures";
 import {
 	createWorkout,
@@ -286,24 +289,19 @@ export const workoutsRouter = {
 		})
 		.input(historyInputSchema)
 		.output(historySchema)
-		.handler(async ({ input, context, errors }) => {
-			const result = await listWorkouts({ ...input, userId: context.userId });
-
-			return result.match(
-				(value) => value,
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "DATABASE_ERROR":
+		.handler(({ input, context, errors }) =>
+			Effect.runPromise(
+				listWorkouts({ ...input, userId: context.userId }).pipe(
+					Effect.provideService(Database, { prisma }),
+					Effect.match({
+						onSuccess: (value) => value,
+						onFailure: (error) => {
 							console.error("Failed to list workouts", { cause: error.cause });
+
 							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
-			);
-		}),
+						},
+					}),
+				),
+			),
+		),
 };

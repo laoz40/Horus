@@ -1,5 +1,6 @@
 import "server-only";
 
+import { Effect } from "effect";
 import type { ResultAsync } from "neverthrow";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import { runDatabaseTransaction } from "@/lib/db";
@@ -134,9 +135,13 @@ export function getWorkoutById(workoutId: string, userId: string) {
 	return getWorkoutForEdit(workoutId, userId).andThen(requireWorkout).map(buildWorkoutEditForm);
 }
 
-export function listWorkouts(query: ListWorkoutsQuery) {
-	return listWorkoutRows(query).map((rows) => buildWorkoutHistoryPage(rows, query));
-}
+export const listWorkouts = Effect.fn("workouts.listWorkouts")(function* (
+	query: ListWorkoutsQuery,
+) {
+	const rows = yield* listWorkoutRows(query);
+
+	return buildWorkoutHistoryPage(rows, query);
+});
 
 export function deleteWorkout(workoutId: string, userId: string) {
 	return deleteWorkoutAndRecalculatePrs(workoutId, userId).andThen(requireWorkout);
