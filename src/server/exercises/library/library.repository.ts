@@ -1,5 +1,6 @@
 import "server-only";
 
+import { Effect } from "effect";
 import {
 	getUserExerciseCatalogRow as getUserExerciseLibraryRowQuery,
 	listUserExerciseCatalog,
@@ -7,6 +8,7 @@ import {
 	searchExercises,
 } from "@/generated/prisma/sql";
 import { prisma, runDatabaseTransaction, type DatabaseTransaction } from "@/lib/db";
+import { Database, DatabaseError } from "@/lib/db/database";
 import { tryPromise } from "@/lib/tryPromise";
 import type { PrHistoryCutoff } from "@/server/exercises/pr-history/pr-history.functions";
 
@@ -334,21 +336,25 @@ export async function mergeUserExerciseRows(
 	return cutoff;
 }
 
-export function listUserExerciseRows(userId: string) {
-	return tryPromise({
-		try: async (): Promise<UserExerciseLibraryRow[]> => {
-			const rows = await prisma.$queryRawTyped(listUserExerciseCatalog(userId));
+export const listUserExerciseRows = Effect.fn("exercises.listUserExerciseRows")(function* (
+	userId: string,
+) {
+	const { prisma: database } = yield* Database;
 
-			return rows.map((row) => ({
-				id: row.id,
-				name: row.name,
-				muscleGroups: row.muscle_groups ?? [],
-				workoutCount: row.workout_count ?? 0,
-			}));
-		},
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	const rows = yield* Effect.tryPromise({
+		try: () => database.$queryRawTyped(listUserExerciseCatalog(userId)),
+		catch: (cause) => new DatabaseError({ cause }),
 	});
-}
+
+	return rows.map(
+		(row): UserExerciseLibraryRow => ({
+			id: row.id,
+			name: row.name,
+			muscleGroups: row.muscle_groups ?? [],
+			workoutCount: row.workout_count ?? 0,
+		}),
+	);
+});
 
 export function listExerciseRowsByCategory(userId: string, normalizedMuscleNames: string[]) {
 	return tryPromise({

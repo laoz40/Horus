@@ -1,6 +1,9 @@
 import "server-only";
 
+import { Effect } from "effect";
 import { z } from "zod";
+import { prisma } from "@/lib/db";
+import { Database } from "@/lib/db/database";
 import { MUSCLE_GROUP_CATEGORIES } from "@/features/workout-form/lib/muscleGroupCategories";
 import { protectedProcedure } from "@/server/procedures";
 import { exercisesProgressProcedures } from "@/server/exercises/progress/progress.router";
@@ -46,13 +49,21 @@ export const exercisesRouter = {
 				})
 				.strict(),
 		)
-		.handler(async ({ context, errors }) => {
-			const result = await listUserExercises(context.userId);
+		.handler(({ context, errors }) =>
+			Effect.runPromise(
+				listUserExercises(context.userId).pipe(
+					Effect.provideService(Database, { prisma }),
+					Effect.match({
+						onSuccess: (exercises) => ({ exercises }),
+						onFailure: (error) => {
+							console.error("Failed to list exercises", { cause: error.cause });
 
-			const exercises = matchDatabaseResult(result, errors, "Failed to list exercises");
-
-			return { exercises };
-		}),
+							throw errors.DATABASE_ERROR();
+						},
+					}),
+				),
+			),
+		),
 	checkSetPr: protectedProcedure
 		.errors(databaseError)
 		.input(

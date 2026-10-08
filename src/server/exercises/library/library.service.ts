@@ -1,5 +1,6 @@
 import "server-only";
 
+import { Effect } from "effect";
 import { err, ok } from "neverthrow";
 import { runDatabaseTransaction } from "@/lib/db";
 import { tryPromise } from "@/lib/tryPromise";
@@ -40,9 +41,11 @@ interface MergeExerciseLibraryInput {
 	sourceMuscleGroups?: string[];
 }
 
-export function listUserExercises(userId: string) {
-	return listUserExerciseRows(userId);
-}
+export const listUserExercises = Effect.fn("exercises.listUserExercises")(function* (
+	userId: string,
+) {
+	return yield* listUserExerciseRows(userId);
+});
 
 export function normalizeExerciseInput(input: ExerciseLibraryWriteInput) {
 	return {
