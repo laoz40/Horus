@@ -5,7 +5,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { Database, DatabaseError } from "@/lib/db/database";
 import { MUSCLE_GROUP_CATEGORIES } from "@/features/workout-form/lib/muscleGroupCategories";
-import { protectedProcedure } from "@/server/procedures";
+import { fetchApiExercises } from "@/features/workout-form/lib/fetchApiExercises.server";
+import { protectedProcedure, publicProcedure } from "@/server/procedures";
 import { exercisesProgressProcedures } from "@/server/exercises/progress/progress.router";
 import { checkSetPr } from "@/server/exercises/progress/progress.service";
 import {
@@ -28,6 +29,8 @@ import {
 	exerciseLibraryItemSchema,
 	exerciseLibraryWriteOutputSchema,
 	exerciseLibraryWriteProcedureErrors,
+	onlineExerciseSearchErrors,
+	onlineExerciseSuggestionsSchema,
 } from "@/server/exercises/exercises.router.helpers";
 
 const exerciseLibraryWriteInputSchema = z
@@ -131,6 +134,20 @@ export const exercisesRouter = {
 
 							throw errors.DATABASE_ERROR();
 						},
+					}),
+				),
+			),
+		),
+	searchOnline: publicProcedure
+		.errors(onlineExerciseSearchErrors)
+		.input(z.object({ query: z.string().trim().min(1) }).strict())
+		.output(onlineExerciseSuggestionsSchema)
+		.handler(({ input, errors }) =>
+			Effect.runPromise(
+				fetchApiExercises(input.query).pipe(
+					Effect.catchTags({
+						RATE_LIMITED: () => Effect.fail(errors.RATE_LIMITED()),
+						REQUEST_FAILED: () => Effect.fail(errors.REQUEST_FAILED()),
 					}),
 				),
 			),
