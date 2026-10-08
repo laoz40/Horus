@@ -74,6 +74,58 @@ export default function RecentSetsDialog({
 
 	const errorMessage = getErrorMessage();
 
+	const renderSets = () => {
+		if (recentSetsQuery.isLoading) {
+			return (
+				<div className="flex flex-col">
+					<SetSkeletonRow />
+					<SetSkeletonRow />
+					<SetSkeletonRow />
+					<SetSkeletonRow />
+					<SetSkeletonRow />
+					<SetSkeletonRow />
+				</div>
+			);
+		}
+
+		if (errorMessage) {
+			return <p className="text-sm text-destructive">{errorMessage}</p>;
+		}
+
+		if (sets.length === 0) {
+			return <p className="text-sm text-muted-foreground">No recent completed sets found.</p>;
+		}
+
+		return (
+			<div className="flex flex-col">
+				{sets.map((set) => {
+					const primaryPrType = set.prTypes[0];
+
+					return (
+						<div
+							key={set.id}
+							className="exercise-set-grid-row">
+							<span className={cn(set.isPr && "font-semibold")}>{set.weight}</span>
+							<span className={cn(set.isPr && "font-semibold")}>{set.reps}</span>
+							<span>
+								{primaryPrType ? (
+									<span className="rounded-md border bg-muted px-1.5 py-0.5 text-xs whitespace-nowrap text-muted-foreground">
+										{setPrLabels[primaryPrType]}
+									</span>
+								) : null}
+							</span>
+							<span
+								className={cn("min-w-0 truncate text-right", set.isPr && "font-semibold")}
+								title={set.time}>
+								{set.time}
+							</span>
+						</div>
+					);
+				})}
+			</div>
+		);
+	};
+
 	return (
 		<Dialog
 			open={open}
@@ -97,47 +149,7 @@ export default function RecentSetsDialog({
 						<span className="truncate text-right">Completed</span>
 					</div>
 
-					{recentSetsQuery.isLoading ? (
-						<div className="flex flex-col">
-							<SetSkeletonRow />
-							<SetSkeletonRow />
-							<SetSkeletonRow />
-							<SetSkeletonRow />
-							<SetSkeletonRow />
-							<SetSkeletonRow />
-						</div>
-					) : errorMessage ? (
-						<p className="text-sm text-destructive">{errorMessage}</p>
-					) : sets.length === 0 ? (
-						<p className="text-sm text-muted-foreground">No recent completed sets found.</p>
-					) : (
-						<div className="flex flex-col">
-							{sets.map((set) => {
-								const primaryPrType = set.prTypes[0];
-
-								return (
-									<div
-										key={set.id}
-										className="exercise-set-grid-row">
-										<span className={cn(set.isPr && "font-semibold")}>{set.weight}</span>
-										<span className={cn(set.isPr && "font-semibold")}>{set.reps}</span>
-										<span>
-											{primaryPrType ? (
-												<span className="rounded-md border bg-muted px-1.5 py-0.5 text-xs whitespace-nowrap text-muted-foreground">
-													{setPrLabels[primaryPrType]}
-												</span>
-											) : null}
-										</span>
-										<span
-											className={cn("min-w-0 truncate text-right", set.isPr && "font-semibold")}
-											title={set.time}>
-											{set.time}
-										</span>
-									</div>
-								);
-							})}
-						</div>
-					)}
+					{renderSets()}
 				</div>
 
 				<DialogFooter>

@@ -88,12 +88,12 @@ const convertWgerExercise = (exercise: WgerExercise): ExerciseSuggestion | undef
 
 	const deduplicatedMuscleGroups = Array.from(new Set(muscleGroups));
 
+	const categoryMuscleGroups = exercise.category?.name?.trim()
+		? [exercise.category.name]
+		: undefined;
+
 	const fallbackMuscleGroups =
-		deduplicatedMuscleGroups.length > 0
-			? deduplicatedMuscleGroups
-			: exercise.category?.name?.trim()
-				? [exercise.category.name]
-				: undefined;
+		deduplicatedMuscleGroups.length > 0 ? deduplicatedMuscleGroups : categoryMuscleGroups;
 
 	return createSuggestionObject({
 		id: String(exercise.id),

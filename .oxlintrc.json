@@ -1,7 +1,10 @@
 {
 	"$schema": "./node_modules/oxlint/configuration_schema.json",
 	"plugins": ["nextjs", "typescript", "unicorn"],
-	"jsPlugins": [{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" }],
+	"jsPlugins": [
+		{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" },
+		{ "name": "anti-slop-effect", "specifier": "./tools/oxlint/anti-slop/effect/index.ts" }
+	],
 	"categories": {
 		"correctness": "error",
 		"suspicious": "error",
@@ -23,6 +26,12 @@
 		"src/components/ui/chart.tsx"
 	],
 	"rules": {
+		"anti-slop-effect/no-manual-effect-error-tag": "error",
+		"anti-slop-effect/no-manual-tag-comparison": "error",
+		"anti-slop-effect/no-manual-tagged-construction": "error",
+		"anti-slop-effect/no-service-constructor-imports": "error",
+		"anti-slop-effect/prefer-effect-match": "error",
+
 		"anti-slop/no-chained-type-assertions": "error",
 		"anti-slop/no-unknown-parameters": "error",
 		"anti-slop/no-unknown-returns": "error",
@@ -92,6 +101,7 @@
 		"max-statements": ["error", { "max": 15 }],
 		"max-lines": ["error", { "max": 400, "skipBlankLines": true, "skipComments": true }],
 		"eqeqeq": "error",
+		"no-nested-ternary": "error",
 		"array-callback-return": "error",
 		"default-case": "error",
 		"class-methods-use-this": "error",
