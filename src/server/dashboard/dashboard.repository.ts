@@ -1,47 +1,51 @@
 import "server-only";
 
+import { Effect } from "effect";
 import { getOldestWorkoutCreatedAt, getYearInTraining } from "@/generated/prisma/sql";
-import { prisma } from "@/lib/db";
-import { tryPromise } from "@/lib/tryPromise";
+import { Database, DatabaseError } from "@/lib/db/database";
 
 export type YearInTrainingQuery = {
 	userId: string;
 	year: number;
 };
 
-export function getTrainingYearRangeRows(userId: string) {
-	return tryPromise({
-		try: async () => {
-			const currentYear = new Date().getUTCFullYear();
-			const [row] = await prisma.$queryRawTyped(getOldestWorkoutCreatedAt(userId));
+export const getTrainingYearRangeRows = Effect.fn("dashboard.getTrainingYearRangeRows")(function* (
+	userId: string,
+) {
+	const { prisma } = yield* Database;
+	const currentYear = new Date().getUTCFullYear();
 
-			const oldestYear = row?.oldest_created_at?.getUTCFullYear() ?? currentYear;
-
-			return {
-				firstYear: Math.min(oldestYear, currentYear),
-				lastYear: currentYear,
-			};
-		},
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	const [row] = yield* Effect.tryPromise({
+		try: () => prisma.$queryRawTyped(getOldestWorkoutCreatedAt(userId)),
+		catch: (cause) => new DatabaseError({ cause }),
 	});
-}
 
-export function getYearInTrainingRows({ userId, year }: YearInTrainingQuery) {
+	const oldestYear = row?.oldest_created_at?.getUTCFullYear() ?? currentYear;
+
+	return {
+		firstYear: Math.min(oldestYear, currentYear),
+		lastYear: currentYear,
+	};
+});
+
+export const getYearInTrainingRows = Effect.fn("dashboard.getYearInTrainingRows")(function* ({
+	userId,
+	year,
+}: YearInTrainingQuery) {
+	const { prisma } = yield* Database;
 	const start = new Date(`${year}-01-01T00:00:00.000Z`);
 	const end = new Date(`${year + 1}-01-01T00:00:00.000Z`);
 
-	return tryPromise({
-		try: async () => {
-			const rows = await prisma.$queryRawTyped(getYearInTraining(userId, start, end));
-
-			return rows.flatMap((row) => {
-				if (row.day_key === null || row.set_count === null || row.set_count <= 0) {
-					return [];
-				}
-
-				return [{ dayKey: row.day_key, setCount: row.set_count }];
-			});
-		},
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+	const rows = yield* Effect.tryPromise({
+		try: () => prisma.$queryRawTyped(getYearInTraining(userId, start, end)),
+		catch: (cause) => new DatabaseError({ cause }),
 	});
-}
+
+	return rows.flatMap((row) => {
+		if (row.day_key === null || row.set_count === null || row.set_count <= 0) {
+			return [];
+		}
+
+		return [{ dayKey: row.day_key, setCount: row.set_count }];
+	});
+});
