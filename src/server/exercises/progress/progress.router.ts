@@ -1,6 +1,9 @@
 import "server-only";
 
+import { Effect } from "effect";
 import { z } from "zod";
+import { prisma } from "@/lib/db";
+import { Database, DatabaseError } from "@/lib/db/database";
 import { exerciseWeightProgressionRanges } from "@/features/progress/lib/exerciseWeightProgression";
 import { protectedProcedure } from "@/server/procedures";
 import {
@@ -34,23 +37,22 @@ export const exercisesProgressProcedures = {
 			),
 		)
 		.handler(async ({ input, context, errors }) => {
-			const result = await getRecentSets(context.userId, input.exerciseName);
+			return Effect.runPromise(
+				getRecentSets(context.userId, input.exerciseName).pipe(
+					Effect.provideService(Database, { prisma }),
+					Effect.match({
+						onSuccess: (value) => value,
+						onFailure: (error) => {
+							if (error instanceof DatabaseError) {
+								console.error("Failed to get recent sets", { cause: error.cause });
+								throw errors.DATABASE_ERROR();
+							}
 
-			return result.match(
-				(value) => value,
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "DATABASE_ERROR":
-							console.error("Failed to get recent sets", { cause: error.cause });
-							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
+							const exhaustiveError: never = error;
+							throw exhaustiveError;
+						},
+					}),
+				),
 			);
 		}),
 	weeklyWeightProgression: protectedProcedure
@@ -75,27 +77,24 @@ export const exercisesProgressProcedures = {
 			),
 		)
 		.handler(async ({ input, context, errors }) => {
-			const result = await getExerciseWeeklyWeightProgression(
-				context.userId,
-				input.exerciseName,
-				input.range,
-			);
+			return Effect.runPromise(
+				getExerciseWeeklyWeightProgression(context.userId, input.exerciseName, input.range).pipe(
+					Effect.provideService(Database, { prisma }),
+					Effect.match({
+						onSuccess: (value) => value,
+						onFailure: (error) => {
+							if (error instanceof DatabaseError) {
+								console.error("Failed to get weekly weight progression", {
+									cause: error.cause,
+								});
+								throw errors.DATABASE_ERROR();
+							}
 
-			return result.match(
-				(value) => value,
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "DATABASE_ERROR":
-							console.error("Failed to get weekly weight progression", { cause: error.cause });
-							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
+							const exhaustiveError: never = error;
+							throw exhaustiveError;
+						},
+					}),
+				),
 			);
 		}),
 	personalRecords: protectedProcedure
@@ -120,23 +119,24 @@ export const exercisesProgressProcedures = {
 				.strict(),
 		)
 		.handler(async ({ input, context, errors }) => {
-			const result = await getExercisePersonalRecords(context.userId, input.exerciseName);
+			return Effect.runPromise(
+				getExercisePersonalRecords(context.userId, input.exerciseName).pipe(
+					Effect.provideService(Database, { prisma }),
+					Effect.match({
+						onSuccess: (value) => value,
+						onFailure: (error) => {
+							if (error instanceof DatabaseError) {
+								console.error("Failed to get exercise personal records", {
+									cause: error.cause,
+								});
+								throw errors.DATABASE_ERROR();
+							}
 
-			return result.match(
-				(value) => value,
-				(error) => {
-					const reason = error.reason;
-
-					switch (reason) {
-						case "DATABASE_ERROR":
-							console.error("Failed to get exercise personal records", { cause: error.cause });
-							throw errors.DATABASE_ERROR();
-						default: {
-							const exhaustiveReason: never = reason;
-							throw exhaustiveReason;
-						}
-					}
-				},
+							const exhaustiveError: never = error;
+							throw exhaustiveError;
+						},
+					}),
+				),
 			);
 		}),
 };

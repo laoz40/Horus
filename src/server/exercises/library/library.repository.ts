@@ -7,9 +7,8 @@ import {
 	listExercisesByCategory,
 	searchExercises,
 } from "@/generated/prisma/sql";
-import { prisma, runDatabaseTransaction, type DatabaseTransaction } from "@/lib/db";
+import type { DatabaseTransaction } from "@/lib/db";
 import { Database, DatabaseError } from "@/lib/db/database";
-import { tryPromise } from "@/lib/tryPromise";
 import type { PrHistoryCutoff } from "@/server/exercises/pr-history/pr-history.functions";
 
 type Tx = DatabaseTransaction;
@@ -122,110 +121,125 @@ async function replaceExerciseMuscleGroups(
 	});
 }
 
-export function findUserExerciseIdByNormalizedName(userId: string, normalizedName: string) {
-	return tryPromise({
-		try: async (): Promise<string | null> => {
-			const row = await prisma.exercises.findFirst({
-				where: {
-					user_id: userId,
-					normalized_name: normalizedName,
-				},
-				select: { id: true },
-			});
+export const findUserExerciseIdByNormalizedName = (userId: string, normalizedName: string) =>
+	Effect.gen(function* () {
+		const { prisma } = yield* Database;
 
-			return row?.id ?? null;
-		},
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
-	});
-}
-
-export function getUserExerciseRow(userId: string, exerciseId: string) {
-	return tryPromise({
-		try: () => getUserExerciseLibraryRow(prisma, userId, exerciseId),
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
-	});
-}
-
-export function insertUserExercise(
-	userId: string,
-	name: string,
-	normalizedName: string,
-	muscleGroupsForExercise: Array<{ name: string; normalizedName: string }>,
-) {
-	return tryPromise({
-		try: () =>
-			runDatabaseTransaction(async (tx): Promise<UserExerciseLibraryRow> => {
-				const createdExercise = await tx.exercises.create({
-					data: {
+		return yield* Effect.tryPromise({
+			try: async (): Promise<string | null> => {
+				const row = await prisma.exercises.findFirst({
+					where: {
 						user_id: userId,
-						name,
 						normalized_name: normalizedName,
 					},
 					select: { id: true },
 				});
 
-				await replaceExerciseMuscleGroups(tx, createdExercise.id, muscleGroupsForExercise);
-
-				const row = await getUserExerciseLibraryRow(tx, userId, createdExercise.id);
-
-				if (!row) {
-					throw new Error("Created exercise row was not found");
-				}
-
-				return row;
-			}),
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+				return row?.id ?? null;
+			},
+			catch: (cause) => new DatabaseError({ cause }),
+		});
 	});
-}
 
-export function updateUserExerciseRow(
+export const getUserExerciseRow = (userId: string, exerciseId: string) =>
+	Effect.gen(function* () {
+		const { prisma } = yield* Database;
+
+		return yield* Effect.tryPromise({
+			try: () => getUserExerciseLibraryRow(prisma, userId, exerciseId),
+			catch: (cause) => new DatabaseError({ cause }),
+		});
+	});
+
+export const insertUserExercise = (
+	userId: string,
+	name: string,
+	normalizedName: string,
+	muscleGroupsForExercise: Array<{ name: string; normalizedName: string }>,
+) =>
+	Effect.gen(function* () {
+		const { prisma } = yield* Database;
+
+		return yield* Effect.tryPromise({
+			try: () =>
+				prisma.$transaction(async (tx): Promise<UserExerciseLibraryRow> => {
+					const createdExercise = await tx.exercises.create({
+						data: {
+							user_id: userId,
+							name,
+							normalized_name: normalizedName,
+						},
+						select: { id: true },
+					});
+
+					await replaceExerciseMuscleGroups(tx, createdExercise.id, muscleGroupsForExercise);
+
+					const row = await getUserExerciseLibraryRow(tx, userId, createdExercise.id);
+
+					if (!row) {
+						throw new Error("Created exercise row was not found");
+					}
+
+					return row;
+				}),
+			catch: (cause) => new DatabaseError({ cause }),
+		});
+	});
+
+export const updateUserExerciseRow = (
 	userId: string,
 	exerciseId: string,
 	name: string,
 	normalizedName: string,
 	muscleGroupsForExercise: Array<{ name: string; normalizedName: string }>,
-) {
-	return tryPromise({
-		try: () =>
-			runDatabaseTransaction(async (tx): Promise<UserExerciseLibraryRow> => {
-				await tx.exercises.updateMany({
+) =>
+	Effect.gen(function* () {
+		const { prisma } = yield* Database;
+
+		return yield* Effect.tryPromise({
+			try: () =>
+				prisma.$transaction(async (tx): Promise<UserExerciseLibraryRow> => {
+					await tx.exercises.updateMany({
+						where: {
+							id: exerciseId,
+							user_id: userId,
+						},
+						data: {
+							name,
+							normalized_name: normalizedName,
+						},
+					});
+
+					await replaceExerciseMuscleGroups(tx, exerciseId, muscleGroupsForExercise);
+
+					const row = await getUserExerciseLibraryRow(tx, userId, exerciseId);
+
+					if (!row) {
+						throw new Error("Updated exercise row was not found");
+					}
+
+					return row;
+				}),
+			catch: (cause) => new DatabaseError({ cause }),
+		});
+	});
+
+export const deleteUserExercise = (userId: string, exerciseId: string) =>
+	Effect.gen(function* () {
+		const { prisma } = yield* Database;
+
+		return yield* Effect.tryPromise({
+			try: async (): Promise<void> => {
+				await prisma.exercises.deleteMany({
 					where: {
 						id: exerciseId,
 						user_id: userId,
 					},
-					data: {
-						name,
-						normalized_name: normalizedName,
-					},
 				});
-
-				await replaceExerciseMuscleGroups(tx, exerciseId, muscleGroupsForExercise);
-
-				const row = await getUserExerciseLibraryRow(tx, userId, exerciseId);
-
-				if (!row) {
-					throw new Error("Updated exercise row was not found");
-				}
-
-				return row;
-			}),
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+			},
+			catch: (cause) => new DatabaseError({ cause }),
+		});
 	});
-}
-
-export function deleteUserExercise(userId: string, exerciseId: string) {
-	return tryPromise({
-		try: async (): Promise<void> => {
-			await prisma.exercises.deleteMany({
-				where: {
-					id: exerciseId,
-					user_id: userId,
-				},
-			});
-		},
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
-	});
-}
 
 async function unionSourceMuscleGroupsOntoTarget(
 	tx: Tx,
@@ -336,56 +350,55 @@ export async function mergeUserExerciseRows(
 	return cutoff;
 }
 
-export const listUserExerciseRows = Effect.fn("exercises.listUserExerciseRows")(function* (
-	userId: string,
-) {
-	const { prisma: database } = yield* Database;
+export const listUserExerciseRows = (userId: string) =>
+	Effect.gen(function* () {
+		const { prisma: database } = yield* Database;
 
-	const rows = yield* Effect.tryPromise({
-		try: () => database.$queryRawTyped(listUserExerciseCatalog(userId)),
-		catch: (cause) => new DatabaseError({ cause }),
+		const rows = yield* Effect.tryPromise({
+			try: () => database.$queryRawTyped(listUserExerciseCatalog(userId)),
+			catch: (cause) => new DatabaseError({ cause }),
+		});
+
+		return rows.map(
+			(row): UserExerciseLibraryRow => ({
+				id: row.id,
+				name: row.name,
+				muscleGroups: row.muscle_groups ?? [],
+				workoutCount: row.workout_count ?? 0,
+			}),
+		);
 	});
 
-	return rows.map(
-		(row): UserExerciseLibraryRow => ({
+export const listExerciseRowsByCategory = (userId: string, normalizedMuscleNames: string[]) =>
+	Effect.gen(function* () {
+		const { prisma } = yield* Database;
+
+		const rows = yield* Effect.tryPromise({
+			try: () => prisma.$queryRawTyped(listExercisesByCategory(userId, normalizedMuscleNames)),
+			catch: (cause) => new DatabaseError({ cause }),
+		});
+
+		return rows.map((row) => ({
 			id: row.id,
 			name: row.name,
+			normalizedName: row.normalized_name,
 			muscleGroups: row.muscle_groups ?? [],
-			workoutCount: row.workout_count ?? 0,
-		}),
-	);
-});
-
-export function listExerciseRowsByCategory(userId: string, normalizedMuscleNames: string[]) {
-	return tryPromise({
-		try: async () => {
-			const rows = await prisma.$queryRawTyped(
-				listExercisesByCategory(userId, normalizedMuscleNames),
-			);
-
-			return rows.map((row) => ({
-				id: row.id,
-				name: row.name,
-				normalizedName: row.normalized_name,
-				muscleGroups: row.muscle_groups ?? [],
-			}));
-		},
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+		}));
 	});
-}
 
-export function searchExerciseRows(userId: string, normalizedQuery: string) {
-	return tryPromise({
-		try: async () => {
-			const rows = await prisma.$queryRawTyped(searchExercises(userId, normalizedQuery));
+export const searchExerciseRows = (userId: string, normalizedQuery: string) =>
+	Effect.gen(function* () {
+		const { prisma: database } = yield* Database;
 
-			return rows.map((row) => ({
-				id: row.id,
-				name: row.name,
-				normalizedName: row.normalized_name,
-				muscleGroups: row.muscle_groups ?? [],
-			}));
-		},
-		catch: (cause) => ({ reason: "DATABASE_ERROR" as const, cause }),
+		const rows = yield* Effect.tryPromise({
+			try: () => database.$queryRawTyped(searchExercises(userId, normalizedQuery)),
+			catch: (cause) => new DatabaseError({ cause }),
+		});
+
+		return rows.map((row) => ({
+			id: row.id,
+			name: row.name,
+			normalizedName: row.normalized_name,
+			muscleGroups: row.muscle_groups ?? [],
+		}));
 	});
-}
