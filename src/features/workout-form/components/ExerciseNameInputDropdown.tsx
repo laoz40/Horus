@@ -34,7 +34,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 	const [isOpen, setIsOpen] = useState(false);
 
 	const { suggestions, isDbSearchLoading, isOnlineSearchLoading, fetchMoreSuggestions } =
-		useExerciseSuggestions(query);
+		useExerciseSuggestions(query, isOpen);
 
 	const filteredSuggestions = query.trim() ? suggestions : [];
 	const shouldShowSuggestions = isOpen && query.trim().length > 0;

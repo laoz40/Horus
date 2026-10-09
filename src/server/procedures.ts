@@ -6,9 +6,19 @@ import { auth } from "@/lib/auth-server";
 
 interface ORPCContext {
 	headers: Headers;
+	requestId: string;
 }
 
-const publicProcedure = os.$context<ORPCContext>();
+const publicProcedure = os.$context<ORPCContext>().use(({ context, path, next }) => {
+	return next({
+		context: {
+			logAnnotations: {
+				requestId: context.requestId,
+				operation: path.join("."),
+			},
+		},
+	});
+});
 
 const baseProcedure = publicProcedure.errors({
 	UNAUTHORIZED: {
@@ -16,7 +26,7 @@ const baseProcedure = publicProcedure.errors({
 	},
 });
 
-const requireAuthenticatedUser = baseProcedure.middleware(async ({ context, errors, next }) => {
+export const protectedProcedure = baseProcedure.use(async ({ context, errors, next }) => {
 	const session = await auth.api.getSession({
 		headers: context.headers,
 	});
@@ -31,7 +41,5 @@ const requireAuthenticatedUser = baseProcedure.middleware(async ({ context, erro
 		},
 	});
 });
-
-export const protectedProcedure = baseProcedure.use(requireAuthenticatedUser);
 
 export { publicProcedure };
