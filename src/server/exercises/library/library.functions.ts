@@ -3,7 +3,7 @@ import "server-only";
 import { Data, Effect } from "effect";
 
 import { normalizeName } from "@/lib/normalizeName";
-import type { UserExerciseLibraryRow } from "@/server/exercises/library/library.repository";
+import type { UserExerciseLibraryRow } from "@/server/exercises/library/exercises.db";
 
 export function normalizeMuscleGroupsForSave(muscleGroups: string[]) {
 	const muscleGroupsByNormalizedName = new Map<string, { name: string; normalizedName: string }>();

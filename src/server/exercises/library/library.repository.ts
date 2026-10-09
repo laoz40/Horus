@@ -1,43 +1,15 @@
 import "server-only";
 
 import { Effect } from "effect";
-import {
-	getUserExerciseCatalogRow as getUserExerciseLibraryRowQuery,
-	listUserExerciseCatalog,
-	listExercisesByCategory,
-	searchExercises,
-} from "@/generated/prisma/sql";
 import type { DatabaseTransaction } from "@/lib/db";
 import { Database, DatabaseError } from "@/lib/db/database";
+import {
+	getUserExerciseLibraryRow,
+	type UserExerciseLibraryRow,
+} from "@/server/exercises/library/exercises.db";
 import type { PrHistoryCutoff } from "@/server/exercises/pr-history/pr-history.functions";
 
 type Tx = DatabaseTransaction;
-
-export interface UserExerciseLibraryRow {
-	id: string;
-	name: string;
-	muscleGroups: string[];
-	workoutCount: number;
-}
-
-async function getUserExerciseLibraryRow(
-	tx: Tx,
-	userId: string,
-	exerciseId: string,
-): Promise<UserExerciseLibraryRow | null> {
-	const [row] = await tx.$queryRawTyped(getUserExerciseLibraryRowQuery(userId, exerciseId));
-
-	if (!row) {
-		return null;
-	}
-
-	return {
-		id: row.id,
-		name: row.name,
-		muscleGroups: row.muscle_groups ?? [],
-		workoutCount: row.workout_count ?? 0,
-	};
-}
 
 export async function getOrCreateMuscleGroupId(
 	tx: Tx,
@@ -120,36 +92,6 @@ async function replaceExerciseMuscleGroups(
 		skipDuplicates: true,
 	});
 }
-
-export const findUserExerciseIdByNormalizedName = (userId: string, normalizedName: string) =>
-	Effect.gen(function* () {
-		const { prisma } = yield* Database;
-
-		return yield* Effect.tryPromise({
-			try: async (): Promise<string | null> => {
-				const row = await prisma.exercises.findFirst({
-					where: {
-						user_id: userId,
-						normalized_name: normalizedName,
-					},
-					select: { id: true },
-				});
-
-				return row?.id ?? null;
-			},
-			catch: (cause) => new DatabaseError({ cause }),
-		});
-	});
-
-export const getUserExerciseRow = (userId: string, exerciseId: string) =>
-	Effect.gen(function* () {
-		const { prisma } = yield* Database;
-
-		return yield* Effect.tryPromise({
-			try: () => getUserExerciseLibraryRow(prisma, userId, exerciseId),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
-	});
 
 export const insertUserExercise = (
 	userId: string,
@@ -349,56 +291,3 @@ export async function mergeUserExerciseRows(
 
 	return cutoff;
 }
-
-export const listUserExerciseRows = (userId: string) =>
-	Effect.gen(function* () {
-		const { prisma: database } = yield* Database;
-
-		const rows = yield* Effect.tryPromise({
-			try: () => database.$queryRawTyped(listUserExerciseCatalog(userId)),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
-
-		return rows.map(
-			(row): UserExerciseLibraryRow => ({
-				id: row.id,
-				name: row.name,
-				muscleGroups: row.muscle_groups ?? [],
-				workoutCount: row.workout_count ?? 0,
-			}),
-		);
-	});
-
-export const listExerciseRowsByCategory = (userId: string, normalizedMuscleNames: string[]) =>
-	Effect.gen(function* () {
-		const { prisma } = yield* Database;
-
-		const rows = yield* Effect.tryPromise({
-			try: () => prisma.$queryRawTyped(listExercisesByCategory(userId, normalizedMuscleNames)),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
-
-		return rows.map((row) => ({
-			id: row.id,
-			name: row.name,
-			normalizedName: row.normalized_name,
-			muscleGroups: row.muscle_groups ?? [],
-		}));
-	});
-
-export const searchExerciseRows = (userId: string, normalizedQuery: string) =>
-	Effect.gen(function* () {
-		const { prisma: database } = yield* Database;
-
-		const rows = yield* Effect.tryPromise({
-			try: () => database.$queryRawTyped(searchExercises(userId, normalizedQuery)),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
-
-		return rows.map((row) => ({
-			id: row.id,
-			name: row.name,
-			normalizedName: row.normalized_name,
-			muscleGroups: row.muscle_groups ?? [],
-		}));
-	});

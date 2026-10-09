@@ -3,6 +3,7 @@ import "server-only";
 import { Effect } from "effect";
 import { Database, DatabaseError } from "@/lib/db/database";
 import { recalculateExercisePrHistory } from "@/server/exercises/pr-history/pr-history.service";
+import { ExerciseDb } from "@/server/exercises/library/exercises.db";
 
 import {
 	getNormalizedMuscleNamesForCategory,
@@ -11,13 +12,8 @@ import {
 import { normalizeName } from "@/lib/normalizeName";
 import {
 	deleteUserExercise,
-	findUserExerciseIdByNormalizedName,
-	getUserExerciseRow,
 	insertUserExercise,
-	listUserExerciseRows,
-	listExerciseRowsByCategory,
 	mergeUserExerciseRows,
-	searchExerciseRows,
 	updateUserExerciseRow,
 } from "@/server/exercises/library/library.repository";
 import {
@@ -41,7 +37,9 @@ interface MergeExerciseLibraryInput {
 
 export const listUserExercises = (userId: string) =>
 	Effect.gen(function* () {
-		return yield* listUserExerciseRows(userId);
+		const db = yield* ExerciseDb;
+
+		return yield* db.listUserExercises(userId);
 	});
 
 export function normalizeExerciseInput(input: ExerciseLibraryWriteInput) {
@@ -62,7 +60,9 @@ interface ExerciseNameQuery {
 
 export const getUserExercise = (userId: string, exerciseId: string) =>
 	Effect.gen(function* () {
-		return yield* requireUserExercise(yield* getUserExerciseRow(userId, exerciseId));
+		const db = yield* ExerciseDb;
+
+		return yield* requireUserExercise(yield* db.getUserExercise({ userId, exerciseId }));
 	});
 
 export const validateExerciseNameAvailability = ({
@@ -71,7 +71,12 @@ export const validateExerciseNameAvailability = ({
 	excludingExerciseId,
 }: ExerciseNameQuery) =>
 	Effect.gen(function* () {
-		const existingExerciseId = yield* findUserExerciseIdByNormalizedName(userId, normalizedName);
+		const db = yield* ExerciseDb;
+
+		const existingExerciseId = yield* db.findUserExerciseIdByNormalizedName({
+			userId,
+			normalizedName,
+		});
 
 		if (existingExerciseId === null || existingExerciseId === excludingExerciseId) {
 			return null;
@@ -157,7 +162,8 @@ export const mergeUserExercises = (userId: string, input: MergeExerciseLibraryIn
 		const { sourceId, targetId } = input;
 
 		if (sourceId === targetId) {
-			yield* getUserExerciseRow(userId, sourceId);
+			const db = yield* ExerciseDb;
+			yield* db.getUserExercise({ userId, exerciseId: sourceId });
 
 			return yield* Effect.fail(new ExerciseNotFoundError());
 		}
@@ -177,13 +183,15 @@ export const mergeUserExercises = (userId: string, input: MergeExerciseLibraryIn
 export const searchExercises = (userId: string, query: string) =>
 	Effect.gen(function* () {
 		const normalizedQuery = normalizeName(query);
+		const db = yield* ExerciseDb;
 
-		return yield* searchExerciseRows(userId, normalizedQuery);
+		return yield* db.searchExercises({ userId, normalizedQuery });
 	});
 
 export const listExercisesByCategory = (userId: string, category: MuscleGroupCategory) =>
 	Effect.gen(function* () {
 		const normalizedMuscleNames = getNormalizedMuscleNamesForCategory(category);
+		const db = yield* ExerciseDb;
 
-		return yield* listExerciseRowsByCategory(userId, normalizedMuscleNames);
+		return yield* db.listByCategory({ userId, normalizedMuscleNames });
 	});

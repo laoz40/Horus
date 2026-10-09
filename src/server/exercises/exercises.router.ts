@@ -9,6 +9,7 @@ import { fetchApiExercises } from "@/features/workout-form/lib/fetchApiExercises
 import { protectedProcedure, publicProcedure } from "@/server/procedures";
 import { exercisesProgressProcedures } from "@/server/exercises/progress/progress.router";
 import { progressDb } from "@/server/exercises/progress/progress.db";
+import { exerciseDb } from "@/server/exercises/library/exercises.db";
 import { checkSetPr } from "@/server/exercises/progress/progress.service";
 import {
 	createUserExercise,
@@ -54,7 +55,7 @@ export const exercisesRouter = {
 		.handler(({ context, errors }) =>
 			Effect.runPromise(
 				listUserExercises(context.userId).pipe(
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(exerciseDb),
 					Effect.match({
 						onSuccess: (exercises) => ({ exercises }),
 						onFailure: (error) => {
@@ -127,7 +128,7 @@ export const exercisesRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				searchExercises(context.userId, input.query).pipe(
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(exerciseDb),
 					Effect.match({
 						onSuccess: (value) => value,
 						onFailure: (error) => {
@@ -164,7 +165,7 @@ export const exercisesRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				listExercisesByCategory(context.userId, input.category).pipe(
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(exerciseDb),
 					Effect.match({
 						onSuccess: (value) => value,
 						onFailure: (error) => {
@@ -203,6 +204,7 @@ export const exercisesRouter = {
 
 					return { exercise };
 				}).pipe(
+					Effect.provide(exerciseDb),
 					Effect.provideService(Database, { prisma }),
 					Effect.catchTags({
 						DatabaseError: (error) => {
@@ -253,6 +255,7 @@ export const exercisesRouter = {
 
 					return { exercise };
 				}).pipe(
+					Effect.provide(exerciseDb),
 					Effect.provideService(Database, { prisma }),
 					Effect.catchTags({
 						DatabaseError: (error) => {
@@ -286,6 +289,7 @@ export const exercisesRouter = {
 
 					return yield* deleteUserExerciseById(context.userId, exercise.id);
 				}).pipe(
+					Effect.provide(exerciseDb),
 					Effect.provideService(Database, { prisma }),
 					Effect.catchTags({
 						DatabaseError: (error) => {
@@ -323,6 +327,7 @@ export const exercisesRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				mergeUserExercises(context.userId, input).pipe(
+					Effect.provide(exerciseDb),
 					Effect.provideService(Database, { prisma }),
 					Effect.catchTags({
 						DatabaseError: (error) => {
