@@ -14,7 +14,7 @@ const handler = new RPCHandler(appRouter, {
 async function handleRequest(request: Request): Promise<Response> {
 	const { response } = await handler.handle(request, {
 		prefix: "/api/rpc",
-		context: { headers: request.headers },
+		context: { headers: request.headers, requestId: crypto.randomUUID() },
 	});
 
 	return response ?? new Response("Not found", { status: 404 });

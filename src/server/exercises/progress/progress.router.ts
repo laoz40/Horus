@@ -46,6 +46,7 @@ export const exercisesProgressProcedures = {
 							);
 						},
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			);
 		}),
@@ -81,6 +82,7 @@ export const exercisesProgressProcedures = {
 							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
 						},
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			);
 		}),
@@ -116,6 +118,7 @@ export const exercisesProgressProcedures = {
 							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
 						},
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			);
 		}),

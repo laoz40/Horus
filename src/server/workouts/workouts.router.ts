@@ -144,6 +144,7 @@ export const workoutsRouter = {
 						);
 					},
 				}),
+				Effect.annotateLogs(context.logAnnotations),
 			),
 		),
 	),
@@ -170,6 +171,7 @@ export const workoutsRouter = {
 							);
 						},
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),
@@ -200,6 +202,7 @@ export const workoutsRouter = {
 							);
 						},
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),
@@ -221,6 +224,7 @@ export const workoutsRouter = {
 						);
 					},
 				}),
+				Effect.annotateLogs(context.logAnnotations),
 			),
 		),
 	),
@@ -247,6 +251,7 @@ export const workoutsRouter = {
 							);
 						},
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),
@@ -269,6 +274,7 @@ export const workoutsRouter = {
 							);
 						},
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Cause, Context, Effect, Exit, Layer } from "effect";
+import { Cause, Context, Effect, Exit, Layer, References } from "effect";
 import { prisma } from "@/lib/db";
 import { DbConnection } from "@/lib/db/connection";
 import { DatabaseError } from "@/lib/db/database";
@@ -11,7 +11,7 @@ import { WorkoutDb, workoutDbLayer } from "@/server/workouts/workouts.db";
 function runTransaction<A, E>(
 	workflow: Effect.Effect<A, E, WorkoutDb | PrHistoryDb | ExerciseDb>,
 ): Effect.Effect<A, E | DatabaseError> {
-	return Effect.suspend(() => {
+	return Effect.flatMap(References.CurrentLogAnnotations, (logAnnotations) => {
 		let workflowFailure: Cause.Cause<E> | undefined;
 
 		return Effect.tryPromise({
@@ -21,6 +21,7 @@ function runTransaction<A, E>(
 						workflow.pipe(
 							Effect.provide(Layer.mergeAll(workoutDbLayer, prHistoryDb, exerciseDbLayer)),
 							Effect.provideService(DbConnection, connection),
+							Effect.annotateLogs(logAnnotations),
 						),
 						{ signal },
 					);

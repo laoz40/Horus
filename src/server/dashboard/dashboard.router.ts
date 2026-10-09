@@ -47,6 +47,7 @@ export const dashboardRouter = {
 							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
 						},
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),
@@ -70,6 +71,7 @@ export const dashboardRouter = {
 							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
 						},
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),

@@ -63,6 +63,7 @@ export const exercisesRouter = {
 							);
 						},
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),
@@ -108,6 +109,7 @@ export const exercisesRouter = {
 							);
 						},
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),
@@ -130,6 +132,7 @@ export const exercisesRouter = {
 							);
 						},
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),
@@ -137,13 +140,14 @@ export const exercisesRouter = {
 		.errors(onlineExerciseSearchErrors)
 		.input(z.object({ query: z.string().trim().min(1) }).strict())
 		.output(onlineExerciseSuggestionsSchema)
-		.handler(({ input, errors }) =>
+		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				fetchApiExercises(input.query).pipe(
 					Effect.catchTags({
 						RATE_LIMITED: () => Effect.fail(errors.RATE_LIMITED()),
 						REQUEST_FAILED: () => Effect.fail(errors.REQUEST_FAILED()),
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),
@@ -166,6 +170,7 @@ export const exercisesRouter = {
 							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
 						},
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),
@@ -206,6 +211,7 @@ export const exercisesRouter = {
 							),
 						ExerciseNotFoundError: () => Effect.fail(errors.EXERCISE_NOT_FOUND()),
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			);
 		}),
@@ -257,6 +263,7 @@ export const exercisesRouter = {
 							),
 						ExerciseNotFoundError: () => Effect.fail(errors.EXERCISE_NOT_FOUND()),
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			);
 		}),
@@ -285,6 +292,7 @@ export const exercisesRouter = {
 						ExerciseNotFoundError: () => Effect.fail(errors.EXERCISE_NOT_FOUND()),
 						ExerciseInUseError: () => Effect.fail(errors.EXERCISE_IN_USE()),
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),
@@ -322,6 +330,7 @@ export const exercisesRouter = {
 						},
 						ExerciseNotFoundError: () => Effect.fail(errors.EXERCISE_NOT_FOUND()),
 					}),
+					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),
