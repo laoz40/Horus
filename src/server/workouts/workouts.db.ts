@@ -4,12 +4,16 @@ import type { Decimal } from "@prisma/client/runtime/client";
 import { Context, Effect, Layer } from "effect";
 import {
 	deleteAllWorkouts,
+	deleteWorkoutById,
+	getWorkoutForUpdate,
+	getWorkoutExerciseIds,
 	getWorkoutDetails,
 	getWorkoutExerciseRows,
 	getWorkoutSetRows,
 	listWorkoutHistory,
 } from "@/generated/prisma/sql";
 import { prisma } from "@/lib/db";
+import { DbConnection } from "@/lib/db/connection";
 import { DatabaseError } from "@/lib/db/database";
 
 export type ListWorkoutsQuery = {
@@ -60,6 +64,15 @@ function decimalToNumber(value: Decimal): number {
 export class WorkoutDb extends Context.Service<
 	WorkoutDb,
 	{
+		readonly getForUpdate: (query: {
+			workoutId: string;
+			userId: string;
+		}) => Effect.Effect<{ id: string; name: string; createdAt: Date } | null, DatabaseError>;
+		readonly getExerciseIds: (workoutId: string) => Effect.Effect<string[], DatabaseError>;
+		readonly delete: (query: {
+			workoutId: string;
+			userId: string;
+		}) => Effect.Effect<void, DatabaseError>;
 		readonly getWorkoutForEdit: (query: {
 			workoutId: string;
 			userId: string;
@@ -73,93 +86,131 @@ export class WorkoutDb extends Context.Service<
 	}
 >()("horus/WorkoutDb") {}
 
-export const workoutDb = Layer.succeed(WorkoutDb, {
-	getWorkoutForEdit: ({ workoutId, userId }) =>
-		Effect.gen(function* () {
-			const [workoutRows, exerciseRows, setRows] = yield* Effect.all(
-				[
-					Effect.tryPromise({
-						try: () => prisma.$queryRawTyped(getWorkoutDetails(workoutId, userId)),
+export const workoutDbLayer = Layer.effect(
+	WorkoutDb,
+	Effect.gen(function* () {
+		const connection = yield* DbConnection;
+
+		return {
+			getForUpdate: ({ workoutId, userId }) =>
+				Effect.gen(function* () {
+					const [row] = yield* Effect.tryPromise({
+						try: () => connection.$queryRawTyped(getWorkoutForUpdate(workoutId, userId)),
 						catch: (cause) => new DatabaseError({ cause }),
-					}),
-					Effect.tryPromise({
-						try: () => prisma.$queryRawTyped(getWorkoutExerciseRows(workoutId)),
-						catch: (cause) => new DatabaseError({ cause }),
-					}),
-					Effect.tryPromise({
-						try: () => prisma.$queryRawTyped(getWorkoutSetRows(workoutId)),
-						catch: (cause) => new DatabaseError({ cause }),
-					}),
-				],
-				{ concurrency: "unbounded" },
-			);
+					});
 
-			const workout = workoutRows[0];
-
-			if (!workout) {
-				return null;
-			}
-
-			return {
-				id: workout.id,
-				createdAt: workout.created_at,
-				name: workout.name,
-				durationSeconds: workout.duration_seconds,
-				exercises: exerciseRows.map((exercise) => ({
-					id: exercise.id,
-					exerciseId: exercise.exercise_id,
-					name: exercise.name,
-					muscleGroups: exercise.muscle_groups ?? [],
-					difficulty: exercise.difficulty ? decimalToNumber(exercise.difficulty) : null,
-					notes: exercise.notes,
-					sets: setRows
-						.filter((set) => set.workout_exercise_id === exercise.id)
-						.map((set) => ({
-							id: set.id,
-							weight: decimalToNumber(set.weight),
-							reps: decimalToNumber(set.reps),
-							completed: set.completed,
-							isWeightPr: set.is_weight_pr,
-							isVolumePr: set.is_volume_pr,
-							isBodyweightRepsPr: set.is_bodyweight_reps_pr,
-						})),
-				})),
-			};
-		}),
-	listWorkouts: (query) =>
-		Effect.gen(function* () {
-			const rows = yield* Effect.tryPromise({
-				try: () =>
-					prisma.$queryRawTyped(listWorkoutHistory(query.userId, query.limit + 1, query.offset)),
-				catch: (cause) => new DatabaseError({ cause }),
-			});
-
-			return rows.map(
-				(row): WorkoutHistoryRow => ({
-					id: row.id,
-					createdAt: row.created_at,
-					name: row.name,
-					durationSeconds: row.duration_seconds,
-					totalPrSets: row.total_pr_sets,
-					exerciseCount: row.exercise_count ?? 0,
-					totalVolume: row.total_volume ?? 0,
-					muscleGroups: row.muscle_groups ?? [],
+					return row ? { id: row.id, name: row.name, createdAt: row.created_at } : null;
 				}),
-			);
-		}),
-	deleteAllWorkouts: (userId) =>
-		Effect.gen(function* () {
-			const [result] = yield* Effect.tryPromise({
-				try: () => prisma.$queryRawTyped(deleteAllWorkouts(userId)),
-				catch: (cause) => new DatabaseError({ cause }),
-			});
+			getExerciseIds: (workoutId) =>
+				Effect.gen(function* () {
+					const rows = yield* Effect.tryPromise({
+						try: () => connection.$queryRawTyped(getWorkoutExerciseIds(workoutId)),
+						catch: (cause) => new DatabaseError({ cause }),
+					});
 
-			if (!result || result.deleted_count === null) {
-				return yield* Effect.fail(
-					new DatabaseError({ cause: new Error("Delete workout count query returned no count") }),
-				);
-			}
+					return rows.map((row) => row.exercise_id);
+				}),
+			delete: ({ workoutId, userId }) =>
+				Effect.gen(function* () {
+					yield* Effect.tryPromise({
+						try: () => connection.$queryRawTyped(deleteWorkoutById(workoutId, userId)),
+						catch: (cause) => new DatabaseError({ cause }),
+					});
+				}),
+			getWorkoutForEdit: ({ workoutId, userId }) =>
+				Effect.gen(function* () {
+					const [workoutRows, exerciseRows, setRows] = yield* Effect.all(
+						[
+							Effect.tryPromise({
+								try: () => connection.$queryRawTyped(getWorkoutDetails(workoutId, userId)),
+								catch: (cause) => new DatabaseError({ cause }),
+							}),
+							Effect.tryPromise({
+								try: () => connection.$queryRawTyped(getWorkoutExerciseRows(workoutId)),
+								catch: (cause) => new DatabaseError({ cause }),
+							}),
+							Effect.tryPromise({
+								try: () => connection.$queryRawTyped(getWorkoutSetRows(workoutId)),
+								catch: (cause) => new DatabaseError({ cause }),
+							}),
+						],
+						{ concurrency: "unbounded" },
+					);
 
-			return { deletedCount: result.deleted_count };
-		}),
-});
+					const workout = workoutRows[0];
+
+					if (!workout) {
+						return null;
+					}
+
+					return {
+						id: workout.id,
+						createdAt: workout.created_at,
+						name: workout.name,
+						durationSeconds: workout.duration_seconds,
+						exercises: exerciseRows.map((exercise) => ({
+							id: exercise.id,
+							exerciseId: exercise.exercise_id,
+							name: exercise.name,
+							muscleGroups: exercise.muscle_groups ?? [],
+							difficulty: exercise.difficulty ? decimalToNumber(exercise.difficulty) : null,
+							notes: exercise.notes,
+							sets: setRows
+								.filter((set) => set.workout_exercise_id === exercise.id)
+								.map((set) => ({
+									id: set.id,
+									weight: decimalToNumber(set.weight),
+									reps: decimalToNumber(set.reps),
+									completed: set.completed,
+									isWeightPr: set.is_weight_pr,
+									isVolumePr: set.is_volume_pr,
+									isBodyweightRepsPr: set.is_bodyweight_reps_pr,
+								})),
+						})),
+					};
+				}),
+			listWorkouts: (query) =>
+				Effect.gen(function* () {
+					const rows = yield* Effect.tryPromise({
+						try: () =>
+							connection.$queryRawTyped(
+								listWorkoutHistory(query.userId, query.limit + 1, query.offset),
+							),
+						catch: (cause) => new DatabaseError({ cause }),
+					});
+
+					return rows.map(
+						(row): WorkoutHistoryRow => ({
+							id: row.id,
+							createdAt: row.created_at,
+							name: row.name,
+							durationSeconds: row.duration_seconds,
+							totalPrSets: row.total_pr_sets,
+							exerciseCount: row.exercise_count ?? 0,
+							totalVolume: row.total_volume ?? 0,
+							muscleGroups: row.muscle_groups ?? [],
+						}),
+					);
+				}),
+			deleteAllWorkouts: (userId) =>
+				Effect.gen(function* () {
+					const [result] = yield* Effect.tryPromise({
+						try: () => connection.$queryRawTyped(deleteAllWorkouts(userId)),
+						catch: (cause) => new DatabaseError({ cause }),
+					});
+
+					if (!result || result.deleted_count === null) {
+						return yield* Effect.fail(
+							new DatabaseError({
+								cause: new Error("Delete workout count query returned no count"),
+							}),
+						);
+					}
+
+					return { deletedCount: result.deleted_count };
+				}),
+		} satisfies WorkoutDb["Service"];
+	}),
+);
+
+export const workoutDb = workoutDbLayer.pipe(Layer.provide(Layer.succeed(DbConnection, prisma)));

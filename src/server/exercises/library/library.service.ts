@@ -1,6 +1,8 @@
 import "server-only";
 
 import { Effect } from "effect";
+import { DbConnection } from "@/lib/db/connection";
+import { prHistoryDb } from "@/server/exercises/pr-history/pr-history.db";
 import { Database, DatabaseError } from "@/lib/db/database";
 import { recalculateExercisePrHistory } from "@/server/exercises/pr-history/pr-history.service";
 import { ExerciseDb } from "@/server/exercises/library/exercises.db";
@@ -150,7 +152,13 @@ const mergeExercisesAndRecalculatePrs = (
 					);
 
 					if (cutoff) {
-						await recalculateExercisePrHistory(tx, userId, [sourceId, targetId], cutoff);
+						await Effect.runPromise(
+							recalculateExercisePrHistory({
+								userId,
+								exerciseIds: [sourceId, targetId],
+								cutoff,
+							}).pipe(Effect.provide(prHistoryDb), Effect.provideService(DbConnection, tx)),
+						);
 					}
 				}),
 			catch: (cause) => new DatabaseError({ cause }),

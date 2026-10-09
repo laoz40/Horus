@@ -131,12 +131,3 @@ export async function updateWorkoutPrTotal(
 		data: { total_pr_sets: totalPrSets },
 	});
 }
-
-export async function deleteWorkoutById(tx: Tx, workoutId: string, userId: string): Promise<void> {
-	await tx.workouts.deleteMany({
-		where: {
-			id: workoutId,
-			user_id: userId,
-		},
-	});
-}

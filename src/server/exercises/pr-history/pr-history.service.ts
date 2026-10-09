@@ -1,54 +1,46 @@
 import "server-only";
 
-import type { DatabaseTransaction } from "@/lib/db";
-import {
-	getAffectedPrHistorySets,
-	getExercisePrRowsByIds,
-	updateSetPrStatuses,
-	updateWorkoutPrTotals,
-} from "@/server/exercises/pr-history/pr-history.repository";
+import { Effect } from "effect";
+import { PrHistoryDb } from "@/server/exercises/pr-history/pr-history.db";
 import {
 	calculateAffectedPrHistory,
-	type ExercisePrRow,
 	type PrHistoryCutoff,
 	type PrHistorySet,
-	type PrSetUpdate,
 } from "@/server/exercises/pr-history/pr-history.functions";
 
-type Tx = DatabaseTransaction;
+export const calculateSetPrsFromHistory = (query: { userId: string; sets: PrHistorySet[] }) =>
+	Effect.gen(function* () {
+		const db = yield* PrHistoryDb;
+		const exerciseIds = [...new Set(query.sets.map((set) => set.exerciseId))];
 
-export async function calculateSetPrsFromHistory(
-	tx: Tx,
-	userId: string,
-	sets: PrHistorySet[],
-): Promise<PrSetUpdate[]> {
-	const exerciseIds = [...new Set(sets.map((set) => set.exerciseId))];
+		const previousPrRows =
+			exerciseIds.length === 0
+				? []
+				: yield* db.getPreviousPrs({ userId: query.userId, exerciseIds });
 
-	const previousPrRows: ExercisePrRow[] =
-		exerciseIds.length === 0 ? [] : await getExercisePrRowsByIds(tx, userId, exerciseIds);
+		return calculateAffectedPrHistory(query.sets, previousPrRows).prStatuses;
+	});
 
-	return calculateAffectedPrHistory(sets, previousPrRows).prStatuses;
-}
+export const recalculateExercisePrHistory = (query: {
+	userId: string;
+	exerciseIds: string[];
+	cutoff: PrHistoryCutoff;
+}) =>
+	Effect.gen(function* () {
+		if (query.exerciseIds.length === 0) {
+			return;
+		}
 
-export async function recalculateExercisePrHistory(
-	tx: Tx,
-	userId: string,
-	exerciseIds: string[],
-	cutoff: PrHistoryCutoff,
-): Promise<void> {
-	if (exerciseIds.length === 0) {
-		return;
-	}
+		const db = yield* PrHistoryDb;
+		const previousPrRows = yield* db.getPreviousPrs(query);
+		const historySets = yield* db.getAffectedSets(query);
 
-	const previousPrRows = await getExercisePrRowsByIds(tx, userId, exerciseIds, cutoff);
-	const historySets = await getAffectedPrHistorySets(tx, userId, exerciseIds, cutoff);
+		const { prStatuses, affectedWorkoutIds } = calculateAffectedPrHistory(
+			historySets,
+			previousPrRows,
+		);
 
-	const { prStatuses, affectedWorkoutIds } = calculateAffectedPrHistory(
-		historySets,
-		previousPrRows,
-	);
-
-	await updateSetPrStatuses(tx, prStatuses);
-	// Count all sets in touched workouts because unchanged exercises may also contribute PRs.
-	await updateWorkoutPrTotals(tx, userId, affectedWorkoutIds);
-}
+		yield* db.updateSetStatuses(prStatuses);
+		// Count all sets in touched workouts because unchanged exercises may also contribute PRs.
+		yield* db.updateWorkoutTotals({ userId: query.userId, workoutIds: affectedWorkoutIds });
+	});
