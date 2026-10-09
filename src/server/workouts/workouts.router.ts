@@ -3,8 +3,6 @@ import "server-only";
 import { Effect } from "effect";
 import { z } from "zod";
 import { WorkoutForSaveSchema } from "@/features/workout-form/lib/validateWorkout";
-import { prisma } from "@/lib/db";
-import { Database } from "@/lib/db/database";
 import { protectedProcedure } from "@/server/procedures";
 import { transactions } from "@/server/transactions";
 import { workoutDb } from "@/server/workouts/workouts.db";
@@ -240,7 +238,7 @@ export const workoutsRouter = {
 
 				return { workoutId: input.workoutId, workout: input.workout };
 			}).pipe(
-				Effect.provideService(Database, { prisma }),
+				Effect.provide(transactions),
 				Effect.match({
 					onSuccess: (value) => value,
 					onFailure: (error) => {

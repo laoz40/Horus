@@ -7,6 +7,8 @@ import type {
 } from "@/server/exercises/library/workout-exercises.repository";
 import type { PrSetUpdate } from "@/server/exercises/pr-history/pr-history.functions";
 import {
+	updateWorkoutFields,
+	deleteWorkoutChildren,
 	insertWorkoutExerciseRows,
 	insertWorkoutSetRows,
 } from "@/server/workouts/workouts.repository";
@@ -83,6 +85,10 @@ function decimalToNumber(value: Decimal): number {
 export class WorkoutDb extends Context.Service<
 	WorkoutDb,
 	{
+		readonly replaceContent: (input: {
+			update: WorkoutUpdateInput;
+			exercises: WorkoutExerciseWithDatabaseId[];
+		}) => Effect.Effect<void, DatabaseError>;
 		readonly create: (input: WorkoutWriteInput) => Effect.Effect<string, DatabaseError>;
 		readonly saveContent: (input: {
 			workoutId: string;
@@ -118,6 +124,16 @@ export const workoutDbLayer = Layer.effect(
 		const connection = yield* DbConnection;
 
 		return {
+			replaceContent: ({ update, exercises }) =>
+				Effect.tryPromise({
+					try: async () => {
+						await updateWorkoutFields(connection, update);
+						await deleteWorkoutChildren(connection, update.workoutId);
+						await insertWorkoutExerciseRows(connection, update.workoutId, exercises);
+						await insertWorkoutSetRows(connection, exercises);
+					},
+					catch: (cause) => new DatabaseError({ cause }),
+				}),
 			create: (input) =>
 				Effect.tryPromise({
 					try: async () => {

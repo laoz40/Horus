@@ -1,36 +1,12 @@
 import "server-only";
 
 import type { WorkoutUpdateInput } from "@/server/workouts/workouts.db";
-import {
-	getWorkoutExerciseIds as getWorkoutExerciseIdsQuery,
-	getWorkoutForUpdate,
-	deleteWorkoutExercises,
-} from "@/generated/prisma/sql";
+import { deleteWorkoutExercises } from "@/generated/prisma/sql";
 import type { DatabaseTransaction } from "@/lib/db";
 import type { PrSetUpdate } from "@/server/exercises/pr-history/pr-history.functions";
 import type { WorkoutExerciseWithDatabaseId } from "@/server/exercises/library/workout-exercises.repository";
 
 type Tx = DatabaseTransaction;
-
-export async function getWorkout(tx: Tx, workoutId: string, userId: string) {
-	const [workout] = await tx.$queryRawTyped(getWorkoutForUpdate(workoutId, userId));
-
-	if (!workout) {
-		return undefined;
-	}
-
-	return {
-		id: workout.id,
-		name: workout.name,
-		createdAt: workout.created_at,
-	};
-}
-
-export async function getWorkoutExerciseIds(tx: Tx, workoutId: string): Promise<string[]> {
-	const rows = await tx.$queryRawTyped(getWorkoutExerciseIdsQuery(workoutId));
-
-	return rows.map((row) => row.exercise_id);
-}
 
 export async function updateWorkoutFields(tx: Tx, updateInput: WorkoutUpdateInput): Promise<void> {
 	await tx.workouts.updateMany({
