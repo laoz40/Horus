@@ -1,3 +1,4 @@
+import { transactions } from "@/server/transactions";
 import "server-only";
 
 import { Effect } from "effect";
@@ -327,7 +328,7 @@ export const exercisesRouter = {
 			Effect.runPromise(
 				mergeUserExercises(context.userId, input).pipe(
 					Effect.provide(exerciseDb),
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(transactions),
 					Effect.catchTags({
 						DatabaseError: (error) => {
 							console.error("Failed to merge exercises", { cause: error.cause });

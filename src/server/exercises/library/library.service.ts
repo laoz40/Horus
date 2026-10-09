@@ -1,9 +1,7 @@
 import "server-only";
 
 import { Effect } from "effect";
-import { DbConnection } from "@/lib/db/connection";
-import { prHistoryDb } from "@/server/exercises/pr-history/pr-history.db";
-import { Database, DatabaseError } from "@/lib/db/database";
+import { Transactions } from "@/server/transactions";
 import { recalculateExercisePrHistory } from "@/server/exercises/pr-history/pr-history.service";
 import { ExerciseDb } from "@/server/exercises/library/exercises.db";
 
@@ -14,7 +12,6 @@ import {
 import { normalizeName } from "@/lib/normalizeName";
 import {
 	insertUserExercise,
-	mergeUserExerciseRows,
 	updateUserExerciseRow,
 } from "@/server/exercises/library/library.repository";
 import {
@@ -138,31 +135,21 @@ const mergeExercisesAndRecalculatePrs = (
 	sourceMuscleGroups: ReturnType<typeof normalizeMuscleGroupsForSave> | null,
 ) =>
 	Effect.gen(function* () {
-		const { prisma } = yield* Database;
+		const transaction = yield* Transactions;
+		yield* transaction.run(
+			Effect.gen(function* () {
+				const db = yield* ExerciseDb;
+				const cutoff = yield* db.merge({ userId, sourceId, targetId, sourceMuscleGroups });
 
-		yield* Effect.tryPromise({
-			try: () =>
-				prisma.$transaction(async (tx) => {
-					const cutoff = await mergeUserExerciseRows(
-						tx,
+				if (cutoff) {
+					yield* recalculateExercisePrHistory({
 						userId,
-						sourceId,
-						targetId,
-						sourceMuscleGroups,
-					);
-
-					if (cutoff) {
-						await Effect.runPromise(
-							recalculateExercisePrHistory({
-								userId,
-								exerciseIds: [sourceId, targetId],
-								cutoff,
-							}).pipe(Effect.provide(prHistoryDb), Effect.provideService(DbConnection, tx)),
-						);
-					}
-				}),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
+						exerciseIds: [sourceId, targetId],
+						cutoff,
+					});
+				}
+			}),
+		);
 	});
 
 export const mergeUserExercises = (userId: string, input: MergeExerciseLibraryInput) =>

@@ -17,7 +17,10 @@ import {
 } from "@/server/exercises/library/workout-exercises.repository";
 import { DatabaseError } from "@/lib/db/database";
 
-import { getUserExerciseLibraryRow } from "@/server/exercises/library/library.repository";
+import {
+	getUserExerciseLibraryRow,
+	mergeUserExerciseRows,
+} from "@/server/exercises/library/library.repository";
 
 export interface UserExerciseLibraryRow {
 	id: string;
@@ -26,9 +29,17 @@ export interface UserExerciseLibraryRow {
 	workoutCount: number;
 }
 
+import type { PrHistoryCutoff } from "@/server/exercises/pr-history/pr-history.functions";
+
 export class ExerciseDb extends Context.Service<
 	ExerciseDb,
 	{
+		readonly merge: (input: {
+			userId: string;
+			sourceId: string;
+			targetId: string;
+			sourceMuscleGroups: Array<{ name: string; normalizedName: string }> | null;
+		}) => Effect.Effect<PrHistoryCutoff | null, DatabaseError>;
 		readonly resolveWorkoutExercises: (input: {
 			userId: string;
 			exercises: PreparedWorkoutWriteExercise[];
@@ -71,6 +82,12 @@ export const exerciseDbLayer = Layer.effect(
 		const connection = yield* DbConnection;
 
 		return {
+			merge: ({ userId, sourceId, targetId, sourceMuscleGroups }) =>
+				Effect.tryPromise({
+					try: () =>
+						mergeUserExerciseRows(connection, userId, sourceId, targetId, sourceMuscleGroups),
+					catch: (cause) => new DatabaseError({ cause }),
+				}),
 			resolveWorkoutExercises: ({ userId, exercises }) =>
 				Effect.tryPromise({
 					try: () => findOrCreateWorkoutExercises(connection, userId, exercises),
