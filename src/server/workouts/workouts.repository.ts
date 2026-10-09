@@ -1,18 +1,11 @@
 import "server-only";
 
-import type { Decimal } from "@prisma/client/runtime/client";
-import { Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import {
-	getWorkoutDetails,
 	getWorkoutExerciseIds as getWorkoutExerciseIdsQuery,
-	getWorkoutExerciseRows,
 	getWorkoutForUpdate,
-	getWorkoutSetRows,
-	listWorkoutHistory,
 } from "@/generated/prisma/sql";
 import type { DatabaseTransaction } from "@/lib/db";
-import { Database, DatabaseError } from "@/lib/db/database";
 import type { PrSetUpdate } from "@/server/exercises/pr-history/pr-history.functions";
 import type {
 	PreparedWorkoutWriteExercise,
@@ -31,51 +24,6 @@ export type WorkoutWriteInput = {
 export type WorkoutUpdateInput = WorkoutWriteInput & {
 	workoutId: string;
 };
-
-export type ListWorkoutsQuery = {
-	userId: string;
-	limit: number;
-	offset: number;
-};
-
-export type WorkoutForEdit = {
-	id: string;
-	createdAt: Date;
-	name: string;
-	durationSeconds: number | null;
-	exercises: Array<{
-		id: string;
-		exerciseId: string;
-		name: string;
-		muscleGroups: string[];
-		difficulty: number | null;
-		notes: string;
-		sets: Array<{
-			id: string;
-			weight: number;
-			reps: number;
-			completed: boolean;
-			isWeightPr: boolean;
-			isVolumePr: boolean;
-			isBodyweightRepsPr: boolean;
-		}>;
-	}>;
-};
-
-export type WorkoutHistoryRow = {
-	id: string;
-	createdAt: Date;
-	name: string;
-	durationSeconds: number | null;
-	totalPrSets: number;
-	exerciseCount: number;
-	totalVolume: number;
-	muscleGroups: string[];
-};
-
-function decimalToNumber(value: Decimal): number {
-	return value.toNumber();
-}
 
 export async function getWorkout(tx: Tx, workoutId: string, userId: string) {
 	const [workout] = await tx.$queryRawTyped(getWorkoutForUpdate(workoutId, userId));
@@ -192,86 +140,3 @@ export async function deleteWorkoutById(tx: Tx, workoutId: string, userId: strin
 		},
 	});
 }
-
-export const deleteAllWorkoutRows = (userId: string) =>
-	Effect.gen(function* () {
-		const { prisma } = yield* Database;
-
-		const deletedWorkouts = yield* Effect.tryPromise({
-			try: () => prisma.workouts.deleteMany({ where: { user_id: userId } }),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
-
-		return { deletedCount: deletedWorkouts.count };
-	});
-
-export const getWorkoutForEdit = (workoutId: string, userId: string) =>
-	Effect.gen(function* () {
-		const { prisma } = yield* Database;
-
-		const [workoutRows, exerciseRows, setRows] = yield* Effect.tryPromise({
-			try: () =>
-				Promise.all([
-					prisma.$queryRawTyped(getWorkoutDetails(workoutId, userId)),
-					prisma.$queryRawTyped(getWorkoutExerciseRows(workoutId)),
-					prisma.$queryRawTyped(getWorkoutSetRows(workoutId)),
-				]),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
-
-		const workout = workoutRows[0];
-
-		if (!workout) {
-			return null;
-		}
-
-		return {
-			id: workout.id,
-			createdAt: workout.created_at,
-			name: workout.name,
-			durationSeconds: workout.duration_seconds,
-			exercises: exerciseRows.map((exercise) => ({
-				id: exercise.id,
-				exerciseId: exercise.exercise_id,
-				name: exercise.name,
-				muscleGroups: exercise.muscle_groups ?? [],
-				difficulty: exercise.difficulty ? decimalToNumber(exercise.difficulty) : null,
-				notes: exercise.notes,
-				sets: setRows
-					.filter((set) => set.workout_exercise_id === exercise.id)
-					.map((set) => ({
-						id: set.id,
-						weight: decimalToNumber(set.weight),
-						reps: decimalToNumber(set.reps),
-						completed: set.completed,
-						isWeightPr: set.is_weight_pr,
-						isVolumePr: set.is_volume_pr,
-						isBodyweightRepsPr: set.is_bodyweight_reps_pr,
-					})),
-			})),
-		};
-	});
-
-export const listWorkoutRows = (query: ListWorkoutsQuery) =>
-	Effect.gen(function* () {
-		const { prisma: database } = yield* Database;
-
-		const rows = yield* Effect.tryPromise({
-			try: () =>
-				database.$queryRawTyped(listWorkoutHistory(query.userId, query.limit + 1, query.offset)),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
-
-		return rows.map(
-			(row): WorkoutHistoryRow => ({
-				id: row.id,
-				createdAt: row.created_at,
-				name: row.name,
-				durationSeconds: row.duration_seconds,
-				totalPrSets: row.total_pr_sets,
-				exerciseCount: row.exercise_count ?? 0,
-				totalVolume: row.total_volume ?? 0,
-				muscleGroups: row.muscle_groups ?? [],
-			}),
-		);
-	});

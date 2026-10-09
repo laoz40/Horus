@@ -6,6 +6,7 @@ import { WorkoutForSaveSchema } from "@/features/workout-form/lib/validateWorkou
 import { prisma } from "@/lib/db";
 import { Database } from "@/lib/db/database";
 import { protectedProcedure } from "@/server/procedures";
+import { workoutDb } from "@/server/workouts/workouts.db";
 import {
 	createWorkout,
 	deleteAllWorkouts,
@@ -169,7 +170,7 @@ export const workoutsRouter = {
 		.handler(({ context, errors }) =>
 			Effect.runPromise(
 				deleteAllWorkouts(context.userId).pipe(
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(workoutDb),
 					Effect.match({
 						onSuccess: (value) => value,
 						onFailure: (error) => {
@@ -274,7 +275,7 @@ export const workoutsRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				getWorkoutById(input.id, context.userId).pipe(
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(workoutDb),
 					Effect.match({
 						onSuccess: (value) => value,
 						onFailure: (error) => {
@@ -307,7 +308,7 @@ export const workoutsRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				listWorkouts({ ...input, userId: context.userId }).pipe(
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(workoutDb),
 					Effect.match({
 						onSuccess: (value) => value,
 						onFailure: (error) => {

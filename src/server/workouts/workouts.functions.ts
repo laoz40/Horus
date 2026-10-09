@@ -10,7 +10,7 @@ import type {
 	ListWorkoutsQuery,
 	WorkoutForEdit,
 	WorkoutHistoryRow,
-} from "@/server/workouts/workouts.repository";
+} from "@/server/workouts/workouts.db";
 
 export function requireWorkout<T>(workout: T | null) {
 	if (workout === null) {

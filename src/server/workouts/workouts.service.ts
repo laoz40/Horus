@@ -3,24 +3,22 @@ import "server-only";
 import { Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import { Database, DatabaseError } from "@/lib/db/database";
+import { WorkoutDb } from "@/server/workouts/workouts.db";
 import { findOrCreateWorkoutExercises } from "@/server/exercises/library/workout-exercises.repository";
 import {
 	deleteWorkoutById,
-	deleteAllWorkoutRows,
 	deleteWorkoutChildren,
 	getWorkout,
 	getWorkoutExerciseIds,
-	getWorkoutForEdit,
 	insertWorkoutExerciseRows,
 	insertWorkoutRow,
 	insertWorkoutSetRows,
-	listWorkoutRows,
 	updateWorkoutFields,
 	updateWorkoutPrTotal,
-	type ListWorkoutsQuery,
 	type WorkoutUpdateInput,
 	type WorkoutWriteInput,
 } from "@/server/workouts/workouts.repository";
+import type { ListWorkoutsQuery } from "@/server/workouts/workouts.db";
 import {
 	calculateSetPrsFromHistory,
 	recalculateExercisePrHistory,
@@ -144,7 +142,8 @@ const deleteWorkoutAndRecalculatePrs = (workoutId: string, userId: string) =>
 
 export const getWorkoutById = (workoutId: string, userId: string) =>
 	Effect.gen(function* () {
-		const workout = yield* getWorkoutForEdit(workoutId, userId);
+		const db = yield* WorkoutDb;
+		const workout = yield* db.getWorkoutForEdit({ workoutId, userId });
 		const requiredWorkout = yield* requireWorkout(workout);
 
 		return buildWorkoutEditForm(requiredWorkout);
@@ -152,7 +151,8 @@ export const getWorkoutById = (workoutId: string, userId: string) =>
 
 export const listWorkouts = (query: ListWorkoutsQuery) =>
 	Effect.gen(function* () {
-		const rows = yield* listWorkoutRows(query);
+		const db = yield* WorkoutDb;
+		const rows = yield* db.listWorkouts(query);
 
 		return buildWorkoutHistoryPage(rows, query);
 	});
@@ -166,7 +166,8 @@ export const deleteWorkout = (workoutId: string, userId: string) =>
 
 export const deleteAllWorkouts = (userId: string) =>
 	Effect.gen(function* () {
-		const result = yield* deleteAllWorkoutRows(userId);
+		const db = yield* WorkoutDb;
+		const result = yield* db.deleteAllWorkouts(userId);
 
 		return yield* requireDeletedWorkouts(result);
 	});
