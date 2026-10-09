@@ -7,12 +7,7 @@ import {
 	exerciseWeightProgressionSince,
 	type ExerciseWeightProgressionRange,
 } from "@/features/progress/lib/exerciseWeightProgression";
-import {
-	getExercisePersonalRecordRows,
-	getExercisePrRows,
-	getExerciseWeeklyWeightProgressionRows,
-	getRecentSetRows,
-} from "@/server/exercises/progress/progress.repository";
+import { ProgressDb } from "@/server/exercises/progress/progress.db";
 import {
 	buildExercisePersonalRecords,
 	buildRecentSets,
@@ -23,15 +18,17 @@ import { emptyExercisePrs } from "@/server/exercises/pr-history/pr-history.funct
 
 export const getRecentSets = (userId: string, exerciseName: string) =>
 	Effect.gen(function* () {
+		const db = yield* ProgressDb;
 		const normalizedExerciseName = normalizeName(exerciseName);
 
-		return buildRecentSets(yield* getRecentSetRows(userId, normalizedExerciseName));
+		return buildRecentSets(yield* db.getRecentSets({ userId, normalizedExerciseName }));
 	});
 
 export const getExercisePersonalRecords = (userId: string, exerciseName: string) =>
 	Effect.gen(function* () {
+		const db = yield* ProgressDb;
 		const normalizedExerciseName = normalizeName(exerciseName);
-		const rows = yield* getExercisePersonalRecordRows(userId, normalizedExerciseName);
+		const rows = yield* db.getExercisePersonalRecords({ userId, normalizedExerciseName });
 
 		return buildExercisePersonalRecords(
 			rows[0] ?? {
@@ -49,15 +46,16 @@ export const getExerciseWeeklyWeightProgression = (
 	range: ExerciseWeightProgressionRange,
 ) =>
 	Effect.gen(function* () {
+		const db = yield* ProgressDb;
 		const normalizedExerciseName = normalizeName(exerciseName);
 		const sinceCreatedAt = exerciseWeightProgressionSince(range);
 
-		const rows = yield* getExerciseWeeklyWeightProgressionRows(
+		const rows = yield* db.getExerciseWeeklyWeightProgression({
 			userId,
 			normalizedExerciseName,
 			sinceCreatedAt,
-			EXERCISE_WEIGHT_PROGRESSION_MIN_REPS,
-		);
+			minReps: EXERCISE_WEIGHT_PROGRESSION_MIN_REPS,
+		});
 
 		return buildWeeklyWeightProgression(rows);
 	});
@@ -71,8 +69,9 @@ interface CheckSetPrInput {
 
 export const checkSetPr = ({ userId, exerciseName, sets, setIndex }: CheckSetPrInput) =>
 	Effect.gen(function* () {
+		const db = yield* ProgressDb;
 		const normalizedExerciseName = normalizeName(exerciseName);
-		const rows = yield* getExercisePrRows(userId, normalizedExerciseName);
+		const rows = yield* db.getExercisePr({ userId, normalizedExerciseName });
 
 		return checkCompletedSetPr(sets, setIndex, rows[0] ?? emptyExercisePrs());
 	});

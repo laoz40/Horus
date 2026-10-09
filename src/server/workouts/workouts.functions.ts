@@ -1,20 +1,26 @@
 import "server-only";
 
-import { Effect } from "effect";
+import { Data, Effect } from "effect";
 
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import { buildSetPrTypes } from "@/features/workout-form/lib/setPr";
 import { normalizeName } from "@/lib/normalizeName";
-import type { WorkoutExerciseWithDatabaseId } from "@/server/exercises/library/workout-exercises.repository";
+import type { WorkoutExerciseWithDatabaseId } from "@/server/exercises/library/workout-exercises.db";
 import type {
 	ListWorkoutsQuery,
 	WorkoutForEdit,
 	WorkoutHistoryRow,
-} from "@/server/workouts/workouts.repository";
+} from "@/server/workouts/workouts.db";
+
+class WorkoutNotFoundError extends Data.TaggedError("NOT_FOUND") {}
+
+class NoWorkoutsError extends Data.TaggedError("NO_WORKOUTS") {}
+
+class InvalidWorkoutInputError extends Data.TaggedError("INVALID_INPUT") {}
 
 export function requireWorkout<T>(workout: T | null) {
 	if (workout === null) {
-		return Effect.fail({ reason: "NOT_FOUND" as const });
+		return Effect.fail(new WorkoutNotFoundError());
 	}
 
 	return Effect.succeed(workout);
@@ -22,7 +28,7 @@ export function requireWorkout<T>(workout: T | null) {
 
 export function requireDeletedWorkouts(result: { deletedCount: number }) {
 	if (result.deletedCount === 0) {
-		return Effect.fail({ reason: "NO_WORKOUTS" as const });
+		return Effect.fail(new NoWorkoutsError());
 	}
 
 	return Effect.succeed(result);
@@ -57,7 +63,7 @@ export function validateUniqueWorkoutChildIds(workout: WorkoutForSave) {
 	const hasDuplicateSetId = new Set(setIds).size !== setIds.length;
 
 	if (hasDuplicateWorkoutExerciseId || hasDuplicateSetId) {
-		return Effect.fail({ reason: "INVALID_INPUT" as const });
+		return Effect.fail(new InvalidWorkoutInputError());
 	}
 
 	return Effect.succeed(null);

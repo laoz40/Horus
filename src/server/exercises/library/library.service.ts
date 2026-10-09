@@ -1,25 +1,15 @@
 import "server-only";
 
 import { Effect } from "effect";
-import { Database, DatabaseError } from "@/lib/db/database";
+import { Transactions } from "@/server/transactions";
 import { recalculateExercisePrHistory } from "@/server/exercises/pr-history/pr-history.service";
+import { ExerciseDb } from "@/server/exercises/library/exercises.db";
 
 import {
 	getNormalizedMuscleNamesForCategory,
 	type MuscleGroupCategory,
 } from "@/features/workout-form/lib/muscleGroupCategories";
 import { normalizeName } from "@/lib/normalizeName";
-import {
-	deleteUserExercise,
-	findUserExerciseIdByNormalizedName,
-	getUserExerciseRow,
-	insertUserExercise,
-	listUserExerciseRows,
-	listExerciseRowsByCategory,
-	mergeUserExerciseRows,
-	searchExerciseRows,
-	updateUserExerciseRow,
-} from "@/server/exercises/library/library.repository";
 import {
 	ExerciseNameCollisionError,
 	ExerciseNotFoundError,
@@ -41,7 +31,9 @@ interface MergeExerciseLibraryInput {
 
 export const listUserExercises = (userId: string) =>
 	Effect.gen(function* () {
-		return yield* listUserExerciseRows(userId);
+		const db = yield* ExerciseDb;
+
+		return yield* db.listUserExercises(userId);
 	});
 
 export function normalizeExerciseInput(input: ExerciseLibraryWriteInput) {
@@ -62,7 +54,9 @@ interface ExerciseNameQuery {
 
 export const getUserExercise = (userId: string, exerciseId: string) =>
 	Effect.gen(function* () {
-		return yield* requireUserExercise(yield* getUserExerciseRow(userId, exerciseId));
+		const db = yield* ExerciseDb;
+
+		return yield* requireUserExercise(yield* db.getUserExercise({ userId, exerciseId }));
 	});
 
 export const validateExerciseNameAvailability = ({
@@ -71,7 +65,12 @@ export const validateExerciseNameAvailability = ({
 	excludingExerciseId,
 }: ExerciseNameQuery) =>
 	Effect.gen(function* () {
-		const existingExerciseId = yield* findUserExerciseIdByNormalizedName(userId, normalizedName);
+		const db = yield* ExerciseDb;
+
+		const existingExerciseId = yield* db.findUserExerciseIdByNormalizedName({
+			userId,
+			normalizedName,
+		});
 
 		if (existingExerciseId === null || existingExerciseId === excludingExerciseId) {
 			return null;
@@ -87,13 +86,16 @@ interface CreateExerciseInput {
 	exercise: NormalizedExercise;
 }
 
-export const createUserExercise = ({ userId, exercise }: CreateExerciseInput) =>
+export const createUserExercise = (input: CreateExerciseInput) =>
 	Effect.gen(function* () {
-		return yield* insertUserExercise(
-			userId,
-			exercise.name,
-			exercise.normalizedName,
-			exercise.muscleGroups,
+		const transaction = yield* Transactions;
+
+		return yield* transaction.run(
+			Effect.gen(function* () {
+				const db = yield* ExerciseDb;
+
+				return yield* db.create(input);
+			}),
 		);
 	});
 
@@ -101,14 +103,16 @@ interface UpdateExerciseInput extends CreateExerciseInput {
 	exerciseId: string;
 }
 
-export const updateUserExercise = ({ userId, exerciseId, exercise }: UpdateExerciseInput) =>
+export const updateUserExercise = (input: UpdateExerciseInput) =>
 	Effect.gen(function* () {
-		return yield* updateUserExerciseRow(
-			userId,
-			exerciseId,
-			exercise.name,
-			exercise.normalizedName,
-			exercise.muscleGroups,
+		const transaction = yield* Transactions;
+
+		return yield* transaction.run(
+			Effect.gen(function* () {
+				const db = yield* ExerciseDb;
+
+				return yield* db.update(input);
+			}),
 		);
 	});
 
@@ -119,7 +123,8 @@ export const getUnusedUserExercise = (userId: string, exerciseId: string) =>
 
 export const deleteUserExerciseById = (userId: string, exerciseId: string) =>
 	Effect.gen(function* () {
-		yield* deleteUserExercise(userId, exerciseId);
+		const db = yield* ExerciseDb;
+		yield* db.deleteUserExercise({ userId, exerciseId });
 
 		return { deleted: true as const };
 	});
@@ -131,25 +136,21 @@ const mergeExercisesAndRecalculatePrs = (
 	sourceMuscleGroups: ReturnType<typeof normalizeMuscleGroupsForSave> | null,
 ) =>
 	Effect.gen(function* () {
-		const { prisma } = yield* Database;
+		const transaction = yield* Transactions;
+		yield* transaction.run(
+			Effect.gen(function* () {
+				const db = yield* ExerciseDb;
+				const cutoff = yield* db.merge({ userId, sourceId, targetId, sourceMuscleGroups });
 
-		yield* Effect.tryPromise({
-			try: () =>
-				prisma.$transaction(async (tx) => {
-					const cutoff = await mergeUserExerciseRows(
-						tx,
+				if (cutoff) {
+					yield* recalculateExercisePrHistory({
 						userId,
-						sourceId,
-						targetId,
-						sourceMuscleGroups,
-					);
-
-					if (cutoff) {
-						await recalculateExercisePrHistory(tx, userId, [sourceId, targetId], cutoff);
-					}
-				}),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
+						exerciseIds: [sourceId, targetId],
+						cutoff,
+					});
+				}
+			}),
+		);
 	});
 
 export const mergeUserExercises = (userId: string, input: MergeExerciseLibraryInput) =>
@@ -157,7 +158,8 @@ export const mergeUserExercises = (userId: string, input: MergeExerciseLibraryIn
 		const { sourceId, targetId } = input;
 
 		if (sourceId === targetId) {
-			yield* getUserExerciseRow(userId, sourceId);
+			const db = yield* ExerciseDb;
+			yield* db.getUserExercise({ userId, exerciseId: sourceId });
 
 			return yield* Effect.fail(new ExerciseNotFoundError());
 		}
@@ -177,13 +179,15 @@ export const mergeUserExercises = (userId: string, input: MergeExerciseLibraryIn
 export const searchExercises = (userId: string, query: string) =>
 	Effect.gen(function* () {
 		const normalizedQuery = normalizeName(query);
+		const db = yield* ExerciseDb;
 
-		return yield* searchExerciseRows(userId, normalizedQuery);
+		return yield* db.searchExercises({ userId, normalizedQuery });
 	});
 
 export const listExercisesByCategory = (userId: string, category: MuscleGroupCategory) =>
 	Effect.gen(function* () {
 		const normalizedMuscleNames = getNormalizedMuscleNamesForCategory(category);
+		const db = yield* ExerciseDb;
 
-		return yield* listExerciseRowsByCategory(userId, normalizedMuscleNames);
+		return yield* db.listByCategory({ userId, normalizedMuscleNames });
 	});

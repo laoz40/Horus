@@ -1,13 +1,14 @@
+import { transactions } from "@/server/transactions";
 import "server-only";
 
 import { Effect } from "effect";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
-import { Database, DatabaseError } from "@/lib/db/database";
 import { MUSCLE_GROUP_CATEGORIES } from "@/features/workout-form/lib/muscleGroupCategories";
 import { fetchApiExercises } from "@/features/workout-form/lib/fetchApiExercises.server";
 import { protectedProcedure, publicProcedure } from "@/server/procedures";
 import { exercisesProgressProcedures } from "@/server/exercises/progress/progress.router";
+import { progressDb } from "@/server/exercises/progress/progress.db";
+import { exerciseDb } from "@/server/exercises/library/exercises.db";
 import { checkSetPr } from "@/server/exercises/progress/progress.service";
 import {
 	createUserExercise,
@@ -53,13 +54,13 @@ export const exercisesRouter = {
 		.handler(({ context, errors }) =>
 			Effect.runPromise(
 				listUserExercises(context.userId).pipe(
-					Effect.provideService(Database, { prisma }),
-					Effect.match({
-						onSuccess: (exercises) => ({ exercises }),
-						onFailure: (error) => {
+					Effect.provide(exerciseDb),
+					Effect.map((exercises) => ({ exercises })),
+					Effect.catchTags({
+						DatabaseError: (error) => {
 							console.error("Failed to list exercises", { cause: error.cause });
 
-							throw errors.DATABASE_ERROR();
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),
@@ -99,17 +100,12 @@ export const exercisesRouter = {
 					sets: input.sets,
 					setIndex: input.setIndex,
 				}).pipe(
-					Effect.provideService(Database, { prisma }),
-					Effect.match({
-						onSuccess: (value) => value,
-						onFailure: (error) => {
-							if (error instanceof DatabaseError) {
-								console.error("Failed to check set PR", { cause: error.cause });
-								throw errors.DATABASE_ERROR();
-							}
+					Effect.provide(progressDb),
+					Effect.catchTags({
+						DatabaseError: (error) => {
+							console.error("Failed to check set PR", { cause: error.cause });
 
-							const exhaustiveError: never = error;
-							throw exhaustiveError;
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),
@@ -126,13 +122,12 @@ export const exercisesRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				searchExercises(context.userId, input.query).pipe(
-					Effect.provideService(Database, { prisma }),
-					Effect.match({
-						onSuccess: (value) => value,
-						onFailure: (error) => {
+					Effect.provide(exerciseDb),
+					Effect.catchTags({
+						DatabaseError: (error) => {
 							console.error("Failed to search exercises", { cause: error.cause });
 
-							throw errors.DATABASE_ERROR();
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),
@@ -163,19 +158,14 @@ export const exercisesRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				listExercisesByCategory(context.userId, input.category).pipe(
-					Effect.provideService(Database, { prisma }),
-					Effect.match({
-						onSuccess: (value) => value,
-						onFailure: (error) => {
-							if (error instanceof DatabaseError) {
-								console.error("Failed to list exercises by category", {
-									cause: error.cause,
-								});
-								throw errors.DATABASE_ERROR();
-							}
+					Effect.provide(exerciseDb),
+					Effect.catchTags({
+						DatabaseError: (error) => {
+							console.error("Failed to list exercises by category", {
+								cause: error.cause,
+							});
 
-							const exhaustiveError: never = error;
-							throw exhaustiveError;
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),
@@ -202,7 +192,8 @@ export const exercisesRouter = {
 
 					return { exercise };
 				}).pipe(
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(exerciseDb),
+					Effect.provide(transactions),
 					Effect.catchTags({
 						DatabaseError: (error) => {
 							console.error("Failed to create exercise", { cause: error.cause });
@@ -252,7 +243,8 @@ export const exercisesRouter = {
 
 					return { exercise };
 				}).pipe(
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(exerciseDb),
+					Effect.provide(transactions),
 					Effect.catchTags({
 						DatabaseError: (error) => {
 							console.error("Failed to update exercise", { cause: error.cause });
@@ -285,7 +277,7 @@ export const exercisesRouter = {
 
 					return yield* deleteUserExerciseById(context.userId, exercise.id);
 				}).pipe(
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(exerciseDb),
 					Effect.catchTags({
 						DatabaseError: (error) => {
 							console.error("Failed to delete exercise", { cause: error.cause });
@@ -322,7 +314,8 @@ export const exercisesRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				mergeUserExercises(context.userId, input).pipe(
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(exerciseDb),
+					Effect.provide(transactions),
 					Effect.catchTags({
 						DatabaseError: (error) => {
 							console.error("Failed to merge exercises", { cause: error.cause });

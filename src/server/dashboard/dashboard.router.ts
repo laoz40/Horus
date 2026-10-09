@@ -2,8 +2,7 @@ import "server-only";
 
 import { Effect } from "effect";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
-import { Database } from "@/lib/db/database";
+import { dashboardDb } from "@/server/dashboard/dashboard.db";
 import { protectedProcedure } from "@/server/procedures";
 import { getTrainingYearRange, getYearInTraining } from "@/server/dashboard/dashboard.service";
 
@@ -40,13 +39,12 @@ export const dashboardRouter = {
 		.handler(({ context, errors }) =>
 			Effect.runPromise(
 				getTrainingYearRange(context.userId).pipe(
-					Effect.provideService(Database, { prisma }),
-					Effect.match({
-						onSuccess: (value) => value,
-						onFailure: (error) => {
+					Effect.provide(dashboardDb),
+					Effect.catchTags({
+						DatabaseError: (error) => {
 							console.error("Failed to load training year range", { cause: error.cause });
 
-							throw errors.DATABASE_ERROR();
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),
@@ -64,13 +62,12 @@ export const dashboardRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				getYearInTraining({ userId: context.userId, year: input.year }).pipe(
-					Effect.provideService(Database, { prisma }),
-					Effect.match({
-						onSuccess: (value) => value,
-						onFailure: (error) => {
+					Effect.provide(dashboardDb),
+					Effect.catchTags({
+						DatabaseError: (error) => {
 							console.error("Failed to load year in training", { cause: error.cause });
 
-							throw errors.DATABASE_ERROR();
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),

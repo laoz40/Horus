@@ -2,25 +2,14 @@ import "server-only";
 
 import { Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
-import { Database, DatabaseError } from "@/lib/db/database";
-import { findOrCreateWorkoutExercises } from "@/server/exercises/library/workout-exercises.repository";
-import {
-	deleteWorkoutById,
-	deleteAllWorkoutRows,
-	deleteWorkoutChildren,
-	getWorkout,
-	getWorkoutExerciseIds,
-	getWorkoutForEdit,
-	insertWorkoutExerciseRows,
-	insertWorkoutRow,
-	insertWorkoutSetRows,
-	listWorkoutRows,
-	updateWorkoutFields,
-	updateWorkoutPrTotal,
-	type ListWorkoutsQuery,
-	type WorkoutUpdateInput,
-	type WorkoutWriteInput,
-} from "@/server/workouts/workouts.repository";
+import { Transactions } from "@/server/transactions";
+import { ExerciseDb } from "@/server/exercises/library/exercises.db";
+import { WorkoutDb } from "@/server/workouts/workouts.db";
+import type {
+	ListWorkoutsQuery,
+	WorkoutWriteInput,
+	WorkoutUpdateInput,
+} from "@/server/workouts/workouts.db";
 import {
 	calculateSetPrsFromHistory,
 	recalculateExercisePrHistory,
@@ -41,110 +30,86 @@ import {
 
 export const createWorkout = (createInput: WorkoutWriteInput) =>
 	Effect.gen(function* () {
-		const { prisma } = yield* Database;
+		const transaction = yield* Transactions;
 
-		return yield* Effect.tryPromise({
-			try: () =>
-				prisma.$transaction(async (tx) => {
-					const workoutId = await insertWorkoutRow(tx, createInput);
+		return yield* transaction.run(
+			Effect.gen(function* () {
+				const workouts = yield* WorkoutDb;
+				const exercises = yield* ExerciseDb;
+				const workoutId = yield* workouts.create(createInput);
 
-					const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(
-						tx,
-						createInput.userId,
-						createInput.workout.exercises,
-					);
+				const exercisesWithDatabaseIds = yield* exercises.resolveWorkoutExercises({
+					userId: createInput.userId,
+					exercises: createInput.workout.exercises,
+				});
 
-					const newWorkoutSets = buildNewWorkoutPrSets(workoutId, exercisesWithDatabaseIds);
+				const newWorkoutSets = buildNewWorkoutPrSets(workoutId, exercisesWithDatabaseIds);
 
-					const prStatuses = await calculateSetPrsFromHistory(
-						tx,
-						createInput.userId,
-						newWorkoutSets,
-					);
+				const prStatuses = yield* calculateSetPrsFromHistory({
+					userId: createInput.userId,
+					sets: newWorkoutSets,
+				});
 
-					const prStatusesBySetId = new Map(prStatuses.map((status) => [status.setId, status]));
-					const totalPrSets = buildPrTotalsByWorkoutId(prStatuses).get(workoutId) ?? 0;
+				const prStatusesBySetId = new Map(prStatuses.map((status) => [status.setId, status]));
+				const totalPrSets = buildPrTotalsByWorkoutId(prStatuses).get(workoutId) ?? 0;
+				yield* workouts.saveContent({
+					workoutId,
+					exercises: exercisesWithDatabaseIds,
+					prStatusesBySetId,
+					totalPrSets,
+				});
 
-					await insertWorkoutExerciseRows(tx, workoutId, exercisesWithDatabaseIds);
-					await insertWorkoutSetRows(tx, exercisesWithDatabaseIds, prStatusesBySetId);
-					await updateWorkoutPrTotal(tx, workoutId, totalPrSets);
-
-					return workoutId;
-				}),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
+				return workoutId;
+			}),
+		);
 	});
 
 const updateWorkoutAndRecalculatePrs = (updateInput: WorkoutUpdateInput) =>
 	Effect.gen(function* () {
-		const { prisma } = yield* Database;
+		const transaction = yield* Transactions;
 
-		return yield* Effect.tryPromise({
-			try: () =>
-				prisma.$transaction(async (tx): Promise<string | null> => {
-					const workout = await getWorkout(tx, updateInput.workoutId, updateInput.userId);
+		return yield* transaction.run(
+			Effect.gen(function* () {
+				const workouts = yield* WorkoutDb;
+				const exercises = yield* ExerciseDb;
 
-					if (!workout) {
-						return null;
-					}
+				const workout = yield* workouts.getForUpdate({
+					workoutId: updateInput.workoutId,
+					userId: updateInput.userId,
+				});
 
-					const previousExerciseIds = await getWorkoutExerciseIds(tx, updateInput.workoutId);
+				if (!workout) return null;
+				const previousExerciseIds = yield* workouts.getExerciseIds(updateInput.workoutId);
 
-					const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(
-						tx,
-						updateInput.userId,
-						updateInput.workout.exercises,
-					);
+				const exercisesWithDatabaseIds = yield* exercises.resolveWorkoutExercises({
+					userId: updateInput.userId,
+					exercises: updateInput.workout.exercises,
+				});
 
-					const affectedExerciseIds = buildAffectedExerciseIds(
-						previousExerciseIds,
-						exercisesWithDatabaseIds.map((exercise) => exercise.exerciseId),
-					);
+				const affectedExerciseIds = buildAffectedExerciseIds(
+					previousExerciseIds,
+					exercisesWithDatabaseIds.map((exercise) => exercise.exerciseId),
+				);
 
-					await updateWorkoutFields(tx, updateInput);
-					await deleteWorkoutChildren(tx, updateInput.workoutId);
-					await insertWorkoutExerciseRows(tx, updateInput.workoutId, exercisesWithDatabaseIds);
-					await insertWorkoutSetRows(tx, exercisesWithDatabaseIds);
-					await recalculateExercisePrHistory(tx, updateInput.userId, affectedExerciseIds, {
-						workoutId: workout.id,
-						createdAt: workout.createdAt,
-					});
+				yield* workouts.replaceContent({
+					update: updateInput,
+					exercises: exercisesWithDatabaseIds,
+				});
+				yield* recalculateExercisePrHistory({
+					userId: updateInput.userId,
+					exerciseIds: affectedExerciseIds,
+					cutoff: { workoutId: workout.id, createdAt: workout.createdAt },
+				});
 
-					return workout.id;
-				}),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
-	});
-
-const deleteWorkoutAndRecalculatePrs = (workoutId: string, userId: string) =>
-	Effect.gen(function* () {
-		const { prisma } = yield* Database;
-
-		return yield* Effect.tryPromise({
-			try: () =>
-				prisma.$transaction(async (tx) => {
-					const workout = await getWorkout(tx, workoutId, userId);
-
-					if (!workout) {
-						return null;
-					}
-
-					const exerciseIds = await getWorkoutExerciseIds(tx, workoutId);
-					await deleteWorkoutById(tx, workoutId, userId);
-					await recalculateExercisePrHistory(tx, userId, exerciseIds, {
-						workoutId: workout.id,
-						createdAt: workout.createdAt,
-					});
-
-					return { id: workout.id, name: workout.name };
-				}),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
+				return workout.id;
+			}),
+		);
 	});
 
 export const getWorkoutById = (workoutId: string, userId: string) =>
 	Effect.gen(function* () {
-		const workout = yield* getWorkoutForEdit(workoutId, userId);
+		const db = yield* WorkoutDb;
+		const workout = yield* db.getWorkoutForEdit({ workoutId, userId });
 		const requiredWorkout = yield* requireWorkout(workout);
 
 		return buildWorkoutEditForm(requiredWorkout);
@@ -152,21 +117,37 @@ export const getWorkoutById = (workoutId: string, userId: string) =>
 
 export const listWorkouts = (query: ListWorkoutsQuery) =>
 	Effect.gen(function* () {
-		const rows = yield* listWorkoutRows(query);
+		const db = yield* WorkoutDb;
+		const rows = yield* db.listWorkouts(query);
 
 		return buildWorkoutHistoryPage(rows, query);
 	});
 
 export const deleteWorkout = (workoutId: string, userId: string) =>
 	Effect.gen(function* () {
-		const workout = yield* deleteWorkoutAndRecalculatePrs(workoutId, userId);
+		const transaction = yield* Transactions;
 
-		return yield* requireWorkout(workout);
+		return yield* transaction.run(
+			Effect.gen(function* () {
+				const db = yield* WorkoutDb;
+				const workout = yield* requireWorkout(yield* db.getForUpdate({ workoutId, userId }));
+				const exerciseIds = yield* db.getExerciseIds(workoutId);
+				yield* db.delete({ workoutId, userId });
+				yield* recalculateExercisePrHistory({
+					userId,
+					exerciseIds,
+					cutoff: { workoutId: workout.id, createdAt: workout.createdAt },
+				});
+
+				return { id: workout.id, name: workout.name };
+			}),
+		);
 	});
 
 export const deleteAllWorkouts = (userId: string) =>
 	Effect.gen(function* () {
-		const result = yield* deleteAllWorkoutRows(userId);
+		const db = yield* WorkoutDb;
+		const result = yield* db.deleteAllWorkouts(userId);
 
 		return yield* requireDeletedWorkouts(result);
 	});

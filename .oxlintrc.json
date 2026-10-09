@@ -3,7 +3,9 @@
 	"plugins": ["nextjs", "typescript", "unicorn"],
 	"jsPlugins": [
 		{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" },
-		{ "name": "anti-slop-effect", "specifier": "./tools/oxlint/anti-slop/effect/index.ts" }
+		{ "name": "anti-slop-effect", "specifier": "./tools/oxlint/anti-slop/effect/index.ts" },
+		{ "name": "prisma", "specifier": "./tools/oxlint/prisma/index.ts" },
+		{ "name": "effect-router", "specifier": "./tools/oxlint/effect-router/index.ts" }
 	],
 	"categories": {
 		"correctness": "error",
@@ -31,6 +33,7 @@
 		"anti-slop-effect/no-manual-tagged-construction": "error",
 		"anti-slop-effect/no-service-constructor-imports": "error",
 		"anti-slop-effect/prefer-effect-match": "error",
+		"effect-router/prefer-catch-tags": "error",
 
 		"anti-slop/no-chained-type-assertions": "error",
 		"anti-slop/no-unknown-parameters": "error",
@@ -38,6 +41,7 @@
 		"anti-slop/no-known-value-widening": "error",
 		"anti-slop/no-conditional-empty-object-spread": "error",
 		"anti-slop/no-module-mocking": "error",
+		"prisma/typed-sql-reads-and-deletes": "error",
 		"anti-slop/no-object-parameters": "error",
 		"anti-slop/no-shape-in-symbol-names": "error",
 		"anti-slop/no-runtime-typeof": "error",
