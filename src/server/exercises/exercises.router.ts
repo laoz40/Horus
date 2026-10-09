@@ -3,8 +3,7 @@ import "server-only";
 
 import { Effect } from "effect";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
-import { Database, DatabaseError } from "@/lib/db/database";
+import { DatabaseError } from "@/lib/db/database";
 import { MUSCLE_GROUP_CATEGORIES } from "@/features/workout-form/lib/muscleGroupCategories";
 import { fetchApiExercises } from "@/features/workout-form/lib/fetchApiExercises.server";
 import { protectedProcedure, publicProcedure } from "@/server/procedures";
@@ -206,7 +205,7 @@ export const exercisesRouter = {
 					return { exercise };
 				}).pipe(
 					Effect.provide(exerciseDb),
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(transactions),
 					Effect.catchTags({
 						DatabaseError: (error) => {
 							console.error("Failed to create exercise", { cause: error.cause });
@@ -257,7 +256,7 @@ export const exercisesRouter = {
 					return { exercise };
 				}).pipe(
 					Effect.provide(exerciseDb),
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(transactions),
 					Effect.catchTags({
 						DatabaseError: (error) => {
 							console.error("Failed to update exercise", { cause: error.cause });

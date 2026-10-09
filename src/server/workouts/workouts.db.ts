@@ -4,14 +4,14 @@ import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import type {
 	PreparedWorkoutWriteExercise,
 	WorkoutExerciseWithDatabaseId,
-} from "@/server/exercises/library/workout-exercises.repository";
+} from "@/server/exercises/library/workout-exercises.db";
 import type { PrSetUpdate } from "@/server/exercises/pr-history/pr-history.functions";
 import {
 	updateWorkoutFields,
 	deleteWorkoutChildren,
 	insertWorkoutExerciseRows,
 	insertWorkoutSetRows,
-} from "@/server/workouts/workouts.repository";
+} from "@/server/workouts/workout-writes.db";
 import type { Decimal } from "@prisma/client/runtime/client";
 import { Context, Effect, Layer } from "effect";
 import {

@@ -4,7 +4,7 @@ import type { WorkoutUpdateInput } from "@/server/workouts/workouts.db";
 import { deleteWorkoutExercises } from "@/generated/prisma/sql";
 import type { DatabaseTransaction } from "@/lib/db";
 import type { PrSetUpdate } from "@/server/exercises/pr-history/pr-history.functions";
-import type { WorkoutExerciseWithDatabaseId } from "@/server/exercises/library/workout-exercises.repository";
+import type { WorkoutExerciseWithDatabaseId } from "@/server/exercises/library/workout-exercises.db";
 
 type Tx = DatabaseTransaction;
 

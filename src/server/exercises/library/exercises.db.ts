@@ -14,13 +14,15 @@ import {
 	findOrCreateWorkoutExercises,
 	type PreparedWorkoutWriteExercise,
 	type WorkoutExerciseWithDatabaseId,
-} from "@/server/exercises/library/workout-exercises.repository";
+} from "@/server/exercises/library/workout-exercises.db";
 import { DatabaseError } from "@/lib/db/database";
+import { ExerciseNotFoundError } from "@/server/exercises/library/library.functions";
 
 import {
 	getUserExerciseLibraryRow,
 	mergeUserExerciseRows,
-} from "@/server/exercises/library/library.repository";
+	replaceExerciseMuscleGroups,
+} from "@/server/exercises/library/library.db";
 
 export interface UserExerciseLibraryRow {
 	id: string;
@@ -31,15 +33,30 @@ export interface UserExerciseLibraryRow {
 
 import type { PrHistoryCutoff } from "@/server/exercises/pr-history/pr-history.functions";
 
+type ExerciseWriteInput = {
+	userId: string;
+	exercise: {
+		name: string;
+		normalizedName: string;
+		muscleGroups: Array<{ name: string; normalizedName: string }>;
+	};
+};
+
 export class ExerciseDb extends Context.Service<
 	ExerciseDb,
 	{
+		readonly create: (
+			input: ExerciseWriteInput,
+		) => Effect.Effect<UserExerciseLibraryRow, DatabaseError>;
+		readonly update: (
+			input: ExerciseWriteInput & { exerciseId: string },
+		) => Effect.Effect<UserExerciseLibraryRow, DatabaseError | ExerciseNotFoundError>;
 		readonly merge: (input: {
 			userId: string;
 			sourceId: string;
 			targetId: string;
 			sourceMuscleGroups: Array<{ name: string; normalizedName: string }> | null;
-		}) => Effect.Effect<PrHistoryCutoff | null, DatabaseError>;
+		}) => Effect.Effect<PrHistoryCutoff | null, DatabaseError | ExerciseNotFoundError>;
 		readonly resolveWorkoutExercises: (input: {
 			userId: string;
 			exercises: PreparedWorkoutWriteExercise[];
@@ -82,11 +99,78 @@ export const exerciseDbLayer = Layer.effect(
 		const connection = yield* DbConnection;
 
 		return {
+			create: ({ userId, exercise }) =>
+				Effect.gen(function* () {
+					const created = yield* Effect.tryPromise({
+						try: () =>
+							connection.exercises.create({
+								data: {
+									user_id: userId,
+									name: exercise.name,
+									normalized_name: exercise.normalizedName,
+								},
+								select: { id: true },
+							}),
+						catch: (cause) => new DatabaseError({ cause }),
+					});
+
+					yield* Effect.tryPromise({
+						try: () => replaceExerciseMuscleGroups(connection, created.id, exercise.muscleGroups),
+						catch: (cause) => new DatabaseError({ cause }),
+					});
+
+					const row = yield* Effect.tryPromise({
+						try: () => getUserExerciseLibraryRow(connection, userId, created.id),
+						catch: (cause) => new DatabaseError({ cause }),
+					});
+
+					if (!row)
+						return yield* Effect.fail(
+							new DatabaseError({ cause: new Error("Created exercise row was not found") }),
+						);
+
+					return row;
+				}),
+			update: ({ userId, exerciseId, exercise }) =>
+				Effect.gen(function* () {
+					const updated = yield* Effect.tryPromise({
+						try: () =>
+							connection.exercises.updateMany({
+								where: { id: exerciseId, user_id: userId },
+								data: { name: exercise.name, normalized_name: exercise.normalizedName },
+							}),
+						catch: (cause) => new DatabaseError({ cause }),
+					});
+
+					// Stop before changing muscle groups when the owned exercise no longer exists.
+					if (updated.count === 0) return yield* Effect.fail(new ExerciseNotFoundError());
+					yield* Effect.tryPromise({
+						try: () => replaceExerciseMuscleGroups(connection, exerciseId, exercise.muscleGroups),
+						catch: (cause) => new DatabaseError({ cause }),
+					});
+
+					const row = yield* Effect.tryPromise({
+						try: () => getUserExerciseLibraryRow(connection, userId, exerciseId),
+						catch: (cause) => new DatabaseError({ cause }),
+					});
+
+					if (!row) return yield* Effect.fail(new ExerciseNotFoundError());
+
+					return row;
+				}),
 			merge: ({ userId, sourceId, targetId, sourceMuscleGroups }) =>
-				Effect.tryPromise({
-					try: () =>
-						mergeUserExerciseRows(connection, userId, sourceId, targetId, sourceMuscleGroups),
-					catch: (cause) => new DatabaseError({ cause }),
+				Effect.gen(function* () {
+					if (sourceId === targetId) return yield* Effect.fail(new ExerciseNotFoundError());
+
+					const result = yield* Effect.tryPromise({
+						try: () =>
+							mergeUserExerciseRows(connection, userId, sourceId, targetId, sourceMuscleGroups),
+						catch: (cause) => new DatabaseError({ cause }),
+					});
+
+					if (!result) return yield* Effect.fail(new ExerciseNotFoundError());
+
+					return result.cutoff;
 				}),
 			resolveWorkoutExercises: ({ userId, exercises }) =>
 				Effect.tryPromise({

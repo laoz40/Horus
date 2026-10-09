@@ -11,10 +11,6 @@ import {
 } from "@/features/workout-form/lib/muscleGroupCategories";
 import { normalizeName } from "@/lib/normalizeName";
 import {
-	insertUserExercise,
-	updateUserExerciseRow,
-} from "@/server/exercises/library/library.repository";
-import {
 	ExerciseNameCollisionError,
 	ExerciseNotFoundError,
 	normalizeMuscleGroupsForSave,
@@ -90,13 +86,16 @@ interface CreateExerciseInput {
 	exercise: NormalizedExercise;
 }
 
-export const createUserExercise = ({ userId, exercise }: CreateExerciseInput) =>
+export const createUserExercise = (input: CreateExerciseInput) =>
 	Effect.gen(function* () {
-		return yield* insertUserExercise(
-			userId,
-			exercise.name,
-			exercise.normalizedName,
-			exercise.muscleGroups,
+		const transaction = yield* Transactions;
+
+		return yield* transaction.run(
+			Effect.gen(function* () {
+				const db = yield* ExerciseDb;
+
+				return yield* db.create(input);
+			}),
 		);
 	});
 
@@ -104,14 +103,16 @@ interface UpdateExerciseInput extends CreateExerciseInput {
 	exerciseId: string;
 }
 
-export const updateUserExercise = ({ userId, exerciseId, exercise }: UpdateExerciseInput) =>
+export const updateUserExercise = (input: UpdateExerciseInput) =>
 	Effect.gen(function* () {
-		return yield* updateUserExerciseRow(
-			userId,
-			exerciseId,
-			exercise.name,
-			exercise.normalizedName,
-			exercise.muscleGroups,
+		const transaction = yield* Transactions;
+
+		return yield* transaction.run(
+			Effect.gen(function* () {
+				const db = yield* ExerciseDb;
+
+				return yield* db.update(input);
+			}),
 		);
 	});
 

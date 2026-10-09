@@ -1,6 +1,5 @@
 import "server-only";
 
-import { Effect } from "effect";
 import {
 	getUserExerciseCatalogRow as getUserExerciseLibraryRowQuery,
 	getExerciseMuscleGroupNormalizedNames as getExerciseMuscleGroupNormalizedNamesQuery,
@@ -11,7 +10,6 @@ import {
 	deleteExerciseMuscleGroups,
 } from "@/generated/prisma/sql";
 import type { DatabaseTransaction } from "@/lib/db";
-import { Database, DatabaseError } from "@/lib/db/database";
 import type { UserExerciseLibraryRow } from "@/server/exercises/library/exercises.db";
 import type { PrHistoryCutoff } from "@/server/exercises/pr-history/pr-history.functions";
 
@@ -79,7 +77,7 @@ function exerciseMuscleGroupsUnchanged(
 	);
 }
 
-async function replaceExerciseMuscleGroups(
+export async function replaceExerciseMuscleGroups(
 	tx: Tx,
 	exerciseId: string,
 	muscleGroupsForExercise: Array<{ name: string; normalizedName: string }>,
@@ -109,87 +107,6 @@ async function replaceExerciseMuscleGroups(
 	});
 }
 
-export const insertUserExercise = (
-	userId: string,
-	name: string,
-	normalizedName: string,
-	muscleGroupsForExercise: Array<{ name: string; normalizedName: string }>,
-) =>
-	Effect.gen(function* () {
-		const { prisma } = yield* Database;
-
-		return yield* Effect.tryPromise({
-			try: () =>
-				prisma.$transaction(async (tx): Promise<UserExerciseLibraryRow> => {
-					const createdExercise = await tx.exercises.create({
-						data: {
-							user_id: userId,
-							name,
-							normalized_name: normalizedName,
-						},
-						select: { id: true },
-					});
-
-					await replaceExerciseMuscleGroups(tx, createdExercise.id, muscleGroupsForExercise);
-
-					const row = await getUserExerciseLibraryRow(tx, userId, createdExercise.id);
-
-					if (!row) {
-						throw new Error("Created exercise row was not found");
-					}
-
-					return row;
-				}),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
-	});
-
-export const updateUserExerciseRow = (
-	userId: string,
-	exerciseId: string,
-	name: string,
-	normalizedName: string,
-	muscleGroupsForExercise: Array<{ name: string; normalizedName: string }>,
-) =>
-	Effect.gen(function* () {
-		const { prisma } = yield* Database;
-
-		return yield* Effect.tryPromise({
-			try: () =>
-				prisma.$transaction(async (tx): Promise<UserExerciseLibraryRow> => {
-					await tx.exercises.updateMany({
-						where: {
-							id: exerciseId,
-							user_id: userId,
-						},
-						data: {
-							name,
-							normalized_name: normalizedName,
-						},
-					});
-
-					await replaceExerciseMuscleGroups(tx, exerciseId, muscleGroupsForExercise);
-
-					const row = await getUserExerciseLibraryRow(tx, userId, exerciseId);
-
-					if (!row) {
-						throw new Error("Updated exercise row was not found");
-					}
-
-					return row;
-				}),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
-	});
-
-async function unionSourceMuscleGroupsOntoTarget(
-	tx: Tx,
-	sourceId: string,
-	targetId: string,
-): Promise<void> {
-	await tx.$queryRawTyped(unionExerciseMuscleGroups(sourceId, targetId));
-}
-
 async function getEarliestAffectedWorkoutCutoff(
 	tx: Tx,
 	userId: string,
@@ -214,10 +131,6 @@ export async function mergeUserExerciseRows(
 	targetId: string,
 	sourceMuscleGroupsForExercise: Array<{ name: string; normalizedName: string }> | null = null,
 ) {
-	if (sourceId === targetId) {
-		throw new Error("Cannot merge an exercise into itself");
-	}
-
 	const [sourceRows, targetRows] = await Promise.all([
 		tx.$queryRawTyped(getUserExerciseId(userId, sourceId)),
 		tx.$queryRawTyped(getUserExerciseId(userId, targetId)),
@@ -227,7 +140,7 @@ export async function mergeUserExerciseRows(
 	const [target] = targetRows;
 
 	if (!source || !target) {
-		throw new Error("Source or target exercise not found");
+		return null;
 	}
 
 	if (sourceMuscleGroupsForExercise !== null) {
@@ -236,7 +149,7 @@ export async function mergeUserExerciseRows(
 
 	const cutoff = await getEarliestAffectedWorkoutCutoff(tx, userId, [sourceId, targetId]);
 
-	await unionSourceMuscleGroupsOntoTarget(tx, sourceId, targetId);
+	await tx.$queryRawTyped(unionExerciseMuscleGroups(sourceId, targetId));
 
 	await tx.workout_exercises.updateMany({
 		where: { exercise_id: sourceId },
@@ -245,5 +158,5 @@ export async function mergeUserExerciseRows(
 
 	await tx.$queryRawTyped(deleteUserExercise(userId, sourceId));
 
-	return cutoff;
+	return { cutoff };
 }

@@ -5,7 +5,7 @@ import { Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import { buildSetPrTypes } from "@/features/workout-form/lib/setPr";
 import { normalizeName } from "@/lib/normalizeName";
-import type { WorkoutExerciseWithDatabaseId } from "@/server/exercises/library/workout-exercises.repository";
+import type { WorkoutExerciseWithDatabaseId } from "@/server/exercises/library/workout-exercises.db";
 import type {
 	ListWorkoutsQuery,
 	WorkoutForEdit,
