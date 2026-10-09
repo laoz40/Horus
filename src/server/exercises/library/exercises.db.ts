@@ -114,15 +114,9 @@ export const exerciseDbLayer = Layer.effect(
 						catch: (cause) => new DatabaseError({ cause }),
 					});
 
-					yield* Effect.tryPromise({
-						try: () => replaceExerciseMuscleGroups(connection, created.id, exercise.muscleGroups),
-						catch: (cause) => new DatabaseError({ cause }),
-					});
+					yield* replaceExerciseMuscleGroups(connection, created.id, exercise.muscleGroups);
 
-					const row = yield* Effect.tryPromise({
-						try: () => getUserExerciseLibraryRow(connection, userId, created.id),
-						catch: (cause) => new DatabaseError({ cause }),
-					});
+					const row = yield* getUserExerciseLibraryRow(connection, userId, created.id);
 
 					if (!row)
 						return yield* Effect.fail(
@@ -144,15 +138,9 @@ export const exerciseDbLayer = Layer.effect(
 
 					// Stop before changing muscle groups when the owned exercise no longer exists.
 					if (updated.count === 0) return yield* Effect.fail(new ExerciseNotFoundError());
-					yield* Effect.tryPromise({
-						try: () => replaceExerciseMuscleGroups(connection, exerciseId, exercise.muscleGroups),
-						catch: (cause) => new DatabaseError({ cause }),
-					});
+					yield* replaceExerciseMuscleGroups(connection, exerciseId, exercise.muscleGroups);
 
-					const row = yield* Effect.tryPromise({
-						try: () => getUserExerciseLibraryRow(connection, userId, exerciseId),
-						catch: (cause) => new DatabaseError({ cause }),
-					});
+					const row = yield* getUserExerciseLibraryRow(connection, userId, exerciseId);
 
 					if (!row) return yield* Effect.fail(new ExerciseNotFoundError());
 
@@ -162,21 +150,20 @@ export const exerciseDbLayer = Layer.effect(
 				Effect.gen(function* () {
 					if (sourceId === targetId) return yield* Effect.fail(new ExerciseNotFoundError());
 
-					const result = yield* Effect.tryPromise({
-						try: () =>
-							mergeUserExerciseRows(connection, userId, sourceId, targetId, sourceMuscleGroups),
-						catch: (cause) => new DatabaseError({ cause }),
-					});
+					const result = yield* mergeUserExerciseRows(
+						connection,
+						userId,
+						sourceId,
+						targetId,
+						sourceMuscleGroups,
+					);
 
 					if (!result) return yield* Effect.fail(new ExerciseNotFoundError());
 
 					return result.cutoff;
 				}),
 			resolveWorkoutExercises: ({ userId, exercises }) =>
-				Effect.tryPromise({
-					try: () => findOrCreateWorkoutExercises(connection, userId, exercises),
-					catch: (cause) => new DatabaseError({ cause }),
-				}),
+				findOrCreateWorkoutExercises(connection, userId, exercises),
 			findUserExerciseIdByNormalizedName: ({ userId, normalizedName }) =>
 				Effect.tryPromise({
 					try: async (): Promise<string | null> => {
@@ -189,10 +176,7 @@ export const exerciseDbLayer = Layer.effect(
 					catch: (cause) => new DatabaseError({ cause }),
 				}),
 			getUserExercise: ({ userId, exerciseId }) =>
-				Effect.tryPromise({
-					try: () => getUserExerciseLibraryRow(connection, userId, exerciseId),
-					catch: (cause) => new DatabaseError({ cause }),
-				}),
+				getUserExerciseLibraryRow(connection, userId, exerciseId),
 			deleteUserExercise: ({ userId, exerciseId }) =>
 				Effect.tryPromise({
 					try: async () => {
