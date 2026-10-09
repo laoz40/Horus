@@ -136,20 +136,12 @@ export const workoutsRouter = {
 				return { workoutId, workout: input.workout };
 			}).pipe(
 				Effect.provide(transactions),
-				Effect.match({
-					onSuccess: (value) => value,
-					onFailure: (error) => {
-						if ("reason" in error) {
-							switch (error.reason) {
-								case "INVALID_INPUT":
-									throw errors.INVALID_INPUT();
-								default:
-									throw errors.DATABASE_ERROR();
-							}
-						}
-
+				Effect.catchTags({
+					INVALID_INPUT: () => Effect.fail(errors.INVALID_INPUT()),
+					DatabaseError: (error) => {
 						console.error("Failed to create workout", { cause: error.cause });
-						throw errors.DATABASE_ERROR();
+
+						return Effect.fail(errors.DATABASE_ERROR());
 					},
 				}),
 			),
@@ -170,22 +162,12 @@ export const workoutsRouter = {
 			Effect.runPromise(
 				deleteAllWorkouts(context.userId).pipe(
 					Effect.provide(workoutDb),
-					Effect.match({
-						onSuccess: (value) => value,
-						onFailure: (error) => {
-							if ("reason" in error) {
-								switch (error.reason) {
-									case "NO_WORKOUTS":
-										throw errors.NO_WORKOUTS();
-									default: {
-										const exhaustiveReason: never = error.reason;
-										throw exhaustiveReason;
-									}
-								}
-							}
-
+					Effect.catchTags({
+						NO_WORKOUTS: () => Effect.fail(errors.NO_WORKOUTS()),
+						DatabaseError: (error) => {
 							console.error("Failed to delete all workouts", { cause: error.cause });
-							throw errors.DATABASE_ERROR();
+
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),
@@ -206,25 +188,16 @@ export const workoutsRouter = {
 			Effect.runPromise(
 				deleteWorkout(input.workoutId, context.userId).pipe(
 					Effect.provide(transactions),
-					Effect.match({
-						onSuccess: (workout) => ({
-							deletedWorkoutId: workout.id,
-							deletedWorkoutName: workout.name,
-						}),
-						onFailure: (error) => {
-							if ("reason" in error) {
-								switch (error.reason) {
-									case "NOT_FOUND":
-										throw errors.NOT_FOUND();
-									default: {
-										const exhaustiveReason: never = error.reason;
-										throw exhaustiveReason;
-									}
-								}
-							}
-
+					Effect.map((workout) => ({
+						deletedWorkoutId: workout.id,
+						deletedWorkoutName: workout.name,
+					})),
+					Effect.catchTags({
+						NOT_FOUND: () => Effect.fail(errors.NOT_FOUND()),
+						DatabaseError: (error) => {
 							console.error("Failed to delete workout", { cause: error.cause });
-							throw errors.DATABASE_ERROR();
+
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),
@@ -239,22 +212,13 @@ export const workoutsRouter = {
 				return { workoutId: input.workoutId, workout: input.workout };
 			}).pipe(
 				Effect.provide(transactions),
-				Effect.match({
-					onSuccess: (value) => value,
-					onFailure: (error) => {
-						if ("reason" in error) {
-							switch (error.reason) {
-								case "NOT_FOUND":
-									throw errors.NOT_FOUND();
-								case "INVALID_INPUT":
-									throw errors.INVALID_INPUT();
-								default:
-									throw errors.DATABASE_ERROR();
-							}
-						}
-
+				Effect.catchTags({
+					NOT_FOUND: () => Effect.fail(errors.NOT_FOUND()),
+					INVALID_INPUT: () => Effect.fail(errors.INVALID_INPUT()),
+					DatabaseError: (error) => {
 						console.error("Failed to update workout", { cause: error.cause });
-						throw errors.DATABASE_ERROR();
+
+						return Effect.fail(errors.DATABASE_ERROR());
 					},
 				}),
 			),
@@ -275,22 +239,12 @@ export const workoutsRouter = {
 			Effect.runPromise(
 				getWorkoutById(input.id, context.userId).pipe(
 					Effect.provide(workoutDb),
-					Effect.match({
-						onSuccess: (value) => value,
-						onFailure: (error) => {
-							if ("reason" in error) {
-								switch (error.reason) {
-									case "NOT_FOUND":
-										throw errors.NOT_FOUND();
-									default: {
-										const exhaustiveReason: never = error.reason;
-										throw exhaustiveReason;
-									}
-								}
-							}
-
+					Effect.catchTags({
+						NOT_FOUND: () => Effect.fail(errors.NOT_FOUND()),
+						DatabaseError: (error) => {
 							console.error("Failed to load workout", { cause: error.cause });
-							throw errors.DATABASE_ERROR();
+
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),
@@ -308,11 +262,11 @@ export const workoutsRouter = {
 			Effect.runPromise(
 				listWorkouts({ ...input, userId: context.userId }).pipe(
 					Effect.provide(workoutDb),
-					Effect.match({
-						onSuccess: (value) => value,
-						onFailure: (error) => {
+					Effect.catchTags({
+						DatabaseError: (error) => {
 							console.error("Failed to list workouts", { cause: error.cause });
-							throw errors.DATABASE_ERROR();
+
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),

@@ -40,12 +40,11 @@ export const dashboardRouter = {
 			Effect.runPromise(
 				getTrainingYearRange(context.userId).pipe(
 					Effect.provide(dashboardDb),
-					Effect.match({
-						onSuccess: (value) => value,
-						onFailure: (error) => {
+					Effect.catchTags({
+						DatabaseError: (error) => {
 							console.error("Failed to load training year range", { cause: error.cause });
 
-							throw errors.DATABASE_ERROR();
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),
@@ -64,12 +63,11 @@ export const dashboardRouter = {
 			Effect.runPromise(
 				getYearInTraining({ userId: context.userId, year: input.year }).pipe(
 					Effect.provide(dashboardDb),
-					Effect.match({
-						onSuccess: (value) => value,
-						onFailure: (error) => {
+					Effect.catchTags({
+						DatabaseError: (error) => {
 							console.error("Failed to load year in training", { cause: error.cause });
 
-							throw errors.DATABASE_ERROR();
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),

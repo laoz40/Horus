@@ -3,7 +3,6 @@ import "server-only";
 
 import { Effect } from "effect";
 import { z } from "zod";
-import { DatabaseError } from "@/lib/db/database";
 import { MUSCLE_GROUP_CATEGORIES } from "@/features/workout-form/lib/muscleGroupCategories";
 import { fetchApiExercises } from "@/features/workout-form/lib/fetchApiExercises.server";
 import { protectedProcedure, publicProcedure } from "@/server/procedures";
@@ -56,12 +55,12 @@ export const exercisesRouter = {
 			Effect.runPromise(
 				listUserExercises(context.userId).pipe(
 					Effect.provide(exerciseDb),
-					Effect.match({
-						onSuccess: (exercises) => ({ exercises }),
-						onFailure: (error) => {
+					Effect.map((exercises) => ({ exercises })),
+					Effect.catchTags({
+						DatabaseError: (error) => {
 							console.error("Failed to list exercises", { cause: error.cause });
 
-							throw errors.DATABASE_ERROR();
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),
@@ -102,16 +101,11 @@ export const exercisesRouter = {
 					setIndex: input.setIndex,
 				}).pipe(
 					Effect.provide(progressDb),
-					Effect.match({
-						onSuccess: (value) => value,
-						onFailure: (error) => {
-							if (error instanceof DatabaseError) {
-								console.error("Failed to check set PR", { cause: error.cause });
-								throw errors.DATABASE_ERROR();
-							}
+					Effect.catchTags({
+						DatabaseError: (error) => {
+							console.error("Failed to check set PR", { cause: error.cause });
 
-							const exhaustiveError: never = error;
-							throw exhaustiveError;
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),
@@ -129,12 +123,11 @@ export const exercisesRouter = {
 			Effect.runPromise(
 				searchExercises(context.userId, input.query).pipe(
 					Effect.provide(exerciseDb),
-					Effect.match({
-						onSuccess: (value) => value,
-						onFailure: (error) => {
+					Effect.catchTags({
+						DatabaseError: (error) => {
 							console.error("Failed to search exercises", { cause: error.cause });
 
-							throw errors.DATABASE_ERROR();
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),
@@ -166,18 +159,13 @@ export const exercisesRouter = {
 			Effect.runPromise(
 				listExercisesByCategory(context.userId, input.category).pipe(
 					Effect.provide(exerciseDb),
-					Effect.match({
-						onSuccess: (value) => value,
-						onFailure: (error) => {
-							if (error instanceof DatabaseError) {
-								console.error("Failed to list exercises by category", {
-									cause: error.cause,
-								});
-								throw errors.DATABASE_ERROR();
-							}
+					Effect.catchTags({
+						DatabaseError: (error) => {
+							console.error("Failed to list exercises by category", {
+								cause: error.cause,
+							});
 
-							const exhaustiveError: never = error;
-							throw exhaustiveError;
+							return Effect.fail(errors.DATABASE_ERROR());
 						},
 					}),
 				),
