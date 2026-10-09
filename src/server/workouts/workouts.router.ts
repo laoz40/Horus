@@ -139,9 +139,9 @@ export const workoutsRouter = {
 				Effect.catchTags({
 					INVALID_INPUT: () => Effect.fail(errors.INVALID_INPUT()),
 					DatabaseError: (error) => {
-						console.error("Failed to create workout", { cause: error.cause });
-
-						return Effect.fail(errors.DATABASE_ERROR());
+						return Effect.logError("Failed to create workout", { cause: error.cause }).pipe(
+							Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+						);
 					},
 				}),
 			),
@@ -165,9 +165,9 @@ export const workoutsRouter = {
 					Effect.catchTags({
 						NO_WORKOUTS: () => Effect.fail(errors.NO_WORKOUTS()),
 						DatabaseError: (error) => {
-							console.error("Failed to delete all workouts", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to delete all workouts", { cause: error.cause }).pipe(
+								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+							);
 						},
 					}),
 				),
@@ -195,9 +195,9 @@ export const workoutsRouter = {
 					Effect.catchTags({
 						NOT_FOUND: () => Effect.fail(errors.NOT_FOUND()),
 						DatabaseError: (error) => {
-							console.error("Failed to delete workout", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to delete workout", { cause: error.cause }).pipe(
+								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+							);
 						},
 					}),
 				),
@@ -216,9 +216,9 @@ export const workoutsRouter = {
 					NOT_FOUND: () => Effect.fail(errors.NOT_FOUND()),
 					INVALID_INPUT: () => Effect.fail(errors.INVALID_INPUT()),
 					DatabaseError: (error) => {
-						console.error("Failed to update workout", { cause: error.cause });
-
-						return Effect.fail(errors.DATABASE_ERROR());
+						return Effect.logError("Failed to update workout", { cause: error.cause }).pipe(
+							Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+						);
 					},
 				}),
 			),
@@ -242,9 +242,9 @@ export const workoutsRouter = {
 					Effect.catchTags({
 						NOT_FOUND: () => Effect.fail(errors.NOT_FOUND()),
 						DatabaseError: (error) => {
-							console.error("Failed to load workout", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to load workout", { cause: error.cause }).pipe(
+								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+							);
 						},
 					}),
 				),
@@ -264,9 +264,9 @@ export const workoutsRouter = {
 					Effect.provide(workoutDb),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to list workouts", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to list workouts", { cause: error.cause }).pipe(
+								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+							);
 						},
 					}),
 				),

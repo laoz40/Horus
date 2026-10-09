@@ -42,9 +42,9 @@ export const dashboardRouter = {
 					Effect.provide(dashboardDb),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to load training year range", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to load training year range", {
+								cause: error.cause,
+							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
 						},
 					}),
 				),
@@ -65,9 +65,9 @@ export const dashboardRouter = {
 					Effect.provide(dashboardDb),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to load year in training", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to load year in training", {
+								cause: error.cause,
+							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
 						},
 					}),
 				),

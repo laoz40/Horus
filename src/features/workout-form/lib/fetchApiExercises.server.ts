@@ -24,8 +24,6 @@ const fetchWgerExerciseResponse = (query: string) =>
 		url.searchParams.set("limit", "10");
 		url.searchParams.set("name__search", query);
 
-		console.log(url.toString());
-
 		const response = yield* Effect.tryPromise({
 			try: () =>
 				fetch(url.toString(), {

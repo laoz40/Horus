@@ -58,9 +58,9 @@ export const exercisesRouter = {
 					Effect.map((exercises) => ({ exercises })),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to list exercises", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to list exercises", { cause: error.cause }).pipe(
+								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+							);
 						},
 					}),
 				),
@@ -103,9 +103,9 @@ export const exercisesRouter = {
 					Effect.provide(progressDb),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to check set PR", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to check set PR", { cause: error.cause }).pipe(
+								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+							);
 						},
 					}),
 				),
@@ -125,9 +125,9 @@ export const exercisesRouter = {
 					Effect.provide(exerciseDb),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to search exercises", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to search exercises", { cause: error.cause }).pipe(
+								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+							);
 						},
 					}),
 				),
@@ -161,11 +161,9 @@ export const exercisesRouter = {
 					Effect.provide(exerciseDb),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to list exercises by category", {
+							return Effect.logError("Failed to list exercises by category", {
 								cause: error.cause,
-							});
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
 						},
 					}),
 				),
@@ -196,9 +194,9 @@ export const exercisesRouter = {
 					Effect.provide(transactions),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to create exercise", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to create exercise", { cause: error.cause }).pipe(
+								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+							);
 						},
 						ExerciseNameCollisionError: (error) =>
 							Effect.fail(
@@ -247,9 +245,9 @@ export const exercisesRouter = {
 					Effect.provide(transactions),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to update exercise", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to update exercise", { cause: error.cause }).pipe(
+								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+							);
 						},
 						ExerciseNameCollisionError: (error) =>
 							Effect.fail(
@@ -280,9 +278,9 @@ export const exercisesRouter = {
 					Effect.provide(exerciseDb),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to delete exercise", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to delete exercise", { cause: error.cause }).pipe(
+								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+							);
 						},
 						ExerciseNotFoundError: () => Effect.fail(errors.EXERCISE_NOT_FOUND()),
 						ExerciseInUseError: () => Effect.fail(errors.EXERCISE_IN_USE()),
@@ -318,9 +316,9 @@ export const exercisesRouter = {
 					Effect.provide(transactions),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to merge exercises", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to merge exercises", { cause: error.cause }).pipe(
+								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+							);
 						},
 						ExerciseNotFoundError: () => Effect.fail(errors.EXERCISE_NOT_FOUND()),
 					}),

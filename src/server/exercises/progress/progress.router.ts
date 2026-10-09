@@ -41,9 +41,9 @@ export const exercisesProgressProcedures = {
 					Effect.provide(progressDb),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to get recent sets", { cause: error.cause });
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							return Effect.logError("Failed to get recent sets", { cause: error.cause }).pipe(
+								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
+							);
 						},
 					}),
 				),
@@ -76,11 +76,9 @@ export const exercisesProgressProcedures = {
 					Effect.provide(progressDb),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to get weekly weight progression", {
+							return Effect.logError("Failed to get weekly weight progression", {
 								cause: error.cause,
-							});
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
 						},
 					}),
 				),
@@ -113,11 +111,9 @@ export const exercisesProgressProcedures = {
 					Effect.provide(progressDb),
 					Effect.catchTags({
 						DatabaseError: (error) => {
-							console.error("Failed to get exercise personal records", {
+							return Effect.logError("Failed to get exercise personal records", {
 								cause: error.cause,
-							});
-
-							return Effect.fail(errors.DATABASE_ERROR());
+							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
 						},
 					}),
 				),
