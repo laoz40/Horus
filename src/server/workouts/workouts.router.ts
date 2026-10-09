@@ -137,7 +137,7 @@ export const workoutsRouter = {
 
 				return { workoutId, workout: input.workout };
 			}).pipe(
-				Effect.provideService(Database, { prisma }),
+				Effect.provide(transactions),
 				Effect.match({
 					onSuccess: (value) => value,
 					onFailure: (error) => {

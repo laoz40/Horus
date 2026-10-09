@@ -1,5 +1,15 @@
 import "server-only";
 
+import type { WorkoutForSave } from "@/features/workout-form/lib/types";
+import type {
+	PreparedWorkoutWriteExercise,
+	WorkoutExerciseWithDatabaseId,
+} from "@/server/exercises/library/workout-exercises.repository";
+import type { PrSetUpdate } from "@/server/exercises/pr-history/pr-history.functions";
+import {
+	insertWorkoutExerciseRows,
+	insertWorkoutSetRows,
+} from "@/server/workouts/workouts.repository";
 import type { Decimal } from "@prisma/client/runtime/client";
 import { Context, Effect, Layer } from "effect";
 import {
@@ -15,6 +25,15 @@ import {
 import { prisma } from "@/lib/db";
 import { DbConnection } from "@/lib/db/connection";
 import { DatabaseError } from "@/lib/db/database";
+
+export type WorkoutWriteInput = {
+	userId: string;
+	workout: Omit<WorkoutForSave, "exercises"> & {
+		exercises: PreparedWorkoutWriteExercise[];
+	};
+};
+
+export type WorkoutUpdateInput = WorkoutWriteInput & { workoutId: string };
 
 export type ListWorkoutsQuery = {
 	userId: string;
@@ -64,6 +83,13 @@ function decimalToNumber(value: Decimal): number {
 export class WorkoutDb extends Context.Service<
 	WorkoutDb,
 	{
+		readonly create: (input: WorkoutWriteInput) => Effect.Effect<string, DatabaseError>;
+		readonly saveContent: (input: {
+			workoutId: string;
+			exercises: WorkoutExerciseWithDatabaseId[];
+			prStatusesBySetId: ReadonlyMap<string, PrSetUpdate>;
+			totalPrSets: number;
+		}) => Effect.Effect<void, DatabaseError>;
 		readonly getForUpdate: (query: {
 			workoutId: string;
 			userId: string;
@@ -92,6 +118,34 @@ export const workoutDbLayer = Layer.effect(
 		const connection = yield* DbConnection;
 
 		return {
+			create: (input) =>
+				Effect.tryPromise({
+					try: async () => {
+						const row = await connection.workouts.create({
+							data: {
+								user_id: input.userId,
+								name: input.workout.name,
+								duration_seconds: input.workout.durationSeconds,
+							},
+							select: { id: true },
+						});
+
+						return row.id;
+					},
+					catch: (cause) => new DatabaseError({ cause }),
+				}),
+			saveContent: ({ workoutId, exercises, prStatusesBySetId, totalPrSets }) =>
+				Effect.tryPromise({
+					try: async () => {
+						await insertWorkoutExerciseRows(connection, workoutId, exercises);
+						await insertWorkoutSetRows(connection, exercises, prStatusesBySetId);
+						await connection.workouts.update({
+							where: { id: workoutId },
+							data: { total_pr_sets: totalPrSets },
+						});
+					},
+					catch: (cause) => new DatabaseError({ cause }),
+				}),
 			getForUpdate: ({ workoutId, userId }) =>
 				Effect.gen(function* () {
 					const [row] = yield* Effect.tryPromise({

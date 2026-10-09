@@ -1,15 +1,40 @@
 import "server-only";
 
 import { Effect } from "effect";
+import {
+	getUserExerciseCatalogRow as getUserExerciseLibraryRowQuery,
+	getExerciseMuscleGroupNormalizedNames as getExerciseMuscleGroupNormalizedNamesQuery,
+	unionExerciseMuscleGroups,
+	getEarliestAffectedWorkoutCutoff as getEarliestAffectedWorkoutCutoffQuery,
+	getUserExerciseId,
+	deleteUserExercise,
+	deleteExerciseMuscleGroups,
+} from "@/generated/prisma/sql";
 import type { DatabaseTransaction } from "@/lib/db";
 import { Database, DatabaseError } from "@/lib/db/database";
-import {
-	getUserExerciseLibraryRow,
-	type UserExerciseLibraryRow,
-} from "@/server/exercises/library/exercises.db";
+import type { UserExerciseLibraryRow } from "@/server/exercises/library/exercises.db";
 import type { PrHistoryCutoff } from "@/server/exercises/pr-history/pr-history.functions";
 
 type Tx = DatabaseTransaction;
+
+export async function getUserExerciseLibraryRow(
+	database: Tx,
+	userId: string,
+	exerciseId: string,
+): Promise<UserExerciseLibraryRow | null> {
+	const [row] = await database.$queryRawTyped(getUserExerciseLibraryRowQuery(userId, exerciseId));
+
+	if (!row) {
+		return null;
+	}
+
+	return {
+		id: row.id,
+		name: row.name,
+		muscleGroups: row.muscle_groups ?? [],
+		workoutCount: row.workout_count ?? 0,
+	};
+}
 
 export async function getOrCreateMuscleGroupId(
 	tx: Tx,
@@ -32,16 +57,9 @@ async function getExerciseMuscleGroupNormalizedNames(
 	tx: Tx,
 	exerciseId: string,
 ): Promise<string[]> {
-	const rows = await tx.exercise_muscle_groups.findMany({
-		where: { exercise_id: exerciseId },
-		select: {
-			muscle_groups: {
-				select: { normalized_name: true },
-			},
-		},
-	});
+	const rows = await tx.$queryRawTyped(getExerciseMuscleGroupNormalizedNamesQuery(exerciseId));
 
-	return rows.map((row) => row.muscle_groups.normalized_name).toSorted();
+	return rows.map((row) => row.normalized_name).toSorted();
 }
 
 function exerciseMuscleGroupsUnchanged(
@@ -72,9 +90,7 @@ async function replaceExerciseMuscleGroups(
 		return;
 	}
 
-	await tx.exercise_muscle_groups.deleteMany({
-		where: { exercise_id: exerciseId },
-	});
+	await tx.$queryRawTyped(deleteExerciseMuscleGroups(exerciseId));
 
 	if (muscleGroupsForExercise.length === 0) {
 		return;
@@ -171,22 +187,7 @@ async function unionSourceMuscleGroupsOntoTarget(
 	sourceId: string,
 	targetId: string,
 ): Promise<void> {
-	const sourceLinks = await tx.exercise_muscle_groups.findMany({
-		where: { exercise_id: sourceId },
-		select: { muscle_group_id: true },
-	});
-
-	if (sourceLinks.length === 0) {
-		return;
-	}
-
-	await tx.exercise_muscle_groups.createMany({
-		data: sourceLinks.map(({ muscle_group_id }) => ({
-			exercise_id: targetId,
-			muscle_group_id,
-		})),
-		skipDuplicates: true,
-	});
+	await tx.$queryRawTyped(unionExerciseMuscleGroups(sourceId, targetId));
 }
 
 async function getEarliestAffectedWorkoutCutoff(
@@ -194,21 +195,7 @@ async function getEarliestAffectedWorkoutCutoff(
 	userId: string,
 	exerciseIds: string[],
 ): Promise<PrHistoryCutoff | null> {
-	const row = await tx.workouts.findFirst({
-		where: {
-			user_id: userId,
-			workout_exercises: {
-				some: {
-					exercise_id: { in: exerciseIds },
-				},
-			},
-		},
-		orderBy: [{ created_at: "asc" }, { id: "asc" }],
-		select: {
-			id: true,
-			created_at: true,
-		},
-	});
+	const [row] = await tx.$queryRawTyped(getEarliestAffectedWorkoutCutoffQuery(userId, exerciseIds));
 
 	if (!row) {
 		return null;
@@ -231,22 +218,13 @@ export async function mergeUserExerciseRows(
 		throw new Error("Cannot merge an exercise into itself");
 	}
 
-	const [source, target] = await Promise.all([
-		tx.exercises.findFirst({
-			where: {
-				id: sourceId,
-				user_id: userId,
-			},
-			select: { id: true },
-		}),
-		tx.exercises.findFirst({
-			where: {
-				id: targetId,
-				user_id: userId,
-			},
-			select: { id: true },
-		}),
+	const [sourceRows, targetRows] = await Promise.all([
+		tx.$queryRawTyped(getUserExerciseId(userId, sourceId)),
+		tx.$queryRawTyped(getUserExerciseId(userId, targetId)),
 	]);
+
+	const [source] = sourceRows;
+	const [target] = targetRows;
 
 	if (!source || !target) {
 		throw new Error("Source or target exercise not found");
@@ -265,12 +243,7 @@ export async function mergeUserExerciseRows(
 		data: { exercise_id: targetId },
 	});
 
-	await tx.exercises.deleteMany({
-		where: {
-			id: sourceId,
-			user_id: userId,
-		},
-	});
+	await tx.$queryRawTyped(deleteUserExercise(userId, sourceId));
 
 	return cutoff;
 }

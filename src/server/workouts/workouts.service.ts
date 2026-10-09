@@ -6,6 +6,7 @@ import { DbConnection } from "@/lib/db/connection";
 import { prHistoryDb } from "@/server/exercises/pr-history/pr-history.db";
 import { Transactions } from "@/server/transactions";
 import { Database, DatabaseError } from "@/lib/db/database";
+import { ExerciseDb } from "@/server/exercises/library/exercises.db";
 import { WorkoutDb } from "@/server/workouts/workouts.db";
 import { findOrCreateWorkoutExercises } from "@/server/exercises/library/workout-exercises.repository";
 import {
@@ -13,14 +14,14 @@ import {
 	getWorkout,
 	getWorkoutExerciseIds,
 	insertWorkoutExerciseRows,
-	insertWorkoutRow,
 	insertWorkoutSetRows,
 	updateWorkoutFields,
-	updateWorkoutPrTotal,
-	type WorkoutUpdateInput,
-	type WorkoutWriteInput,
 } from "@/server/workouts/workouts.repository";
-import type { ListWorkoutsQuery } from "@/server/workouts/workouts.db";
+import type {
+	ListWorkoutsQuery,
+	WorkoutWriteInput,
+	WorkoutUpdateInput,
+} from "@/server/workouts/workouts.db";
 import {
 	calculateSetPrsFromHistory,
 	recalculateExercisePrHistory,
@@ -41,39 +42,38 @@ import {
 
 export const createWorkout = (createInput: WorkoutWriteInput) =>
 	Effect.gen(function* () {
-		const { prisma } = yield* Database;
+		const transaction = yield* Transactions;
 
-		return yield* Effect.tryPromise({
-			try: () =>
-				prisma.$transaction(async (tx) => {
-					const workoutId = await insertWorkoutRow(tx, createInput);
+		return yield* transaction.run(
+			Effect.gen(function* () {
+				const workouts = yield* WorkoutDb;
+				const exercises = yield* ExerciseDb;
+				const workoutId = yield* workouts.create(createInput);
 
-					const exercisesWithDatabaseIds = await findOrCreateWorkoutExercises(
-						tx,
-						createInput.userId,
-						createInput.workout.exercises,
-					);
+				const exercisesWithDatabaseIds = yield* exercises.resolveWorkoutExercises({
+					userId: createInput.userId,
+					exercises: createInput.workout.exercises,
+				});
 
-					const newWorkoutSets = buildNewWorkoutPrSets(workoutId, exercisesWithDatabaseIds);
+				const newWorkoutSets = buildNewWorkoutPrSets(workoutId, exercisesWithDatabaseIds);
 
-					const prStatuses = await Effect.runPromise(
-						calculateSetPrsFromHistory({ userId: createInput.userId, sets: newWorkoutSets }).pipe(
-							Effect.provide(prHistoryDb),
-							Effect.provideService(DbConnection, tx),
-						),
-					);
+				const prStatuses = yield* calculateSetPrsFromHistory({
+					userId: createInput.userId,
+					sets: newWorkoutSets,
+				});
 
-					const prStatusesBySetId = new Map(prStatuses.map((status) => [status.setId, status]));
-					const totalPrSets = buildPrTotalsByWorkoutId(prStatuses).get(workoutId) ?? 0;
+				const prStatusesBySetId = new Map(prStatuses.map((status) => [status.setId, status]));
+				const totalPrSets = buildPrTotalsByWorkoutId(prStatuses).get(workoutId) ?? 0;
+				yield* workouts.saveContent({
+					workoutId,
+					exercises: exercisesWithDatabaseIds,
+					prStatusesBySetId,
+					totalPrSets,
+				});
 
-					await insertWorkoutExerciseRows(tx, workoutId, exercisesWithDatabaseIds);
-					await insertWorkoutSetRows(tx, exercisesWithDatabaseIds, prStatusesBySetId);
-					await updateWorkoutPrTotal(tx, workoutId, totalPrSets);
-
-					return workoutId;
-				}),
-			catch: (cause) => new DatabaseError({ cause }),
-		});
+				return workoutId;
+			}),
+		);
 	});
 
 const updateWorkoutAndRecalculatePrs = (updateInput: WorkoutUpdateInput) =>

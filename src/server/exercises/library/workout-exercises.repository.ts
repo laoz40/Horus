@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
+import { findUserExerciseIdByNormalizedName } from "@/generated/prisma/sql";
 import type { DatabaseTransaction } from "@/lib/db";
 import { getOrCreateMuscleGroupId } from "@/server/exercises/library/library.repository";
 
@@ -17,128 +18,54 @@ export type PreparedWorkoutWriteExercise = Omit<WorkoutWriteExercise, "global"> 
 
 export type WorkoutExerciseWithDatabaseId = PreparedWorkoutWriteExercise & { exerciseId: string };
 
-async function findSubmittedExerciseId(
-	tx: Tx,
-	userId: string,
-	exerciseId: string,
-	normalizedName: string,
-) {
-	const exercise = await tx.exercises.findFirst({
-		where: {
-			id: exerciseId,
-			user_id: userId,
-			normalized_name: normalizedName,
-		},
-		select: { id: true },
-	});
-
-	return exercise?.id;
-}
-
-async function findExerciseIdByNormalizedName(tx: Tx, userId: string, normalizedName: string) {
-	const exercise = await tx.exercises.findFirst({
-		where: {
-			user_id: userId,
-			normalized_name: normalizedName,
-		},
-		select: { id: true },
-	});
-
-	return exercise?.id;
-}
-
-async function insertExerciseMuscleGroups(
-	tx: Tx,
-	exerciseId: string,
-	muscleGroupsForExercise: Array<{ name: string; normalizedName: string }>,
-): Promise<void> {
-	const muscleGroupIds = await Promise.all(
-		muscleGroupsForExercise.map((muscleGroup) => getOrCreateMuscleGroupId(tx, muscleGroup)),
-	);
-
-	if (muscleGroupIds.length === 0) return;
-
-	await tx.exercise_muscle_groups.createMany({
-		data: muscleGroupIds.map((muscleGroupId) => ({
-			exercise_id: exerciseId,
-			muscle_group_id: muscleGroupId,
-		})),
-		skipDuplicates: true,
-	});
-}
-
-async function createOrGetExercise(
-	tx: Tx,
-	userId: string,
-	exercise: PreparedWorkoutWriteExercise,
-): Promise<string> {
-	const createResult = await tx.exercises.createMany({
-		data: [
-			{
-				user_id: userId,
-				name: exercise.global.name,
-				normalized_name: exercise.global.normalizedName,
-			},
-		],
-		skipDuplicates: true,
-	});
-
-	const exerciseId = await findExerciseIdByNormalizedName(
-		tx,
-		userId,
-		exercise.global.normalizedName,
-	);
-
-	if (!exerciseId) {
-		throw new Error("Exercise conflict did not resolve to an existing row");
-	}
-
-	if (createResult.count > 0) {
-		await insertExerciseMuscleGroups(tx, exerciseId, exercise.global.muscleGroups);
-	}
-
-	return exerciseId;
-}
-
-async function findOrCreateExerciseId(
-	tx: Tx,
-	userId: string,
-	exercise: PreparedWorkoutWriteExercise,
-): Promise<string> {
-	if (exercise.exerciseId) {
-		const submittedExerciseId = await findSubmittedExerciseId(
-			tx,
-			userId,
-			exercise.exerciseId,
-			exercise.global.normalizedName,
-		);
-
-		if (submittedExerciseId) {
-			return submittedExerciseId;
-		}
-	}
-
-	const existingExerciseId = await findExerciseIdByNormalizedName(
-		tx,
-		userId,
-		exercise.global.normalizedName,
-	);
-
-	return existingExerciseId ?? createOrGetExercise(tx, userId, exercise);
-}
-
 export async function findOrCreateWorkoutExercises(
 	tx: Tx,
 	userId: string,
 	exercisesForWorkout: PreparedWorkoutWriteExercise[],
 ): Promise<WorkoutExerciseWithDatabaseId[]> {
-	// Duplicates by name still resolve to the same row: createOrGetExercise handles insert conflicts.
-	const exercisesWithDatabaseIds = await Promise.all(
-		exercisesForWorkout.map(async (exercise) => ({
-			...exercise,
-			exerciseId: await findOrCreateExerciseId(tx, userId, exercise),
-		})),
-	);
+	// Duplicates by name still resolve to the same row: the insert handles conflicts.
+	return Promise.all(
+		exercisesForWorkout.map(async (exercise) => {
+			// Names are unique per user, so a matching submitted ID resolves to this same row.
+			const [existing] = await tx.$queryRawTyped(
+				findUserExerciseIdByNormalizedName(userId, exercise.global.normalizedName),
+			);
 
-	return exercisesWithDatabaseIds;
+			if (existing) {
+				return { ...exercise, exerciseId: existing.id };
+			}
+
+			const created = await tx.exercises.createMany({
+				data: [
+					{
+						user_id: userId,
+						name: exercise.global.name,
+						normalized_name: exercise.global.normalizedName,
+					},
+				],
+				skipDuplicates: true,
+			});
+
+			const [resolved] = await tx.$queryRawTyped(
+				findUserExerciseIdByNormalizedName(userId, exercise.global.normalizedName),
+			);
+
+			if (!resolved) throw new Error("Exercise conflict did not resolve to an existing row");
+
+			if (created.count > 0) {
+				const muscleGroupIds = await Promise.all(
+					exercise.global.muscleGroups.map((muscleGroup) =>
+						getOrCreateMuscleGroupId(tx, muscleGroup),
+					),
+				);
+
+				await tx.exercise_muscle_groups.createMany({
+					data: muscleGroupIds.map((id) => ({ exercise_id: resolved.id, muscle_group_id: id })),
+					skipDuplicates: true,
+				});
+			}
+
+			return { ...exercise, exerciseId: resolved.id };
+		}),
+	);
 }
