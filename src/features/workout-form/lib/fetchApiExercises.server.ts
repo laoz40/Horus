@@ -9,7 +9,10 @@ import { WgerExerciseResponseSchema } from "@/features/workout-form/lib/wgerType
 
 class RateLimitedError extends Data.TaggedError("RATE_LIMITED") {}
 
-class RequestFailedError extends Data.TaggedError("REQUEST_FAILED") {}
+class RequestFailedError extends Data.TaggedError("REQUEST_FAILED")<{
+	readonly reason: "network" | "http" | "invalid-json" | "invalid-response" | "timeout";
+	readonly cause: unknown;
+}> {}
 
 export type FetchApiExercisesError = RateLimitedError | RequestFailedError;
 
@@ -17,22 +20,26 @@ type WgerExerciseResponse = z.infer<typeof WgerExerciseResponseSchema>;
 
 type WgerExercise = WgerExerciseResponse["results"][number];
 
-const fetchWgerExerciseResponse = (query: string) =>
+const fetchWgerExercises = (query: string) =>
 	Effect.gen(function* () {
 		const url = new URL("https://wger.de/api/v2/exerciseinfo/");
 		url.searchParams.set("language__code", "en");
 		url.searchParams.set("limit", "10");
 		url.searchParams.set("name__search", query);
 
+		// Keep the fetch signal alive through the body read; close it on completion or interruption.
+		const signal = yield* Effect.abortSignal;
+
 		const response = yield* Effect.tryPromise({
 			try: () =>
 				fetch(url.toString(), {
 					method: "GET",
+					signal,
 					next: {
 						revalidate: 60 * 60 * 24 * 30, // cache for 30 days
 					},
 				}),
-			catch: () => new RequestFailedError(),
+			catch: (cause) => new RequestFailedError({ reason: "network", cause }),
 		});
 
 		if (response.status === 429) {
@@ -40,30 +47,39 @@ const fetchWgerExerciseResponse = (query: string) =>
 		}
 
 		if (!response.ok) {
-			return yield* Effect.fail(new RequestFailedError());
+			return yield* Effect.fail(
+				new RequestFailedError({
+					reason: "http",
+					cause: { status: response.status, statusText: response.statusText },
+				}),
+			);
 		}
 
-		return response;
-	});
-
-const parseWgerExerciseResponse = (
-	response: Response,
-): Effect.Effect<WgerExerciseResponse, FetchApiExercisesError> =>
-	Effect.gen(function* () {
-		// The Wger API response is untrusted third-party data; parse it at the boundary.
 		const responseBody: unknown = yield* Effect.tryPromise({
 			try: () => response.json(),
-			catch: () => new RequestFailedError(),
+			catch: (cause) =>
+				new RequestFailedError({
+					reason: cause instanceof SyntaxError ? "invalid-json" : "network",
+					cause,
+				}),
 		});
 
 		const parsedResponse = WgerExerciseResponseSchema.safeParse(responseBody);
 
 		if (!parsedResponse.success) {
-			return yield* Effect.fail(new RequestFailedError());
+			return yield* Effect.fail(
+				new RequestFailedError({ reason: "invalid-response", cause: parsedResponse.error }),
+			);
 		}
 
 		return parsedResponse.data;
-	});
+	}).pipe(
+		Effect.scoped,
+		Effect.timeout("10 seconds"),
+		Effect.catchTag("TimeoutError", (cause) =>
+			Effect.fail(new RequestFailedError({ reason: "timeout", cause })),
+		),
+	);
 
 const convertWgerExercise = (exercise: WgerExercise): ExerciseSuggestion | undefined => {
 	const englishTranslation = exercise.translations?.find(
@@ -104,8 +120,7 @@ export const fetchApiExercises = (
 	query: string,
 ): Effect.Effect<ExerciseSuggestion[], FetchApiExercisesError> =>
 	Effect.gen(function* () {
-		const response = yield* fetchWgerExerciseResponse(query);
-		const parsedResponse = yield* parseWgerExerciseResponse(response);
+		const parsedResponse = yield* fetchWgerExercises(query);
 
 		return parsedResponse.results.flatMap((exercise) => {
 			const suggestion = convertWgerExercise(exercise);

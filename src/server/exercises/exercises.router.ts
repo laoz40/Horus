@@ -140,15 +140,21 @@ export const exercisesRouter = {
 		.errors(onlineExerciseSearchErrors)
 		.input(z.object({ query: z.string().trim().min(1) }).strict())
 		.output(onlineExerciseSuggestionsSchema)
-		.handler(({ input, context, errors }) =>
+		.handler(({ input, context, errors, signal }) =>
 			Effect.runPromise(
 				fetchApiExercises(input.query).pipe(
 					Effect.catchTags({
 						RATE_LIMITED: () => Effect.fail(errors.RATE_LIMITED()),
-						REQUEST_FAILED: () => Effect.fail(errors.REQUEST_FAILED()),
+						REQUEST_FAILED: (error) => {
+							return Effect.logError("Failed to fetch online exercises", {
+								reason: error.reason,
+								cause: error.cause,
+							}).pipe(Effect.andThen(Effect.fail(errors.REQUEST_FAILED())));
+						},
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
+				{ signal },
 			),
 		),
 	listByCategory: protectedProcedure

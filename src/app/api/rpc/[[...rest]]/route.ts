@@ -1,12 +1,22 @@
 import { RPCHandler } from "@orpc/server/fetch";
 import { onError } from "@orpc/server";
+import { Effect } from "effect";
 
 import { appRouter } from "@/server/router";
 
 const handler = new RPCHandler(appRouter, {
 	interceptors: [
-		onError((error) => {
-			console.error(error);
+		onError((error, { context, request }) => {
+			if (request.signal?.aborted) return;
+
+			Effect.runSync(
+				Effect.logError("RPC request failed", error).pipe(
+					Effect.annotateLogs({
+						requestId: context.requestId,
+						requestPath: request.url.pathname,
+					}),
+				),
+			);
 		}),
 	],
 });
