@@ -8,6 +8,7 @@ import { MUSCLE_GROUP_CATEGORIES } from "@/features/workout-form/lib/muscleGroup
 import { fetchApiExercises } from "@/features/workout-form/lib/fetchApiExercises.server";
 import { protectedProcedure, publicProcedure } from "@/server/procedures";
 import { exercisesProgressProcedures } from "@/server/exercises/progress/progress.router";
+import { progressDb } from "@/server/exercises/progress/progress.db";
 import { checkSetPr } from "@/server/exercises/progress/progress.service";
 import {
 	createUserExercise,
@@ -99,7 +100,7 @@ export const exercisesRouter = {
 					sets: input.sets,
 					setIndex: input.setIndex,
 				}).pipe(
-					Effect.provideService(Database, { prisma }),
+					Effect.provide(progressDb),
 					Effect.match({
 						onSuccess: (value) => value,
 						onFailure: (error) => {

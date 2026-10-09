@@ -6,7 +6,7 @@ import type {
 	ExercisePersonalRecordsRow,
 	RecentSetRow,
 	WeeklyWeightProgressionRow,
-} from "@/server/exercises/progress/progress.repository";
+} from "@/server/exercises/progress/progress.db";
 import type { SetPrType } from "@/features/workout-form/lib/setPr";
 import {
 	calculatePrsForSet,
