@@ -11,7 +11,6 @@ import {
 } from "@/features/workout-form/lib/muscleGroupCategories";
 import { normalizeName } from "@/lib/normalizeName";
 import {
-	deleteUserExercise,
 	insertUserExercise,
 	mergeUserExerciseRows,
 	updateUserExerciseRow,
@@ -124,7 +123,8 @@ export const getUnusedUserExercise = (userId: string, exerciseId: string) =>
 
 export const deleteUserExerciseById = (userId: string, exerciseId: string) =>
 	Effect.gen(function* () {
-		yield* deleteUserExercise(userId, exerciseId);
+		const db = yield* ExerciseDb;
+		yield* db.deleteUserExercise({ userId, exerciseId });
 
 		return { deleted: true as const };
 	});

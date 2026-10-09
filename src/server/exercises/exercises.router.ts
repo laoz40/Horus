@@ -290,7 +290,6 @@ export const exercisesRouter = {
 					return yield* deleteUserExerciseById(context.userId, exercise.id);
 				}).pipe(
 					Effect.provide(exerciseDb),
-					Effect.provideService(Database, { prisma }),
 					Effect.catchTags({
 						DatabaseError: (error) => {
 							console.error("Failed to delete exercise", { cause: error.cause });

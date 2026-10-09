@@ -166,23 +166,6 @@ export const updateUserExerciseRow = (
 		});
 	});
 
-export const deleteUserExercise = (userId: string, exerciseId: string) =>
-	Effect.gen(function* () {
-		const { prisma } = yield* Database;
-
-		return yield* Effect.tryPromise({
-			try: async (): Promise<void> => {
-				await prisma.exercises.deleteMany({
-					where: {
-						id: exerciseId,
-						user_id: userId,
-					},
-				});
-			},
-			catch: (cause) => new DatabaseError({ cause }),
-		});
-	});
-
 async function unionSourceMuscleGroupsOntoTarget(
 	tx: Tx,
 	sourceId: string,

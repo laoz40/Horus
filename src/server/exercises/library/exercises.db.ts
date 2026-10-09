@@ -50,6 +50,10 @@ export class ExerciseDb extends Context.Service<
 			userId: string;
 			exerciseId: string;
 		}) => Effect.Effect<UserExerciseLibraryRow | null, DatabaseError>;
+		readonly deleteUserExercise: (query: {
+			userId: string;
+			exerciseId: string;
+		}) => Effect.Effect<void, DatabaseError>;
 		readonly listUserExercises: (
 			userId: string,
 		) => Effect.Effect<UserExerciseLibraryRow[], DatabaseError>;
@@ -89,6 +93,18 @@ export const exerciseDb = Layer.succeed(ExerciseDb, {
 	getUserExercise: ({ userId, exerciseId }) =>
 		Effect.tryPromise({
 			try: () => getUserExerciseLibraryRow(prisma, userId, exerciseId),
+			catch: (cause) => new DatabaseError({ cause }),
+		}),
+	deleteUserExercise: ({ userId, exerciseId }) =>
+		Effect.tryPromise({
+			try: async () => {
+				await prisma.exercises.deleteMany({
+					where: {
+						id: exerciseId,
+						user_id: userId,
+					},
+				});
+			},
 			catch: (cause) => new DatabaseError({ cause }),
 		}),
 	listUserExercises: (userId) =>
