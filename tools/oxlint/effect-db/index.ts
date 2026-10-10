@@ -5,6 +5,7 @@ import {
 	resolveArrayBinding,
 	unwrapArrayExpression,
 } from "../anti-slop/shared/array-method.ts";
+import { requirePromiseErrorMapperRule } from "./require-promise-error-mapper.ts";
 
 function isEffectBinding(sourceCode: SourceCode, node: ESTree.Node): boolean {
 	const binding = resolveArrayBinding(sourceCode, node);
@@ -103,5 +104,8 @@ const noThrowInEffectPromiseRule = defineRule({
 
 export default eslintCompatPlugin({
 	meta: { name: "effect-db" },
-	rules: { "no-throw-in-promise": noThrowInEffectPromiseRule },
+	rules: {
+		"no-throw-in-promise": noThrowInEffectPromiseRule,
+		"require-promise-error-mapper": requirePromiseErrorMapperRule,
+	},
 });

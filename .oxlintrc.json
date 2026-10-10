@@ -37,6 +37,7 @@
 		"anti-slop-effect/prefer-effect-match": "error",
 		"effect-router/prefer-catch-tags": "error",
 		"effect-db/no-throw-in-promise": "error",
+		"effect-db/require-promise-error-mapper": "error",
 		"effect-boundaries/no-internal-runners": "error",
 		"effect-boundaries/no-service-provision": "error",
 
