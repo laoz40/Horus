@@ -5,7 +5,8 @@
 		{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" },
 		{ "name": "anti-slop-effect", "specifier": "./tools/oxlint/anti-slop/effect/index.ts" },
 		{ "name": "prisma", "specifier": "./tools/oxlint/prisma/index.ts" },
-		{ "name": "effect-router", "specifier": "./tools/oxlint/effect-router/index.ts" }
+		{ "name": "effect-router", "specifier": "./tools/oxlint/effect-router/index.ts" },
+		{ "name": "effect-db", "specifier": "./tools/oxlint/effect-db/index.ts" }
 	],
 	"categories": {
 		"correctness": "error",
@@ -34,6 +35,7 @@
 		"anti-slop-effect/no-service-constructor-imports": "error",
 		"anti-slop-effect/prefer-effect-match": "error",
 		"effect-router/prefer-catch-tags": "error",
+		"effect-db/no-throw-in-promise": "error",
 
 		"anti-slop/no-chained-type-assertions": "error",
 		"anti-slop/no-unknown-parameters": "error",
