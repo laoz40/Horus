@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Effect } from "effect";
 import { useRouter } from "next/navigation";
 import { SettingsCard, type SettingsCardClassNames } from "@daveyplate/better-auth-ui";
 
@@ -23,13 +24,19 @@ export default function SignOutCard({ className, classNames }: SignOutCardProps)
 
 		setIsSigningOut(true);
 
-		try {
-			await authClient.signOut();
-		} finally {
-			router.refresh();
-			router.replace("/");
-			setIsSigningOut(false);
-		}
+		await Effect.runPromise(
+			Effect.ensuring(
+				Effect.tryPromise({
+					try: () => authClient.signOut(),
+					catch: (cause) => cause,
+				}),
+				Effect.sync(() => {
+					router.refresh();
+					router.replace("/");
+					setIsSigningOut(false);
+				}),
+			),
+		);
 	};
 
 	return (

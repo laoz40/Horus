@@ -1,6 +1,7 @@
 "use client";
 
 import { isDefinedError } from "@orpc/client";
+import { Match } from "effect";
 import { useQuery } from "@tanstack/react-query";
 
 import PageLoadingSpinner from "@/components/PageLoadingSpinner";
@@ -32,34 +33,27 @@ export default function ViewWorkoutLoaderComponent({ workoutId }: ViewWorkoutLoa
 			);
 		}
 
-		switch (error.code) {
-			case "NOT_FOUND":
-				return (
-					<WorkoutLoadError
-						message="This workout could not be found."
-						action={{ type: "none" }}
-					/>
-				);
-			case "UNAUTHORIZED":
-				return (
-					<WorkoutLoadError
-						message="You must sign in to view this workout."
-						action={{ type: "link", href: "/login", label: "Sign in" }}
-					/>
-				);
-			case "DATABASE_ERROR":
-				return (
-					<WorkoutLoadError
-						message="The workout could not be loaded."
-						action={{ type: "retry", onRetry: workoutQuery.refetch }}
-					/>
-				);
-			default: {
-				const exhaustiveError: never = error;
-
-				return exhaustiveError;
-			}
-		}
+		return Match.value(error).pipe(
+			Match.when({ code: "NOT_FOUND" }, () => (
+				<WorkoutLoadError
+					message="This workout could not be found."
+					action={{ type: "none" }}
+				/>
+			)),
+			Match.when({ code: "UNAUTHORIZED" }, () => (
+				<WorkoutLoadError
+					message="You must sign in to view this workout."
+					action={{ type: "link", href: "/login", label: "Sign in" }}
+				/>
+			)),
+			Match.when({ code: "DATABASE_ERROR" }, () => (
+				<WorkoutLoadError
+					message="The workout could not be loaded."
+					action={{ type: "retry", onRetry: workoutQuery.refetch }}
+				/>
+			)),
+			Match.exhaustive,
+		);
 	}
 
 	return (

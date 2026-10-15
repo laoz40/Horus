@@ -1,4 +1,5 @@
 import { isDefinedError } from "@orpc/client";
+import { Match } from "effect";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useWorkoutPageExit } from "@/lib/workoutPageExit";
@@ -59,22 +60,12 @@ export const useWorkoutSubmit = ({
 					return;
 				}
 
-				switch (error.code) {
-					case "INVALID_INPUT":
-					case "DATABASE_ERROR":
-						router.push("/workouts/new");
-
-						return;
-					case "UNAUTHORIZED":
-						router.push("/login");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
+				Match.value(error).pipe(
+					Match.when({ code: "INVALID_INPUT" }, () => router.push("/workouts/new")),
+					Match.when({ code: "DATABASE_ERROR" }, () => router.push("/workouts/new")),
+					Match.when({ code: "UNAUTHORIZED" }, () => router.push("/login")),
+					Match.exhaustive,
+				);
 			},
 		}),
 	);
@@ -123,24 +114,13 @@ export const useWorkoutSubmit = ({
 					return;
 				}
 
-				switch (error.code) {
-					case "INVALID_INPUT":
-					case "DATABASE_ERROR":
-						return;
-					case "UNAUTHORIZED":
-						router.push("/login");
-
-						return;
-					case "NOT_FOUND":
-						router.push("/workouts");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
+				Match.value(error).pipe(
+					Match.when({ code: "INVALID_INPUT" }, () => undefined),
+					Match.when({ code: "DATABASE_ERROR" }, () => undefined),
+					Match.when({ code: "UNAUTHORIZED" }, () => router.push("/login")),
+					Match.when({ code: "NOT_FOUND" }, () => router.push("/workouts")),
+					Match.exhaustive,
+				);
 			},
 		}),
 	);
@@ -156,29 +136,23 @@ export const useWorkoutSubmit = ({
 			return;
 		}
 
-		switch (mode.type) {
-			case "create":
+		Match.value(mode).pipe(
+			Match.when({ type: "create" }, () => {
 				setCreateWorkoutDraft(workoutResult.data);
 				showWorkoutSaveToast(createWorkout.mutateAsync({ workout: workoutResult.data }));
 				router.push("/workouts");
-
-				return;
-			case "update":
+			}),
+			Match.when({ type: "update" }, (updateMode) => {
 				showWorkoutSaveToast(
 					updateWorkout.mutateAsync({
-						workoutId: mode.workoutId,
+						workoutId: updateMode.workoutId,
 						workout: workoutResult.data,
 					}),
 				);
 				exitWorkoutPage("/workouts");
-
-				return;
-			default: {
-				const exhaustiveMode: never = mode;
-
-				return exhaustiveMode;
-			}
-		}
+			}),
+			Match.exhaustive,
+		);
 	};
 
 	return {

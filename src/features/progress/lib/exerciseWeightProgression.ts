@@ -1,3 +1,5 @@
+import { Match } from "effect";
+
 /** Keep in sync with getExerciseWeeklyWeightProgression.sql ($4). */
 export const EXERCISE_WEIGHT_PROGRESSION_MIN_REPS = 4;
 
@@ -13,31 +15,27 @@ export const exerciseWeightProgressionRangeLabels = {
 } satisfies Record<ExerciseWeightProgressionRange, string>;
 
 export function exerciseWeightProgressionSince(range: ExerciseWeightProgressionRange): Date {
-	if (range === "all") {
-		return new Date(0);
-	}
-
 	const since = new Date();
 
-	switch (range) {
-		case "3m":
+	return Match.value(range).pipe(
+		Match.when("all", () => new Date(0)),
+		Match.when("3m", () => {
 			since.setMonth(since.getMonth() - 3);
 
 			return since;
-		case "6m":
+		}),
+		Match.when("6m", () => {
 			since.setMonth(since.getMonth() - 6);
 
 			return since;
-		case "1y":
+		}),
+		Match.when("1y", () => {
 			since.setFullYear(since.getFullYear() - 1);
 
 			return since;
-		default: {
-			const exhaustiveRange: never = range;
-
-			return exhaustiveRange;
-		}
-	}
+		}),
+		Match.exhaustive,
+	);
 }
 
 export interface ExerciseWeightProgressionPoint {

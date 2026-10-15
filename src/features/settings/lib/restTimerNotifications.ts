@@ -1,4 +1,4 @@
-import { Effect } from "effect";
+import { Effect, Match } from "effect";
 
 import { showErrorToast } from "@/lib/toastMessages";
 
@@ -65,13 +65,12 @@ function requestRestTimerNotificationPermission(): Effect.Effect<NotificationPer
 function mapRequestedPermission(
 	permission: NotificationPermission,
 ): Effect.Effect<true, RestTimerNotificationPermissionError> {
-	if (permission === "granted") return Effect.succeed(true);
-
-	if (permission === "denied") return Effect.fail("blocked");
-
-	if (permission === "default") return Effect.fail("dismissed");
-
-	return Effect.fail("failed");
+	return Match.value(permission).pipe(
+		Match.when("granted", () => Effect.succeed(true as const)),
+		Match.when("denied", () => Effect.fail("blocked" as const)),
+		Match.when("default", () => Effect.fail("dismissed" as const)),
+		Match.orElse(() => Effect.fail("failed" as const)),
+	);
 }
 
 function ensureRestTimerNotificationPermission(): Effect.Effect<
@@ -90,27 +89,19 @@ function ensureRestTimerNotificationPermission(): Effect.Effect<
 function showRestTimerNotificationPermissionError(
 	permission: RestTimerNotificationPermissionError,
 ): void {
-	switch (permission) {
-		case "unsupported":
-			showErrorToast("Notifications aren't supported in this browser.");
-			break;
-		case "blocked":
+	Match.value(permission).pipe(
+		Match.when("unsupported", () =>
+			showErrorToast("Notifications aren't supported in this browser."),
+		),
+		Match.when("blocked", () =>
 			showErrorToast(
 				"Notifications are blocked in your browser. Allow them in site settings first.",
-			);
-			break;
-		case "dismissed":
-			showErrorToast("Notification permission wasn't granted.");
-			break;
-		case "failed":
-			showErrorToast("Couldn't request notification permission.");
-			break;
-		default: {
-			const exhaustive: never = permission;
-
-			return exhaustive;
-		}
-	}
+			),
+		),
+		Match.when("dismissed", () => showErrorToast("Notification permission wasn't granted.")),
+		Match.when("failed", () => showErrorToast("Couldn't request notification permission.")),
+		Match.exhaustive,
+	);
 }
 
 export function tryEnableRestTimerNotifications(): Promise<boolean> {

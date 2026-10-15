@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Effect } from "effect";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { IconLoader2, IconLogout } from "@tabler/icons-react";
@@ -18,13 +19,19 @@ export default function SignOutButton({ className }: { className?: string }) {
 
 		setIsSigningOut(true);
 
-		try {
-			await authClient.signOut();
-		} finally {
-			router.refresh();
-			router.replace("/");
-			setIsSigningOut(false);
-		}
+		await Effect.runPromise(
+			Effect.ensuring(
+				Effect.tryPromise({
+					try: () => authClient.signOut(),
+					catch: (cause) => cause,
+				}),
+				Effect.sync(() => {
+					router.refresh();
+					router.replace("/");
+					setIsSigningOut(false);
+				}),
+			),
+		);
 	};
 
 	return (

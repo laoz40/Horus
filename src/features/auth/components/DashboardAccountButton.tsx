@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactElement, useState } from "react";
+import { Effect } from "effect";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -43,12 +44,18 @@ export default function DashboardAccountButton({
 
 		setIsSigningOut(true);
 
-		try {
-			await authClient.signOut();
-		} finally {
-			router.refresh();
-			setIsSigningOut(false);
-		}
+		await Effect.runPromise(
+			Effect.ensuring(
+				Effect.tryPromise({
+					try: () => authClient.signOut(),
+					catch: (cause) => cause,
+				}),
+				Effect.sync(() => {
+					router.refresh();
+					setIsSigningOut(false);
+				}),
+			),
+		);
 	};
 
 	return (
