@@ -3,6 +3,10 @@
 	"entry": ["public/sw.js"],
 	"ignoreExports": [
 		{
+			"file": "tools/oxlint/anti-slop/vendor/eslint-stylistic/padding-line-options.d.ts",
+			"exports": ["MessageIds"]
+		},
+		{
 			"file": "src/components/ui/**",
 			"exports": ["*"]
 		}
