@@ -8,7 +8,7 @@ From `/workouts/new` the user logs a workout: pick an exercise via the muscle-gr
 - `pick-exercise-search` — type in the combobox (`{"fill":{"combobox":"Exercise name","value":"Bench Press"}}`), wait for debounced search, click the matching `role=option`.
 - `log-sets` — per-set `kg`/`reps` inputs; completing a set (checkbox "Color success") starts the "Rest Timer" drawer.
 - `rest-timer` — completing a set opens drawer "Rest Timer" with a "FINISH REST" button; the page behind it is blocked until dismissed.
-- `save` — top-bar "Finish" opens the "Save Workout" dialog; "Save" persists and redirects to `/workouts`.
+- `save` — top-bar "Finish" opens the "Save Workout" dialog; "Save" redirects to `/workouts` and immediately shows a spinner with "Saving workout". The same toast changes to "Saved <name>" after saving and refreshing history, or an error if saving fails.
 - `edit-existing` — `/workouts/<id>/edit` loads the saved workout for changes (drive like create, with the name pre-filled).
 - `auth-gate` — signed-out users see a "Not Signed In" alert on the form; the Save dialog shows "You need an account to create and save workouts." and a "Sign in" link to `/login`.
 
