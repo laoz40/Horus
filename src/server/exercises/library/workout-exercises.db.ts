@@ -12,6 +12,13 @@ type Tx = DatabaseTransaction;
 
 type WorkoutWriteExercise = WorkoutForSave["exercises"][number];
 
+function findUserExerciseId(tx: Tx, userId: string, normalizedName: string) {
+	return Effect.tryPromise({
+		try: () => tx.$queryRawTyped(findUserExerciseIdByNormalizedName(userId, normalizedName)),
+		catch: (cause) => new DatabaseError({ cause }),
+	});
+}
+
 export type PreparedWorkoutWriteExercise = Omit<WorkoutWriteExercise, "global"> & {
 	global: Omit<WorkoutWriteExercise["global"], "muscleGroups"> & {
 		normalizedName: string;
@@ -32,13 +39,7 @@ export function findOrCreateWorkoutExercises(
 		(exercise) =>
 			Effect.gen(function* () {
 				// Names are unique per user, so a matching submitted ID resolves to this same row.
-				const [existing] = yield* Effect.tryPromise({
-					try: () =>
-						tx.$queryRawTyped(
-							findUserExerciseIdByNormalizedName(userId, exercise.global.normalizedName),
-						),
-					catch: (cause) => new DatabaseError({ cause }),
-				});
+				const [existing] = yield* findUserExerciseId(tx, userId, exercise.global.normalizedName);
 
 				if (existing) {
 					return { ...exercise, exerciseId: existing.id };
@@ -59,13 +60,7 @@ export function findOrCreateWorkoutExercises(
 					catch: (cause) => new DatabaseError({ cause }),
 				});
 
-				const [resolved] = yield* Effect.tryPromise({
-					try: () =>
-						tx.$queryRawTyped(
-							findUserExerciseIdByNormalizedName(userId, exercise.global.normalizedName),
-						),
-					catch: (cause) => new DatabaseError({ cause }),
-				});
+				const [resolved] = yield* findUserExerciseId(tx, userId, exercise.global.normalizedName);
 
 				if (!resolved)
 					return yield* Effect.fail(

@@ -4,7 +4,7 @@ import { Effect } from "effect";
 import { z } from "zod";
 import { exerciseWeightProgressionRanges } from "@/features/progress/lib/exerciseWeightProgression";
 import { progressDb } from "@/server/exercises/progress/progress.db";
-import { protectedProcedure } from "@/server/procedures";
+import { logDatabaseError, protectedProcedure } from "@/server/procedures";
 import {
 	getExercisePersonalRecords,
 	getExerciseWeeklyWeightProgression,
@@ -40,11 +40,8 @@ export const exercisesProgressProcedures = {
 				getRecentSets(context.userId, input.exerciseName).pipe(
 					Effect.provide(progressDb),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to get recent sets", { cause: error.cause }).pipe(
-								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-							);
-						},
+						DatabaseError: (error) =>
+							logDatabaseError("Failed to get recent sets", error.cause, errors.DATABASE_ERROR()),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
@@ -76,11 +73,12 @@ export const exercisesProgressProcedures = {
 				getExerciseWeeklyWeightProgression(context.userId, input.exerciseName, input.range).pipe(
 					Effect.provide(progressDb),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to get weekly weight progression", {
-								cause: error.cause,
-							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
-						},
+						DatabaseError: (error) =>
+							logDatabaseError(
+								"Failed to get weekly weight progression",
+								error.cause,
+								errors.DATABASE_ERROR(),
+							),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
@@ -112,11 +110,12 @@ export const exercisesProgressProcedures = {
 				getExercisePersonalRecords(context.userId, input.exerciseName).pipe(
 					Effect.provide(progressDb),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to get exercise personal records", {
-								cause: error.cause,
-							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
-						},
+						DatabaseError: (error) =>
+							logDatabaseError(
+								"Failed to get exercise personal records",
+								error.cause,
+								errors.DATABASE_ERROR(),
+							),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),

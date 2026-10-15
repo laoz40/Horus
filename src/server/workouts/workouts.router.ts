@@ -3,7 +3,7 @@ import "server-only";
 import { Effect } from "effect";
 import { z } from "zod";
 import { WorkoutForSaveSchema } from "@/features/workout-form/lib/validateWorkout";
-import { protectedProcedure } from "@/server/procedures";
+import { logDatabaseError, protectedProcedure } from "@/server/procedures";
 import { transactions } from "@/server/transactions";
 import { workoutDb } from "@/server/workouts/workouts.db";
 import {
@@ -133,11 +133,8 @@ export const workoutsRouter = {
 				Effect.provide(transactions),
 				Effect.catchTags({
 					INVALID_INPUT: () => Effect.fail(errors.INVALID_INPUT()),
-					DatabaseError: (error) => {
-						return Effect.logError("Failed to create workout", { cause: error.cause }).pipe(
-							Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-						);
-					},
+					DatabaseError: (error) =>
+						logDatabaseError("Failed to create workout", error.cause, errors.DATABASE_ERROR()),
 				}),
 				Effect.annotateLogs(context.logAnnotations),
 			),
@@ -160,11 +157,12 @@ export const workoutsRouter = {
 					Effect.provide(workoutDb),
 					Effect.catchTags({
 						NO_WORKOUTS: () => Effect.fail(errors.NO_WORKOUTS()),
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to delete all workouts", { cause: error.cause }).pipe(
-								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-							);
-						},
+						DatabaseError: (error) =>
+							logDatabaseError(
+								"Failed to delete all workouts",
+								error.cause,
+								errors.DATABASE_ERROR(),
+							),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
@@ -191,11 +189,8 @@ export const workoutsRouter = {
 					})),
 					Effect.catchTags({
 						NOT_FOUND: () => Effect.fail(errors.NOT_FOUND()),
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to delete workout", { cause: error.cause }).pipe(
-								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-							);
-						},
+						DatabaseError: (error) =>
+							logDatabaseError("Failed to delete workout", error.cause, errors.DATABASE_ERROR()),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
@@ -213,11 +208,8 @@ export const workoutsRouter = {
 				Effect.catchTags({
 					NOT_FOUND: () => Effect.fail(errors.NOT_FOUND()),
 					INVALID_INPUT: () => Effect.fail(errors.INVALID_INPUT()),
-					DatabaseError: (error) => {
-						return Effect.logError("Failed to update workout", { cause: error.cause }).pipe(
-							Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-						);
-					},
+					DatabaseError: (error) =>
+						logDatabaseError("Failed to update workout", error.cause, errors.DATABASE_ERROR()),
 				}),
 				Effect.annotateLogs(context.logAnnotations),
 			),
@@ -240,11 +232,8 @@ export const workoutsRouter = {
 					Effect.provide(workoutDb),
 					Effect.catchTags({
 						NOT_FOUND: () => Effect.fail(errors.NOT_FOUND()),
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to load workout", { cause: error.cause }).pipe(
-								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-							);
-						},
+						DatabaseError: (error) =>
+							logDatabaseError("Failed to load workout", error.cause, errors.DATABASE_ERROR()),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
@@ -263,11 +252,8 @@ export const workoutsRouter = {
 				listWorkouts({ ...input, userId: context.userId }).pipe(
 					Effect.provide(workoutDb),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to list workouts", { cause: error.cause }).pipe(
-								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-							);
-						},
+						DatabaseError: (error) =>
+							logDatabaseError("Failed to list workouts", error.cause, errors.DATABASE_ERROR()),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),

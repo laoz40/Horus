@@ -3,6 +3,7 @@
 import { isDefinedError } from "@orpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import RecentSetRow from "@/features/progress/components/RecentSetRow";
 import {
 	Dialog,
 	DialogClose,
@@ -12,10 +13,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { getRelativeTime } from "@/lib/date";
 import { orpc } from "@/lib/orpc/client";
-import { setPrLabels } from "@/features/workout-form/lib/setPr";
-import { cn } from "@/lib/utils";
 
 interface RecentSetsDialogProps {
 	open: boolean;
@@ -67,10 +65,7 @@ export default function RecentSetsDialog({
 		}
 	};
 
-	const sets = (recentSetsQuery.data ?? []).map(({ completedAtMs, ...set }) => ({
-		...set,
-		time: getRelativeTime(new Date(completedAtMs)),
-	}));
+	const sets = recentSetsQuery.data ?? [];
 
 	const errorMessage = getErrorMessage();
 
@@ -99,27 +94,11 @@ export default function RecentSetsDialog({
 		return (
 			<div className="flex flex-col">
 				{sets.map((set) => {
-					const primaryPrType = set.prTypes[0];
-
 					return (
-						<div
+						<RecentSetRow
 							key={set.id}
-							className="exercise-set-grid-row">
-							<span className={cn(set.isPr && "font-semibold")}>{set.weight}</span>
-							<span className={cn(set.isPr && "font-semibold")}>{set.reps}</span>
-							<span>
-								{primaryPrType ? (
-									<span className="rounded-md border bg-muted px-1.5 py-0.5 text-xs whitespace-nowrap text-muted-foreground">
-										{setPrLabels[primaryPrType]}
-									</span>
-								) : null}
-							</span>
-							<span
-								className={cn("min-w-0 truncate text-right", set.isPr && "font-semibold")}
-								title={set.time}>
-								{set.time}
-							</span>
-						</div>
+							set={set}
+						/>
 					);
 				})}
 			</div>

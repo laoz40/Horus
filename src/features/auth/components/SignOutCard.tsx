@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { SettingsCard, type SettingsCardClassNames } from "@daveyplate/better-auth-ui";
 
-import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import useSignOut from "@/features/auth/hooks/useSignOut";
 
 interface SignOutCardProps {
 	className?: string;
@@ -13,24 +11,7 @@ interface SignOutCardProps {
 }
 
 export default function SignOutCard({ className, classNames }: SignOutCardProps) {
-	const router = useRouter();
-	const [isSigningOut, setIsSigningOut] = useState(false);
-
-	const handleSignOut = async () => {
-		if (isSigningOut) {
-			return;
-		}
-
-		setIsSigningOut(true);
-
-		try {
-			await authClient.signOut();
-		} finally {
-			router.refresh();
-			router.replace("/");
-			setIsSigningOut(false);
-		}
-	};
+	const { isSigningOut, signOut } = useSignOut();
 
 	return (
 		<SettingsCard
@@ -46,7 +27,7 @@ export default function SignOutCard({ className, classNames }: SignOutCardProps)
 			description="End this session on this device."
 			isSubmitting={isSigningOut}
 			title="Sign out"
-			action={handleSignOut}
+			action={signOut}
 		/>
 	);
 }
