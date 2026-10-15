@@ -102,7 +102,7 @@ export default function RestTimerButton(): ReactElement {
 					variant={isOverRestTarget ? "destructive" : "outline"}
 					className="w-fit px-12"
 					onClick={finishRestTimer}>
-					FINISH REST
+					Finish Rest
 				</Button>
 			</DrawerContent>
 		</Drawer>
