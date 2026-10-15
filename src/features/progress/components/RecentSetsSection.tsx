@@ -3,8 +3,13 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/components/ui/accordion";
 import ExerciseSetRowsSkeleton from "@/features/progress/components/ExerciseSetRowsSkeleton";
-import ProgressExerciseDetailCard from "@/features/progress/components/ProgressExerciseDetailCard";
 import { orpcQueryErrorMessage } from "@/features/progress/lib/orpcQueryErrorMessage";
 import { setPrLabels } from "@/features/workout-form/lib/setPr";
 import { getRelativeTime } from "@/lib/date";
@@ -89,8 +94,20 @@ function RecentSetsContent({ exerciseName }: RecentSetsSectionProps): ReactEleme
 
 export default function RecentSetsSection({ exerciseName }: RecentSetsSectionProps): ReactElement {
 	return (
-		<ProgressExerciseDetailCard title="Recent sets">
-			<RecentSetsContent exerciseName={exerciseName} />
-		</ProgressExerciseDetailCard>
+		<Accordion
+			type="single"
+			collapsible
+			className="mb-6">
+			<AccordionItem
+				value="recent-sets"
+				className="rounded-md border bg-card last:border-b">
+				<AccordionTrigger className="p-3 text-base font-normal text-foreground">
+					Recent sets
+				</AccordionTrigger>
+				<AccordionContent className="px-3 pb-3">
+					<RecentSetsContent exerciseName={exerciseName} />
+				</AccordionContent>
+			</AccordionItem>
+		</Accordion>
 	);
 }
