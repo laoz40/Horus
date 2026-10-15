@@ -10,7 +10,9 @@ export async function selectExercise(page: Page, name: string): Promise<void> {
 	await expect(option).toBeVisible({ timeout: 10_000 });
 	await option.click();
 
-	await expect(page.getByPlaceholder("kg")).toBeVisible({ timeout: 10_000 });
+	// Selection defers focus until the set rows mount. Wait for it before typing
+	// so it cannot steal focus back from the reps input during the next fill.
+	await expect(page.getByPlaceholder("kg")).toBeFocused({ timeout: 10_000 });
 }
 
 async function dismissRestTimer(page: Page): Promise<void> {
@@ -42,6 +44,8 @@ export async function addCompletedBenchSet(page: Page): Promise<void> {
 	await weightInput.fill("60");
 	await repsInput.fill("8");
 	await repsInput.press("Tab");
+	await expect(weightInput).toHaveValue("60");
+	await expect(repsInput).toHaveValue("8");
 
 	// Completing a set opens the Rest Timer dialog, which blocks the page until dismissed.
 	await page.getByRole("checkbox", { name: "Color success" }).click();
