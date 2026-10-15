@@ -10,10 +10,10 @@ import {
 	type MuscleGroupCategory,
 } from "@/features/workout-form/lib/muscleGroupCategories";
 import { normalizeName } from "@/lib/normalizeName";
+import { normalizeMuscleGroups } from "@/lib/normalizeMuscleGroups";
 import {
 	ExerciseNameCollisionError,
 	ExerciseNotFoundError,
-	normalizeMuscleGroupsForSave,
 	requireUnusedExercise,
 	requireUserExercise,
 } from "@/server/exercises/library/library.functions";
@@ -40,7 +40,7 @@ function normalizeExerciseInput(input: ExerciseLibraryWriteInput) {
 	return {
 		name: input.name.trim(),
 		normalizedName: normalizeName(input.name),
-		muscleGroups: normalizeMuscleGroupsForSave(input.muscleGroups),
+		muscleGroups: normalizeMuscleGroups(input.muscleGroups),
 	};
 }
 
@@ -145,7 +145,7 @@ const mergeExercisesAndRecalculatePrs = (
 	userId: string,
 	sourceId: string,
 	targetId: string,
-	sourceMuscleGroups: ReturnType<typeof normalizeMuscleGroupsForSave> | null,
+	sourceMuscleGroups: ReturnType<typeof normalizeMuscleGroups> | null,
 ) =>
 	Effect.gen(function* () {
 		const transaction = yield* Transactions;
@@ -177,7 +177,7 @@ export const mergeUserExercises = (userId: string, input: MergeExerciseLibraryIn
 		}
 
 		const sourceMuscleGroups = input.sourceMuscleGroups
-			? normalizeMuscleGroupsForSave(input.sourceMuscleGroups)
+			? normalizeMuscleGroups(input.sourceMuscleGroups)
 			: null;
 
 		yield* getUserExercise(userId, sourceId);

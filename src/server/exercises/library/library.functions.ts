@@ -2,27 +2,7 @@ import "server-only";
 
 import { Data, Effect } from "effect";
 
-import { normalizeName } from "@/lib/normalizeName";
 import type { UserExerciseLibraryRow } from "@/server/exercises/library/exercises.db";
-
-export function normalizeMuscleGroupsForSave(muscleGroups: string[]) {
-	const muscleGroupsByNormalizedName = new Map<string, { name: string; normalizedName: string }>();
-
-	for (const name of muscleGroups) {
-		const normalizedName = normalizeName(name);
-
-		if (normalizedName.length === 0 || muscleGroupsByNormalizedName.has(normalizedName)) {
-			continue;
-		}
-
-		muscleGroupsByNormalizedName.set(normalizedName, {
-			name: name.trim(),
-			normalizedName,
-		});
-	}
-
-	return [...muscleGroupsByNormalizedName.values()];
-}
 
 export class ExerciseNotFoundError extends Data.TaggedError("ExerciseNotFoundError") {}
 

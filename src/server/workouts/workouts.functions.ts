@@ -5,6 +5,7 @@ import { Data, Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/types";
 import { buildSetPrTypes } from "@/features/workout-form/lib/setPr";
 import { normalizeName } from "@/lib/normalizeName";
+import { normalizeMuscleGroups } from "@/lib/normalizeMuscleGroups";
 import type { WorkoutExerciseWithDatabaseId } from "@/server/exercises/library/workout-exercises.db";
 import type {
 	ListWorkoutsQuery,
@@ -32,25 +33,6 @@ export function requireDeletedWorkouts(result: { deletedCount: number }) {
 	}
 
 	return Effect.succeed(result);
-}
-
-function normalizeMuscleGroups(muscleGroups: string[] | undefined) {
-	const muscleGroupsByNormalizedName = new Map<string, { name: string; normalizedName: string }>();
-
-	for (const name of muscleGroups ?? []) {
-		const normalizedName = normalizeName(name);
-
-		if (normalizedName.length === 0 || muscleGroupsByNormalizedName.has(normalizedName)) {
-			continue;
-		}
-
-		muscleGroupsByNormalizedName.set(normalizedName, {
-			name: name.trim(),
-			normalizedName,
-		});
-	}
-
-	return [...muscleGroupsByNormalizedName.values()];
 }
 
 export function validateUniqueWorkoutChildIds(workout: WorkoutForSave) {
