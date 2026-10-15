@@ -1,9 +1,14 @@
 "use client";
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Slider } from "@/components/ui/slider";
-import { IconChevronDown, IconFlame, IconNotes, type Icon } from "@tabler/icons-react";
-import { Activity, useState, type ReactNode } from "react";
+import { IconFlame, IconNotes } from "@tabler/icons-react";
+
 import { Textarea } from "@/components/ui/textarea";
 import { Controller, useFormContext } from "react-hook-form";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
@@ -13,11 +18,24 @@ interface ExerciseCollapsiblesProps {
 }
 
 const ExerciseCollapsibles = ({ exerciseIndex }: ExerciseCollapsiblesProps) => {
+	const { getValues, setValue } = useFormContext<Workout>();
+
+	const initDifficultyValue = (openSections: string[]) => {
+		const currentValue = getValues(`exercises.${exerciseIndex}.difficulty`);
+
+		if (openSections.includes("difficulty") && currentValue === undefined) {
+			setValue(`exercises.${exerciseIndex}.difficulty`, 2);
+		}
+	};
+
 	return (
-		<div className="w-full max-w-full">
+		<Accordion
+			type="multiple"
+			className="w-full max-w-full"
+			onValueChange={initDifficultyValue}>
 			<DifficultySlider exerciseIndex={exerciseIndex} />
 			<ExerciseNotes exerciseIndex={exerciseIndex} />
-		</div>
+		</Accordion>
 	);
 };
 
@@ -25,41 +43,39 @@ function DifficultySlider({ exerciseIndex }: ExerciseCollapsiblesProps) {
 	// Justify-between spreads the three labels the same way the old spacer-padded row did.
 	const difficultyOptions = ["Too Easy", "Average", "Nightmare"];
 
-	const initDifficultyValue = (openState: boolean) => {
-		const currentValue = getValues(`exercises.${exerciseIndex}.difficulty`);
-
-		if (openState && currentValue === undefined) {
-			setValue(`exercises.${exerciseIndex}.difficulty`, 2);
-		}
-	};
-
-	const { control, getValues, setValue } = useFormContext();
+	const { control } = useFormContext<Workout>();
 
 	return (
-		<CollapsibleFilter
-			title="Difficulty"
-			icon={IconFlame}
-			onOpenChange={initDifficultyValue}>
-			<div className="flex w-full max-w-sm flex-col gap-3">
-				<Controller
-					control={control}
-					name={`exercises.${exerciseIndex}.difficulty`}
-					render={({ field }) => (
-						<Slider
-							max={4}
-							step={1}
-							value={Array.of(field.value) ?? 0}
-							onValueChange={(value) => field.onChange(value[0])}
-						/>
-					)}
-				/>
-				<div className="flex flex-row items-center justify-between text-xs text-muted-foreground">
-					{difficultyOptions.map((difficulty) => (
-						<span key={difficulty}>{difficulty}</span>
-					))}
+		<AccordionItem
+			value="difficulty"
+			className="border-0">
+			<AccordionTrigger className="items-center py-3 font-semibold text-muted-foreground hover:no-underline">
+				<span className="flex items-center gap-2">
+					<IconFlame className="size-5" /> Difficulty
+				</span>
+			</AccordionTrigger>
+			<AccordionContent className="pt-1 pb-3">
+				<div className="flex w-full max-w-sm flex-col gap-3">
+					<Controller
+						control={control}
+						name={`exercises.${exerciseIndex}.difficulty`}
+						render={({ field }) => (
+							<Slider
+								max={4}
+								step={1}
+								value={[field.value ?? 2]}
+								onValueChange={(value) => field.onChange(value[0])}
+							/>
+						)}
+					/>
+					<div className="flex flex-row items-center justify-between text-xs text-muted-foreground">
+						{difficultyOptions.map((difficulty) => (
+							<span key={difficulty}>{difficulty}</span>
+						))}
+					</div>
 				</div>
-			</div>
-		</CollapsibleFilter>
+			</AccordionContent>
+		</AccordionItem>
 	);
 }
 
@@ -70,60 +86,30 @@ function ExerciseNotes({ exerciseIndex }: ExerciseCollapsiblesProps) {
 	} = useFormContext<Workout>();
 
 	return (
-		<CollapsibleFilter
-			title="Notes"
-			icon={IconNotes}>
-			<div className="flex flex-col gap-1">
-				<Textarea
-					placeholder="Write a note..."
-					className="bg-card text-foreground dark:bg-input"
-					{...register(`exercises.${exerciseIndex}.notes`)}
-				/>
-				{errors.exercises?.[exerciseIndex]?.notes && (
-					<span className="text-sm text-red-500">
-						{errors.exercises[exerciseIndex]?.notes?.message}
-					</span>
-				)}
-			</div>
-		</CollapsibleFilter>
+		<AccordionItem
+			value="notes"
+			className="border-0">
+			<AccordionTrigger className="items-center py-3 font-semibold text-muted-foreground hover:no-underline">
+				<span className="flex items-center gap-2">
+					<IconNotes className="size-5" /> Notes
+				</span>
+			</AccordionTrigger>
+			<AccordionContent className="pt-1 pb-3">
+				<div className="flex flex-col gap-1">
+					<Textarea
+						placeholder="Write a note..."
+						className="bg-card text-foreground dark:bg-input"
+						{...register(`exercises.${exerciseIndex}.notes`)}
+					/>
+					{errors.exercises?.[exerciseIndex]?.notes && (
+						<span className="text-sm text-red-500">
+							{errors.exercises[exerciseIndex]?.notes?.message}
+						</span>
+					)}
+				</div>
+			</AccordionContent>
+		</AccordionItem>
 	);
 }
-
-const CollapsibleFilter = ({
-	title,
-	icon: Icon,
-	children,
-	onOpenChange,
-}: {
-	title: string;
-	icon?: Icon;
-	children: ReactNode;
-	onOpenChange?: (open: boolean) => void;
-}) => {
-	const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false);
-
-	const handleOpenChange = (openState: boolean) => {
-		setIsCollapsibleOpen(openState);
-		// if onOpenChange gets passed down, call the function: initDifficultyValue
-		onOpenChange?.(openState);
-	};
-
-	return (
-		<Collapsible
-			open={isCollapsibleOpen}
-			onOpenChange={handleOpenChange}>
-			<CollapsibleTrigger className="group flex w-full items-center justify-between py-3">
-				<h3 className="flex items-center gap-2 text-sm leading-none font-semibold text-muted-foreground">
-					{!!Icon && <Icon className="h-5 w-5 text-muted-foreground" />} {title}
-				</h3>
-				<IconChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
-			</CollapsibleTrigger>
-
-			<Activity mode={isCollapsibleOpen ? "visible" : "hidden"}>
-				<CollapsibleContent className="pt-1 pb-3">{children}</CollapsibleContent>
-			</Activity>
-		</Collapsible>
-	);
-};
 
 export default ExerciseCollapsibles;
