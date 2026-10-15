@@ -12,7 +12,6 @@ import {
 	deleteWorkout,
 	getWorkoutById,
 	listWorkouts,
-	validateAndNormalizeWorkout,
 	updateWorkout,
 } from "@/server/workouts/workouts.service";
 
@@ -129,12 +128,8 @@ const historySchema = z.object({
 export const workoutsRouter = {
 	create: createWorkoutProcedure.handler(({ input, context, errors }) =>
 		Effect.runPromise(
-			Effect.gen(function* () {
-				const workout = yield* validateAndNormalizeWorkout(input.workout);
-				const workoutId = yield* createWorkout({ userId: context.userId, workout });
-
-				return { workoutId, workout: input.workout };
-			}).pipe(
+			createWorkout({ userId: context.userId, workout: input.workout }).pipe(
+				Effect.map((workoutId) => ({ workoutId, workout: input.workout })),
 				Effect.provide(transactions),
 				Effect.catchTags({
 					INVALID_INPUT: () => Effect.fail(errors.INVALID_INPUT()),
@@ -208,12 +203,12 @@ export const workoutsRouter = {
 		),
 	update: updateWorkoutProcedure.handler(({ input, context, errors }) =>
 		Effect.runPromise(
-			Effect.gen(function* () {
-				const workout = yield* validateAndNormalizeWorkout(input.workout);
-				yield* updateWorkout({ workoutId: input.workoutId, userId: context.userId, workout });
-
-				return { workoutId: input.workoutId, workout: input.workout };
+			updateWorkout({
+				workoutId: input.workoutId,
+				userId: context.userId,
+				workout: input.workout,
 			}).pipe(
+				Effect.map((workoutId) => ({ workoutId, workout: input.workout })),
 				Effect.provide(transactions),
 				Effect.catchTags({
 					NOT_FOUND: () => Effect.fail(errors.NOT_FOUND()),
