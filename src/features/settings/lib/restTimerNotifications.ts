@@ -65,13 +65,12 @@ function requestRestTimerNotificationPermission(): Effect.Effect<NotificationPer
 function mapRequestedPermission(
 	permission: NotificationPermission,
 ): Effect.Effect<true, RestTimerNotificationPermissionError> {
-	if (permission === "granted") return Effect.succeed(true);
-
-	if (permission === "denied") return Effect.fail("blocked");
-
-	if (permission === "default") return Effect.fail("dismissed");
-
-	return Effect.fail("failed");
+	return Match.value(permission).pipe(
+		Match.when("granted", () => Effect.succeed(true as const)),
+		Match.when("denied", () => Effect.fail("blocked" as const)),
+		Match.when("default", () => Effect.fail("dismissed" as const)),
+		Match.orElse(() => Effect.fail("failed" as const)),
+	);
 }
 
 function ensureRestTimerNotificationPermission(): Effect.Effect<
