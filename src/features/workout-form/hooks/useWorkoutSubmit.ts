@@ -1,8 +1,7 @@
 import { isDefinedError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-
-import { animateCreateWorkoutExit } from "@/features/workout-form/lib/animateCreateWorkoutExit";
+import { useWorkoutPageExit } from "@/lib/workoutPageExit";
 import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { parseWorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
@@ -37,6 +36,7 @@ export const useWorkoutSubmit = ({
 	mode,
 }: UseWorkoutSubmitProps): UseWorkoutSubmitReturn => {
 	const router = useRouter();
+	const exitWorkoutPage = useWorkoutPageExit();
 	const queryClient = useQueryClient();
 	const historyListQueryKey = orpc.workouts.list.key({ type: "infinite" });
 
@@ -170,9 +170,7 @@ export const useWorkoutSubmit = ({
 						workout: workoutResult.data,
 					}),
 				);
-				animateCreateWorkoutExit(() => {
-					router.push("/workouts");
-				});
+				exitWorkoutPage("/workouts");
 
 				return;
 			default: {
