@@ -1,7 +1,6 @@
 "use client";
 
 import { IconChevronLeft } from "@tabler/icons-react";
-import { useRouter } from "next/navigation";
 import type { ReactElement } from "react";
 
 import { BackNavButton, backNavIconClassName } from "@/components/BackNavButton";
@@ -17,7 +16,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { animateCreateWorkoutExit } from "@/features/workout-form/lib/animateCreateWorkoutExit";
+import { useWorkoutPageExit } from "@/lib/workoutPageExit";
 import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
 
 interface WorkoutExitLinkProps {
@@ -26,16 +25,14 @@ interface WorkoutExitLinkProps {
 }
 
 export default function WorkoutExitLink({ href, isCreate }: WorkoutExitLinkProps): ReactElement {
-	const router = useRouter();
+	const exitWorkoutPage = useWorkoutPageExit();
 
 	const handleDiscard = () => {
 		if (isCreate) {
 			setCreateWorkoutDraft(null);
 		}
 
-		animateCreateWorkoutExit(() => {
-			router.push(href);
-		});
+		exitWorkoutPage(href);
 	};
 
 	const description = isCreate
