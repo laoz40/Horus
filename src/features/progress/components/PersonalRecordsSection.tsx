@@ -1,13 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { IconLoader2 } from "@tabler/icons-react";
 import type { ReactElement } from "react";
 
-import ExerciseSetRowsSkeleton from "@/features/progress/components/ExerciseSetRowsSkeleton";
-import ProgressExerciseDetailCard from "@/features/progress/components/ProgressExerciseDetailCard";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { formatPersonalRecord } from "@/features/progress/lib/formatPersonalRecord";
 import { orpcQueryErrorMessage } from "@/features/progress/lib/orpcQueryErrorMessage";
 import { setPrLabels } from "@/features/workout-form/lib/setPr";
-import { getRelativeTime } from "@/lib/date";
 import { orpc } from "@/lib/orpc/client";
 
 interface PersonalRecordsSectionProps {
@@ -33,51 +33,52 @@ function PersonalRecordsContent({ exerciseName }: PersonalRecordsSectionProps): 
 	);
 
 	if (personalRecordsQuery.isLoading) {
-		return <ExerciseSetRowsSkeleton />;
+		return (
+			<p className="flex items-center gap-2 text-sm text-muted-foreground">
+				<IconLoader2
+					aria-hidden
+					className="size-4 animate-spin"
+				/>
+				Loading records
+			</p>
+		);
 	}
 
 	if (errorMessage) {
 		return <p className="pb-3 text-sm text-destructive">{errorMessage}</p>;
 	}
 
-	const personalRecords = (personalRecordsQuery.data?.records ?? []).map((record) => ({
-		...record,
-		time: getRelativeTime(new Date(record.completedAtMs)),
-	}));
+	const personalRecords = personalRecordsQuery.data?.records ?? [];
 
 	if (personalRecords.length === 0) {
 		return <p className="pb-3 text-sm text-muted-foreground">No completed sets logged yet.</p>;
 	}
 
 	return (
-		<>
-			<div className="exercise-set-grid-header">
-				<span>Weight</span>
-				<span>Reps</span>
-				<span />
-				<span className="truncate text-right">Achieved</span>
-			</div>
-			<div className="flex flex-col">
-				{personalRecords.map((record) => (
-					<div
+		<div className="grid grid-cols-2 gap-3">
+			{personalRecords.map((record) => {
+				const display = formatPersonalRecord(record);
+
+				return (
+					<Card
 						key={record.type}
-						className="exercise-set-grid-row">
-						<span className="font-semibold">{record.weight}</span>
-						<span className="font-semibold">{record.reps}</span>
-						<span>
-							<span className="rounded-md border bg-muted px-1.5 py-0.5 text-xs whitespace-nowrap text-muted-foreground">
-								{setPrLabels[record.type]}
-							</span>
-						</span>
-						<span
-							className="min-w-0 truncate text-right font-semibold"
-							title={record.time}>
-							{record.time}
-						</span>
-					</div>
-				))}
-			</div>
-		</>
+						className="min-w-0 gap-3 rounded-md py-4">
+						<CardHeader className="px-4">
+							<h3 className="text-xs text-muted-foreground">{setPrLabels[record.type]}</h3>
+						</CardHeader>
+						<CardContent className="flex flex-col gap-2 px-4">
+							<p className="flex flex-wrap items-baseline gap-x-1">
+								<span className="min-w-0 text-5xl leading-none font-semibold break-all text-primary tabular-nums">
+									{display.value}
+								</span>
+								<span className="text-sm text-muted-foreground">{display.unit}</span>
+							</p>
+							<p className="text-sm">{display.detail}</p>
+						</CardContent>
+					</Card>
+				);
+			})}
+		</div>
 	);
 }
 
@@ -85,8 +86,9 @@ export default function PersonalRecordsSection({
 	exerciseName,
 }: PersonalRecordsSectionProps): ReactElement {
 	return (
-		<ProgressExerciseDetailCard title="Personal records">
+		<section className="mb-6 flex flex-col gap-2">
+			<h2>Personal records</h2>
 			<PersonalRecordsContent exerciseName={exerciseName} />
-		</ProgressExerciseDetailCard>
+		</section>
 	);
 }
