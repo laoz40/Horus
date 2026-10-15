@@ -20,6 +20,8 @@ export function useExercisesByCategory(category: MuscleGroupCategory) {
 			input: { category },
 			// Exercises only change via settings or after saving a workout; neither happens mid-form.
 			staleTime: Number.POSITIVE_INFINITY,
+			// Keep visited categories cached when their picker unmounts.
+			gcTime: Number.POSITIVE_INFINITY,
 		}),
 	);
 

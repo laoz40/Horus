@@ -12,7 +12,7 @@ import {
 	type WorkoutHistoryInfiniteData,
 } from "@/features/workout-history/lib/optimisticHistoryItem";
 import { orpc } from "@/lib/orpc/client";
-import { showErrorToast, showWorkoutSavedToast } from "@/lib/toastMessages";
+import { showErrorToast, showWorkoutSaveToast } from "@/lib/toastMessages";
 
 type WorkoutSubmitMode =
 	| { type: "create" }
@@ -42,18 +42,17 @@ export const useWorkoutSubmit = ({
 
 	const createWorkout = useMutation(
 		orpc.workouts.create.mutationOptions({
-			onSuccess: async (result) => {
+			onSuccess: async () => {
 				await queryClient.invalidateQueries({
-					queryKey: orpc.workouts.list.key({ type: "infinite" }),
+					queryKey: historyListQueryKey,
+					refetchType: "all",
 				});
 
 				invalidateExerciseQueriesInBackground(queryClient);
 				setCreateWorkoutDraft(null);
-				showWorkoutSavedToast(result.workout.name);
 			},
 			onError: (error) => {
 				if (!isDefinedError(error)) {
-					showErrorToast("Failed to save workout.");
 					console.error(error);
 					router.push("/workouts/new");
 
@@ -62,17 +61,11 @@ export const useWorkoutSubmit = ({
 
 				switch (error.code) {
 					case "INVALID_INPUT":
-						showErrorToast("Invalid workout data.");
-						router.push("/workouts/new");
-
-						return;
 					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
 						router.push("/workouts/new");
 
 						return;
 					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to save workouts.");
 						router.push("/login");
 
 						return;
@@ -105,7 +98,8 @@ export const useWorkoutSubmit = ({
 			onSuccess: async (result) => {
 				// Keep the history pending state until refreshed list data (incl. PRs) lands.
 				await queryClient.invalidateQueries({
-					queryKey: orpc.workouts.list.key({ type: "infinite" }),
+					queryKey: historyListQueryKey,
+					refetchType: "all",
 				});
 
 				// Refresh cached views in the background after navigating to history.
@@ -117,7 +111,6 @@ export const useWorkoutSubmit = ({
 				});
 
 				invalidateExerciseQueriesInBackground(queryClient);
-				showWorkoutSavedToast(result.workout.name);
 			},
 			onError: (error, _variables, context) => {
 				if (context?.previousHistory !== undefined) {
@@ -125,7 +118,6 @@ export const useWorkoutSubmit = ({
 				}
 
 				if (!isDefinedError(error)) {
-					showErrorToast("Failed to save workout.");
 					console.error(error);
 
 					return;
@@ -133,20 +125,13 @@ export const useWorkoutSubmit = ({
 
 				switch (error.code) {
 					case "INVALID_INPUT":
-						showErrorToast("Invalid workout data.");
-
-						return;
 					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
 						return;
 					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to save workouts.");
 						router.push("/login");
 
 						return;
 					case "NOT_FOUND":
-						showErrorToast("Couldn't find workout in the database.");
 						router.push("/workouts");
 
 						return;
@@ -174,17 +159,17 @@ export const useWorkoutSubmit = ({
 		switch (mode.type) {
 			case "create":
 				setCreateWorkoutDraft(workoutResult.data);
-				createWorkout.mutate({ workout: workoutResult.data });
-				// TODO: The history feed has no optimistic UI yet, so this redirect can
-				// briefly land on a stale list until the invalidation refetch lands.
+				showWorkoutSaveToast(createWorkout.mutateAsync({ workout: workoutResult.data }));
 				router.push("/workouts");
 
 				return;
 			case "update":
-				updateWorkout.mutate({
-					workoutId: mode.workoutId,
-					workout: workoutResult.data,
-				});
+				showWorkoutSaveToast(
+					updateWorkout.mutateAsync({
+						workoutId: mode.workoutId,
+						workout: workoutResult.data,
+					}),
+				);
 				exitWorkoutPage("/workouts");
 
 				return;
