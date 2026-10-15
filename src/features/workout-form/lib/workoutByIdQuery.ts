@@ -1,4 +1,5 @@
 import { isDefinedError } from "@orpc/client";
+import { Match } from "effect";
 
 import { orpc } from "@/lib/orpc/client";
 
@@ -11,18 +12,12 @@ export function workoutByIdQueryOptions(workoutId: string) {
 				return failureCount < 2;
 			}
 
-			switch (error.code) {
-				case "DATABASE_ERROR":
-					return failureCount < 2;
-				case "NOT_FOUND":
-				case "UNAUTHORIZED":
-					return false;
-				default: {
-					const exhaustiveError: never = error;
-
-					return exhaustiveError;
-				}
-			}
+			return Match.value(error).pipe(
+				Match.when({ code: "DATABASE_ERROR" }, () => failureCount < 2),
+				Match.when({ code: "NOT_FOUND" }, () => false),
+				Match.when({ code: "UNAUTHORIZED" }, () => false),
+				Match.exhaustive,
+			);
 		},
 	});
 }

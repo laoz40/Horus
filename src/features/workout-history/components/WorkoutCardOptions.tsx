@@ -2,6 +2,7 @@
 
 import { isDefinedError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Match } from "effect";
 import { type ReactElement } from "react";
 import Link from "next/link";
 import {
@@ -47,25 +48,18 @@ export default function WorkoutCardOptions({
 					return;
 				}
 
-				switch (error.code) {
-					case "NOT_FOUND":
-						showErrorToast("Couldn't find workout in the database.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to delete workouts.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
+				Match.value(error).pipe(
+					Match.when({ code: "NOT_FOUND" }, () =>
+						showErrorToast("Couldn't find workout in the database."),
+					),
+					Match.when({ code: "DATABASE_ERROR" }, () =>
+						showErrorToast("Couldn't access the database. Please try again."),
+					),
+					Match.when({ code: "UNAUTHORIZED" }, () =>
+						showErrorToast("You must be signed in to delete workouts."),
+					),
+					Match.exhaustive,
+				);
 			},
 		}),
 	);

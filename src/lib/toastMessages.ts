@@ -1,4 +1,5 @@
 import { ORPCError } from "@orpc/client";
+import { Match } from "effect";
 import { toast } from "sonner";
 
 const toastPosition = "top-center";
@@ -88,18 +89,13 @@ export const showWorkoutSaveToast = (promise: Promise<{ workout: { name: string 
 		error: (cause: unknown) => {
 			if (!(cause instanceof ORPCError) || !cause.defined) return "Failed to save workout.";
 
-			switch (cause.code) {
-				case "INVALID_INPUT":
-					return "Invalid workout data.";
-				case "DATABASE_ERROR":
-					return "Couldn't access the database. Please try again.";
-				case "UNAUTHORIZED":
-					return "You must be signed in to save workouts.";
-				case "NOT_FOUND":
-					return "Couldn't find workout in the database.";
-				default:
-					return "Failed to save workout.";
-			}
+			return Match.value(cause.code).pipe(
+				Match.when("INVALID_INPUT", () => "Invalid workout data."),
+				Match.when("DATABASE_ERROR", () => "Couldn't access the database. Please try again."),
+				Match.when("UNAUTHORIZED", () => "You must be signed in to save workouts."),
+				Match.when("NOT_FOUND", () => "Couldn't find workout in the database."),
+				Match.orElse(() => "Failed to save workout."),
+			);
 		},
 		position: toastPosition,
 		action: dismissAction,

@@ -2,6 +2,7 @@
 
 import { isDefinedError } from "@orpc/client";
 import { useQuery } from "@tanstack/react-query";
+import { Match } from "effect";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -55,16 +56,11 @@ export default function RecentSetsDialog({
 
 		if (!isDefinedError(error)) return "Couldn't load recent sets.";
 
-		switch (error.code) {
-			case "DATABASE_ERROR":
-			case "UNAUTHORIZED":
-				return "Couldn't load recent sets.";
-			default: {
-				const exhaustiveError: never = error;
-
-				return exhaustiveError;
-			}
-		}
+		return Match.value(error).pipe(
+			Match.when({ code: "DATABASE_ERROR" }, () => "Couldn't load recent sets."),
+			Match.when({ code: "UNAUTHORIZED" }, () => "Couldn't load recent sets."),
+			Match.exhaustive,
+		);
 	};
 
 	const sets = (recentSetsQuery.data ?? []).map(({ completedAtMs, ...set }) => ({

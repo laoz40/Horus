@@ -1,6 +1,7 @@
 "use client";
 
 import { isDefinedError } from "@orpc/client";
+import { Match } from "effect";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import SectionCard from "@/components/SectionCard";
@@ -27,25 +28,16 @@ export default function DeleteAllWorkoutsSection() {
 					return;
 				}
 
-				switch (error.code) {
-					case "NO_WORKOUTS":
-						showErrorToast("No workouts to delete.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to delete workouts.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
+				Match.value(error).pipe(
+					Match.when({ code: "NO_WORKOUTS" }, () => showErrorToast("No workouts to delete.")),
+					Match.when({ code: "DATABASE_ERROR" }, () =>
+						showErrorToast("Couldn't access the database. Please try again."),
+					),
+					Match.when({ code: "UNAUTHORIZED" }, () =>
+						showErrorToast("You must be signed in to delete workouts."),
+					),
+					Match.exhaustive,
+				);
 			},
 		}),
 	);

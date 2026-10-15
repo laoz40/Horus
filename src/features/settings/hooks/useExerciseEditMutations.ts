@@ -1,6 +1,7 @@
 "use client";
 
 import { isDefinedError } from "@orpc/client";
+import { Match } from "effect";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { MuscleGroupCategory } from "@/features/workout-form/lib/muscleGroupCategories";
@@ -57,31 +58,23 @@ export function useExerciseEditMutations({
 					return;
 				}
 
-				switch (error.code) {
-					case "NAME_COLLISION":
+				Match.value(error).pipe(
+					Match.when({ code: "NAME_COLLISION" }, (matchedError) =>
 						onNameCollision({
-							existingExercise: error.data.existingExercise,
-						});
-
-						return;
-					case "EXERCISE_NOT_FOUND":
-						showErrorToast("Couldn't find this exercise.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to add exercises.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
+							existingExercise: matchedError.data.existingExercise,
+						}),
+					),
+					Match.when({ code: "EXERCISE_NOT_FOUND" }, () =>
+						showErrorToast("Couldn't find this exercise."),
+					),
+					Match.when({ code: "DATABASE_ERROR" }, () =>
+						showErrorToast("Couldn't access the database. Please try again."),
+					),
+					Match.when({ code: "UNAUTHORIZED" }, () =>
+						showErrorToast("You must be signed in to add exercises."),
+					),
+					Match.exhaustive,
+				);
 			},
 		}),
 	);
@@ -102,31 +95,23 @@ export function useExerciseEditMutations({
 					return;
 				}
 
-				switch (error.code) {
-					case "NAME_COLLISION":
+				Match.value(error).pipe(
+					Match.when({ code: "NAME_COLLISION" }, (matchedError) =>
 						onNameCollision({
-							existingExercise: error.data.existingExercise,
-						});
-
-						return;
-					case "EXERCISE_NOT_FOUND":
-						showErrorToast("Couldn't find this exercise.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to edit exercises.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
+							existingExercise: matchedError.data.existingExercise,
+						}),
+					),
+					Match.when({ code: "EXERCISE_NOT_FOUND" }, () =>
+						showErrorToast("Couldn't find this exercise."),
+					),
+					Match.when({ code: "DATABASE_ERROR" }, () =>
+						showErrorToast("Couldn't access the database. Please try again."),
+					),
+					Match.when({ code: "UNAUTHORIZED" }, () =>
+						showErrorToast("You must be signed in to edit exercises."),
+					),
+					Match.exhaustive,
+				);
 			},
 		}),
 	);
@@ -148,25 +133,18 @@ export function useExerciseEditMutations({
 					return;
 				}
 
-				switch (error.code) {
-					case "EXERCISE_NOT_FOUND":
-						showErrorToast("Couldn't find one of these exercises.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to combine exercises.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
+				Match.value(error).pipe(
+					Match.when({ code: "EXERCISE_NOT_FOUND" }, () =>
+						showErrorToast("Couldn't find one of these exercises."),
+					),
+					Match.when({ code: "DATABASE_ERROR" }, () =>
+						showErrorToast("Couldn't access the database. Please try again."),
+					),
+					Match.when({ code: "UNAUTHORIZED" }, () =>
+						showErrorToast("You must be signed in to combine exercises."),
+					),
+					Match.exhaustive,
+				);
 			},
 		}),
 	);
@@ -187,29 +165,21 @@ export function useExerciseEditMutations({
 					return;
 				}
 
-				switch (error.code) {
-					case "EXERCISE_NOT_FOUND":
-						showErrorToast("Couldn't find this exercise.");
-
-						return;
-					case "EXERCISE_IN_USE":
-						showErrorToast("This exercise is used in workouts and cannot be deleted.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to delete exercises.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
+				Match.value(error).pipe(
+					Match.when({ code: "EXERCISE_NOT_FOUND" }, () =>
+						showErrorToast("Couldn't find this exercise."),
+					),
+					Match.when({ code: "EXERCISE_IN_USE" }, () =>
+						showErrorToast("This exercise is used in workouts and cannot be deleted."),
+					),
+					Match.when({ code: "DATABASE_ERROR" }, () =>
+						showErrorToast("Couldn't access the database. Please try again."),
+					),
+					Match.when({ code: "UNAUTHORIZED" }, () =>
+						showErrorToast("You must be signed in to delete exercises."),
+					),
+					Match.exhaustive,
+				);
 			},
 		}),
 	);
