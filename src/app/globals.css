@@ -246,7 +246,7 @@ body {
 
 @layer components {
 	.exercise-set-grid-header {
-		@apply grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 text-xs tracking-wide text-muted-foreground uppercase;
+		@apply grid grid-cols-[4rem_3rem_minmax(4rem,1fr)_8rem] gap-1 text-xs tracking-wide text-muted-foreground;
 	}
 
 	.exercise-set-grid-row {
