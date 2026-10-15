@@ -1,5 +1,6 @@
 import "server-only";
 
+import { Effect } from "effect";
 import { os } from "@orpc/server";
 
 import { auth } from "@/lib/auth-server";
@@ -41,5 +42,9 @@ export const protectedProcedure = baseProcedure.use(async ({ context, errors, ne
 		},
 	});
 });
+
+export function logDatabaseError<E>(message: string, cause: unknown, rpcError: E) {
+	return Effect.logError(message, { cause }).pipe(Effect.andThen(Effect.fail(rpcError)));
+}
 
 export { publicProcedure };

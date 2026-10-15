@@ -1,31 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
 import { IconLoader2, IconLogout } from "@tabler/icons-react";
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import useSignOut from "@/features/auth/hooks/useSignOut";
 
 export default function SignOutButton({ className }: { className?: string }) {
-	const router = useRouter();
-	const [isSigningOut, setIsSigningOut] = useState<boolean>(false);
-
-	const handleSignOut = async () => {
-		if (isSigningOut) {
-			return;
-		}
-
-		setIsSigningOut(true);
-
-		try {
-			await authClient.signOut();
-		} finally {
-			router.refresh();
-			router.replace("/");
-			setIsSigningOut(false);
-		}
-	};
+	const { isSigningOut, signOut } = useSignOut();
 
 	return (
 		<Button
@@ -33,7 +14,7 @@ export default function SignOutButton({ className }: { className?: string }) {
 			className={cn(className, "bg-card!")}
 			disabled={isSigningOut}
 			onClick={() => {
-				void handleSignOut();
+				void signOut();
 			}}>
 			{isSigningOut ? (
 				<IconLoader2 className="size-4 animate-spin" />

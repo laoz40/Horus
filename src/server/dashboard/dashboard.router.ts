@@ -3,7 +3,7 @@ import "server-only";
 import { Effect } from "effect";
 import { z } from "zod";
 import { dashboardDb } from "@/server/dashboard/dashboard.db";
-import { protectedProcedure } from "@/server/procedures";
+import { logDatabaseError, protectedProcedure } from "@/server/procedures";
 import { getTrainingYearRange, getYearInTraining } from "@/server/dashboard/dashboard.service";
 
 const yearInTrainingInputSchema = z
@@ -41,11 +41,12 @@ export const dashboardRouter = {
 				getTrainingYearRange(context.userId).pipe(
 					Effect.provide(dashboardDb),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to load training year range", {
-								cause: error.cause,
-							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
-						},
+						DatabaseError: (error) =>
+							logDatabaseError(
+								"Failed to load training year range",
+								error.cause,
+								errors.DATABASE_ERROR(),
+							),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
@@ -65,11 +66,12 @@ export const dashboardRouter = {
 				getYearInTraining({ userId: context.userId, year: input.year }).pipe(
 					Effect.provide(dashboardDb),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to load year in training", {
-								cause: error.cause,
-							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
-						},
+						DatabaseError: (error) =>
+							logDatabaseError(
+								"Failed to load year in training",
+								error.cause,
+								errors.DATABASE_ERROR(),
+							),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),

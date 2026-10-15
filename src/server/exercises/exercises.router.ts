@@ -5,7 +5,7 @@ import { Effect } from "effect";
 import { z } from "zod";
 import { MUSCLE_GROUP_CATEGORIES } from "@/features/workout-form/lib/muscleGroupCategories";
 import { fetchApiExercises } from "@/features/workout-form/lib/fetchApiExercises.server";
-import { protectedProcedure, publicProcedure } from "@/server/procedures";
+import { logDatabaseError, protectedProcedure, publicProcedure } from "@/server/procedures";
 import { exercisesProgressProcedures } from "@/server/exercises/progress/progress.router";
 import { progressDb } from "@/server/exercises/progress/progress.db";
 import { exerciseDb } from "@/server/exercises/library/exercises.db";
@@ -24,6 +24,7 @@ import {
 	exerciseCatalogItemsSchema,
 	exerciseLibraryErrors,
 	exerciseLibraryItemSchema,
+	exerciseLibraryWriteErrorHandlers,
 	exerciseLibraryWriteOutputSchema,
 	exerciseLibraryWriteProcedureErrors,
 	onlineExerciseSearchErrors,
@@ -53,11 +54,8 @@ export const exercisesRouter = {
 					Effect.provide(exerciseDb),
 					Effect.map((exercises) => ({ exercises })),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to list exercises", { cause: error.cause }).pipe(
-								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-							);
-						},
+						DatabaseError: (error) =>
+							logDatabaseError("Failed to list exercises", error.cause, errors.DATABASE_ERROR()),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
@@ -99,11 +97,8 @@ export const exercisesRouter = {
 				}).pipe(
 					Effect.provide(progressDb),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to check set PR", { cause: error.cause }).pipe(
-								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-							);
-						},
+						DatabaseError: (error) =>
+							logDatabaseError("Failed to check set PR", error.cause, errors.DATABASE_ERROR()),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
@@ -122,11 +117,8 @@ export const exercisesRouter = {
 				searchExercises(context.userId, input.query).pipe(
 					Effect.provide(exerciseDb),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to search exercises", { cause: error.cause }).pipe(
-								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-							);
-						},
+						DatabaseError: (error) =>
+							logDatabaseError("Failed to search exercises", error.cause, errors.DATABASE_ERROR()),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
@@ -166,11 +158,12 @@ export const exercisesRouter = {
 				listExercisesByCategory(context.userId, input.category).pipe(
 					Effect.provide(exerciseDb),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to list exercises by category", {
-								cause: error.cause,
-							}).pipe(Effect.andThen(Effect.fail(errors.DATABASE_ERROR())));
-						},
+						DatabaseError: (error) =>
+							logDatabaseError(
+								"Failed to list exercises by category",
+								error.cause,
+								errors.DATABASE_ERROR(),
+							),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
@@ -187,18 +180,9 @@ export const exercisesRouter = {
 					Effect.provide(exerciseDb),
 					Effect.provide(transactions),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to create exercise", { cause: error.cause }).pipe(
-								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-							);
-						},
-						ExerciseNameCollisionError: (error) =>
-							Effect.fail(
-								errors.NAME_COLLISION({
-									data: { existingExercise: error.existingExercise },
-								}),
-							),
-						ExerciseNotFoundError: () => Effect.fail(errors.EXERCISE_NOT_FOUND()),
+						...exerciseLibraryWriteErrorHandlers(errors),
+						DatabaseError: (error) =>
+							logDatabaseError("Failed to create exercise", error.cause, errors.DATABASE_ERROR()),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
@@ -227,18 +211,9 @@ export const exercisesRouter = {
 					Effect.provide(exerciseDb),
 					Effect.provide(transactions),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to update exercise", { cause: error.cause }).pipe(
-								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-							);
-						},
-						ExerciseNameCollisionError: (error) =>
-							Effect.fail(
-								errors.NAME_COLLISION({
-									data: { existingExercise: error.existingExercise },
-								}),
-							),
-						ExerciseNotFoundError: () => Effect.fail(errors.EXERCISE_NOT_FOUND()),
+						...exerciseLibraryWriteErrorHandlers(errors),
+						DatabaseError: (error) =>
+							logDatabaseError("Failed to update exercise", error.cause, errors.DATABASE_ERROR()),
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
@@ -257,11 +232,8 @@ export const exercisesRouter = {
 				deleteUserExercise(context.userId, input.id).pipe(
 					Effect.provide(exerciseDb),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to delete exercise", { cause: error.cause }).pipe(
-								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-							);
-						},
+						DatabaseError: (error) =>
+							logDatabaseError("Failed to delete exercise", error.cause, errors.DATABASE_ERROR()),
 						ExerciseNotFoundError: () => Effect.fail(errors.EXERCISE_NOT_FOUND()),
 						ExerciseInUseError: () => Effect.fail(errors.EXERCISE_IN_USE()),
 					}),
@@ -296,11 +268,8 @@ export const exercisesRouter = {
 					Effect.provide(exerciseDb),
 					Effect.provide(transactions),
 					Effect.catchTags({
-						DatabaseError: (error) => {
-							return Effect.logError("Failed to merge exercises", { cause: error.cause }).pipe(
-								Effect.andThen(Effect.fail(errors.DATABASE_ERROR())),
-							);
-						},
+						DatabaseError: (error) =>
+							logDatabaseError("Failed to merge exercises", error.cause, errors.DATABASE_ERROR()),
 						ExerciseNotFoundError: () => Effect.fail(errors.EXERCISE_NOT_FOUND()),
 					}),
 					Effect.annotateLogs(context.logAnnotations),

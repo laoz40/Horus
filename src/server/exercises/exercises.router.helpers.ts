@@ -1,6 +1,8 @@
 import "server-only";
 
+import { Effect } from "effect";
 import { z } from "zod";
+import type { ExerciseNameCollisionError } from "@/server/exercises/library/library.functions";
 
 export const databaseError = {
 	DATABASE_ERROR: {
@@ -77,3 +79,16 @@ export const exerciseLibraryWriteProcedureErrors = {
 			.strict(),
 	},
 };
+
+export function exerciseLibraryWriteErrorHandlers<NameCollisionError, NotFoundError>(errors: {
+	NAME_COLLISION: (options: {
+		data: { existingExercise: InstanceType<typeof ExerciseNameCollisionError>["existingExercise"] };
+	}) => NameCollisionError;
+	EXERCISE_NOT_FOUND: () => NotFoundError;
+}) {
+	return {
+		ExerciseNameCollisionError: (error: ExerciseNameCollisionError) =>
+			Effect.fail(errors.NAME_COLLISION({ data: { existingExercise: error.existingExercise } })),
+		ExerciseNotFoundError: () => Effect.fail(errors.EXERCISE_NOT_FOUND()),
+	};
+}

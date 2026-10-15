@@ -10,11 +10,9 @@ import {
 	AccordionTrigger,
 } from "@/components/ui/accordion";
 import ExerciseSetRowsSkeleton from "@/features/progress/components/ExerciseSetRowsSkeleton";
+import RecentSetRow from "@/features/progress/components/RecentSetRow";
 import { orpcQueryErrorMessage } from "@/features/progress/lib/orpcQueryErrorMessage";
-import { setPrLabels } from "@/features/workout-form/lib/setPr";
-import { getRelativeTime } from "@/lib/date";
 import { orpc } from "@/lib/orpc/client";
-import { cn } from "@/lib/utils";
 
 interface RecentSetsSectionProps {
 	exerciseName: string;
@@ -45,10 +43,7 @@ function RecentSetsContent({ exerciseName }: RecentSetsSectionProps): ReactEleme
 		return <p className="pb-3 text-sm text-destructive">{errorMessage}</p>;
 	}
 
-	const recentSets = (recentSetsQuery.data ?? []).map(({ completedAtMs, ...set }) => ({
-		...set,
-		time: getRelativeTime(new Date(completedAtMs)),
-	}));
+	const recentSets = recentSetsQuery.data ?? [];
 
 	if (recentSets.length === 0) {
 		return <p className="pb-3 text-sm text-muted-foreground">No recent completed sets found.</p>;
@@ -64,27 +59,11 @@ function RecentSetsContent({ exerciseName }: RecentSetsSectionProps): ReactEleme
 			</div>
 			<div className="flex flex-col">
 				{recentSets.map((set) => {
-					const primaryPrType = set.prTypes[0];
-
 					return (
-						<div
+						<RecentSetRow
 							key={set.id}
-							className="exercise-set-grid-row">
-							<span className={cn(set.isPr && "font-semibold")}>{set.weight}</span>
-							<span className={cn(set.isPr && "font-semibold")}>{set.reps}</span>
-							<span>
-								{primaryPrType ? (
-									<span className="rounded-md border bg-muted px-1.5 py-0.5 text-xs whitespace-nowrap text-muted-foreground">
-										{setPrLabels[primaryPrType]}
-									</span>
-								) : null}
-							</span>
-							<span
-								className={cn("min-w-0 truncate text-right", set.isPr && "font-semibold")}
-								title={set.time}>
-								{set.time}
-							</span>
-						</div>
+							set={set}
+						/>
 					);
 				})}
 			</div>
