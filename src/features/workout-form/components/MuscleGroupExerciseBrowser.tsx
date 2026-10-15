@@ -91,7 +91,7 @@ function ExerciseCategoryView({
 				<IconChevronLeft className="-ms-1.5 size-5 shrink-0" />
 				{CATEGORY_LABELS[category]}
 				{isFetching ? (
-					<span className="flex items-center gap-1 text-sm font-normal text-muted-foreground">
+					<span className="ms-2 flex items-center gap-1 text-sm font-normal text-muted-foreground">
 						<IconLoader2
 							className="size-4 animate-spin"
 							aria-hidden
