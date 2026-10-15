@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { orpc } from "@/lib/orpc/client";
+import { useHistoryScrollRestoration } from "@/features/workout-history/hooks/useHistoryScrollRestoration";
 
 import HistoryList from "@/features/workout-history/components/HistoryList";
 import HistoryPagination from "@/features/workout-history/components/HistoryPagination";
@@ -26,10 +27,15 @@ export default function HistoryFeed({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 		return <SignInPrompt />;
 	}
 
-	return <Content WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE} />;
+	return (
+		<Content
+			WORKOUTS_PER_PAGE={WORKOUTS_PER_PAGE}
+			userId={sessionData.user.id}
+		/>
+	);
 }
 
-function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
+function Content({ WORKOUTS_PER_PAGE, userId }: HistoryFeedProps & { userId: string }) {
 	const isCreatingWorkout = useIsMutating({ mutationKey: orpc.workouts.create.mutationKey() }) > 0;
 	const isUpdatingWorkout = useIsMutating({ mutationKey: orpc.workouts.update.mutationKey() }) > 0;
 
@@ -43,13 +49,16 @@ function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 	);
 
 	const workouts = historyQuery.data?.pages.flatMap((page) => page.items) ?? [];
+	const feedRef = useHistoryScrollRestoration({ userId, isReady: !historyQuery.isPending });
 
 	if (isCreatingWorkout && !historyQuery.data) {
 		return <WorkoutCardSkeletonList count={WORKOUTS_PER_PAGE} />;
 	}
 
 	return (
-		<>
+		<div
+			ref={feedRef}
+			className="contents">
 			<HistoryList
 				workouts={workouts}
 				isLoading={historyQuery.isPending}
@@ -62,7 +71,7 @@ function Content({ WORKOUTS_PER_PAGE }: HistoryFeedProps) {
 				onLoadMore={() => historyQuery.fetchNextPage()}
 				className="mt-1"
 			/>
-		</>
+		</div>
 	);
 }
 
