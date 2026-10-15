@@ -78,7 +78,7 @@ export default function WeightProgressionSection({
 	return (
 		<section className="mb-6 flex flex-col">
 			<div className="mb-1 flex items-center justify-between gap-2">
-				<h2 className="text-muted-foreground">Weight progression</h2>
+				<h2 className="text-foreground">Weight progression</h2>
 				<Select
 					value={range}
 					onValueChange={(value) => {
