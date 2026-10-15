@@ -7,5 +7,7 @@ const Toaster = dynamic(() => import("@/components/ui/sonner").then((module) => 
 });
 
 export default function DeferredToaster() {
-	return <Toaster />;
+	// In the iOS PWA, viewport-fit=cover lets fixed toasts overlap the status bar and notch.
+	// Sonner's mobile offset defaults to 16px, so add the safe area explicitly.
+	return <Toaster mobileOffset={{ top: "calc(env(safe-area-inset-top, 0px) + 16px)" }} />;
 }
