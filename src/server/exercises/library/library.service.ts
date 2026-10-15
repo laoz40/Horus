@@ -36,7 +36,7 @@ export const listUserExercises = (userId: string) =>
 		return yield* db.listUserExercises(userId);
 	});
 
-export function normalizeExerciseInput(input: ExerciseLibraryWriteInput) {
+function normalizeExerciseInput(input: ExerciseLibraryWriteInput) {
 	return {
 		name: input.name.trim(),
 		normalizedName: normalizeName(input.name),
@@ -44,22 +44,20 @@ export function normalizeExerciseInput(input: ExerciseLibraryWriteInput) {
 	};
 }
 
-type NormalizedExercise = ReturnType<typeof normalizeExerciseInput>;
-
 interface ExerciseNameQuery {
 	userId: string;
 	normalizedName: string;
 	excludingExerciseId?: string;
 }
 
-export const getUserExercise = (userId: string, exerciseId: string) =>
+const getUserExercise = (userId: string, exerciseId: string) =>
 	Effect.gen(function* () {
 		const db = yield* ExerciseDb;
 
 		return yield* requireUserExercise(yield* db.getUserExercise({ userId, exerciseId }));
 	});
 
-export const validateExerciseNameAvailability = ({
+const validateExerciseNameAvailability = ({
 	userId,
 	normalizedName,
 	excludingExerciseId,
@@ -83,18 +81,24 @@ export const validateExerciseNameAvailability = ({
 
 interface CreateExerciseInput {
 	userId: string;
-	exercise: NormalizedExercise;
+	exercise: ExerciseLibraryWriteInput;
 }
 
 export const createUserExercise = (input: CreateExerciseInput) =>
 	Effect.gen(function* () {
+		const exercise = normalizeExerciseInput(input.exercise);
+		yield* validateExerciseNameAvailability({
+			userId: input.userId,
+			normalizedName: exercise.normalizedName,
+		});
+
 		const transaction = yield* Transactions;
 
 		return yield* transaction.run(
 			Effect.gen(function* () {
 				const db = yield* ExerciseDb;
 
-				return yield* db.create(input);
+				return yield* db.create({ userId: input.userId, exercise });
 			}),
 		);
 	});
@@ -105,26 +109,34 @@ interface UpdateExerciseInput extends CreateExerciseInput {
 
 export const updateUserExercise = (input: UpdateExerciseInput) =>
 	Effect.gen(function* () {
+		const exercise = normalizeExerciseInput(input.exercise);
+		yield* getUserExercise(input.userId, input.exerciseId);
+		yield* validateExerciseNameAvailability({
+			userId: input.userId,
+			normalizedName: exercise.normalizedName,
+			excludingExerciseId: input.exerciseId,
+		});
+
 		const transaction = yield* Transactions;
 
 		return yield* transaction.run(
 			Effect.gen(function* () {
 				const db = yield* ExerciseDb;
 
-				return yield* db.update(input);
+				return yield* db.update({
+					userId: input.userId,
+					exerciseId: input.exerciseId,
+					exercise,
+				});
 			}),
 		);
 	});
 
-export const getUnusedUserExercise = (userId: string, exerciseId: string) =>
+export const deleteUserExercise = (userId: string, exerciseId: string) =>
 	Effect.gen(function* () {
-		return yield* requireUnusedExercise(yield* getUserExercise(userId, exerciseId));
-	});
-
-export const deleteUserExerciseById = (userId: string, exerciseId: string) =>
-	Effect.gen(function* () {
+		const exercise = yield* requireUnusedExercise(yield* getUserExercise(userId, exerciseId));
 		const db = yield* ExerciseDb;
-		yield* db.deleteUserExercise({ userId, exerciseId });
+		yield* db.deleteUserExercise({ userId, exerciseId: exercise.id });
 
 		return { deleted: true as const };
 	});

@@ -12,11 +12,7 @@ import { exerciseDb } from "@/server/exercises/library/exercises.db";
 import { checkSetPr } from "@/server/exercises/progress/progress.service";
 import {
 	createUserExercise,
-	normalizeExerciseInput,
-	validateExerciseNameAvailability,
-	getUserExercise,
-	getUnusedUserExercise,
-	deleteUserExerciseById,
+	deleteUserExercise,
 	listExercisesByCategory,
 	listUserExercises,
 	mergeUserExercises,
@@ -184,23 +180,10 @@ export const exercisesRouter = {
 		.errors(exerciseLibraryWriteProcedureErrors)
 		.input(exerciseLibraryWriteInputSchema)
 		.output(exerciseLibraryWriteOutputSchema)
-		.handler(({ input, context, errors }) => {
-			const normalizedExercise = normalizeExerciseInput(input);
-
-			return Effect.runPromise(
-				Effect.gen(function* () {
-					yield* validateExerciseNameAvailability({
-						userId: context.userId,
-						normalizedName: normalizedExercise.normalizedName,
-					});
-
-					const exercise = yield* createUserExercise({
-						userId: context.userId,
-						exercise: normalizedExercise,
-					});
-
-					return { exercise };
-				}).pipe(
+		.handler(({ input, context, errors }) =>
+			Effect.runPromise(
+				createUserExercise({ userId: context.userId, exercise: input }).pipe(
+					Effect.map((exercise) => ({ exercise })),
 					Effect.provide(exerciseDb),
 					Effect.provide(transactions),
 					Effect.catchTags({
@@ -219,8 +202,8 @@ export const exercisesRouter = {
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
-			);
-		}),
+			),
+		),
 	update: protectedProcedure
 		.errors(exerciseLibraryWriteProcedureErrors)
 		.input(
@@ -233,26 +216,14 @@ export const exercisesRouter = {
 				.strict(),
 		)
 		.output(exerciseLibraryWriteOutputSchema)
-		.handler(({ input, context, errors }) => {
-			const normalizedExercise = normalizeExerciseInput(input);
-
-			return Effect.runPromise(
-				Effect.gen(function* () {
-					yield* getUserExercise(context.userId, input.id);
-					yield* validateExerciseNameAvailability({
-						userId: context.userId,
-						normalizedName: normalizedExercise.normalizedName,
-						excludingExerciseId: input.id,
-					});
-
-					const exercise = yield* updateUserExercise({
-						userId: context.userId,
-						exerciseId: input.id,
-						exercise: normalizedExercise,
-					});
-
-					return { exercise };
+		.handler(({ input, context, errors }) =>
+			Effect.runPromise(
+				updateUserExercise({
+					userId: context.userId,
+					exerciseId: input.id,
+					exercise: input,
 				}).pipe(
+					Effect.map((exercise) => ({ exercise })),
 					Effect.provide(exerciseDb),
 					Effect.provide(transactions),
 					Effect.catchTags({
@@ -271,8 +242,8 @@ export const exercisesRouter = {
 					}),
 					Effect.annotateLogs(context.logAnnotations),
 				),
-			);
-		}),
+			),
+		),
 	delete: protectedProcedure
 		.errors({
 			DATABASE_ERROR: exerciseLibraryErrors.DATABASE_ERROR,
@@ -283,11 +254,7 @@ export const exercisesRouter = {
 		.output(z.object({ deleted: z.literal(true) }).strict())
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
-				Effect.gen(function* () {
-					const exercise = yield* getUnusedUserExercise(context.userId, input.id);
-
-					return yield* deleteUserExerciseById(context.userId, exercise.id);
-				}).pipe(
+				deleteUserExercise(context.userId, input.id).pipe(
 					Effect.provide(exerciseDb),
 					Effect.catchTags({
 						DatabaseError: (error) => {
