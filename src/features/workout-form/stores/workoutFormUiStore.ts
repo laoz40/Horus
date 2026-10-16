@@ -1,11 +1,14 @@
 import { create } from "zustand";
 
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
+import {
+	exerciseSelectionReducer,
+	type ExerciseSelection,
+} from "@/features/workout-form/lib/exerciseSelection";
 
 export interface WorkoutFormUiState {
 	createWorkoutDraft: Workout | null;
-	selectedExerciseId: string | null;
-	isEditing: boolean;
+	exerciseSelection: ExerciseSelection;
 	scrollTargetId: string | null;
 	startedAtMs: number;
 	isRecentSetsDialogOpen: boolean;
@@ -18,8 +21,7 @@ export type WorkoutFormUiStore = WorkoutFormUiState;
 
 const createInitialWorkoutFormUiState = (): WorkoutFormUiState => ({
 	createWorkoutDraft: null,
-	selectedExerciseId: null,
-	isEditing: false,
+	exerciseSelection: { kind: "none" },
 	scrollTargetId: null,
 	startedAtMs: Date.now(),
 	isRecentSetsDialogOpen: false,
@@ -28,7 +30,11 @@ const createInitialWorkoutFormUiState = (): WorkoutFormUiState => ({
 	restTimerStartedAtMs: null,
 });
 
-export const selectSelectedExerciseId = (state: WorkoutFormUiStore) => state.selectedExerciseId;
+export const selectSelectedExerciseId = (state: WorkoutFormUiStore) =>
+	state.exerciseSelection.kind === "none" ? null : state.exerciseSelection.exerciseId;
+
+export const selectIsEditingExercise = (state: WorkoutFormUiStore) =>
+	state.exerciseSelection.kind === "editing";
 
 export const selectCreateWorkoutDraft = (state: WorkoutFormUiStore) => state.createWorkoutDraft;
 
@@ -51,8 +57,7 @@ export const useWorkoutFormUiStore = create<WorkoutFormUiStore>()(() => ({
 
 export function initializeWorkoutSession(initialDurationSeconds = 0): void {
 	useWorkoutFormUiStore.setState({
-		selectedExerciseId: null,
-		isEditing: false,
+		exerciseSelection: { kind: "none" },
 		scrollTargetId: null,
 		startedAtMs: Date.now() - Math.max(0, initialDurationSeconds ?? 0) * 1000,
 		isRecentSetsDialogOpen: false,
@@ -68,21 +73,26 @@ export function setCreateWorkoutDraft(draft: Workout | null): void {
 
 export function selectExercise(exerciseId: string | null): void {
 	useWorkoutFormUiStore.setState((state) => ({
-		selectedExerciseId: exerciseId,
-		isEditing: exerciseId ? state.isEditing : false,
+		exerciseSelection: exerciseSelectionReducer(state.exerciseSelection, {
+			kind: "selectExercise",
+			exerciseId,
+		}),
 	}));
 }
 
 export function toggleExerciseEdit(): void {
-	useWorkoutFormUiStore.setState((state) => {
-		if (!state.selectedExerciseId) {
-			return state;
-		}
+	useWorkoutFormUiStore.setState((state) => ({
+		exerciseSelection: exerciseSelectionReducer(state.exerciseSelection, { kind: "toggleEditing" }),
+	}));
+}
 
-		return {
-			isEditing: !state.isEditing,
-		};
-	});
+export function selectExerciseAfterDeletion(nextExerciseId: string | null): void {
+	useWorkoutFormUiStore.setState((state) => ({
+		exerciseSelection: exerciseSelectionReducer(state.exerciseSelection, {
+			kind: "exerciseDeleted",
+			nextExerciseId,
+		}),
+	}));
 }
 
 export function setScrollTarget(exerciseId: string | null): void {

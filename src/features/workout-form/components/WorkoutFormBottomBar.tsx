@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import {
 	openRecentSetsDialog,
+	selectSelectedExerciseId,
+	selectIsEditingExercise,
 	toggleExerciseEdit,
 	useWorkoutFormUiStore,
 } from "@/features/workout-form/stores/workoutFormUiStore";
@@ -25,8 +27,8 @@ export default function WorkoutFormBottomBar({
 	onDeleteExercise,
 }: WorkoutFormBottomBarProps): ReactElement | null {
 	const { control } = useFormContext<Workout>();
-	const selectedExerciseId = useWorkoutFormUiStore((state) => state.selectedExerciseId);
-	const isEditing = useWorkoutFormUiStore((state) => state.isEditing);
+	const selectedExerciseId = useWorkoutFormUiStore(selectSelectedExerciseId);
+	const isEditing = useWorkoutFormUiStore(selectIsEditingExercise);
 
 	const selectedExerciseIndex = exerciseIds.findIndex(
 		(exerciseId) => exerciseId === selectedExerciseId,

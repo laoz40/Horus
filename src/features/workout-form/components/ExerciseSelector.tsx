@@ -10,6 +10,7 @@ import {
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import {
 	selectExercise,
+	selectSelectedExerciseId,
 	setScrollTarget,
 	useWorkoutFormUiStore,
 } from "@/features/workout-form/stores/workoutFormUiStore";
@@ -21,7 +22,7 @@ interface ExerciseSelectorProps {
 
 export default function ExerciseSelector({ exerciseIds }: ExerciseSelectorProps) {
 	const { control } = useFormContext<Workout>();
-	const selectedExerciseId = useWorkoutFormUiStore((state) => state.selectedExerciseId);
+	const selectedExerciseId = useWorkoutFormUiStore(selectSelectedExerciseId);
 
 	// map names of exercises from the form
 	const exerciseNames = useWatch({
