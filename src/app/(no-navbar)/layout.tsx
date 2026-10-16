@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, type ReactNode, type ReactElement } from "react";
 
 import { cn } from "@/lib/utils";
-import { WorkoutPageExitContext } from "@/lib/workoutPageExit";
+import { WorkoutPageExitContext } from "@/features/workout-form/lib/workoutPageExit";
 
 export default function NoNavLayout({ children }: { children: ReactNode }): ReactElement {
 	const router = useRouter();

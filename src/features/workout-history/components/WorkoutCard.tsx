@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Card from "@/components/Card";
-import type { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
-import { toTitleCase } from "@/features/workout-form/lib/convertWorkoutData";
+import type { WorkoutHistoryItem } from "@/features/workout-history/lib/optimisticHistoryItem";
+import { toTitleCase } from "@/features/exercise-picker/lib/convertExerciseData";
 import { getRelativeTime } from "@/lib/date";
 import { ShineBorder } from "@/components/ui/shine-border";
 import WorkoutCardStats from "@/features/workout-history/components/WorkoutCardStats";

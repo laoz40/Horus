@@ -1,14 +1,14 @@
 import type { ReactElement } from "react";
 
-import type { WorkoutFormData } from "@/features/workout-form/lib/types";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import WorkoutCardStats from "@/features/workout-history/components/WorkoutCardStats";
 import { formatWorkoutDate } from "@/lib/date";
 
 interface WorkoutViewSummaryProps {
-	workout: WorkoutFormData & { createdAt: number };
+	workout: Workout & { createdAt: number };
 }
 
-function getWorkoutViewStats(workout: WorkoutFormData) {
+function getWorkoutViewStats(workout: Workout) {
 	const totalVolume = workout.exercises.reduce(
 		(workoutTotal, exercise) =>
 			workoutTotal +

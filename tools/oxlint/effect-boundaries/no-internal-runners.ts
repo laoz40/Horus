@@ -1,6 +1,7 @@
 import { defineRule } from "@oxlint/plugins";
 
 import { effectMethodTarget } from "./lib.ts";
+import { isServerImplementationFile } from "../shared/server-path.ts";
 
 const RUNNERS = new Set([
 	"runCallback",
@@ -38,7 +39,7 @@ export const noInternalRunnersRule = defineRule({
 				const file = context.filename.replaceAll("\\", "/");
 				transactionBridge = file.endsWith("/src/server/transactions.ts");
 
-				return file.includes("/src/server/") && !file.endsWith(".router.ts");
+				return isServerImplementationFile(file) && !file.endsWith(".router.ts");
 			},
 			MemberExpression(node) {
 				const method = effectMethodTarget(context.sourceCode, node);

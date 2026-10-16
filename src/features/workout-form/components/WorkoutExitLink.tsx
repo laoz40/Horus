@@ -16,7 +16,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useWorkoutPageExit } from "@/lib/workoutPageExit";
+import { useWorkoutPageExit } from "@/features/workout-form/lib/workoutPageExit";
 import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
 
 interface WorkoutExitLinkProps {

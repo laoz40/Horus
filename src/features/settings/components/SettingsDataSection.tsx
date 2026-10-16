@@ -1,6 +1,6 @@
 "use client";
 
-import DeleteAllWorkoutsSection from "@/features/settings/components/DeleteAllWorkoutsSection";
+import DeleteAllWorkoutsSection from "@/features/workout-history/components/DeleteAllWorkoutsSection";
 import { authClient } from "@/lib/auth-client";
 
 import SignOutButton from "@/features/auth/components/SignOutButton";

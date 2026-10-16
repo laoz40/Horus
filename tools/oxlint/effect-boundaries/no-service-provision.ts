@@ -1,6 +1,7 @@
 import { defineRule } from "@oxlint/plugins";
 
 import { effectMethodTarget, importedTarget } from "./lib.ts";
+import { isServerImplementationFile } from "../shared/server-path.ts";
 
 const PROVIDERS = new Set(["provide", "provideContext", "provideService", "provideServiceEffect"]);
 
@@ -24,7 +25,7 @@ export const noServiceProvisionRule = defineRule({
 			before() {
 				const file = context.filename.replaceAll("\\", "/");
 
-				return file.includes("/src/server/") && file.endsWith(".service.ts");
+				return isServerImplementationFile(file) && file.endsWith(".service.ts");
 			},
 			MemberExpression(node) {
 				const method = effectMethodTarget(context.sourceCode, node);

@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { getDifficultyLevel } from "@/features/workout-form/lib/difficulty";
+import { getDifficultyLevel } from "@/features/workout-view/lib/difficulty";
 import { cn } from "@/lib/utils";
 
 interface DifficultyBadgeProps {

@@ -1,7 +1,17 @@
 import type { InfiniteData } from "@tanstack/react-query";
 
-import type { WorkoutForSave } from "@/features/workout-form/lib/types";
-import type { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
+import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
+
+export interface WorkoutHistoryItem {
+	id: string;
+	createdAt: number;
+	name: string;
+	durationSeconds: number | null;
+	totalVolume: number;
+	totalPrSets: number;
+	exerciseCount: number;
+	muscleGroups: string[];
+}
 
 export type WorkoutHistoryPage = {
 	items: WorkoutHistoryItem[];

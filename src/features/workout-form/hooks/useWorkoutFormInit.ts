@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import type { UseFormReset } from "react-hook-form";
 
-import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { showErrorToast } from "@/lib/toastMessages";
 import {
@@ -13,7 +12,7 @@ import {
 
 interface UseWorkoutFormInitProps {
 	reset: UseFormReset<Workout>;
-	initialData?: WorkoutFormData;
+	initialData?: Workout;
 	workoutId?: string;
 	missingGlobalExercisesCount?: number;
 }

@@ -1,6 +1,7 @@
 import { defineRule, eslintCompatPlugin } from "@oxlint/plugins";
 
 import { arrayMethodTarget, resolveArrayBinding } from "../anti-slop/shared/array-method.ts";
+import { isServerImplementationFile } from "../shared/server-path.ts";
 
 /** Keep router failures in the Effect error channel until the oRPC boundary. */
 const preferRouterCatchTagsRule = defineRule({
@@ -16,7 +17,7 @@ const preferRouterCatchTagsRule = defineRule({
 		return {
 			CallExpression(node) {
 				if (
-					!context.filename.replaceAll("\\", "/").includes("/src/server/") ||
+					!isServerImplementationFile(context.filename) ||
 					!context.filename.endsWith(".router.ts")
 				)
 					return;

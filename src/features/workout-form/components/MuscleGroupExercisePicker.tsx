@@ -2,7 +2,7 @@
 
 import { useFormContext } from "react-hook-form";
 
-import { MuscleGroupExerciseBrowser } from "@/features/workout-form/components/MuscleGroupExerciseBrowser";
+import { MuscleGroupExerciseBrowser } from "@/features/exercise-picker/components/MuscleGroupExerciseBrowser";
 import { applyPickedExercise } from "@/features/workout-form/lib/selectExercise";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 

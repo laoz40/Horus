@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 
-import ProgressExerciseDetail from "@/features/progress/components/ProgressExerciseDetail";
+import ProgressExerciseDetail from "@/features/exercise-progress/components/ProgressExerciseDetail";
 
 interface ProgressExerciseDetailPageProps {
 	params: Promise<{ exerciseName: string }>;
