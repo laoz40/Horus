@@ -2,9 +2,12 @@ import "server-only";
 
 import { Effect } from "effect";
 import { z } from "zod";
-import { dashboardDb } from "@/server/dashboard/dashboard.db";
+import { dashboardDb } from "@/features/dashboard/server/dashboard.db";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
-import { getTrainingYearRange, getYearInTraining } from "@/server/dashboard/dashboard.service";
+import {
+	getTrainingYearRange,
+	getYearInTraining,
+} from "@/features/dashboard/server/dashboard.service";
 
 const yearInTrainingInputSchema = z
 	.object({

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { Effect } from "effect";
-import { DashboardDb } from "@/server/dashboard/dashboard.db";
+import { DashboardDb } from "@/features/dashboard/server/dashboard.db";
 
 type YearInTrainingQuery = {
 	userId: string;
