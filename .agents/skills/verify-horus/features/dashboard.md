@@ -19,7 +19,7 @@ The dashboard (`/`) is the home screen: a personalized greeting, a "Start" secti
 Preconditions: doctor authenticated.
 
 - **Greeting + heatmap + preset stubs:**
-  `flow --out dashboard --steps '[{"goto":"/"},{"expectText":"Welcome back"},{"expectText":"Year in Training"},{"click":{"role":"link","name":"Create a Preset"}},{"expectToast":"Presets are coming soon."},{"click":{"name":"COMING SOON"}},{"expectToast":"Please read. Please be patient."},{"screenshot":"01-dashboard.png"},{"snapshot":true}]'`
+  `flow --out dashboard --steps '[{"goto":"/"},{"expectText":"Welcome back"},{"expectText":"Verify Agent"},{"expectText":"Year in Training"},{"click":{"role":"link","name":"Create a Preset"}},{"expectToast":"Presets are coming soon."},{"click":{"name":"COMING SOON"}},{"expectToast":"Please read. Please be patient."},{"screenshot":"01-dashboard.png"},{"snapshot":true}]'`
   → greeting and both preset toasts fire.
 - **Start Workout:** `flow --out dashboard-start --steps '[{"goto":"/"},{"click":{"role":"link","name":"Start Workout"}},{"expectUrl":"/workouts/new"}]'` → URL changes to the workout form.
 - **Nonempty heatmap:** complete `create-workout.md` first (needs at least one completed set today).

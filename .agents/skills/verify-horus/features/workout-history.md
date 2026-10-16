@@ -1,11 +1,12 @@
 # Workout history
 
-`/workouts` is a feed of past workouts (7 per page, infinite scroll) with cards showing name, date, muscle-group badges, and set stats, a search bar (UI only — not wired yet), per-card options (Edit, Share, Delete), and a scroll sentinel that loads more pages.
+`/workouts` is a feed of past workouts (7 per page, infinite scroll) with cards showing name, date, muscle-group badges, and workout summary metrics, a search bar (UI only — not wired yet), per-card options (Edit, Share, Delete), and a scroll sentinel that loads more pages.
 
 ## Sub-features
 
 - `list` — cards render for the user's workouts, newest first.
 - `search-ui` — search input with placeholder "Search by workout name" is visible but does not filter the feed yet.
+- `view` — tap a workout card to open its detail page with summary metrics and completed sets; its "Edit" link opens the workout form.
 - `edit` — card options → "Edit" opens `/workouts/<id>/edit`; saving there updates the row.
 - `delete` — card options → "Delete" asks "Delete workout?"; confirming removes the card and the row.
 - `share` — "Share" menu item is a stub with no action.
@@ -14,6 +15,7 @@
 ## How to get to it (user POV)
 
 - Navbar ("Main navigation") → "History" → `/workouts`.
+- Tap a workout card → `/workouts/<id>` → "Edit" or back to history.
 
 ## Driving it with drive.mjs
 
@@ -23,6 +25,8 @@ Preconditions: doctor authenticated; ideally one workout exists (run `create-wor
 - **Delete:** `{"goto":"/workouts"},{"expectText":"Verify Run Workout"},{"click":{"role":"button","name":"Workout options"}},{"click":{"role":"menuitem","name":"Delete"}},{"expectText":"Delete workout?"},{"click":{"name":"Delete"}}` → toast "Deleted …" (fires only after the server succeeds). Note the workout `id` before delete, then `db-query.mjs --sql "SELECT id FROM workouts WHERE id = '<id>'"` → `[]`. Use `click` for the options menu (`aria-label="Workout options"`), not `expectText`.
 - **Edit:** options → `{"click":{"role":"menuitem","name":"Edit"}}`, `{"expectUrl":"/edit"}` → edit form loads; change something and Finish/Save as in `create-workout.md`, then verify the updated value in history and DB.
 - **Infinite scroll:** only meaningful with 8+ workouts; scroll the feed until the sentinel loads more cards (check snapshot for additional card names).
+
+- **Workout details:** after saving `Verify Run Workout` with a completed 60 kg × 8 Bench Press set, run `flow --out workout-view --steps '[{"goto":"/workouts"},{"expectText":"Verify Run Workout"},{"click":{"role":"link","name":"Verify Run Workout"}},{"expectText":"Bench Press"},{"expectText":"60"},{"expectText":"8"},{"screenshot":"01-workout-view.png"},{"snapshot":true},{"click":{"role":"link","name":"Edit"}},{"expectUrl":"/edit"}]'`. Only completed sets appear in the detail page.
 
 ## Gotchas
 
