@@ -3,8 +3,8 @@ import "server-only";
 import type { WorkoutUpdateInput } from "@/features/workout-form/server/workouts.db";
 import { deleteWorkoutExercises } from "@/generated/prisma/sql";
 import type { DatabaseTransaction } from "@/lib/db";
-import type { PrSetUpdate } from "@/server/exercises/pr-history/pr-history.functions";
-import type { WorkoutExerciseWithDatabaseId } from "@/server/exercises/library/workout-exercises.db";
+import type { PrSetUpdate } from "@/features/personal-records/server/pr-history.functions";
+import type { WorkoutExerciseWithDatabaseId } from "@/features/exercise-library/server/workout-exercises.db";
 
 type Tx = DatabaseTransaction;
 

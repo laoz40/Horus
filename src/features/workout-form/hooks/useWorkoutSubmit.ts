@@ -5,7 +5,7 @@ import { useWorkoutPageExit } from "@/features/workout-form/lib/workoutPageExit"
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { parseWorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
-import { invalidateExerciseQueriesInBackground } from "@/features/settings/lib/invalidateExerciseQueries";
+import { invalidateExerciseQueriesInBackground } from "@/features/exercise-library/lib/invalidateExerciseQueries";
 import {
 	buildOptimisticHistoryFields,
 	patchWorkoutInHistoryCache,

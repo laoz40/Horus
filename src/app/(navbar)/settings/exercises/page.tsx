@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import ExerciseEditSheet, {
 	type ExerciseCatalogItem,
 	type ExerciseEditSheetState,
-} from "@/features/settings/components/ExerciseEditSheet";
-import ExerciseList from "@/features/settings/components/ExerciseList";
+} from "@/features/exercise-library/components/ExerciseEditSheet";
+import ExerciseList from "@/features/exercise-library/components/ExerciseList";
 import { orpc } from "@/lib/orpc/client";
 
 export default function ExercisesSettingsPage() {

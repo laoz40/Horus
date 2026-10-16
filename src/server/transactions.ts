@@ -4,8 +4,8 @@ import { Cause, Context, Effect, Exit, Layer, References } from "effect";
 import { prisma } from "@/lib/db";
 import { DbConnection } from "@/lib/db/connection";
 import { DatabaseError } from "@/lib/db/database";
-import { ExerciseDb, exerciseDbLayer } from "@/server/exercises/library/exercises.db";
-import { PrHistoryDb, prHistoryDb } from "@/server/exercises/pr-history/pr-history.db";
+import { ExerciseDb, exerciseDbLayer } from "@/features/exercise-library/server/exercises.db";
+import { PrHistoryDb, prHistoryDb } from "@/features/personal-records/server/pr-history.db";
 import { WorkoutDb, workoutDbLayer } from "@/features/workout-form/server/workouts.db";
 
 function runTransaction<A, E>(

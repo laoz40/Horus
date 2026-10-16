@@ -3,17 +3,17 @@ import "server-only";
 import { Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { Transactions } from "@/server/transactions";
-import { ExerciseDb } from "@/server/exercises/library/exercises.db";
+import { ExerciseDb } from "@/features/exercise-library/server/exercises.db";
 import { WorkoutDb } from "@/features/workout-form/server/workouts.db";
 import type { WorkoutUpdateInput } from "@/features/workout-form/server/workouts.db";
 import {
 	calculateSetPrsFromHistory,
 	recalculateExercisePrHistory,
-} from "@/server/exercises/pr-history/pr-history.service";
+} from "@/features/personal-records/server/pr-history.service";
 import {
 	buildAffectedExerciseIds,
 	buildPrTotalsByWorkoutId,
-} from "@/server/exercises/pr-history/pr-history.functions";
+} from "@/features/personal-records/server/pr-history.functions";
 import { requireWorkout } from "@/features/workout-view/server/workout-view.functions";
 import {
 	buildNewWorkoutPrSets,

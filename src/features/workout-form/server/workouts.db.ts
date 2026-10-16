@@ -4,8 +4,8 @@ import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout
 import type {
 	PreparedWorkoutWriteExercise,
 	WorkoutExerciseWithDatabaseId,
-} from "@/server/exercises/library/workout-exercises.db";
-import type { PrSetUpdate } from "@/server/exercises/pr-history/pr-history.functions";
+} from "@/features/exercise-library/server/workout-exercises.db";
+import type { PrSetUpdate } from "@/features/personal-records/server/pr-history.functions";
 import {
 	updateWorkoutFields,
 	deleteWorkoutChildren,

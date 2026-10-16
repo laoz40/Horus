@@ -3,7 +3,7 @@
 import { Activity, type ReactElement, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
-import ProgressExerciseBrowseSection from "@/features/progress/components/ProgressExerciseBrowseSection";
+import ProgressExerciseBrowseSection from "@/features/exercise-progress/components/ProgressExerciseBrowseSection";
 
 export default function ProgressLayout({ children }: { children: ReactNode }): ReactElement {
 	const isProgressPage = usePathname() === "/progress";

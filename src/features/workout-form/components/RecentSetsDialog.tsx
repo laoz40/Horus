@@ -3,7 +3,7 @@
 import { isDefinedError } from "@orpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import RecentSetRow from "@/features/progress/components/RecentSetRow";
+import RecentSetRow from "@/features/exercise-progress/components/RecentSetRow";
 import {
 	Dialog,
 	DialogClose,

@@ -10,7 +10,7 @@ import {
 	InputGroupButton,
 	InputGroupInput,
 } from "@/components/ui/input-group";
-import { useExerciseSuggestions } from "@/features/workout-form/hooks/useExerciseSuggestions";
+import { useExerciseSuggestions } from "@/features/exercise-picker/hooks/useExerciseSuggestions";
 import { useSuggestionListTouchScroll } from "@/features/workout-form/hooks/useSuggestionListTouchScroll";
 import { applyPickedExercise } from "@/features/workout-form/lib/selectExercise";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";

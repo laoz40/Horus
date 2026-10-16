@@ -4,7 +4,7 @@ import { Effect } from "effect";
 import { Transactions } from "@/server/transactions";
 import { WorkoutDb } from "@/features/workout-form/server/workouts.db";
 import type { ListWorkoutsQuery } from "@/features/workout-form/server/workouts.db";
-import { recalculateExercisePrHistory } from "@/server/exercises/pr-history/pr-history.service";
+import { recalculateExercisePrHistory } from "@/features/personal-records/server/pr-history.service";
 import { requireWorkout } from "@/features/workout-view/server/workout-view.functions";
 import {
 	buildWorkoutHistoryPage,

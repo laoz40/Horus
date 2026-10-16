@@ -3,7 +3,7 @@ import { IconNotes, IconTrophyFilled } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button";
 import type { Exercise } from "@/features/workout-form/lib/validateWorkout";
-import { setPrLabels } from "@/features/workout-form/lib/setPr";
+import { setPrLabels } from "@/features/personal-records/lib/setPr";
 import DetailPopover from "@/features/workout-view/components/DetailPopover";
 import DifficultyBadge from "@/features/workout-view/components/DifficultyBadge";
 import { cn } from "@/lib/utils";

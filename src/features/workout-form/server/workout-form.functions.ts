@@ -3,8 +3,8 @@ import "server-only";
 import { Data, Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { normalizeName } from "@/lib/normalizeName";
-import { normalizeMuscleGroups } from "@/lib/normalizeMuscleGroups";
-import type { WorkoutExerciseWithDatabaseId } from "@/server/exercises/library/workout-exercises.db";
+import { normalizeMuscleGroups } from "@/features/exercise-library/lib/normalizeMuscleGroups";
+import type { WorkoutExerciseWithDatabaseId } from "@/features/exercise-library/server/workout-exercises.db";
 
 class InvalidWorkoutInputError extends Data.TaggedError("INVALID_INPUT") {}
 
