@@ -11,6 +11,8 @@ import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmpty
 import { showExerciseDeletedToast } from "@/lib/toastMessages";
 import {
 	selectIsRecentSetsDialogOpen,
+	selectIsEditingExercise,
+	selectExerciseAfterDeletion,
 	selectRecentSetsExerciseName,
 	setRecentSetsDialogOpen,
 	setScrollTarget,
@@ -44,7 +46,7 @@ export default function WorkoutForm({
 	workoutId,
 	missingGlobalExercisesCount,
 }: WorkoutFormProps): ReactElement {
-	const isEditing = useWorkoutFormUiStore((state) => state.isEditing);
+	const isEditing = useWorkoutFormUiStore(selectIsEditingExercise);
 	const startedAtMs = useWorkoutFormUiStore((state) => state.startedAtMs);
 	const isRecentSetsDialogOpen = useWorkoutFormUiStore(selectIsRecentSetsDialogOpen);
 	const recentSetsExerciseName = useWorkoutFormUiStore(selectRecentSetsExerciseName);
@@ -97,6 +99,11 @@ export default function WorkoutForm({
 		if (selectedExerciseIndex < 0) return;
 
 		remove(selectedExerciseIndex);
+
+		const nextExerciseId =
+			exerciseIds[selectedExerciseIndex + 1] ?? exerciseIds[selectedExerciseIndex - 1] ?? null;
+
+		selectExerciseAfterDeletion(nextExerciseId);
 		showExerciseDeletedToast();
 	};
 

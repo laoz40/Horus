@@ -1,5 +1,7 @@
 "use client";
 
+import { useReducer } from "react";
+
 import { isDefinedError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -8,10 +10,7 @@ import {
 	unionSelectedCategories,
 	writeSelectedCategories,
 } from "@/features/exercise-library/lib/exerciseMuscleCategories";
-import type {
-	ExerciseCatalogItem,
-	OpenExerciseEditSheetState,
-} from "@/features/exercise-library/lib/exerciseEditSheet";
+import type { OpenExerciseEditSheetState } from "@/features/exercise-library/lib/exerciseEditSheet";
 import {
 	addExerciseToListCache,
 	invalidateExerciseQueriesInBackground,
@@ -19,30 +18,22 @@ import {
 	patchExerciseListCache,
 	removeExerciseFromListCache,
 } from "@/features/exercise-library/lib/invalidateExerciseQueries";
+import { exerciseEditOperationReducer } from "@/features/exercise-library/lib/exerciseEditOperation";
 import { orpc } from "@/lib/orpc/client";
 import { showErrorToast, showExerciseDeletedToast, showInfoToast } from "@/lib/toastMessages";
-
-interface NameCollisionState {
-	existingExercise: ExerciseCatalogItem;
-}
 
 interface UseExerciseEditMutationsOptions {
 	state: OpenExerciseEditSheetState;
 	onClose: () => void;
-	onNameCollision: (collision: NameCollisionState) => void;
-	onClearNameCollision: () => void;
 }
 
-export function useExerciseEditMutations({
-	state,
-	onClose,
-	onNameCollision,
-	onClearNameCollision,
-}: UseExerciseEditMutationsOptions) {
+export function useExerciseEditMutations({ state, onClose }: UseExerciseEditMutationsOptions) {
 	const queryClient = useQueryClient();
+	const [operation, dispatch] = useReducer(exerciseEditOperationReducer, { kind: "editing" });
 
 	const createExercise = useMutation(
 		orpc.exercises.create.mutationOptions({
+			onSettled: () => dispatch({ kind: "requestFinished" }),
 			onSuccess: (result) => {
 				addExerciseToListCache(queryClient, result.exercise);
 				showInfoToast("Exercise added");
@@ -59,7 +50,8 @@ export function useExerciseEditMutations({
 
 				switch (error.code) {
 					case "NAME_COLLISION":
-						onNameCollision({
+						dispatch({
+							kind: "duplicateNameFound",
 							existingExercise: error.data.existingExercise,
 						});
 
@@ -88,6 +80,7 @@ export function useExerciseEditMutations({
 
 	const updateExercise = useMutation(
 		orpc.exercises.update.mutationOptions({
+			onSettled: () => dispatch({ kind: "requestFinished" }),
 			onSuccess: (result) => {
 				patchExerciseListCache(queryClient, result.exercise);
 				showInfoToast("Exercise saved");
@@ -104,7 +97,8 @@ export function useExerciseEditMutations({
 
 				switch (error.code) {
 					case "NAME_COLLISION":
-						onNameCollision({
+						dispatch({
+							kind: "duplicateNameFound",
 							existingExercise: error.data.existingExercise,
 						});
 
@@ -133,10 +127,10 @@ export function useExerciseEditMutations({
 
 	const mergeExercises = useMutation(
 		orpc.exercises.merge.mutationOptions({
+			onSettled: () => dispatch({ kind: "requestFinished" }),
 			onSuccess: (result, variables) => {
 				mergeExercisesInListCache(queryClient, variables.sourceId, result.targetExercise);
 				showInfoToast("Exercises combined");
-				onClearNameCollision();
 				onClose();
 				invalidateExerciseQueriesInBackground(queryClient);
 			},
@@ -173,6 +167,7 @@ export function useExerciseEditMutations({
 
 	const deleteExercise = useMutation(
 		orpc.exercises.delete.mutationOptions({
+			onSettled: () => dispatch({ kind: "requestFinished" }),
 			onSuccess: (_result, variables) => {
 				removeExerciseFromListCache(queryClient, variables.id);
 				showExerciseDeletedToast();
@@ -215,6 +210,9 @@ export function useExerciseEditMutations({
 	);
 
 	function saveExercise(name: string, categories: MuscleGroupCategory[]) {
+		if (operation.kind !== "editing") return;
+		dispatch({ kind: "start", operation: "saving" });
+
 		const muscleGroups = writeSelectedCategories(categories);
 
 		if (state.kind === "create") {
@@ -233,9 +231,12 @@ export function useExerciseEditMutations({
 		});
 	}
 
-	function combineExercises(nameCollision: NameCollisionState, categories: MuscleGroupCategory[]) {
+	function combineExercises(categories: MuscleGroupCategory[]) {
+		if (operation.kind !== "confirmingMerge") return;
+		dispatch({ kind: "confirmMerge" });
+
 		const muscleGroups = writeSelectedCategories(categories);
-		const { existingExercise } = nameCollision;
+		const { existingExercise } = operation;
 
 		if (state.kind === "create") {
 			updateExercise.mutate({
@@ -255,24 +256,19 @@ export function useExerciseEditMutations({
 	}
 
 	function deleteCurrentExercise() {
-		if (state.kind !== "edit") {
+		if (state.kind !== "edit" || operation.kind !== "editing") {
 			return;
 		}
 
+		dispatch({ kind: "start", operation: "deleting" });
 		deleteExercise.mutate({ id: state.exercise.id });
 	}
-
-	const isSaving = createExercise.isPending || updateExercise.isPending;
-	const isCombining = mergeExercises.isPending || updateExercise.isPending;
 
 	return {
 		saveExercise,
 		combineExercises,
 		deleteCurrentExercise,
-		isSaving,
-		isCombining,
-		isDeleting: deleteExercise.isPending,
+		operation,
+		cancelMerge: () => dispatch({ kind: "cancelMerge" }),
 	};
 }
-
-export type { NameCollisionState };

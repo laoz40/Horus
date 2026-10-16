@@ -7,6 +7,7 @@ From `/workouts/new` the user logs a workout: pick an exercise via the muscle-gr
 - `pick-exercise-grid` — with no exercise name yet, tap a muscle-group button (e.g. "Chest"), then an exercise button (e.g. "Bench Press").
 - `pick-exercise-search` — type in the combobox (`{"fill":{"combobox":"Exercise name","value":"Bench Press"}}`), wait for debounced search, click the matching `role=option`.
 - `log-sets` — per-set `kg`/`reps` inputs; completing a set (checkbox "Color success") starts the "Rest Timer" drawer.
+- `exercise-selection` — switching exercises preserves edit mode; deleting the selected exercise returns to normal mode with the next exercise selected, or the previous one when deleting the last entry.
 - `rest-timer` — completing a set opens drawer "Rest Timer" with a "FINISH REST" button; the page behind it is blocked until dismissed.
 - `save` — top-bar "Finish" opens the "Save Workout" dialog; "Save" redirects to `/workouts` and immediately shows a spinner with "Saving workout". The same toast changes to "Saved <name>" after saving and refreshing history, or an error if saving fails.
 - `edit-existing` — `/workouts/<id>/edit` loads the saved workout for changes (drive like create, with the name pre-filled).
@@ -46,6 +47,7 @@ Preconditions: doctor authenticated; note the verify user's `workouts` row count
   `node .agents/skills/verify-horus/helpers/db-query.mjs --sql "SELECT w.id, w.name, w.duration_seconds FROM workouts w WHERE w.user_id = 'verify-agent' ORDER BY w.created_at DESC LIMIT 3"`
   → the new row exists. Sets via the `workout_sets`/`workout_exercises` joins (`weight`, `reps`, `completed`).
 - **Read-back proof:** `flow --out create-readback --steps '[{"goto":"/workouts"},{"expectText":"Verify Run Workout"},{"screenshot":"04-history-readback.png"}]'`.
+- **Selection and deletion:** add a second exercise, select it, and tap "Edit". Switch exercises through the bottom selector and by scrolling; expect "Done" and "Delete Exercise" to remain visible. Delete the selected exercise and confirm "Delete" in the dialog. Expect "Edit" and "Add Exercise" with a remaining exercise selected. Repeat for the last exercise; expect no "Done" or "Delete Exercise" controls. Capture a screenshot and snapshot after each deletion. Also cancel a deletion and verify editing remains active.
 
 ## Gotchas
 

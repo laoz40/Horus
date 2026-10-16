@@ -1,34 +1,39 @@
 import { create } from "zustand";
 
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
+import {
+	exerciseSelectionReducer,
+	type ExerciseSelection,
+} from "@/features/workout-form/lib/exerciseSelection";
+import { restTimerReducer, type RestTimerState } from "@/features/workout-form/lib/restTimer";
 
 export interface WorkoutFormUiState {
 	createWorkoutDraft: Workout | null;
-	selectedExerciseId: string | null;
-	isEditing: boolean;
+	exerciseSelection: ExerciseSelection;
 	scrollTargetId: string | null;
 	startedAtMs: number;
 	isRecentSetsDialogOpen: boolean;
 	recentSetsExerciseName: string;
-	isRestTimerDrawerOpen: boolean;
-	restTimerStartedAtMs: number | null;
+	restTimer: RestTimerState;
 }
 
 export type WorkoutFormUiStore = WorkoutFormUiState;
 
 const createInitialWorkoutFormUiState = (): WorkoutFormUiState => ({
 	createWorkoutDraft: null,
-	selectedExerciseId: null,
-	isEditing: false,
+	exerciseSelection: { kind: "none" },
 	scrollTargetId: null,
 	startedAtMs: Date.now(),
 	isRecentSetsDialogOpen: false,
 	recentSetsExerciseName: "",
-	isRestTimerDrawerOpen: false,
-	restTimerStartedAtMs: null,
+	restTimer: { kind: "idle" },
 });
 
-export const selectSelectedExerciseId = (state: WorkoutFormUiStore) => state.selectedExerciseId;
+export const selectSelectedExerciseId = (state: WorkoutFormUiStore) =>
+	state.exerciseSelection.kind === "none" ? null : state.exerciseSelection.exerciseId;
+
+export const selectIsEditingExercise = (state: WorkoutFormUiStore) =>
+	state.exerciseSelection.kind === "editing";
 
 export const selectCreateWorkoutDraft = (state: WorkoutFormUiStore) => state.createWorkoutDraft;
 
@@ -41,9 +46,10 @@ export const selectRecentSetsExerciseName = (state: WorkoutFormUiStore) =>
 	state.recentSetsExerciseName;
 
 export const selectIsRestTimerDrawerOpen = (state: WorkoutFormUiStore) =>
-	state.isRestTimerDrawerOpen;
+	state.restTimer.kind === "expanded";
 
-export const selectRestTimerStartedAtMs = (state: WorkoutFormUiStore) => state.restTimerStartedAtMs;
+export const selectRestTimerStartedAtMs = (state: WorkoutFormUiStore) =>
+	state.restTimer.kind === "idle" ? null : state.restTimer.startedAtMs;
 
 export const useWorkoutFormUiStore = create<WorkoutFormUiStore>()(() => ({
 	...createInitialWorkoutFormUiState(),
@@ -51,14 +57,12 @@ export const useWorkoutFormUiStore = create<WorkoutFormUiStore>()(() => ({
 
 export function initializeWorkoutSession(initialDurationSeconds = 0): void {
 	useWorkoutFormUiStore.setState({
-		selectedExerciseId: null,
-		isEditing: false,
+		exerciseSelection: { kind: "none" },
 		scrollTargetId: null,
 		startedAtMs: Date.now() - Math.max(0, initialDurationSeconds ?? 0) * 1000,
 		isRecentSetsDialogOpen: false,
 		recentSetsExerciseName: "",
-		isRestTimerDrawerOpen: false,
-		restTimerStartedAtMs: null,
+		restTimer: { kind: "idle" },
 	});
 }
 
@@ -68,21 +72,26 @@ export function setCreateWorkoutDraft(draft: Workout | null): void {
 
 export function selectExercise(exerciseId: string | null): void {
 	useWorkoutFormUiStore.setState((state) => ({
-		selectedExerciseId: exerciseId,
-		isEditing: exerciseId ? state.isEditing : false,
+		exerciseSelection: exerciseSelectionReducer(state.exerciseSelection, {
+			kind: "selectExercise",
+			exerciseId,
+		}),
 	}));
 }
 
 export function toggleExerciseEdit(): void {
-	useWorkoutFormUiStore.setState((state) => {
-		if (!state.selectedExerciseId) {
-			return state;
-		}
+	useWorkoutFormUiStore.setState((state) => ({
+		exerciseSelection: exerciseSelectionReducer(state.exerciseSelection, { kind: "toggleEditing" }),
+	}));
+}
 
-		return {
-			isEditing: !state.isEditing,
-		};
-	});
+export function selectExerciseAfterDeletion(nextExerciseId: string | null): void {
+	useWorkoutFormUiStore.setState((state) => ({
+		exerciseSelection: exerciseSelectionReducer(state.exerciseSelection, {
+			kind: "exerciseDeleted",
+			nextExerciseId,
+		}),
+	}));
 }
 
 export function setScrollTarget(exerciseId: string | null): void {
@@ -101,21 +110,21 @@ export function setRecentSetsDialogOpen(open: boolean): void {
 }
 
 export function startRestTimer(): void {
-	useWorkoutFormUiStore.setState({
-		isRestTimerDrawerOpen: true,
-		restTimerStartedAtMs: Date.now(),
-	});
+	useWorkoutFormUiStore.setState((state) => ({
+		restTimer: restTimerReducer(state.restTimer, { kind: "start", startedAtMs: Date.now() }),
+	}));
 }
 
 export function setRestTimerDrawerOpen(open: boolean): void {
-	useWorkoutFormUiStore.setState({ isRestTimerDrawerOpen: open });
+	useWorkoutFormUiStore.setState((state) => ({
+		restTimer: restTimerReducer(state.restTimer, { kind: open ? "openDrawer" : "closeDrawer" }),
+	}));
 }
 
 export function finishRestTimer(): void {
-	useWorkoutFormUiStore.setState({
-		isRestTimerDrawerOpen: false,
-		restTimerStartedAtMs: null,
-	});
+	useWorkoutFormUiStore.setState((state) => ({
+		restTimer: restTimerReducer(state.restTimer, { kind: "finish" }),
+	}));
 }
 
 export function resetWorkoutFormUi(): void {
