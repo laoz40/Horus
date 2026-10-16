@@ -23,6 +23,8 @@ Preconditions: doctor authenticated as verify-agent@horus.local. **Stop and re-v
 
 - **Account bar:** `flow --out settings --steps '[{"goto":"/settings"},{"expectText":"Settings"},{"expectText":"verify-agent@horus.local"},{"expectText":"Account"},{"screenshot":"01-settings.png"}]'` → identity visible.
 - **Theme:** open the theme dropdown (trigger shows current mode, e.g. "Light"; `sr-only` "Toggle theme"), pick an option from snapshot, reload, screenshot again.
+- **Exercise editing:** open `/settings/exercises`, choose "Add exercise", fill the "Name" field, then "Save". Expect "Exercise added" and verify the exercise remains after revisiting the catalog. Open its "Edit <name>" button, change the name, save, and verify the renamed entry after revisiting.
+- **Exercise name collision:** create two exercises through the UI. Rename one to the other's name and save. Expect "Combine exercises?". Cancel and verify the editor remains open. Save again, then "Combine". The dialog stays visible with "Combining" while the request runs; on success it closes and the catalog contains only the target. If the request fails, verify the confirmation stays open, the error toast appears, and "Combine" is available to retry. Also check adding an exercise with an existing name, which combines categories into the existing exercise.
 - **Delete all workouts:** seed 1+ workouts via `create-workout.md`, note the DB count, then `{"goto":"/settings"},{"click":{"name":"Delete all workouts"}}` → dialog "Delete all workouts?" / "This will permanently delete all workouts." → confirm with **Delete** → toast `Deleted N workout(s)`; DB query `SELECT count(*) FROM workouts WHERE user_id = 'verify-agent'` returns `0`.
 
 ## Gotchas

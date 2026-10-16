@@ -60,7 +60,11 @@ export default function ExerciseMergeDialog({
 					<AlertDialogCancel disabled={isCombining}>Cancel</AlertDialogCancel>
 					<AlertDialogAction
 						disabled={isCombining}
-						onClick={onCombine}>
+						onClick={(event) => {
+							// Keep confirmation visible while combining and after a failed request.
+							event.preventDefault();
+							onCombine();
+						}}>
 						{isCombining ? (
 							<>
 								<IconLoader2

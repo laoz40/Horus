@@ -24,10 +24,7 @@ import {
 	type OpenExerciseEditSheetState,
 } from "@/features/exercise-library/lib/exerciseEditSheet";
 import { formatWorkoutCount } from "@/features/exercise-library/lib/formatExerciseCatalog";
-import {
-	type NameCollisionState,
-	useExerciseEditMutations,
-} from "@/features/exercise-library/hooks/useExerciseEditMutations";
+import { useExerciseEditMutations } from "@/features/exercise-library/hooks/useExerciseEditMutations";
 
 interface ExerciseEditSheetProps {
 	state: ExerciseEditSheetState;
@@ -84,25 +81,19 @@ function ExerciseEditDeleteButton({
 function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 	const [name, setName] = useState(() => getExerciseEditInitialName(state));
 	const [categories, setCategories] = useState(() => getExerciseEditInitialCategories(state));
-	const [nameCollision, setNameCollision] = useState<NameCollisionState | null>(null);
 	const workoutCount = state.kind === "edit" ? state.exercise.workoutCount : 0;
 
-	const {
-		saveExercise,
-		combineExercises,
-		deleteCurrentExercise,
-		isSaving,
-		isCombining,
-		isDeleting,
-	} = useExerciseEditMutations({
-		state,
-		onClose,
-		onNameCollision: setNameCollision,
-		onClearNameCollision: () => setNameCollision(null),
-	});
+	const { saveExercise, combineExercises, deleteCurrentExercise, operation, cancelMerge } =
+		useExerciseEditMutations({
+			state,
+			onClose,
+		});
 
+	const isSaving = operation.kind === "saving";
+	const isCombining = operation.kind === "combining";
+	const isDeleting = operation.kind === "deleting";
 	const trimmedName = name.trim();
-	const canSave = trimmedName.length > 0 && !isSaving && !isDeleting && !isCombining;
+	const canSave = trimmedName.length > 0 && operation.kind === "editing";
 	const mergeSourceName = state.kind === "edit" ? state.exercise.name : trimmedName;
 	const mergeSourceWorkoutCount = state.kind === "edit" ? state.exercise.workoutCount : 0;
 
@@ -173,19 +164,19 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 				</Button>
 			</DialogFooter>
 
-			{nameCollision ? (
+			{operation.kind === "confirmingMerge" || operation.kind === "combining" ? (
 				<ExerciseMergeDialog
 					open
 					onOpenChange={(open) => {
 						if (!open) {
-							setNameCollision(null);
+							cancelMerge();
 						}
 					}}
 					sourceName={mergeSourceName}
-					targetName={nameCollision.existingExercise.name}
+					targetName={operation.existingExercise.name}
 					sourceWorkoutCount={mergeSourceWorkoutCount}
 					kind={state.kind}
-					onCombine={() => combineExercises(nameCollision, categories)}
+					onCombine={() => combineExercises(categories)}
 					isCombining={isCombining}
 				/>
 			) : null}
