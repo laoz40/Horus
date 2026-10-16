@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import PageLoadingSpinner from "@/components/PageLoadingSpinner";
 
 import WorkoutLoadErrorState from "@/features/workout-form/components/WorkoutLoadErrorState";
-import { workoutByIdQueryOptions } from "@/features/workout-form/lib/workoutByIdQuery";
+import { workoutByIdQueryOptions } from "@/features/workout-view/lib/workoutByIdQuery";
 import WorkoutView from "@/features/workout-view/components/WorkoutView";
 
 interface ViewWorkoutLoaderProps {

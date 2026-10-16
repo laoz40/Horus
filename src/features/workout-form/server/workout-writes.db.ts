@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { WorkoutUpdateInput } from "@/server/workouts/workouts.db";
+import type { WorkoutUpdateInput } from "@/features/workout-form/server/workouts.db";
 import { deleteWorkoutExercises } from "@/generated/prisma/sql";
 import type { DatabaseTransaction } from "@/lib/db";
 import type { PrSetUpdate } from "@/server/exercises/pr-history/pr-history.functions";

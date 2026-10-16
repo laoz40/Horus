@@ -6,7 +6,7 @@ import { DbConnection } from "@/lib/db/connection";
 import { DatabaseError } from "@/lib/db/database";
 import { ExerciseDb, exerciseDbLayer } from "@/server/exercises/library/exercises.db";
 import { PrHistoryDb, prHistoryDb } from "@/server/exercises/pr-history/pr-history.db";
-import { WorkoutDb, workoutDbLayer } from "@/server/workouts/workouts.db";
+import { WorkoutDb, workoutDbLayer } from "@/features/workout-form/server/workouts.db";
 
 function runTransaction<A, E>(
 	workflow: Effect.Effect<A, E, WorkoutDb | PrHistoryDb | ExerciseDb>,

@@ -6,7 +6,7 @@ import type { ReactElement } from "react";
 
 import { BackNavButton, backNavIconClassName } from "@/components/BackNavButton";
 import { Button } from "@/components/ui/button";
-import { useWorkoutPageExit } from "@/lib/workoutPageExit";
+import { useWorkoutPageExit } from "@/features/workout-form/lib/workoutPageExit";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import ExerciseViewSection from "@/features/workout-view/components/ExerciseViewSection";
 import WorkoutViewSummary from "@/features/workout-view/components/WorkoutViewSummary";

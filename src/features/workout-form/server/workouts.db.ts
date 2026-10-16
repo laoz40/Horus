@@ -11,7 +11,7 @@ import {
 	deleteWorkoutChildren,
 	insertWorkoutExerciseRows,
 	insertWorkoutSetRows,
-} from "@/server/workouts/workout-writes.db";
+} from "@/features/workout-form/server/workout-writes.db";
 import type { Decimal } from "@prisma/client/runtime/client";
 import { Context, Effect, Layer } from "effect";
 import {

@@ -1,7 +1,7 @@
 import { isDefinedError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useWorkoutPageExit } from "@/lib/workoutPageExit";
+import { useWorkoutPageExit } from "@/features/workout-form/lib/workoutPageExit";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { parseWorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";

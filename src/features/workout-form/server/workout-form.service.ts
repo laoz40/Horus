@@ -4,8 +4,8 @@ import { Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { Transactions } from "@/server/transactions";
 import { ExerciseDb } from "@/server/exercises/library/exercises.db";
-import { WorkoutDb } from "@/server/workouts/workouts.db";
-import type { ListWorkoutsQuery, WorkoutUpdateInput } from "@/server/workouts/workouts.db";
+import { WorkoutDb } from "@/features/workout-form/server/workouts.db";
+import type { WorkoutUpdateInput } from "@/features/workout-form/server/workouts.db";
 import {
 	calculateSetPrsFromHistory,
 	recalculateExercisePrHistory,
@@ -14,20 +14,17 @@ import {
 	buildAffectedExerciseIds,
 	buildPrTotalsByWorkoutId,
 } from "@/server/exercises/pr-history/pr-history.functions";
+import { requireWorkout } from "@/features/workout-view/server/workout-view.functions";
 import {
 	buildNewWorkoutPrSets,
-	buildWorkoutEditForm,
-	buildWorkoutHistoryPage,
 	normalizeWorkoutForWrite,
-	requireDeletedWorkouts,
-	requireWorkout,
 	validateUniqueWorkoutChildIds,
-} from "@/server/workouts/workouts.functions";
+} from "@/features/workout-form/server/workout-form.functions";
 
-interface WorkoutSaveInput {
+type WorkoutSaveInput = {
 	userId: string;
 	workout: WorkoutForSave;
-}
+};
 
 export const createWorkout = (createInput: WorkoutSaveInput) =>
 	Effect.gen(function* () {
@@ -106,52 +103,6 @@ const updateWorkoutAndRecalculatePrs = (updateInput: WorkoutUpdateInput) =>
 				return workout.id;
 			}),
 		);
-	});
-
-export const getWorkoutById = (workoutId: string, userId: string) =>
-	Effect.gen(function* () {
-		const db = yield* WorkoutDb;
-		const workout = yield* db.getWorkoutForEdit({ workoutId, userId });
-		const requiredWorkout = yield* requireWorkout(workout);
-
-		return buildWorkoutEditForm(requiredWorkout);
-	});
-
-export const listWorkouts = (query: ListWorkoutsQuery) =>
-	Effect.gen(function* () {
-		const db = yield* WorkoutDb;
-		const rows = yield* db.listWorkouts(query);
-
-		return buildWorkoutHistoryPage(rows, query);
-	});
-
-export const deleteWorkout = (workoutId: string, userId: string) =>
-	Effect.gen(function* () {
-		const transaction = yield* Transactions;
-
-		return yield* transaction.run(
-			Effect.gen(function* () {
-				const db = yield* WorkoutDb;
-				const workout = yield* requireWorkout(yield* db.getForUpdate({ workoutId, userId }));
-				const exerciseIds = yield* db.getExerciseIds(workoutId);
-				yield* db.delete({ workoutId, userId });
-				yield* recalculateExercisePrHistory({
-					userId,
-					exerciseIds,
-					cutoff: { workoutId: workout.id, createdAt: workout.createdAt },
-				});
-
-				return { id: workout.id, name: workout.name };
-			}),
-		);
-	});
-
-export const deleteAllWorkouts = (userId: string) =>
-	Effect.gen(function* () {
-		const db = yield* WorkoutDb;
-		const result = yield* db.deleteAllWorkouts(userId);
-
-		return yield* requireDeletedWorkouts(result);
 	});
 
 const validateAndNormalizeWorkout = (workout: WorkoutForSave) =>

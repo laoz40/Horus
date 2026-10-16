@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { workoutByIdQueryOptions } from "@/features/workout-form/lib/workoutByIdQuery";
+import { workoutByIdQueryOptions } from "@/features/workout-view/lib/workoutByIdQuery";
 
 import PageLoadingSpinner from "@/components/PageLoadingSpinner";
 
