@@ -6,6 +6,7 @@ import {
 	unwrapArrayExpression,
 } from "../anti-slop/shared/array-method.ts";
 import { requirePromiseErrorMapperRule } from "./require-promise-error-mapper.ts";
+import { isServerImplementationFile } from "../shared/server-path.ts";
 
 function isEffectBinding(sourceCode: SourceCode, node: ESTree.Node): boolean {
 	const binding = resolveArrayBinding(sourceCode, node);
@@ -70,7 +71,7 @@ const noThrowInEffectPromiseRule = defineRule({
 				callbacks.clear();
 				const file = context.filename.replaceAll("\\", "/");
 
-				return file.includes("/src/server/") && file.endsWith(".db.ts");
+				return isServerImplementationFile(file) && file.endsWith(".db.ts");
 			},
 			CallExpression(node) {
 				const member = arrayMethodTarget(node.callee);

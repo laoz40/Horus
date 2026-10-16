@@ -2,6 +2,7 @@ import { defineRule, type ESTree } from "@oxlint/plugins";
 
 import { effectMethodTarget } from "../effect-boundaries/lib.ts";
 import { unwrapArrayExpression } from "../anti-slop/shared/array-method.ts";
+import { isServerImplementationFile } from "../shared/server-path.ts";
 
 function propertyName(property: ESTree.ObjectProperty): string | null {
 	if (!property.computed && property.key.type === "Identifier") return property.key.name;
@@ -46,7 +47,7 @@ export const requirePromiseErrorMapperRule = defineRule({
 			before() {
 				const file = context.filename.replaceAll("\\", "/");
 
-				return file.includes("/src/server/") && file.endsWith(".db.ts");
+				return isServerImplementationFile(file) && file.endsWith(".db.ts");
 			},
 			CallExpression(node) {
 				const method = effectMethodTarget(context.sourceCode, node.callee);
