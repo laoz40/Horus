@@ -1,6 +1,6 @@
 # Session and auth
 
-Horus has no passwords: users sign in with an email OTP (delivered by Resend) or OAuth (Google/GitHub). Pages check the session client-side via better-auth (`authClient.useSession`), so there is no redirect — an unauthenticated visitor sees signed-out UI instead. Verification runs authenticate a dedicated verify user by minting a session row in the dev DB (`drive.mjs auth`), which bypasses the email round-trip.
+Horus has no passwords: users sign in with an email OTP (delivered by Resend) or OAuth (Google/GitHub). The dashboard shows signed-out UI when there is no session. `/welcome` redirects signed-out visitors to `/login` and visitors who already have a name to `/`. Verification runs authenticate a dedicated verify user by minting a session row in the dev DB (`drive.mjs auth`), which bypasses the email round-trip.
 
 ## Sub-features
 

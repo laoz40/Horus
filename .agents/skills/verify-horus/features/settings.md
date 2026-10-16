@@ -7,7 +7,7 @@
 - `account-bar` — SettingsAccountSection shows the signed-in identity; chevron row labeled "Account" links to `/settings/account`.
 - `theme` — ModeToggle dropdown (Light / Dark / Black / System); choice persists across reloads.
 - `notifications` — rest-timer notifications toggle on `/settings`.
-- `exercises` — "Exercises" row links to `/settings/exercises` (catalog CRUD).
+- `exercises` — "Manage exercises" row links to `/settings/exercises` (catalog CRUD).
 - `delete-all-workouts` — confirm dialog "Delete all workouts?" removes every workout for the signed-in user; success toast is `Deleted N workout(s)`.
 - `sign-out-main` — inline "Sign out" button on `/settings` (SettingsDataSection).
 - `sign-out-account` — "Sign out" card on `/settings/account` (detailed in `session-auth.md`).

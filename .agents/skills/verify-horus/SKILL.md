@@ -1,6 +1,6 @@
 ---
 name: verify-horus
-description: "Verify Horus (Next.js gym workout tracker web app) end to end by driving the real UI at localhost:8000 like a user — login session, dashboard, workout create/edit, history, progress, settings. Use when a feature or bugfix needs behavioral proof, before pushing, or when the user asks to verify/e2e-check the app. Not a unit test suite: no vitest/playwright tests exist here."
+description: "Verify Horus (Next.js gym workout tracker web app) end to end by driving the real UI at localhost:8000 like a user — login session, dashboard, workout create/edit, history, progress, settings. Use when a feature or bugfix needs behavioral proof, before pushing, or when the user asks to verify/e2e-check the app. Use the skill-owned browser helpers for this pass; the separate Playwright suite lives in tests/."
 ---
 
 # Verify Horus
@@ -29,6 +29,8 @@ It loads the app in a headless Chromium (mobile viewport) using the persistent p
 If `session: NOT authenticated`, run `helpers/drive.mjs auth`. This inserts the verify user and a session row in the dev DB and injects the signed `better-auth.session_token` cookie into the profile (better-auth always signs this cookie: `token.base64(hmac-sha256(token, BETTER_AUTH_SECRET))`). Then re-run `doctor`. Only if minting fails, fall back to `helpers/drive.mjs login` (opens a headed window; the human completes the OTP that Resend delivers to their email) — but a profile authenticated via `login` holds the **user's real account**, so do not create or delete data in that session.
 
 ## Drive
+
+Run `doctor` before each flow, since each flow opens a fresh browser session. After a failed flow, run `doctor` again and start the retry from a known route. Keep screenshots and snapshots from failed attempts.
 
 All driving goes through the harness — one Chromium launch per flow, persistent profile keeps the session:
 
