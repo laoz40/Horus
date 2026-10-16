@@ -133,3 +133,5 @@ export type Set = z.infer<typeof SetSchema>;
 export type Exercise = z.infer<typeof ExerciseSchema>;
 
 export type Workout = z.infer<typeof WorkoutSchema>;
+
+export type WorkoutForSave = z.infer<typeof WorkoutForSaveSchema>;

@@ -2,7 +2,7 @@ import "server-only";
 
 import { Data, Effect } from "effect";
 
-import type { WorkoutForSave } from "@/features/workout-form/lib/types";
+import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { buildSetPrTypes } from "@/features/workout-form/lib/setPr";
 import { normalizeName } from "@/lib/normalizeName";
 import { normalizeMuscleGroups } from "@/lib/normalizeMuscleGroups";

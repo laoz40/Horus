@@ -4,7 +4,7 @@ import { Data, Effect } from "effect";
 import { z } from "zod";
 
 import { createSuggestionObject } from "@/features/workout-form/lib/convertWorkoutData";
-import type { ExerciseSuggestion } from "@/features/workout-form/lib/types";
+import type { ExerciseSuggestion } from "@/features/workout-form/lib/convertWorkoutData";
 import { WgerExerciseResponseSchema } from "@/features/workout-form/lib/wgerTypes";
 
 class RateLimitedError extends Data.TaggedError("RATE_LIMITED") {}

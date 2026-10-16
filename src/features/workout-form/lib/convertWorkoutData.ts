@@ -1,17 +1,19 @@
 import { normalizeName } from "@/lib/normalizeName";
-import type { ExerciseSuggestion } from "@/features/workout-form/lib/types";
 
-interface fetchedExercise {
+export interface ExerciseSuggestion {
 	id: string;
 	name: string;
 	normalizedName: string;
 	muscleGroups?: string[];
 }
 
-export const deduplicateExercises = (groupOne: fetchedExercise[], groupTwo: fetchedExercise[]) => {
-	const map = new Map<string, fetchedExercise>();
+export const deduplicateExercises = (
+	groupOne: ExerciseSuggestion[],
+	groupTwo: ExerciseSuggestion[],
+) => {
+	const map = new Map<string, ExerciseSuggestion>();
 
-	const addIfMissing = (exercise: fetchedExercise, addAll: boolean) => {
+	const addIfMissing = (exercise: ExerciseSuggestion, addAll: boolean) => {
 		if (!exercise.normalizedName) return;
 
 		const exerciseMissing = !map.has(exercise.normalizedName);

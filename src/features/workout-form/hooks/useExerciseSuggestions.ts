@@ -8,7 +8,7 @@ import { showErrorToast } from "@/lib/toastMessages";
 import { deduplicateExercises } from "@/features/workout-form/lib/convertWorkoutData";
 import { fetchDefaultExercises } from "@/features/workout-form/lib/fetchExercises";
 import { sortExercisesAlphabetically } from "@/features/workout-form/lib/sortExercises";
-import type { ExerciseSuggestion } from "@/features/workout-form/lib/types";
+import type { ExerciseSuggestion } from "@/features/workout-form/lib/convertWorkoutData";
 import { orpc } from "@/lib/orpc/client";
 
 class RateLimitedSearchError extends Data.TaggedError("RATE_LIMITED") {}

@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { WorkoutForSave } from "@/features/workout-form/lib/types";
+import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import type {
 	PreparedWorkoutWriteExercise,
 	WorkoutExerciseWithDatabaseId,

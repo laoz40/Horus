@@ -7,12 +7,12 @@ import type { ReactElement } from "react";
 import { BackNavButton, backNavIconClassName } from "@/components/BackNavButton";
 import { Button } from "@/components/ui/button";
 import { useWorkoutPageExit } from "@/lib/workoutPageExit";
-import type { WorkoutFormData } from "@/features/workout-form/lib/types";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import ExerciseViewSection from "@/features/workout-view/components/ExerciseViewSection";
 import WorkoutViewSummary from "@/features/workout-view/components/WorkoutViewSummary";
 
 interface WorkoutViewProps {
-	workout: WorkoutFormData & { createdAt: number };
+	workout: Workout & { createdAt: number };
 	workoutId: string;
 }
 

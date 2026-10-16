@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import type { WorkoutHistoryItem } from "@/features/workout-history/lib/types";
+import type { WorkoutHistoryItem } from "@/features/workout-history/lib/optimisticHistoryItem";
 import {
 	clearDeletedWorkoutIds,
 	selectDeletedWorkoutIds,

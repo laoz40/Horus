@@ -1,4 +1,4 @@
-import type { ExerciseSuggestion } from "@/features/workout-form/lib/types";
+import type { ExerciseSuggestion } from "@/features/workout-form/lib/convertWorkoutData";
 
 export const sortExercisesAlphabetically = (exercises: ExerciseSuggestion[]) => {
 	return exercises.toSorted((leftExercise, rightExercise) =>

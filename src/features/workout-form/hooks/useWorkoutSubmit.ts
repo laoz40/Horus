@@ -2,7 +2,7 @@ import { isDefinedError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useWorkoutPageExit } from "@/lib/workoutPageExit";
-import type { WorkoutFormData } from "@/features/workout-form/lib/types";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { parseWorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
 import { invalidateExerciseQueriesInBackground } from "@/features/settings/lib/invalidateExerciseQueries";
@@ -28,7 +28,7 @@ interface UseWorkoutSubmitProps {
 
 interface UseWorkoutSubmitReturn {
 	isSubmitting: boolean;
-	submitWorkout: (data: WorkoutFormData) => void;
+	submitWorkout: (data: Workout) => void;
 }
 
 export const useWorkoutSubmit = ({
@@ -145,7 +145,7 @@ export const useWorkoutSubmit = ({
 		}),
 	);
 
-	const submitWorkout = (data: WorkoutFormData) => {
+	const submitWorkout = (data: Workout) => {
 		const durationSeconds = Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000));
 		const workoutResult = parseWorkoutForSave(data, durationSeconds);
 

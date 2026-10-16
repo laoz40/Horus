@@ -4,7 +4,6 @@ import type { ReactElement } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, type FieldErrors, type Resolver } from "react-hook-form";
 
-import type { WorkoutFormData } from "@/features/workout-form/lib/types";
 import { getFirstInvalidExerciseIndex } from "@/features/workout-form/lib/checkInvalidExercise";
 import { WorkoutSchema, type Workout } from "@/features/workout-form/lib/validateWorkout";
 import { createDefaultWorkoutValues } from "@/features/workout-form/lib/WorkoutFormDefaults";
@@ -29,7 +28,7 @@ import WorkoutFormTopBar from "@/features/workout-form/components/WorkoutFormTop
 import RecentSetsDialog from "@/features/workout-form/components/RecentSetsDialog";
 
 interface WorkoutFormProps {
-	initialData?: WorkoutFormData;
+	initialData?: Workout;
 	workoutId?: string;
 	missingGlobalExercisesCount?: number;
 }

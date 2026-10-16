@@ -3,7 +3,7 @@ import "server-only";
 import { Effect } from "effect";
 import { DatabaseError } from "@/lib/db/database";
 
-import type { WorkoutForSave } from "@/features/workout-form/lib/types";
+import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { findUserExerciseIdByNormalizedName } from "@/generated/prisma/sql";
 import type { DatabaseTransaction } from "@/lib/db";
 import { getOrCreateMuscleGroupId } from "@/server/exercises/library/library.db";

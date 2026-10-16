@@ -1,9 +1,9 @@
 import { create } from "zustand";
 
-import type { WorkoutFormData } from "@/features/workout-form/lib/types";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 export interface WorkoutFormUiState {
-	createWorkoutDraft: WorkoutFormData | null;
+	createWorkoutDraft: Workout | null;
 	selectedExerciseId: string | null;
 	isEditing: boolean;
 	scrollTargetId: string | null;
@@ -62,7 +62,7 @@ export function initializeWorkoutSession(initialDurationSeconds = 0): void {
 	});
 }
 
-export function setCreateWorkoutDraft(draft: WorkoutFormData | null): void {
+export function setCreateWorkoutDraft(draft: Workout | null): void {
 	useWorkoutFormUiStore.setState({ createWorkoutDraft: draft });
 }
 

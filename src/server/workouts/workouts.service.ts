@@ -1,7 +1,7 @@
 import "server-only";
 
 import { Effect } from "effect";
-import type { WorkoutForSave } from "@/features/workout-form/lib/types";
+import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { Transactions } from "@/server/transactions";
 import { ExerciseDb } from "@/server/exercises/library/exercises.db";
 import { WorkoutDb } from "@/server/workouts/workouts.db";
