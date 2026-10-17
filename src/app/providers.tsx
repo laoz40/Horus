@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
 import { authClient } from "@/lib/auth-client";
+import SessionProfileCookieSync from "@/features/auth/components/SessionProfileCookieSync";
 
 export function Providers({ children }: { children: ReactNode }) {
 	const router = useRouter();
@@ -57,6 +58,7 @@ export function Providers({ children }: { children: ReactNode }) {
 					SIGN_IN: "login",
 					EMAIL_OTP: "login",
 				}}>
+				<SessionProfileCookieSync />
 				{children}
 			</AuthUIProvider>
 		</QueryClientProvider>
