@@ -38,6 +38,7 @@
 		"effect-db/no-throw-in-promise": "error",
 		"effect-db/require-promise-error-mapper": "error",
 		"effect-db/no-cross-feature-db-imports": "error",
+		"effect-db/prefer-named-sql-queries": "error",
 		"effect-boundaries/no-internal-runners": "error",
 		"effect-boundaries/no-service-provision": "error",
 
