@@ -1,11 +1,9 @@
-import { transactions } from "@/server/transactions";
+import { database } from "@/server/database";
 import "server-only";
 
 import { Effect } from "effect";
 import { z } from "zod";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
-import { exerciseCreationDb } from "@/features/exercise-library/server/exercise-creation.db";
-import { exerciseDb } from "@/features/exercise-library/server/exercises.db";
 import {
 	createUserExercise,
 	deleteUserExercise,
@@ -42,7 +40,7 @@ export const exerciseLibraryRouter = {
 		.handler(({ context, errors }) =>
 			Effect.runPromise(
 				listUserExercises(context.userId).pipe(
-					Effect.provide(exerciseDb),
+					Effect.provide(database),
 					Effect.map((exercises) => ({ exercises })),
 					Effect.catchTags({
 						DatabaseError: (error) =>
@@ -60,8 +58,7 @@ export const exerciseLibraryRouter = {
 			Effect.runPromise(
 				createUserExercise({ userId: context.userId, exercise: input }).pipe(
 					Effect.map((exercise) => ({ exercise })),
-					Effect.provide(exerciseDb),
-					Effect.provide(exerciseCreationDb),
+					Effect.provide(database),
 					Effect.catchTags({
 						...exerciseLibraryWriteErrorHandlers(errors),
 						DatabaseError: (error) =>
@@ -91,8 +88,7 @@ export const exerciseLibraryRouter = {
 					exercise: input,
 				}).pipe(
 					Effect.map((exercise) => ({ exercise })),
-					Effect.provide(exerciseDb),
-					Effect.provide(transactions),
+					Effect.provide(database),
 					Effect.catchTags({
 						...exerciseLibraryWriteErrorHandlers(errors),
 						DatabaseError: (error) =>
@@ -113,7 +109,7 @@ export const exerciseLibraryRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				deleteUserExercise(context.userId, input.id).pipe(
-					Effect.provide(exerciseDb),
+					Effect.provide(database),
 					Effect.catchTags({
 						DatabaseError: (error) =>
 							logDatabaseError("Failed to delete exercise", error.cause, errors.DATABASE_ERROR()),
@@ -148,8 +144,7 @@ export const exerciseLibraryRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				mergeUserExercises(context.userId, input).pipe(
-					Effect.provide(exerciseDb),
-					Effect.provide(transactions),
+					Effect.provide(database),
 					Effect.catchTags({
 						DatabaseError: (error) =>
 							logDatabaseError("Failed to merge exercises", error.cause, errors.DATABASE_ERROR()),

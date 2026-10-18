@@ -1,9 +1,9 @@
+import { database } from "@/server/database";
 import "server-only";
 
 import { Effect } from "effect";
 import { z } from "zod";
 import { exerciseWeightProgressionRanges } from "@/features/exercise-progress/lib/exerciseWeightProgression";
-import { progressDb } from "@/features/exercise-progress/server/exercise-progress.db";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
 import {
 	getExerciseWeeklyWeightProgression,
@@ -37,7 +37,7 @@ export const exerciseProgressRouter = {
 		.handler(async ({ input, context, errors }) => {
 			return Effect.runPromise(
 				getRecentSets(context.userId, input.exerciseName).pipe(
-					Effect.provide(progressDb),
+					Effect.provide(database),
 					Effect.catchTags({
 						DatabaseError: (error) =>
 							logDatabaseError("Failed to get recent sets", error.cause, errors.DATABASE_ERROR()),
@@ -70,7 +70,7 @@ export const exerciseProgressRouter = {
 		.handler(async ({ input, context, errors }) => {
 			return Effect.runPromise(
 				getExerciseWeeklyWeightProgression(context.userId, input.exerciseName, input.range).pipe(
-					Effect.provide(progressDb),
+					Effect.provide(database),
 					Effect.catchTags({
 						DatabaseError: (error) =>
 							logDatabaseError(

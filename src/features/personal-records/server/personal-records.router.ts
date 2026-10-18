@@ -1,8 +1,8 @@
+import { database } from "@/server/database";
 import "server-only";
 
 import { Effect } from "effect";
 import { z } from "zod";
-import { personalRecordsDb } from "@/features/personal-records/server/personal-records.db";
 import {
 	checkSetPr,
 	getExercisePersonalRecords,
@@ -50,7 +50,7 @@ export const personalRecordsRouter = {
 					sets: input.sets,
 					setIndex: input.setIndex,
 				}).pipe(
-					Effect.provide(personalRecordsDb),
+					Effect.provide(database),
 					Effect.catchTags({
 						DatabaseError: (error) =>
 							logDatabaseError("Failed to check set PR", error.cause, errors.DATABASE_ERROR()),
@@ -83,7 +83,7 @@ export const personalRecordsRouter = {
 		.handler(async ({ input, context, errors }) => {
 			return Effect.runPromise(
 				getExercisePersonalRecords(context.userId, input.exerciseName).pipe(
-					Effect.provide(personalRecordsDb),
+					Effect.provide(database),
 					Effect.catchTags({
 						DatabaseError: (error) =>
 							logDatabaseError(

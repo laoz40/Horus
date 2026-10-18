@@ -4,7 +4,7 @@ import { Data, Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { normalizeName } from "@/lib/normalizeName";
 import { normalizeMuscleGroups } from "@/features/exercise-library/lib/normalizeMuscleGroups";
-import type { WorkoutExerciseWithDatabaseId } from "@/features/exercise-library/server/workout-exercises.db";
+import type { WorkoutExerciseWithDatabaseId } from "@/features/workout-form/server/workout-exercises.db";
 
 class InvalidWorkoutInputError extends Data.TaggedError("INVALID_INPUT") {}
 

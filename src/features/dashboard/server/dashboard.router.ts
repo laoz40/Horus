@@ -1,8 +1,8 @@
+import { database } from "@/server/database";
 import "server-only";
 
 import { Effect } from "effect";
 import { z } from "zod";
-import { dashboardDb } from "@/features/dashboard/server/dashboard.db";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
 import {
 	getTrainingYearRange,
@@ -42,7 +42,7 @@ export const dashboardRouter = {
 		.handler(({ context, errors }) =>
 			Effect.runPromise(
 				getTrainingYearRange(context.userId).pipe(
-					Effect.provide(dashboardDb),
+					Effect.provide(database),
 					Effect.catchTags({
 						DatabaseError: (error) =>
 							logDatabaseError(
@@ -67,7 +67,7 @@ export const dashboardRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				getYearInTraining({ userId: context.userId, year: input.year }).pipe(
-					Effect.provide(dashboardDb),
+					Effect.provide(database),
 					Effect.catchTags({
 						DatabaseError: (error) =>
 							logDatabaseError(

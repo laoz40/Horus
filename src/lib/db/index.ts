@@ -17,5 +17,3 @@ function getPrismaClient(): PrismaClient {
 }
 
 export const prisma = getPrismaClient();
-
-export type DatabaseTransaction = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];

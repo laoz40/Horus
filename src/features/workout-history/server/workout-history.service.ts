@@ -1,8 +1,7 @@
 import "server-only";
 
 import { Effect } from "effect";
-import { Transactions } from "@/server/transactions";
-import { WorkoutDb } from "@/features/workout-form/server/workouts.db";
+import { withTransaction } from "@/lib/db/sql";
 import {
 	WorkoutHistoryDb,
 	type ListWorkoutsQuery,
@@ -23,29 +22,25 @@ export const listWorkouts = (query: ListWorkoutsQuery) =>
 	});
 
 export const deleteWorkout = (workoutId: string, userId: string) =>
-	Effect.gen(function* () {
-		const transaction = yield* Transactions;
+	withTransaction(
+		Effect.gen(function* () {
+			const db = yield* WorkoutHistoryDb;
+			const workout = yield* requireWorkout(yield* db.getForUpdate({ workoutId, userId }));
+			const exerciseIds = yield* db.getExerciseIds(workoutId);
+			yield* db.delete({ workoutId, userId });
+			yield* recalculateExercisePrHistory({
+				userId,
+				exerciseIds,
+				cutoff: { workoutId: workout.id, createdAt: workout.createdAt },
+			});
 
-		return yield* transaction.run(
-			Effect.gen(function* () {
-				const db = yield* WorkoutDb;
-				const workout = yield* requireWorkout(yield* db.getForUpdate({ workoutId, userId }));
-				const exerciseIds = yield* db.getExerciseIds(workoutId);
-				yield* db.delete({ workoutId, userId });
-				yield* recalculateExercisePrHistory({
-					userId,
-					exerciseIds,
-					cutoff: { workoutId: workout.id, createdAt: workout.createdAt },
-				});
-
-				return { id: workout.id, name: workout.name };
-			}),
-		);
-	});
+			return { id: workout.id, name: workout.name };
+		}),
+	);
 
 export const deleteAllWorkouts = (userId: string) =>
 	Effect.gen(function* () {
-		const db = yield* WorkoutDb;
+		const db = yield* WorkoutHistoryDb;
 		const result = yield* db.deleteAllWorkouts(userId);
 
 		return yield* requireDeletedWorkouts(result);

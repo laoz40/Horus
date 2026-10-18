@@ -1,15 +1,8 @@
 import "server-only";
 
-import { Context, Effect, Layer } from "effect";
-import {
-	getAffectedPrHistorySets,
-	getExercisePrByIds,
-	getExercisePrByIdsBeforeCutoff,
-	updateSetPrStatuses,
-	updateWorkoutPrTotalsByIds,
-} from "@/generated/prisma/sql";
-import { DbConnection } from "@/lib/db/connection";
-import { DatabaseError } from "@/lib/db/database";
+import { Context, Effect, Layer, Schema } from "effect";
+import { SqlClient, SqlSchema } from "effect/sql";
+import { DatabaseError, withDatabaseError } from "@/lib/db/database";
 import type {
 	ExercisePrRow,
 	PrHistoryCutoff,
@@ -24,6 +17,50 @@ type HistoryQuery = {
 };
 
 const SET_PR_STATUSES_CHUNK_SIZE = 4000;
+
+const exerciseIdsQuerySchema = Schema.Struct({
+	userId: Schema.String,
+	exerciseIds: Schema.Array(Schema.String),
+});
+
+const cutoffQuerySchema = Schema.Struct({
+	...exerciseIdsQuerySchema.fields,
+	cutoff: Schema.Struct({
+		createdAt: Schema.Date,
+		workoutId: Schema.String,
+	}),
+});
+
+const exercisePrRowSchema = Schema.Struct({
+	exerciseId: Schema.String,
+	hasHistory: Schema.Boolean,
+	highestWeight: Schema.Number,
+	highestVolume: Schema.Number,
+	highestBodyweightReps: Schema.Number,
+});
+
+const affectedSetRowSchema = Schema.Struct({
+	setId: Schema.String,
+	workoutId: Schema.String,
+	exerciseId: Schema.String,
+	weight: Schema.Number,
+	reps: Schema.Number,
+	completed: Schema.Boolean,
+});
+
+const setStatusUpdateSchema = Schema.Struct({
+	setId: Schema.String,
+	isWeightPr: Schema.Boolean,
+	isVolumePr: Schema.Boolean,
+	isBodyweightRepsPr: Schema.Boolean,
+});
+
+const updateSetStatusesRequestSchema = Schema.Array(setStatusUpdateSchema);
+
+const updateWorkoutTotalsRequestSchema = Schema.Struct({
+	userId: Schema.String,
+	workoutIds: Schema.Array(Schema.String),
+});
 
 export class PrHistoryDb extends Context.Service<
 	PrHistoryDb,
@@ -43,92 +80,180 @@ export class PrHistoryDb extends Context.Service<
 export const prHistoryDb = Layer.effect(
 	PrHistoryDb,
 	Effect.gen(function* () {
-		const connection = yield* DbConnection;
+		const sql = yield* SqlClient.SqlClient;
+
+		const getPreviousPrs = SqlSchema.findAll({
+			Request: exerciseIdsQuerySchema,
+			Result: exercisePrRowSchema,
+			execute: (query) => sql`
+				SELECT
+					w_exercises.exercise_id AS "exerciseId",
+					count(*) FILTER (WHERE w_sets.completed) > 0 AS "hasHistory",
+					coalesce(
+						max(w_sets.weight) FILTER (WHERE w_sets.completed AND w_sets.weight > 0),
+						0
+					)::double precision AS "highestWeight",
+					coalesce(
+						max(w_sets.weight * w_sets.reps) FILTER (WHERE w_sets.completed AND w_sets.weight > 0),
+						0
+					)::double precision AS "highestVolume",
+					coalesce(
+						max(w_sets.reps) FILTER (WHERE w_sets.completed AND w_sets.weight = 0),
+						0
+					)::double precision AS "highestBodyweightReps"
+				FROM workout_sets AS w_sets
+				INNER JOIN workout_exercises AS w_exercises
+					ON w_exercises.id = w_sets.workout_exercise_id
+				INNER JOIN workouts ON workouts.id = w_exercises.workout_id
+				WHERE workouts.user_id = ${query.userId}
+					AND w_exercises.exercise_id = ANY(${query.exerciseIds}::uuid[])
+				GROUP BY w_exercises.exercise_id
+			`,
+		});
+
+		const getPreviousPrsBeforeCutoff = SqlSchema.findAll({
+			Request: cutoffQuerySchema,
+			Result: exercisePrRowSchema,
+			execute: (query) => sql`
+				SELECT
+					w_exercises.exercise_id AS "exerciseId",
+					count(*) FILTER (WHERE w_sets.completed) > 0 AS "hasHistory",
+					coalesce(
+						max(w_sets.weight) FILTER (WHERE w_sets.completed AND w_sets.weight > 0),
+						0
+					)::double precision AS "highestWeight",
+					coalesce(
+						max(w_sets.weight * w_sets.reps) FILTER (WHERE w_sets.completed AND w_sets.weight > 0),
+						0
+					)::double precision AS "highestVolume",
+					coalesce(
+						max(w_sets.reps) FILTER (WHERE w_sets.completed AND w_sets.weight = 0),
+						0
+					)::double precision AS "highestBodyweightReps"
+				FROM workout_sets AS w_sets
+				INNER JOIN workout_exercises AS w_exercises
+					ON w_exercises.id = w_sets.workout_exercise_id
+				INNER JOIN workouts ON workouts.id = w_exercises.workout_id
+				WHERE workouts.user_id = ${query.userId}
+					AND w_exercises.exercise_id = ANY(${query.exerciseIds}::uuid[])
+					AND (
+						workouts.created_at < ${query.cutoff.createdAt}
+						OR (
+							workouts.created_at = ${query.cutoff.createdAt}
+							AND workouts.id < ${query.cutoff.workoutId}::uuid
+						)
+					)
+				GROUP BY w_exercises.exercise_id
+			`,
+		});
+
+		const getAffectedSets = SqlSchema.findAll({
+			Request: cutoffQuerySchema,
+			Result: affectedSetRowSchema,
+			execute: (query) => sql`
+				SELECT
+					w_sets.id AS "setId",
+					workouts.id AS "workoutId",
+					w_exercises.exercise_id AS "exerciseId",
+					w_sets.weight::double precision AS weight,
+					w_sets.reps::double precision AS reps,
+					w_sets.completed
+				FROM workout_sets AS w_sets
+				INNER JOIN workout_exercises AS w_exercises
+					ON w_exercises.id = w_sets.workout_exercise_id
+				INNER JOIN workouts ON workouts.id = w_exercises.workout_id
+				WHERE workouts.user_id = ${query.userId}
+					AND w_exercises.exercise_id = ANY(${query.exerciseIds}::uuid[])
+					AND (
+						workouts.created_at > ${query.cutoff.createdAt}
+						OR (
+							workouts.created_at = ${query.cutoff.createdAt}
+							AND workouts.id >= ${query.cutoff.workoutId}::uuid
+						)
+					)
+				ORDER BY
+					workouts.created_at ASC,
+					workouts.id ASC,
+					w_exercises.position ASC,
+					w_sets.position ASC
+			`,
+		});
+
+		const updateSetStatuses = SqlSchema.void({
+			Request: updateSetStatusesRequestSchema,
+			execute: (statuses) =>
+				sql`
+					UPDATE workout_sets AS w_sets
+					SET
+						is_weight_pr = batch.is_weight_pr,
+						is_volume_pr = batch.is_volume_pr,
+						is_bodyweight_reps_pr = batch.is_bodyweight_reps_pr
+					FROM (
+						SELECT *
+						FROM unnest(
+							${statuses.map((status) => status.setId)}::uuid[],
+							${statuses.map((status) => status.isWeightPr)}::boolean[],
+							${statuses.map((status) => status.isVolumePr)}::boolean[],
+							${statuses.map((status) => status.isBodyweightRepsPr)}::boolean[]
+						) AS batch(set_id, is_weight_pr, is_volume_pr, is_bodyweight_reps_pr)
+					) AS batch
+					WHERE w_sets.id = batch.set_id
+				`,
+		});
+
+		const updateWorkoutTotals = SqlSchema.void({
+			Request: updateWorkoutTotalsRequestSchema,
+			execute: ({ userId, workoutIds }) => sql`
+				UPDATE workouts AS workouts_to_update
+				SET total_pr_sets = (
+					SELECT count(*)::integer
+					FROM workout_exercises AS w_exercises
+					INNER JOIN workout_sets AS w_sets
+						ON w_sets.workout_exercise_id = w_exercises.id
+					WHERE w_exercises.workout_id = workouts_to_update.id
+						AND (
+							w_sets.is_weight_pr
+							OR w_sets.is_volume_pr
+						OR w_sets.is_bodyweight_reps_pr
+						)
+				)
+				WHERE workouts_to_update.user_id = ${userId}
+					AND workouts_to_update.id = ANY(${workoutIds}::uuid[])
+			`,
+		});
 
 		return {
-			getPreviousPrs: ({ userId, exerciseIds, cutoff }) =>
-				Effect.gen(function* () {
-					const rows = yield* Effect.tryPromise({
-						try: () =>
-							connection.$queryRawTyped(
-								cutoff
-									? getExercisePrByIdsBeforeCutoff(
-											userId,
-											exerciseIds,
-											cutoff.createdAt,
-											cutoff.workoutId,
-										)
-									: getExercisePrByIds(userId, exerciseIds),
-							),
-						catch: (cause) => new DatabaseError({ cause }),
-					});
-
-					return rows.map((row) => ({
-						exerciseId: row.exercise_id,
-						hasHistory: row.has_history ?? false,
-						highestWeight: row.highest_weight ?? 0,
-						highestVolume: row.highest_volume ?? 0,
-						highestBodyweightReps: row.highest_bodyweight_reps ?? 0,
-					}));
-				}),
-			getAffectedSets: ({ userId, exerciseIds, cutoff }) =>
-				Effect.gen(function* () {
-					const rows = yield* Effect.tryPromise({
-						try: () =>
-							connection.$queryRawTyped(
-								getAffectedPrHistorySets(userId, exerciseIds, cutoff.createdAt, cutoff.workoutId),
-							),
-						catch: (cause) => new DatabaseError({ cause }),
-					});
-
-					return rows.map((row) => ({
-						setId: row.set_id,
-						workoutId: row.workout_id,
-						exerciseId: row.exercise_id,
-						weight: row.weight.toNumber(),
-						reps: row.reps.toNumber(),
-						completed: row.completed,
-					}));
-				}),
+			getPreviousPrs: (query) =>
+				query.exerciseIds.length === 0
+					? Effect.succeed([])
+					: withDatabaseError(
+							query.cutoff
+								? getPreviousPrsBeforeCutoff({ ...query, cutoff: query.cutoff })
+								: getPreviousPrs(query),
+						),
+			getAffectedSets: (query) =>
+				query.exerciseIds.length === 0
+					? Effect.succeed([])
+					: withDatabaseError(getAffectedSets(query)),
 			updateSetStatuses: (statuses) =>
-				Effect.gen(function* () {
-					// Send calculated statuses in bounded chunks so Neon/PostgreSQL does not exceed its 65,535 parameter limit.
-					// Chunks touch disjoint rows and are submitted in order, so pipelining them is safe.
-					const chunks: PrSetUpdate[][] = [];
-
-					for (let i = 0; i < statuses.length; i += SET_PR_STATUSES_CHUNK_SIZE) {
-						chunks.push(statuses.slice(i, i + SET_PR_STATUSES_CHUNK_SIZE));
-					}
-
-					yield* Effect.forEach(
-						chunks,
-						(chunk) =>
-							Effect.tryPromise({
-								try: () =>
-									connection.$queryRawTyped(
-										updateSetPrStatuses(
-											chunk.map((status) => status.setId),
-											chunk.map((status) => status.isWeightPr),
-											chunk.map((status) => status.isVolumePr),
-											chunk.map((status) => status.isBodyweightRepsPr),
-										),
-									),
-								catch: (cause) => new DatabaseError({ cause }),
-							}),
+				withDatabaseError(
+					Effect.forEach(
+						Array.from(
+							{ length: Math.ceil(statuses.length / SET_PR_STATUSES_CHUNK_SIZE) },
+							(_, index) =>
+								statuses.slice(
+									index * SET_PR_STATUSES_CHUNK_SIZE,
+									(index + 1) * SET_PR_STATUSES_CHUNK_SIZE,
+								),
+						),
+						(chunk) => updateSetStatuses(chunk),
 						{ concurrency: "unbounded", discard: true },
-					);
-				}),
+					),
+				),
 			updateWorkoutTotals: ({ userId, workoutIds }) =>
-				Effect.gen(function* () {
-					if (workoutIds.length === 0) {
-						return;
-					}
-
-					yield* Effect.tryPromise({
-						try: () => connection.$queryRawTyped(updateWorkoutPrTotalsByIds(userId, workoutIds)),
-						catch: (cause) => new DatabaseError({ cause }),
-					});
-				}),
+				workoutIds.length === 0
+					? Effect.void
+					: withDatabaseError(updateWorkoutTotals({ userId, workoutIds })),
 		} satisfies PrHistoryDb["Service"];
 	}),
 );

@@ -2,10 +2,10 @@ import "server-only";
 
 import { Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
-import { Transactions } from "@/server/transactions";
-import { ExerciseDb } from "@/features/exercise-library/server/exercises.db";
-import { WorkoutDb } from "@/features/workout-form/server/workouts.db";
-import type { WorkoutUpdateInput } from "@/features/workout-form/server/workouts.db";
+import { withTransaction } from "@/lib/db/sql";
+import { WorkoutExerciseDb } from "@/features/workout-form/server/workout-exercises.db";
+import { WorkoutFormDb } from "@/features/workout-form/server/workout-form.db";
+import type { WorkoutUpdateInput } from "@/features/workout-form/server/workout-form.db";
 import {
 	calculateSetPrsFromHistory,
 	recalculateExercisePrHistory,
@@ -29,15 +29,14 @@ type WorkoutSaveInput = {
 export const createWorkout = (createInput: WorkoutSaveInput) =>
 	Effect.gen(function* () {
 		const workout = yield* validateAndNormalizeWorkout(createInput.workout);
-		const transaction = yield* Transactions;
 
-		return yield* transaction.run(
+		return yield* withTransaction(
 			Effect.gen(function* () {
-				const workouts = yield* WorkoutDb;
-				const exercises = yield* ExerciseDb;
+				const workouts = yield* WorkoutFormDb;
+				const exercises = yield* WorkoutExerciseDb;
 				const workoutId = yield* workouts.create({ ...createInput, workout });
 
-				const exercisesWithDatabaseIds = yield* exercises.resolveWorkoutExercises({
+				const exercisesWithDatabaseIds = yield* exercises.findOrCreateExercises({
 					userId: createInput.userId,
 					exercises: workout.exercises,
 				});
@@ -64,46 +63,42 @@ export const createWorkout = (createInput: WorkoutSaveInput) =>
 	});
 
 const updateWorkoutAndRecalculatePrs = (updateInput: WorkoutUpdateInput) =>
-	Effect.gen(function* () {
-		const transaction = yield* Transactions;
+	withTransaction(
+		Effect.gen(function* () {
+			const workouts = yield* WorkoutFormDb;
+			const exercises = yield* WorkoutExerciseDb;
 
-		return yield* transaction.run(
-			Effect.gen(function* () {
-				const workouts = yield* WorkoutDb;
-				const exercises = yield* ExerciseDb;
+			const workout = yield* workouts.getForUpdate({
+				workoutId: updateInput.workoutId,
+				userId: updateInput.userId,
+			});
 
-				const workout = yield* workouts.getForUpdate({
-					workoutId: updateInput.workoutId,
-					userId: updateInput.userId,
-				});
+			if (!workout) return null;
+			const previousExerciseIds = yield* workouts.getExerciseIds(updateInput.workoutId);
 
-				if (!workout) return null;
-				const previousExerciseIds = yield* workouts.getExerciseIds(updateInput.workoutId);
+			const exercisesWithDatabaseIds = yield* exercises.findOrCreateExercises({
+				userId: updateInput.userId,
+				exercises: updateInput.workout.exercises,
+			});
 
-				const exercisesWithDatabaseIds = yield* exercises.resolveWorkoutExercises({
-					userId: updateInput.userId,
-					exercises: updateInput.workout.exercises,
-				});
+			const affectedExerciseIds = buildAffectedExerciseIds(
+				previousExerciseIds,
+				exercisesWithDatabaseIds.map((exercise) => exercise.exerciseId),
+			);
 
-				const affectedExerciseIds = buildAffectedExerciseIds(
-					previousExerciseIds,
-					exercisesWithDatabaseIds.map((exercise) => exercise.exerciseId),
-				);
+			yield* workouts.replaceContent({
+				update: updateInput,
+				exercises: exercisesWithDatabaseIds,
+			});
+			yield* recalculateExercisePrHistory({
+				userId: updateInput.userId,
+				exerciseIds: affectedExerciseIds,
+				cutoff: { workoutId: workout.id, createdAt: workout.createdAt },
+			});
 
-				yield* workouts.replaceContent({
-					update: updateInput,
-					exercises: exercisesWithDatabaseIds,
-				});
-				yield* recalculateExercisePrHistory({
-					userId: updateInput.userId,
-					exerciseIds: affectedExerciseIds,
-					cutoff: { workoutId: workout.id, createdAt: workout.createdAt },
-				});
-
-				return workout.id;
-			}),
-		);
-	});
+			return workout.id;
+		}),
+	);
 
 const validateAndNormalizeWorkout = (workout: WorkoutForSave) =>
 	Effect.gen(function* () {

@@ -1,9 +1,8 @@
 import "server-only";
 
 import { Effect } from "effect";
-import { Transactions } from "@/server/transactions";
+import { withTransaction } from "@/lib/db/sql";
 import { recalculateExercisePrHistory } from "@/features/personal-records/server/pr-history.service";
-import { ExerciseCreationDb } from "@/features/exercise-library/server/exercise-creation.db";
 import { ExerciseDb } from "@/features/exercise-library/server/exercises.db";
 import { normalizeName } from "@/lib/normalizeName";
 import { normalizeMuscleGroups } from "@/features/exercise-library/lib/normalizeMuscleGroups";
@@ -88,9 +87,9 @@ export const createUserExercise = (input: CreateExerciseInput) =>
 			normalizedName: exercise.normalizedName,
 		});
 
-		const db = yield* ExerciseCreationDb;
+		const db = yield* ExerciseDb;
 
-		return yield* db.create({ userId: input.userId, exercise });
+		return yield* withTransaction(db.create({ userId: input.userId, exercise }));
 	});
 
 interface UpdateExerciseInput extends CreateExerciseInput {
@@ -107,9 +106,7 @@ export const updateUserExercise = (input: UpdateExerciseInput) =>
 			excludingExerciseId: input.exerciseId,
 		});
 
-		const transaction = yield* Transactions;
-
-		return yield* transaction.run(
+		return yield* withTransaction(
 			Effect.gen(function* () {
 				const db = yield* ExerciseDb;
 
@@ -137,23 +134,20 @@ const mergeExercisesAndRecalculatePrs = (
 	targetId: string,
 	sourceMuscleGroups: ReturnType<typeof normalizeMuscleGroups> | null,
 ) =>
-	Effect.gen(function* () {
-		const transaction = yield* Transactions;
-		yield* transaction.run(
-			Effect.gen(function* () {
-				const db = yield* ExerciseDb;
-				const cutoff = yield* db.merge({ userId, sourceId, targetId, sourceMuscleGroups });
+	withTransaction(
+		Effect.gen(function* () {
+			const db = yield* ExerciseDb;
+			const cutoff = yield* db.merge({ userId, sourceId, targetId, sourceMuscleGroups });
 
-				if (cutoff) {
-					yield* recalculateExercisePrHistory({
-						userId,
-						exerciseIds: [sourceId, targetId],
-						cutoff,
-					});
-				}
-			}),
-		);
-	});
+			if (cutoff) {
+				yield* recalculateExercisePrHistory({
+					userId,
+					exerciseIds: [sourceId, targetId],
+					cutoff,
+				});
+			}
+		}),
+	);
 
 export const mergeUserExercises = (userId: string, input: MergeExerciseLibraryInput) =>
 	Effect.gen(function* () {

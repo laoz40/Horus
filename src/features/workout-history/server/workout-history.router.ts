@@ -1,11 +1,9 @@
+import { database } from "@/server/database";
 import "server-only";
 
 import { Effect } from "effect";
 import { z } from "zod";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
-import { transactions } from "@/server/transactions";
-import { workoutHistoryDb } from "@/features/workout-history/server/workout-history.db";
-import { workoutDb } from "@/features/workout-form/server/workouts.db";
 import {
 	deleteAllWorkouts,
 	deleteWorkout,
@@ -63,7 +61,7 @@ export const workoutHistoryRouter = {
 		.handler(({ context, errors }) =>
 			Effect.runPromise(
 				deleteAllWorkouts(context.userId).pipe(
-					Effect.provide(workoutDb),
+					Effect.provide(database),
 					Effect.catchTags({
 						NO_WORKOUTS: () => Effect.fail(errors.NO_WORKOUTS()),
 						DatabaseError: (error) =>
@@ -91,7 +89,7 @@ export const workoutHistoryRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				deleteWorkout(input.workoutId, context.userId).pipe(
-					Effect.provide(transactions),
+					Effect.provide(database),
 					Effect.map((workout) => ({
 						deletedWorkoutId: workout.id,
 						deletedWorkoutName: workout.name,
@@ -116,7 +114,7 @@ export const workoutHistoryRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				listWorkouts({ ...input, userId: context.userId }).pipe(
-					Effect.provide(workoutHistoryDb),
+					Effect.provide(database),
 					Effect.catchTags({
 						DatabaseError: (error) =>
 							logDatabaseError("Failed to list workouts", error.cause, errors.DATABASE_ERROR()),
