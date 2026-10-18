@@ -50,7 +50,7 @@ function ProgressionChartContent({
 	);
 
 	if (progressionQuery.isLoading) {
-		return <Skeleton className="mb-3 h-48 w-full rounded-md" />;
+		return <Skeleton className="mb-3 h-48 w-full" />;
 	}
 
 	if (errorMessage) {

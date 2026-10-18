@@ -64,7 +64,7 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 						You need an account to create and save workouts.
 					</p>
 				) : null}
-				<DialogFooter className="flex flex-row justify-between gap-2">
+				<DialogFooter className="flex flex-row justify-between">
 					{authStatus === "authenticated" ? (
 						<>
 							<DialogClose asChild>

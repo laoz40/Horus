@@ -60,8 +60,7 @@ export default function DeleteAllWorkoutsSection() {
 					handleDelete={() => deleteAllWorkouts.mutate({})}>
 					<Button
 						variant="destructive"
-						size="sm"
-						className="text-sm">
+						size="sm">
 						Delete all workouts
 					</Button>
 				</AlertDialogDestructive>

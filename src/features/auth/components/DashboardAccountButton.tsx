@@ -57,7 +57,7 @@ export default function DashboardAccountButton({
 				<Button
 					variant="ghost"
 					size="icon"
-					className="size-10 rounded-full p-0"
+					className="size-10 rounded-full"
 					aria-label="Open account menu">
 					<UserAvatar
 						user={initialUser}

@@ -80,9 +80,7 @@ export default function RecentSetsSection({ exerciseName }: RecentSetsSectionPro
 			<AccordionItem
 				value="recent-sets"
 				className="rounded-md border bg-card last:border-b">
-				<AccordionTrigger className="p-3 text-base font-normal text-foreground">
-					Recent sets
-				</AccordionTrigger>
+				<AccordionTrigger className="p-3 text-base font-normal">Recent sets</AccordionTrigger>
 				<AccordionContent className="px-3 pb-3">
 					<RecentSetsContent exerciseName={exerciseName} />
 				</AccordionContent>

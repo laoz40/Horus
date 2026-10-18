@@ -96,7 +96,7 @@ function ExerciseForm({ className, exerciseIndex, isEditing, ref }: ExerciseForm
 						</div>
 						<Button
 							variant="ghost"
-							className="w-full shrink-0 items-center text-sm leading-0 text-muted-foreground"
+							className="w-full shrink-0 items-center leading-0 text-muted-foreground"
 							type="button"
 							onClick={handleAddSet}>
 							<IconPlus className="size-4" />
