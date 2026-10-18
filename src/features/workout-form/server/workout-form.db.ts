@@ -21,15 +21,19 @@ export class WorkoutFormDb extends Context.Service<
 	WorkoutFormDb,
 	{
 		readonly create: (input: WorkoutWriteInput) => Effect.Effect<string, DatabaseError>;
-		readonly saveContent: (input: {
+		readonly insertExercises: (input: {
 			workoutId: string;
 			exercises: WorkoutExerciseWithDatabaseId[];
-			prStatusesBySetId: ReadonlyMap<string, PrSetUpdate>;
-			totalPrSets: number;
 		}) => Effect.Effect<void, DatabaseError>;
-		readonly replaceContent: (input: {
-			update: WorkoutUpdateInput;
+		readonly insertSets: (input: {
 			exercises: WorkoutExerciseWithDatabaseId[];
+			prStatusesBySetId?: ReadonlyMap<string, PrSetUpdate>;
+		}) => Effect.Effect<void, DatabaseError>;
+		readonly updateFields: (input: WorkoutUpdateInput) => Effect.Effect<void, DatabaseError>;
+		readonly deleteExercises: (workoutId: string) => Effect.Effect<void, DatabaseError>;
+		readonly updatePrTotal: (input: {
+			workoutId: string;
+			totalPrSets: number;
 		}) => Effect.Effect<void, DatabaseError>;
 		readonly getForUpdate: (query: {
 			workoutId: string;
@@ -68,21 +72,85 @@ export const workoutFormDb = Layer.effect(
 					withDatabaseError,
 				);
 			},
-			saveContent: ({ workoutId, exercises, prStatusesBySetId, totalPrSets }) =>
-				Effect.gen(function* () {
-					yield* insertWorkoutContent(sql, workoutId, exercises, prStatusesBySetId);
-					yield* sql`UPDATE workouts SET total_pr_sets = ${totalPrSets} WHERE id = ${workoutId}::uuid`;
-				}).pipe(withDatabaseError),
-			replaceContent: ({ update, exercises }) =>
-				Effect.gen(function* () {
-					yield* sql`
-				UPDATE workouts SET name = ${update.workout.name},
-					duration_seconds = ${update.workout.durationSeconds}, total_pr_sets = 0
-				WHERE id = ${update.workoutId}::uuid AND user_id = ${update.userId}
-			`;
-					yield* sql`DELETE FROM workout_exercises WHERE workout_id = ${update.workoutId}::uuid`;
-					yield* insertWorkoutContent(sql, update.workoutId, exercises);
-				}).pipe(withDatabaseError),
+			insertExercises: ({ workoutId, exercises }) => {
+				const rows = exercises.map((exercise, position) => ({
+					id: exercise.id,
+					workout_id: workoutId,
+					exercise_id: exercise.exerciseId,
+					position,
+					difficulty: exercise.difficulty,
+					notes: exercise.notes ?? "",
+				}));
+
+				return Effect.forEach(
+					chunkRows(rows),
+					(chunk) => sql`INSERT INTO workout_exercises ${sql.insert(chunk)}`,
+					{ discard: true },
+				).pipe(withDatabaseError);
+			},
+			insertSets: ({ exercises, prStatusesBySetId = new Map() }) => {
+				const rows = exercises.flatMap((exercise) =>
+					exercise.sets.map((set, position) => {
+						const status = prStatusesBySetId.get(set.id);
+
+						return {
+							id: set.id,
+							workout_exercise_id: exercise.id,
+							position,
+							weight: set.weight,
+							reps: set.reps,
+							completed: set.completed,
+							is_weight_pr: status?.isWeightPr ?? false,
+							is_volume_pr: status?.isVolumePr ?? false,
+							is_bodyweight_reps_pr: status?.isBodyweightRepsPr ?? false,
+						};
+					}),
+				);
+
+				return Effect.forEach(
+					chunkRows(rows),
+					(chunk) => sql`INSERT INTO workout_sets ${sql.insert(chunk)}`,
+					{ discard: true },
+				).pipe(withDatabaseError);
+			},
+			updateFields: ({ workoutId, userId, workout }) => {
+				const updateWorkout = SqlSchema.void({
+					Request: Schema.Struct({
+						workoutId: Schema.String,
+						userId: Schema.String,
+						name: Schema.String,
+						durationSeconds: Schema.NullOr(Schema.Int),
+					}),
+					execute: (input) => sql`
+						UPDATE workouts SET name = ${input.name}, duration_seconds = ${input.durationSeconds}, total_pr_sets = 0
+						WHERE id = ${input.workoutId}::uuid AND user_id = ${input.userId}
+					`,
+				});
+
+				return updateWorkout({
+					workoutId,
+					userId,
+					name: workout.name,
+					durationSeconds: workout.durationSeconds,
+				}).pipe(withDatabaseError);
+			},
+			deleteExercises: (workoutId) => {
+				const deleteWorkoutExercises = SqlSchema.void({
+					Request: Schema.String,
+					execute: (id) => sql`DELETE FROM workout_exercises WHERE workout_id = ${id}::uuid`,
+				});
+
+				return deleteWorkoutExercises(workoutId).pipe(withDatabaseError);
+			},
+			updatePrTotal: (input) => {
+				const updateWorkoutPrTotal = SqlSchema.void({
+					Request: Schema.Struct({ workoutId: Schema.String, totalPrSets: Schema.Int }),
+					execute: (query) =>
+						sql`UPDATE workouts SET total_pr_sets = ${query.totalPrSets} WHERE id = ${query.workoutId}::uuid`,
+				});
+
+				return updateWorkoutPrTotal(input).pipe(withDatabaseError);
+			},
 			getForUpdate: (query) => {
 				const findWorkoutForUpdate = SqlSchema.findOneOption({
 					Request: Schema.Struct({ workoutId: Schema.String, userId: Schema.String }),
@@ -111,55 +179,6 @@ export const workoutFormDb = Layer.effect(
 		} satisfies WorkoutFormDb["Service"];
 	}),
 );
-
-// Create and edit write the same child rows, with calculated PR flags supplied on creation.
-function insertWorkoutContent(
-	sql: SqlClient.SqlClient,
-	workoutId: string,
-	exercises: WorkoutExerciseWithDatabaseId[],
-	prStatusesBySetId: ReadonlyMap<string, PrSetUpdate> = new Map(),
-) {
-	return Effect.gen(function* () {
-		const exerciseRows = exercises.map((exercise, position) => ({
-			id: exercise.id,
-			workout_id: workoutId,
-			exercise_id: exercise.exerciseId,
-			position,
-			difficulty: exercise.difficulty,
-			notes: exercise.notes ?? "",
-		}));
-
-		yield* Effect.forEach(
-			chunkRows(exerciseRows),
-			(chunk) => sql`INSERT INTO workout_exercises ${sql.insert(chunk)}`,
-			{ discard: true },
-		);
-
-		const setRows = exercises.flatMap((exercise) =>
-			exercise.sets.map((set, position) => {
-				const status = prStatusesBySetId.get(set.id);
-
-				return {
-					id: set.id,
-					workout_exercise_id: exercise.id,
-					position,
-					weight: set.weight,
-					reps: set.reps,
-					completed: set.completed,
-					is_weight_pr: status?.isWeightPr ?? false,
-					is_volume_pr: status?.isVolumePr ?? false,
-					is_bodyweight_reps_pr: status?.isBodyweightRepsPr ?? false,
-				};
-			}),
-		);
-
-		yield* Effect.forEach(
-			chunkRows(setRows),
-			(chunk) => sql`INSERT INTO workout_sets ${sql.insert(chunk)}`,
-			{ discard: true },
-		);
-	});
-}
 
 function chunkRows<A>(rows: A[]) {
 	const chunks: A[][] = [];

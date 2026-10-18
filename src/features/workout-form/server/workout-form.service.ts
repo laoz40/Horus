@@ -3,7 +3,11 @@ import "server-only";
 import { Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { withTransaction } from "@/lib/db/sql";
-import { WorkoutExerciseDb } from "@/features/workout-form/server/workout-exercises.db";
+import {
+	WorkoutExerciseDb,
+	type PreparedWorkoutWriteExercise,
+} from "@/features/workout-form/server/workout-exercises.db";
+import { DatabaseError } from "@/lib/db/database";
 import { WorkoutFormDb } from "@/features/workout-form/server/workout-form.db";
 import type { WorkoutUpdateInput } from "@/features/workout-form/server/workout-form.db";
 import {
@@ -26,6 +30,46 @@ type WorkoutSaveInput = {
 	workout: WorkoutForSave;
 };
 
+const findOrCreateWorkoutExercises = (input: {
+	userId: string;
+	exercises: PreparedWorkoutWriteExercise[];
+}) =>
+	Effect.gen(function* () {
+		const db = yield* WorkoutExerciseDb;
+
+		return yield* Effect.forEach(
+			input.exercises,
+			(exercise) =>
+				Effect.gen(function* () {
+					const lookup = { userId: input.userId, normalizedName: exercise.global.normalizedName };
+					const existingId = yield* db.findExercise(lookup);
+
+					if (existingId !== null) return { ...exercise, exerciseId: existingId };
+
+					const insertedId = yield* db.insertExerciseIfMissing({
+						...lookup,
+						name: exercise.global.name,
+					});
+
+					const exerciseId = yield* db.findExercise(lookup);
+
+					if (exerciseId === null)
+						return yield* Effect.fail(
+							new DatabaseError({
+								cause: new Error("Exercise was not found after the insert"),
+							}),
+						);
+
+					// Only this insert's winner attaches groups; existing exercises keep their groups.
+					if (insertedId !== null)
+						yield* db.addMuscleGroups({ exerciseId, groups: exercise.global.muscleGroups });
+
+					return { ...exercise, exerciseId };
+				}),
+			{ concurrency: "unbounded" },
+		);
+	});
+
 export const createWorkout = (createInput: WorkoutSaveInput) =>
 	Effect.gen(function* () {
 		const workout = yield* validateAndNormalizeWorkout(createInput.workout);
@@ -33,10 +77,9 @@ export const createWorkout = (createInput: WorkoutSaveInput) =>
 		return yield* withTransaction(
 			Effect.gen(function* () {
 				const workouts = yield* WorkoutFormDb;
-				const exercises = yield* WorkoutExerciseDb;
 				const workoutId = yield* workouts.create({ ...createInput, workout });
 
-				const exercisesWithDatabaseIds = yield* exercises.findOrCreateExercises({
+				const exercisesWithDatabaseIds = yield* findOrCreateWorkoutExercises({
 					userId: createInput.userId,
 					exercises: workout.exercises,
 				});
@@ -50,12 +93,9 @@ export const createWorkout = (createInput: WorkoutSaveInput) =>
 
 				const prStatusesBySetId = new Map(prStatuses.map((status) => [status.setId, status]));
 				const totalPrSets = buildPrTotalsByWorkoutId(prStatuses).get(workoutId) ?? 0;
-				yield* workouts.saveContent({
-					workoutId,
-					exercises: exercisesWithDatabaseIds,
-					prStatusesBySetId,
-					totalPrSets,
-				});
+				yield* workouts.insertExercises({ workoutId, exercises: exercisesWithDatabaseIds });
+				yield* workouts.insertSets({ exercises: exercisesWithDatabaseIds, prStatusesBySetId });
+				yield* workouts.updatePrTotal({ workoutId, totalPrSets });
 
 				return workoutId;
 			}),
@@ -66,7 +106,6 @@ const updateWorkoutAndRecalculatePrs = (updateInput: WorkoutUpdateInput) =>
 	withTransaction(
 		Effect.gen(function* () {
 			const workouts = yield* WorkoutFormDb;
-			const exercises = yield* WorkoutExerciseDb;
 
 			const workout = yield* workouts.getForUpdate({
 				workoutId: updateInput.workoutId,
@@ -76,7 +115,7 @@ const updateWorkoutAndRecalculatePrs = (updateInput: WorkoutUpdateInput) =>
 			if (!workout) return null;
 			const previousExerciseIds = yield* workouts.getExerciseIds(updateInput.workoutId);
 
-			const exercisesWithDatabaseIds = yield* exercises.findOrCreateExercises({
+			const exercisesWithDatabaseIds = yield* findOrCreateWorkoutExercises({
 				userId: updateInput.userId,
 				exercises: updateInput.workout.exercises,
 			});
@@ -86,10 +125,13 @@ const updateWorkoutAndRecalculatePrs = (updateInput: WorkoutUpdateInput) =>
 				exercisesWithDatabaseIds.map((exercise) => exercise.exerciseId),
 			);
 
-			yield* workouts.replaceContent({
-				update: updateInput,
+			yield* workouts.updateFields(updateInput);
+			yield* workouts.deleteExercises(updateInput.workoutId);
+			yield* workouts.insertExercises({
+				workoutId: updateInput.workoutId,
 				exercises: exercisesWithDatabaseIds,
 			});
+			yield* workouts.insertSets({ exercises: exercisesWithDatabaseIds });
 			yield* recalculateExercisePrHistory({
 				userId: updateInput.userId,
 				exerciseIds: affectedExerciseIds,
