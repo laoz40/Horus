@@ -18,19 +18,19 @@ Gym workout tracker to log exercise progress and show workout stats.
 ### Preserving long-term maintainability of the codebase
 
 - Push for restructuring the codebase to remove complexity instead of making bandaid fixes or making the fast, easy fix/refactor
-    - e.g. NO weird wrappers functions, preserving existing bad patterns, barrel files, factory helpers
-    - Look for opportunities to reframe the change so that whole branches, helpers, modes, conditionals, or layers disappear entirely.
-    - Every extraction must own real responsibility. If it only forwards or reconnects code split, undo the split and restructure
-    - **Question the threading.** If a task asks you to pass a new signal through types, schemas, pipelines, or similar layers, stop and look for a more direct path.
-    - **Sweat the small leaks.** Remove tiny pass-throughs, representation leaks, and duplicated choices before they spread. Small leaks compound into permanent coordination costs.
-    - **Prefer deletion.** When asked to refactor or improve, look for removals before additions.
-    - **Maintain a flat call hierarchy.** Avoid deep call chains. A rich interface that hides substantial work is not a deep call chain. If answering a question requires tracing through more than 3 files or layers, flatten it.
+  - e.g. NO weird wrappers functions, preserving existing bad patterns, barrel files, factory helpers
+  - Look for opportunities to reframe the change so that whole branches, helpers, modes, conditionals, or layers disappear entirely.
+  - Every extraction must own real responsibility. If it only forwards or reconnects code split, undo the split and restructure
+  - **Question the threading.** If a task asks you to pass a new signal through types, schemas, pipelines, or similar layers, stop and look for a more direct path.
+  - **Sweat the small leaks.** Remove tiny pass-throughs, representation leaks, and duplicated choices before they spread. Small leaks compound into permanent coordination costs.
+  - **Prefer deletion.** When asked to refactor or improve, look for removals before additions.
+  - **Maintain a flat call hierarchy.** Avoid deep call chains. A rich interface that hides substantial work is not a deep call chain. If answering a question requires tracing through more than 3 files or layers, flatten it.
 - When adding a new feature, always avoid feature creep and over-engineering
-    - Reach for the simplest thing that works
-    - Suggest issues from edge cases before you implement fixes for them or build for hypothetical futures.
-    - Do not assume backwards compatibility, migrations, or backfills are needed. Check if the feature is actually in the main branch already
-    - Make sure not to write low value tests that don't relate to the core behaviour
-    - Make sure not to add unecessary fields to the db schema
+  - Reach for the simplest thing that works
+  - Suggest issues from edge cases before you implement fixes for them or build for hypothetical futures.
+  - Do not assume backwards compatibility, migrations, or backfills are needed. Check if the feature is actually in the main branch already
+  - Make sure not to write low value tests that don't relate to the core behaviour
+  - Make sure not to add unecessary fields to the db schema
 - Use YAGNI and DRY principles
 
 Writing code is cheap for you, which makes over-engineering easy. Counter it by borrowing a human maintainer's fatigue. Aim for the most result with the least code and complexity. If a human developer would find the code exhausting to maintain, it is a bad solution. Be lazy. Stay simple.
