@@ -50,7 +50,4 @@ dev.db
 # clerk configuration (can include secrets)
 /.clerk/
 
-AGENTS.md
-plans/
-
 /src/generated/prisma
