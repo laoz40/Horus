@@ -4,6 +4,7 @@ import "server-only";
 import { Effect } from "effect";
 import { z } from "zod";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
+import { exerciseCreationDb } from "@/features/exercise-library/server/exercise-creation.db";
 import { exerciseDb } from "@/features/exercise-library/server/exercises.db";
 import {
 	createUserExercise,
@@ -60,7 +61,7 @@ export const exerciseLibraryRouter = {
 				createUserExercise({ userId: context.userId, exercise: input }).pipe(
 					Effect.map((exercise) => ({ exercise })),
 					Effect.provide(exerciseDb),
-					Effect.provide(transactions),
+					Effect.provide(exerciseCreationDb),
 					Effect.catchTags({
 						...exerciseLibraryWriteErrorHandlers(errors),
 						DatabaseError: (error) =>

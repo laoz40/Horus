@@ -3,6 +3,7 @@ import "server-only";
 import { Effect } from "effect";
 import { Transactions } from "@/server/transactions";
 import { recalculateExercisePrHistory } from "@/features/personal-records/server/pr-history.service";
+import { ExerciseCreationDb } from "@/features/exercise-library/server/exercise-creation.db";
 import { ExerciseDb } from "@/features/exercise-library/server/exercises.db";
 import { normalizeName } from "@/lib/normalizeName";
 import { normalizeMuscleGroups } from "@/features/exercise-library/lib/normalizeMuscleGroups";
@@ -87,15 +88,9 @@ export const createUserExercise = (input: CreateExerciseInput) =>
 			normalizedName: exercise.normalizedName,
 		});
 
-		const transaction = yield* Transactions;
+		const db = yield* ExerciseCreationDb;
 
-		return yield* transaction.run(
-			Effect.gen(function* () {
-				const db = yield* ExerciseDb;
-
-				return yield* db.create({ userId: input.userId, exercise });
-			}),
-		);
+		return yield* db.create({ userId: input.userId, exercise });
 	});
 
 interface UpdateExerciseInput extends CreateExerciseInput {

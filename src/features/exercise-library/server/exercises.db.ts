@@ -33,7 +33,7 @@ export interface UserExerciseLibraryRow {
 
 import type { PrHistoryCutoff } from "@/features/personal-records/server/pr-history.functions";
 
-type ExerciseWriteInput = {
+export type ExerciseWriteInput = {
 	userId: string;
 	exercise: {
 		name: string;
@@ -45,9 +45,6 @@ type ExerciseWriteInput = {
 export class ExerciseDb extends Context.Service<
 	ExerciseDb,
 	{
-		readonly create: (
-			input: ExerciseWriteInput,
-		) => Effect.Effect<UserExerciseLibraryRow, DatabaseError>;
 		readonly update: (
 			input: ExerciseWriteInput & { exerciseId: string },
 		) => Effect.Effect<UserExerciseLibraryRow, DatabaseError | ExerciseNotFoundError>;
@@ -99,32 +96,6 @@ export const exerciseDbLayer = Layer.effect(
 		const connection = yield* DbConnection;
 
 		return {
-			create: ({ userId, exercise }) =>
-				Effect.gen(function* () {
-					const created = yield* Effect.tryPromise({
-						try: () =>
-							connection.exercises.create({
-								data: {
-									user_id: userId,
-									name: exercise.name,
-									normalized_name: exercise.normalizedName,
-								},
-								select: { id: true },
-							}),
-						catch: (cause) => new DatabaseError({ cause }),
-					});
-
-					yield* replaceExerciseMuscleGroups(connection, created.id, exercise.muscleGroups);
-
-					const row = yield* getUserExerciseLibraryRow(connection, userId, created.id);
-
-					if (!row)
-						return yield* Effect.fail(
-							new DatabaseError({ cause: new Error("Created exercise row was not found") }),
-						);
-
-					return row;
-				}),
 			update: ({ userId, exerciseId, exercise }) =>
 				Effect.gen(function* () {
 					const updated = yield* Effect.tryPromise({
