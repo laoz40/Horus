@@ -3,15 +3,9 @@ import "server-only";
 import { Context, Effect, Layer, Option, Schema } from "effect";
 import { SqlClient, SqlSchema } from "effect/sql";
 import type { PrHistoryCutoff } from "@/features/personal-records/server/pr-history.functions";
-import { ExerciseNotFoundError } from "@/features/exercise-library/server/library.functions";
 import { DatabaseError, withDatabaseError } from "@/lib/db/database";
 
 type NamedMuscleGroup = { name: string; normalizedName: string };
-
-type ExerciseWriteInput = {
-	userId: string;
-	exercise: { name: string; normalizedName: string; muscleGroups: NamedMuscleGroup[] };
-};
 
 const ownedExerciseSchema = Schema.Struct({ userId: Schema.String, exerciseId: Schema.String });
 
@@ -31,27 +25,39 @@ const libraryRowSchema = Schema.Struct({
 
 export type UserExerciseLibraryRow = typeof libraryRowSchema.Type;
 
-function mapWriteError(cause: unknown) {
-	return cause instanceof DatabaseError || cause instanceof ExerciseNotFoundError
-		? cause
-		: new DatabaseError({ cause });
-}
-
 export class ExerciseDb extends Context.Service<
 	ExerciseDb,
 	{
-		readonly create: (
-			input: ExerciseWriteInput,
-		) => Effect.Effect<UserExerciseLibraryRow, DatabaseError>;
-		readonly update: (
-			input: ExerciseWriteInput & { exerciseId: string },
-		) => Effect.Effect<UserExerciseLibraryRow, DatabaseError | ExerciseNotFoundError>;
-		readonly merge: (input: {
+		readonly insertUserExercise: (input: {
+			userId: string;
+			name: string;
+			normalizedName: string;
+		}) => Effect.Effect<string, DatabaseError>;
+		readonly updateUserExercise: (input: {
+			userId: string;
+			exerciseId: string;
+			name: string;
+			normalizedName: string;
+		}) => Effect.Effect<string | null, DatabaseError>;
+		readonly getMuscleGroupNames: (exerciseId: string) => Effect.Effect<string[], DatabaseError>;
+		readonly deleteMuscleGroups: (exerciseId: string) => Effect.Effect<void, DatabaseError>;
+		readonly addMuscleGroups: (input: {
+			exerciseId: string;
+			groups: NamedMuscleGroup[];
+		}) => Effect.Effect<void, DatabaseError>;
+		readonly findMergeCutoff: (input: {
 			userId: string;
 			sourceId: string;
 			targetId: string;
-			sourceMuscleGroups: Array<{ name: string; normalizedName: string }> | null;
-		}) => Effect.Effect<PrHistoryCutoff | null, DatabaseError | ExerciseNotFoundError>;
+		}) => Effect.Effect<PrHistoryCutoff | null, DatabaseError>;
+		readonly unionMuscleGroups: (input: {
+			sourceId: string;
+			targetId: string;
+		}) => Effect.Effect<void, DatabaseError>;
+		readonly moveWorkoutExercises: (input: {
+			sourceId: string;
+			targetId: string;
+		}) => Effect.Effect<void, DatabaseError>;
 		readonly findUserExerciseIdByNormalizedName: (query: {
 			userId: string;
 			normalizedName: string;
@@ -90,103 +96,137 @@ export const exerciseDb = Layer.effect(
 		const sql = yield* SqlClient.SqlClient;
 
 		const db: ExerciseDb["Service"] = {
-			create: ({ userId, exercise }) =>
-				Effect.gen(function* () {
-					const insertExercise = SqlSchema.findOne({
-						Request: Schema.Struct({
-							userId: Schema.String,
-							name: Schema.String,
-							normalizedName: Schema.String,
-						}),
-						Result: Schema.Struct({ id: Schema.String }),
-						execute: (input) => sql`
+			insertUserExercise: (input) => {
+				const insertUserExerciseQuery = SqlSchema.findOne({
+					Request: Schema.Struct({
+						userId: Schema.String,
+						name: Schema.String,
+						normalizedName: Schema.String,
+					}),
+					Result: Schema.Struct({ id: Schema.String }),
+					execute: (query) => sql`
 						INSERT INTO exercises (user_id, name, normalized_name)
-						VALUES (${input.userId}, ${input.name}, ${input.normalizedName}) RETURNING id
+						VALUES (${query.userId}, ${query.name}, ${query.normalizedName}) RETURNING id
 					`,
-					});
+				});
 
-					const created = yield* insertExercise({ userId, ...exercise });
-
-					yield* addMuscleGroups(sql, created.id, exercise.muscleGroups);
-					const row = yield* db.getUserExercise({ userId, exerciseId: created.id });
-
-					if (!row)
-						return yield* Effect.fail(
-							new DatabaseError({ cause: new Error("Created exercise was not found") }),
-						);
-
-					return row;
-				}).pipe(withDatabaseError),
-			update: ({ userId, exerciseId, exercise }) =>
-				Effect.gen(function* () {
-					const updateExercise = SqlSchema.findOneOption({
-						Request: Schema.Struct({
-							...ownedExerciseSchema.fields,
-							name: Schema.String,
-							normalizedName: Schema.String,
-						}),
-						Result: Schema.Struct({ id: Schema.String }),
-						execute: (input) => sql`
-						UPDATE exercises SET name = ${input.name}, normalized_name = ${input.normalizedName}
-						WHERE id = ${input.exerciseId}::uuid AND user_id = ${input.userId} RETURNING id
+				return insertUserExerciseQuery(input).pipe(
+					Effect.map((row) => row.id),
+					withDatabaseError,
+				);
+			},
+			updateUserExercise: (input) => {
+				const updateUserExerciseQuery = SqlSchema.findOneOption({
+					Request: Schema.Struct({
+						...ownedExerciseSchema.fields,
+						name: Schema.String,
+						normalizedName: Schema.String,
+					}),
+					Result: Schema.Struct({ id: Schema.String }),
+					execute: (query) => sql`
+						UPDATE exercises SET name = ${query.name}, normalized_name = ${query.normalizedName}
+						WHERE id = ${query.exerciseId}::uuid AND user_id = ${query.userId} RETURNING id
 					`,
-					});
+				});
 
-					const updated = yield* updateExercise({ userId, exerciseId, ...exercise });
+				return updateUserExerciseQuery(input).pipe(
+					Effect.map((row) => Option.getOrNull(row)?.id ?? null),
+					withDatabaseError,
+				);
+			},
+			getMuscleGroupNames: (exerciseId) => {
+				const getMuscleGroupNamesQuery = SqlSchema.findAll({
+					Request: Schema.String,
+					Result: Schema.Struct({ normalizedName: Schema.String }),
+					execute: (id) => sql`
+						SELECT mg.normalized_name AS "normalizedName" FROM exercise_muscle_groups emg
+						JOIN muscle_groups mg ON mg.id = emg.muscle_group_id
+						WHERE emg.exercise_id = ${id}::uuid
+					`,
+				});
 
-					if (Option.isNone(updated)) return yield* Effect.fail(new ExerciseNotFoundError());
-					yield* replaceMuscleGroups(sql, exerciseId, exercise.muscleGroups);
-					const row = yield* db.getUserExercise({ userId, exerciseId });
+				return getMuscleGroupNamesQuery(exerciseId).pipe(
+					Effect.map((groups) => groups.map((group) => group.normalizedName)),
+					withDatabaseError,
+				);
+			},
+			deleteMuscleGroups: (exerciseId) => {
+				const deleteMuscleGroupsQuery = SqlSchema.void({
+					Request: Schema.String,
+					execute: (id) => sql`DELETE FROM exercise_muscle_groups WHERE exercise_id = ${id}::uuid`,
+				});
 
-					if (!row) return yield* Effect.fail(new ExerciseNotFoundError());
+				return deleteMuscleGroupsQuery(exerciseId).pipe(withDatabaseError);
+			},
+			addMuscleGroups: ({ exerciseId, groups }) => {
+				const addMuscleGroupsQuery = SqlSchema.void({
+					Request: Schema.Struct({
+						exerciseId: Schema.String,
+						groups: Schema.Array(
+							Schema.Struct({ name: Schema.String, normalizedName: Schema.String }),
+						),
+					}),
+					execute: (input) => sql`
+						WITH upserted_groups AS (
+							INSERT INTO muscle_groups (name, normalized_name)
+							SELECT * FROM unnest(
+								${input.groups.map((group) => group.name)}::text[],
+								${input.groups.map((group) => group.normalizedName)}::text[]
+							) WHERE true
+							ON CONFLICT (normalized_name) DO UPDATE
+								SET normalized_name = EXCLUDED.normalized_name RETURNING id
+						)
+						INSERT INTO exercise_muscle_groups (exercise_id, muscle_group_id)
+						SELECT ${input.exerciseId}::uuid, id FROM upserted_groups WHERE true ON CONFLICT DO NOTHING
+					`,
+				});
 
-					return row;
-				}).pipe(Effect.mapError(mapWriteError)),
-			merge: ({ userId, sourceId, targetId, sourceMuscleGroups }) =>
-				Effect.gen(function* () {
-					if (sourceId === targetId) return yield* Effect.fail(new ExerciseNotFoundError());
-
-					const [source, target] = yield* Effect.all(
-						[
-							db.getUserExercise({ userId, exerciseId: sourceId }),
-							db.getUserExercise({ userId, exerciseId: targetId }),
-						],
-						{ concurrency: "unbounded" },
-					);
-
-					if (!source || !target) return yield* Effect.fail(new ExerciseNotFoundError());
-
-					if (sourceMuscleGroups !== null)
-						yield* replaceMuscleGroups(sql, sourceId, sourceMuscleGroups);
-
-					const findCutoff = SqlSchema.findOneOption({
-						Request: Schema.Struct({
-							userId: Schema.String,
-							sourceId: Schema.String,
-							targetId: Schema.String,
-						}),
-						Result: Schema.Struct({ workoutId: Schema.String, createdAt: Schema.Date }),
-						execute: (input) => sql`
+				return (
+					groups.length === 0 ? Effect.void : addMuscleGroupsQuery({ exerciseId, groups })
+				).pipe(withDatabaseError);
+			},
+			findMergeCutoff: (input) => {
+				const findMergeCutoffQuery = SqlSchema.findOneOption({
+					Request: Schema.Struct({
+						userId: Schema.String,
+						sourceId: Schema.String,
+						targetId: Schema.String,
+					}),
+					Result: Schema.Struct({ workoutId: Schema.String, createdAt: Schema.Date }),
+					execute: (query) => sql`
 						SELECT w.id AS "workoutId", w.created_at AS "createdAt" FROM workouts w
-						WHERE w.user_id = ${input.userId} AND EXISTS (
+						WHERE w.user_id = ${query.userId} AND EXISTS (
 							SELECT 1 FROM workout_exercises we WHERE we.workout_id = w.id
-							AND we.exercise_id IN (${input.sourceId}::uuid, ${input.targetId}::uuid)
+							AND we.exercise_id IN (${query.sourceId}::uuid, ${query.targetId}::uuid)
 						) ORDER BY w.created_at ASC, w.id ASC LIMIT 1
 					`,
-					});
+				});
 
-					const cutoff = yield* findCutoff({ userId, sourceId, targetId });
+				return findMergeCutoffQuery(input).pipe(Effect.map(Option.getOrNull), withDatabaseError);
+			},
+			unionMuscleGroups: ({ sourceId, targetId }) => {
+				const unionMuscleGroupsQuery = SqlSchema.void({
+					Request: Schema.Struct({ sourceId: Schema.String, targetId: Schema.String }),
+					execute: (input) => sql`
+						INSERT INTO exercise_muscle_groups (exercise_id, muscle_group_id)
+						SELECT ${input.targetId}::uuid, muscle_group_id FROM exercise_muscle_groups
+						WHERE exercise_id = ${input.sourceId}::uuid ON CONFLICT DO NOTHING
+					`,
+				});
 
-					yield* sql`
-					INSERT INTO exercise_muscle_groups (exercise_id, muscle_group_id)
-					SELECT ${targetId}::uuid, muscle_group_id FROM exercise_muscle_groups
-					WHERE exercise_id = ${sourceId}::uuid ON CONFLICT DO NOTHING
-				`;
-					yield* sql`UPDATE workout_exercises SET exercise_id = ${targetId}::uuid WHERE exercise_id = ${sourceId}::uuid`;
-					yield* db.deleteUserExercise({ userId, exerciseId: sourceId });
+				return unionMuscleGroupsQuery({ sourceId, targetId }).pipe(withDatabaseError);
+			},
+			moveWorkoutExercises: ({ sourceId, targetId }) => {
+				const moveWorkoutExercisesQuery = SqlSchema.void({
+					Request: Schema.Struct({ sourceId: Schema.String, targetId: Schema.String }),
+					execute: (input) => sql`
+						UPDATE workout_exercises SET exercise_id = ${input.targetId}::uuid
+						WHERE exercise_id = ${input.sourceId}::uuid
+					`,
+				});
 
-					return Option.getOrNull(cutoff);
-				}).pipe(Effect.mapError(mapWriteError)),
+				return moveWorkoutExercisesQuery({ sourceId, targetId }).pipe(withDatabaseError);
+			},
 			findUserExerciseIdByNormalizedName: (query) => {
 				const findExerciseId = SqlSchema.findOneOption({
 					Request: Schema.Struct({ userId: Schema.String, normalizedName: Schema.String }),
@@ -285,62 +325,3 @@ export const exerciseDb = Layer.effect(
 		return db;
 	}),
 );
-
-// Shared by exercise-library create, update, and merge operations.
-function addMuscleGroups(
-	sql: SqlClient.SqlClient,
-	exerciseId: string,
-	groups: NamedMuscleGroup[],
-	concurrency: number | "unbounded" = 1,
-) {
-	return Effect.forEach(
-		groups,
-		(group) =>
-			Effect.gen(function* () {
-				const findOrCreateMuscleGroup = SqlSchema.findOne({
-					Request: Schema.Struct({ name: Schema.String, normalizedName: Schema.String }),
-					Result: Schema.Struct({ id: Schema.String }),
-					execute: (input) => sql`
-				INSERT INTO muscle_groups (name, normalized_name) VALUES (${input.name}, ${input.normalizedName})
-				ON CONFLICT (normalized_name) DO UPDATE SET normalized_name = EXCLUDED.normalized_name RETURNING id
-			`,
-				});
-
-				const muscleGroup = yield* findOrCreateMuscleGroup(group);
-
-				yield* sql`INSERT INTO exercise_muscle_groups (exercise_id, muscle_group_id)
-			VALUES (${exerciseId}::uuid, ${muscleGroup.id}::uuid) ON CONFLICT DO NOTHING`;
-			}),
-		{ concurrency, discard: true },
-	);
-}
-
-function replaceMuscleGroups(
-	sql: SqlClient.SqlClient,
-	exerciseId: string,
-	groups: NamedMuscleGroup[],
-) {
-	return Effect.gen(function* () {
-		const findCurrentMuscleGroups = SqlSchema.findAll({
-			Request: Schema.String,
-			Result: Schema.Struct({ normalizedName: Schema.String }),
-			execute: (id) => sql`
-				SELECT mg.normalized_name AS "normalizedName" FROM exercise_muscle_groups emg
-				JOIN muscle_groups mg ON mg.id = emg.muscle_group_id WHERE emg.exercise_id = ${id}::uuid
-			`,
-		});
-
-		const current = yield* findCurrentMuscleGroups(exerciseId);
-
-		const currentNames = current.map((group) => group.normalizedName).toSorted();
-		const incomingNames = groups.map((group) => group.normalizedName).toSorted();
-
-		if (
-			currentNames.length === incomingNames.length &&
-			currentNames.every((name, index) => name === incomingNames[index])
-		)
-			return;
-		yield* sql`DELETE FROM exercise_muscle_groups WHERE exercise_id = ${exerciseId}::uuid`;
-		yield* addMuscleGroups(sql, exerciseId, groups, "unbounded");
-	});
-}
