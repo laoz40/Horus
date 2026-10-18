@@ -134,7 +134,7 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 				) : null}
 			</div>
 
-			<DialogFooter className="flex-row justify-end gap-2">
+			<DialogFooter className="flex-row justify-end">
 				{state.kind === "edit" ? (
 					<ExerciseEditDeleteButton
 						exerciseName={state.exercise.name}

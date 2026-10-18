@@ -70,7 +70,7 @@ function ExerciseForm({ className, exerciseIndex, isEditing, ref }: ExerciseForm
 			{/* Exercise Name */}
 			<div className="flex shrink-0 flex-col gap-2">
 				<ExerciseNameInputDropdown exerciseIndex={exerciseIndex} />
-				{nameError && <span className="text-sm text-red-500">{nameError.message}</span>}
+				{nameError && <span className="text-sm text-destructive">{nameError.message}</span>}
 			</div>
 
 			{!hasExerciseName && (
@@ -96,13 +96,13 @@ function ExerciseForm({ className, exerciseIndex, isEditing, ref }: ExerciseForm
 						</div>
 						<Button
 							variant="ghost"
-							className="w-full shrink-0 items-center text-sm leading-0 text-muted-foreground"
+							className="w-full shrink-0 items-center leading-0 text-muted-foreground"
 							type="button"
 							onClick={handleAddSet}>
 							<IconPlus className="size-4" />
 							<span className="translate-y-px">Add Set</span>
 						</Button>
-						{setsError && <span className="text-sm text-red-500">{setsError.message}</span>}
+						{setsError && <span className="text-sm text-destructive">{setsError.message}</span>}
 					</div>
 
 					{/* Difficulty and Notes */}

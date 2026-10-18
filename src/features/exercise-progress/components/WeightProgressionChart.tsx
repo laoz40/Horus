@@ -49,7 +49,7 @@ function renderProgressionDot(props: DotItemDotProps): ReactElement {
 				cx={cx}
 				cy={cy}
 				r={3}
-				className="fill-[var(--color-maxWeight)] stroke-background stroke-1"
+				className="fill-primary stroke-background stroke-1"
 			/>
 		);
 	}
@@ -59,10 +59,7 @@ function renderProgressionDot(props: DotItemDotProps): ReactElement {
 			cx={cx}
 			cy={cy}
 			r={isPeriodPeak ? 5 : 3}
-			className={cn(
-				"fill-[var(--color-maxWeight)] stroke-background",
-				isPeriodPeak ? "stroke-2" : "stroke-1",
-			)}
+			className={cn("fill-primary stroke-background", isPeriodPeak ? "stroke-2" : "stroke-1")}
 		/>
 	);
 }

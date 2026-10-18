@@ -50,7 +50,7 @@ export default function WorkoutCard({ workout, isPrPending = false }: WorkoutCar
 							<Badge
 								key={label}
 								variant="secondary"
-								className="rounded-sm border border-border/30 bg-secondary/70 px-1.5 py-0 text-xs font-medium text-secondary-foreground/95">
+								className="border-border/30 bg-secondary/70 px-1.5 py-0 text-secondary-foreground/95">
 								{label}
 							</Badge>
 						))}

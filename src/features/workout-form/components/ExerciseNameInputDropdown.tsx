@@ -132,10 +132,10 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 
 				return (
 					<div className="relative w-full">
-						<InputGroup className="h-11 w-full rounded-none border-x-0 border-t-0 border-b border-transparent bg-transparent! shadow-none has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-[>[data-align=inline-end]]:[&>input]:pr-0">
+						<InputGroup className="h-11 w-full rounded-none border-x-0 border-t-0 border-b border-transparent bg-transparent! shadow-none has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-[>[data-align=inline-end]]:[&>input]:pr-0">
 							<InputGroupInput
 								placeholder="Search an exercise..."
-								className="px-0 font-semibold shadow-none placeholder:opacity-0"
+								className="px-0 font-semibold placeholder:opacity-0"
 								maxLength={64}
 								value={query}
 								autoComplete="off"

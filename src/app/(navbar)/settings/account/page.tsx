@@ -9,7 +9,7 @@ export default function AccountPage() {
 	return (
 		<div className="flex justify-center px-4 py-12 max-md:pb-20">
 			<div className="flex w-full max-w-xl flex-col gap-4">
-				<span className="text-sm text-gray-500">User</span>
+				<span className="text-sm text-muted-foreground">User</span>
 				<AccountSettingsCards
 					classNames={{
 						card: {
@@ -18,7 +18,7 @@ export default function AccountPage() {
 						},
 					}}
 				/>
-				<span className="pt-4 text-sm text-gray-500">Account</span>
+				<span className="pt-4 text-sm text-muted-foreground">Account</span>
 				<SecuritySettingsCards
 					classNames={{
 						card: {

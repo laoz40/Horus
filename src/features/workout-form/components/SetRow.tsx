@@ -213,7 +213,7 @@ function SetRowActions({
 			defaultValue={false}
 			render={({ field }) => (
 				<Checkbox
-					className="ml-4 size-7 bg-card dark:bg-input"
+					className="ml-4 size-7 bg-card"
 					iconClassName="size-5"
 					aria-label="Color success"
 					checked={field.value}
@@ -272,7 +272,7 @@ export default function SetRow({
 	const isChecked = useWatch({ control, name: completedFieldName, defaultValue: false });
 
 	const inputClassName = cn(
-		"h-11 bg-card text-2xl text-foreground dark:bg-input",
+		"h-11 bg-card text-2xl text-foreground",
 		isChecked && "border-primary text-primary",
 	);
 
@@ -313,7 +313,9 @@ export default function SetRow({
 					checkSetPr={checkSetPrMutation.mutate}
 				/>
 			</div>
-			{repsErrorMessage ? <span className="text-sm text-red-500">{repsErrorMessage}</span> : null}
+			{repsErrorMessage ? (
+				<span className="text-sm text-destructive">{repsErrorMessage}</span>
+			) : null}
 		</div>
 	);
 }
