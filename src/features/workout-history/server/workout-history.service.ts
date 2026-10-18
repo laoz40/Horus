@@ -3,7 +3,10 @@ import "server-only";
 import { Effect } from "effect";
 import { Transactions } from "@/server/transactions";
 import { WorkoutDb } from "@/features/workout-form/server/workouts.db";
-import type { ListWorkoutsQuery } from "@/features/workout-form/server/workouts.db";
+import {
+	WorkoutHistoryDb,
+	type ListWorkoutsQuery,
+} from "@/features/workout-history/server/workout-history.db";
 import { recalculateExercisePrHistory } from "@/features/personal-records/server/pr-history.service";
 import { requireWorkout } from "@/features/workout-view/server/workout-view.functions";
 import {
@@ -13,7 +16,7 @@ import {
 
 export const listWorkouts = (query: ListWorkoutsQuery) =>
 	Effect.gen(function* () {
-		const db = yield* WorkoutDb;
+		const db = yield* WorkoutHistoryDb;
 		const rows = yield* db.listWorkouts(query);
 
 		return buildWorkoutHistoryPage(rows, query);

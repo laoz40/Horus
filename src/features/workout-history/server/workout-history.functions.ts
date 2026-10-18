@@ -4,7 +4,7 @@ import { Data, Effect } from "effect";
 import type {
 	ListWorkoutsQuery,
 	WorkoutHistoryRow,
-} from "@/features/workout-form/server/workouts.db";
+} from "@/features/workout-history/server/workout-history.db";
 
 class NoWorkoutsError extends Data.TaggedError("NO_WORKOUTS") {}
 

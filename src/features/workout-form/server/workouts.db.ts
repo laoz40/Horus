@@ -22,7 +22,6 @@ import {
 	getWorkoutDetails,
 	getWorkoutExerciseRows,
 	getWorkoutSetRows,
-	listWorkoutHistory,
 } from "@/generated/prisma/sql";
 import { prisma } from "@/lib/db";
 import { DbConnection } from "@/lib/db/connection";
@@ -36,12 +35,6 @@ export type WorkoutWriteInput = {
 };
 
 export type WorkoutUpdateInput = WorkoutWriteInput & { workoutId: string };
-
-export type ListWorkoutsQuery = {
-	userId: string;
-	limit: number;
-	offset: number;
-};
 
 export type WorkoutForEdit = {
 	id: string;
@@ -65,17 +58,6 @@ export type WorkoutForEdit = {
 			isBodyweightRepsPr: boolean;
 		}>;
 	}>;
-};
-
-export type WorkoutHistoryRow = {
-	id: string;
-	createdAt: Date;
-	name: string;
-	durationSeconds: number | null;
-	totalPrSets: number;
-	exerciseCount: number;
-	totalVolume: number;
-	muscleGroups: string[];
 };
 
 function decimalToNumber(value: Decimal): number {
@@ -109,9 +91,6 @@ export class WorkoutDb extends Context.Service<
 			workoutId: string;
 			userId: string;
 		}) => Effect.Effect<WorkoutForEdit | null, DatabaseError>;
-		readonly listWorkouts: (
-			query: ListWorkoutsQuery,
-		) => Effect.Effect<WorkoutHistoryRow[], DatabaseError>;
 		readonly deleteAllWorkouts: (
 			userId: string,
 		) => Effect.Effect<{ deletedCount: number }, DatabaseError>;
@@ -238,29 +217,6 @@ export const workoutDbLayer = Layer.effect(
 								})),
 						})),
 					};
-				}),
-			listWorkouts: (query) =>
-				Effect.gen(function* () {
-					const rows = yield* Effect.tryPromise({
-						try: () =>
-							connection.$queryRawTyped(
-								listWorkoutHistory(query.userId, query.limit + 1, query.offset),
-							),
-						catch: (cause) => new DatabaseError({ cause }),
-					});
-
-					return rows.map(
-						(row): WorkoutHistoryRow => ({
-							id: row.id,
-							createdAt: row.created_at,
-							name: row.name,
-							durationSeconds: row.duration_seconds,
-							totalPrSets: row.total_pr_sets,
-							exerciseCount: row.exercise_count ?? 0,
-							totalVolume: row.total_volume ?? 0,
-							muscleGroups: row.muscle_groups ?? [],
-						}),
-					);
 				}),
 			deleteAllWorkouts: (userId) =>
 				Effect.gen(function* () {

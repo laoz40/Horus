@@ -23,6 +23,7 @@
 	"dependencies": {
 		"@better-auth/prisma-adapter": "1.7.2",
 		"@daveyplate/better-auth-ui": "^3.4.0",
+		"@effect/sql-pg": "4.0.2",
 		"@hookform/resolvers": "^5.2.2",
 		"@orpc/client": "^1.14.8",
 		"@orpc/server": "^1.14.8",
