@@ -1,9 +1,9 @@
 const DIFFICULTY_LEVELS = [
-	{ value: 0, label: "Very Easy", className: "text-muted-foreground bg-muted" },
-	{ value: 1, label: "Easy", className: "text-foreground bg-secondary" },
-	{ value: 2, label: "Average", className: "text-chart-4 bg-chart-4/15" },
-	{ value: 3, label: "Challenging", className: "text-challenging bg-challenging/15" },
-	{ value: 4, label: "Nightmare", className: "text-destructive bg-destructive/10" },
+	{ value: 0, label: "Very Easy" },
+	{ value: 1, label: "Easy" },
+	{ value: 2, label: "Average" },
+	{ value: 3, label: "Challenging" },
+	{ value: 4, label: "Nightmare" },
 ] as const;
 
 export function getDifficultyLevel(value: number | null | undefined) {

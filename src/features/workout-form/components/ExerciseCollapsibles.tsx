@@ -102,7 +102,7 @@ function ExerciseNotes({ exerciseIndex }: ExerciseCollapsiblesProps) {
 						{...register(`exercises.${exerciseIndex}.notes`)}
 					/>
 					{errors.exercises?.[exerciseIndex]?.notes && (
-						<span className="text-sm text-red-500">
+						<span className="text-sm text-destructive">
 							{errors.exercises[exerciseIndex]?.notes?.message}
 						</span>
 					)}

@@ -313,7 +313,9 @@ export default function SetRow({
 					checkSetPr={checkSetPrMutation.mutate}
 				/>
 			</div>
-			{repsErrorMessage ? <span className="text-sm text-red-500">{repsErrorMessage}</span> : null}
+			{repsErrorMessage ? (
+				<span className="text-sm text-destructive">{repsErrorMessage}</span>
+			) : null}
 		</div>
 	);
 }

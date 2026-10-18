@@ -2,6 +2,7 @@
 	"$schema": "./node_modules/oxlint/configuration_schema.json",
 	"plugins": ["nextjs", "typescript", "unicorn"],
 	"jsPlugins": [
+		"@shadcn/lint",
 		{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" },
 		{ "name": "anti-slop-effect", "specifier": "./tools/oxlint/anti-slop/effect/index.ts" },
 		{ "name": "effect-router", "specifier": "./tools/oxlint/effect-router/index.ts" },
@@ -29,6 +30,9 @@
 		"src/components/ui/chart.tsx"
 	],
 	"rules": {
+		"shadcn/no-raw-colors": "error",
+		"shadcn/no-unknown-classes": "error",
+		"shadcn/require-static-classes": "error",
 		"anti-slop-effect/no-manual-effect-error-tag": "error",
 		"anti-slop-effect/no-manual-tag-comparison": "error",
 		"anti-slop-effect/no-manual-tagged-construction": "error",
@@ -204,6 +208,12 @@
 			"files": ["src/components/ui/**"],
 			"plugins": ["jsx-a11y"],
 			"rules": {
+				"shadcn/no-restyle": "off",
+				"shadcn/no-raw-colors": "off",
+				"shadcn/no-arbitrary-values": "off",
+				"shadcn/no-inline-styles": "off",
+				"shadcn/no-unknown-classes": "off",
+				"shadcn/require-static-classes": "off",
 				"jsx-a11y/no-noninteractive-tabindex": "off",
 				"jsx-a11y/no-noninteractive-element-interactions": "off"
 			}

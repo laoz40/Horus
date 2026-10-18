@@ -18,7 +18,14 @@ export default function DifficultyBadge({ difficulty }: DifficultyBadgeProps): R
 	return (
 		<Badge
 			variant="secondary"
-			className={cn("rounded-sm border-0 px-1.5 py-0 text-xs font-medium", level.className)}>
+			className={cn(
+				"rounded-sm border-0 px-1.5 py-0 text-xs font-medium",
+				level.value === 0 && "bg-muted text-muted-foreground",
+				level.value === 1 && "bg-secondary text-foreground",
+				level.value === 2 && "bg-chart-4/15 text-chart-4",
+				level.value === 3 && "bg-challenging/15 text-challenging",
+				level.value === 4 && "bg-destructive/10 text-destructive",
+			)}>
 			{level.label}
 		</Badge>
 	);
