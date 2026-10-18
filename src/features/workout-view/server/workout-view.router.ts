@@ -1,9 +1,9 @@
+import { database } from "@/server/database";
 import "server-only";
 
 import { Effect } from "effect";
 import { z } from "zod";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
-import { workoutDb } from "@/features/workout-form/server/workouts.db";
 import { getWorkoutById } from "@/features/workout-view/server/workout-view.service";
 
 const workoutFormSchema = z.object({
@@ -48,7 +48,7 @@ export const workoutViewRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				getWorkoutById(input.id, context.userId).pipe(
-					Effect.provide(workoutDb),
+					Effect.provide(database),
 					Effect.catchTags({
 						NOT_FOUND: () => Effect.fail(errors.NOT_FOUND()),
 						DatabaseError: (error) =>

@@ -7,6 +7,9 @@ import {
 } from "../anti-slop/shared/array-method.ts";
 import { requirePromiseErrorMapperRule } from "./require-promise-error-mapper.ts";
 import { isServerImplementationFile } from "../shared/server-path.ts";
+import { noCrossFeatureDbImportsRule } from "./no-cross-feature-db-imports.ts";
+import { preferNamedSqlQueriesRule } from "./prefer-named-sql-queries.ts";
+import { noWorkflowFailuresInDbRule } from "./no-workflow-failures-in-db.ts";
 
 function isEffectBinding(sourceCode: SourceCode, node: ESTree.Node): boolean {
 	const binding = resolveArrayBinding(sourceCode, node);
@@ -108,5 +111,8 @@ export default eslintCompatPlugin({
 	rules: {
 		"no-throw-in-promise": noThrowInEffectPromiseRule,
 		"require-promise-error-mapper": requirePromiseErrorMapperRule,
+		"no-cross-feature-db-imports": noCrossFeatureDbImportsRule,
+		"prefer-named-sql-queries": preferNamedSqlQueriesRule,
+		"no-workflow-failures-in-db": noWorkflowFailuresInDbRule,
 	},
 });

@@ -4,7 +4,6 @@
 	"jsPlugins": [
 		{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" },
 		{ "name": "anti-slop-effect", "specifier": "./tools/oxlint/anti-slop/effect/index.ts" },
-		{ "name": "prisma", "specifier": "./tools/oxlint/prisma/index.ts" },
 		{ "name": "effect-router", "specifier": "./tools/oxlint/effect-router/index.ts" },
 		{ "name": "effect-db", "specifier": "./tools/oxlint/effect-db/index.ts" },
 		{ "name": "effect-boundaries", "specifier": "./tools/oxlint/effect-boundaries/index.ts" }
@@ -38,6 +37,9 @@
 		"effect-router/prefer-catch-tags": "error",
 		"effect-db/no-throw-in-promise": "error",
 		"effect-db/require-promise-error-mapper": "error",
+		"effect-db/no-cross-feature-db-imports": "error",
+		"effect-db/prefer-named-sql-queries": "error",
+		"effect-db/no-workflow-failures-in-db": "error",
 		"effect-boundaries/no-internal-runners": "error",
 		"effect-boundaries/no-service-provision": "error",
 
@@ -47,7 +49,6 @@
 		"anti-slop/no-known-value-widening": "error",
 		"anti-slop/no-conditional-empty-object-spread": "error",
 		"anti-slop/no-module-mocking": "error",
-		"prisma/typed-sql-reads-and-deletes": "error",
 		"anti-slop/no-object-parameters": "error",
 		"anti-slop/no-shape-in-symbol-names": "error",
 		"anti-slop/no-runtime-typeof": "error",
@@ -217,6 +218,26 @@
 							{
 								"group": ["./**", "../**"],
 								"message": "Use absolute imports with the @/ alias."
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"files": ["src/features/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": ["./**", "../**"],
+								"message": "Use absolute imports with the @/ alias."
+							},
+							{
+								"group": ["@/lib/db", "@/lib/db/index", "@/generated/prisma/**", "@prisma/**"],
+								"message": "Use Effect SQL for application database operations. Prisma is retained for Better Auth only."
 							}
 						]
 					}

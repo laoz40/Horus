@@ -2,7 +2,7 @@ import "server-only";
 
 import { Data, Effect } from "effect";
 
-import type { WorkoutForEdit } from "@/features/workout-form/server/workouts.db";
+import type { WorkoutForEdit } from "@/features/workout-view/server/workout-view.db";
 import { buildSetPrTypes } from "@/features/personal-records/lib/setPr";
 
 class WorkoutNotFoundError extends Data.TaggedError("NOT_FOUND") {}

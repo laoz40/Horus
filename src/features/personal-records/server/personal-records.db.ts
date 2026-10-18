@@ -1,13 +1,36 @@
 import "server-only";
 
-import type { Decimal } from "@prisma/client/runtime/client";
-import { Context, Effect, Layer } from "effect";
-import {
-	getExercisePersonalRecords as getExercisePersonalRecordsSql,
-	getExercisePr as getExercisePrSql,
-} from "@/generated/prisma/sql";
-import { prisma } from "@/lib/db";
+import { Context, Effect, Layer, Schema } from "effect";
+import { SqlClient, SqlSchema } from "effect/sql";
 import { DatabaseError } from "@/lib/db/database";
+
+const personalRecordsQuerySchema = Schema.Struct({
+	userId: Schema.String,
+	normalizedExerciseName: Schema.String,
+});
+
+const personalRecordSetSchema = Schema.Struct({
+	id: Schema.NullOr(Schema.String),
+	weight: Schema.NullOr(Schema.Number),
+	reps: Schema.NullOr(Schema.Number),
+	completedAtMs: Schema.NullOr(Schema.Number),
+});
+
+const personalRecordsRowSchema = Schema.Struct({
+	hasHistory: Schema.Boolean,
+	weightId: Schema.NullOr(Schema.String),
+	weightWeight: Schema.NullOr(Schema.Number),
+	weightReps: Schema.NullOr(Schema.Number),
+	weightCompletedAtMs: Schema.NullOr(Schema.Number),
+	volumeId: Schema.NullOr(Schema.String),
+	volumeWeight: Schema.NullOr(Schema.Number),
+	volumeReps: Schema.NullOr(Schema.Number),
+	volumeCompletedAtMs: Schema.NullOr(Schema.Number),
+	bodyweightRepsId: Schema.NullOr(Schema.String),
+	bodyweightRepsWeight: Schema.NullOr(Schema.Number),
+	bodyweightRepsReps: Schema.NullOr(Schema.Number),
+	bodyweightRepsCompletedAtMs: Schema.NullOr(Schema.Number),
+});
 
 export interface ExercisePersonalRecordsRow {
 	hasHistory: boolean;
@@ -31,25 +54,18 @@ export interface ExercisePersonalRecordsRow {
 	} | null;
 }
 
-function decimalToNumber(value: Decimal): number {
-	return value.toNumber();
-}
-
 function mapPersonalRecordSet(
-	id: string | null | undefined,
-	weight: Decimal | null | undefined,
-	reps: Decimal | null | undefined,
-	completedAtMs: number | null | undefined,
+	set: typeof personalRecordSetSchema.Type,
 ): ExercisePersonalRecordsRow["weight"] {
-	if (!id || weight === null || weight === undefined || reps === null || reps === undefined) {
+	if (set.id === null || set.weight === null || set.reps === null) {
 		return null;
 	}
 
 	return {
-		id,
-		weight: decimalToNumber(weight),
-		reps: decimalToNumber(reps),
-		completedAtMs: completedAtMs ?? 0,
+		id: set.id,
+		weight: set.weight,
+		reps: set.reps,
+		completedAtMs: set.completedAtMs ?? 0,
 	};
 }
 
@@ -75,49 +91,151 @@ export class PersonalRecordsDb extends Context.Service<
 	}
 >()("horus/PersonalRecordsDb") {}
 
-export const personalRecordsDb = Layer.succeed(PersonalRecordsDb, {
-	getExercisePr: ({ userId, normalizedExerciseName }) =>
-		Effect.gen(function* () {
-			const rows = yield* Effect.tryPromise({
-				try: () => prisma.$queryRawTyped(getExercisePrSql(userId, normalizedExerciseName)),
-				catch: (cause) => new DatabaseError({ cause }),
-			});
+export const personalRecordsDb = Layer.effect(
+	PersonalRecordsDb,
+	Effect.gen(function* () {
+		const sql = yield* SqlClient.SqlClient;
 
-			return rows.map((row) => ({
-				hasHistory: row.has_history ?? false,
-				highestWeight: row.highest_weight ?? 0,
-				highestVolume: row.highest_volume ?? 0,
-				highestBodyweightReps: row.highest_bodyweight_reps ?? 0,
-			}));
-		}),
-	getExercisePersonalRecords: ({ userId, normalizedExerciseName }) =>
-		Effect.gen(function* () {
-			const rows = yield* Effect.tryPromise({
-				try: () =>
-					prisma.$queryRawTyped(getExercisePersonalRecordsSql(userId, normalizedExerciseName)),
-				catch: (cause) => new DatabaseError({ cause }),
-			});
+		const getExercisePr = SqlSchema.findOne({
+			Request: personalRecordsQuerySchema,
+			Result: Schema.Struct({
+				has_history: Schema.NullOr(Schema.Boolean),
+				highest_weight: Schema.NullOr(Schema.Number),
+				highest_volume: Schema.NullOr(Schema.Number),
+				highest_bodyweight_reps: Schema.NullOr(Schema.Number),
+			}),
+			execute: ({ userId, normalizedExerciseName }) => sql`
+				SELECT
+					count(*) > 0 AS has_history,
+					coalesce(
+						max(w_sets.weight) FILTER (WHERE w_sets.weight > 0),
+						0
+					)::double precision AS highest_weight,
+					coalesce(
+						max(w_sets.weight * w_sets.reps) FILTER (WHERE w_sets.weight > 0),
+						0
+					)::double precision AS highest_volume,
+					coalesce(
+						max(w_sets.reps) FILTER (WHERE w_sets.weight = 0),
+						0
+					)::double precision AS highest_bodyweight_reps
+				FROM workout_sets AS w_sets
+				INNER JOIN workout_exercises AS w_exercises
+					ON w_exercises.id = w_sets.workout_exercise_id
+				INNER JOIN workouts ON workouts.id = w_exercises.workout_id
+				INNER JOIN exercises ON exercises.id = w_exercises.exercise_id
+				WHERE workouts.user_id = ${userId}
+					AND exercises.user_id = ${userId}
+					AND exercises.normalized_name = ${normalizedExerciseName}
+					AND w_sets.completed = true
+			`,
+		});
 
-			return rows.map((row) => ({
-				hasHistory: row.has_history ?? false,
-				weight: mapPersonalRecordSet(
-					row.weight_id,
-					row.weight_weight,
-					row.weight_reps,
-					row.weight_completed_at_ms,
+		const getExercisePersonalRecords = SqlSchema.findAll({
+			Request: personalRecordsQuerySchema,
+			Result: personalRecordsRowSchema,
+			execute: ({ userId, normalizedExerciseName }) => sql`
+				WITH matching_completed_sets AS (
+					SELECT
+						w_sets.id AS set_id,
+						w_sets.weight AS set_weight,
+						w_sets.reps AS set_reps,
+						(extract(epoch FROM workouts.created_at) * 1000)::double precision AS completed_at_ms,
+						workouts.id AS workout_id,
+						w_exercises.position AS exercise_position,
+						w_sets.position AS set_position
+					FROM workout_sets AS w_sets
+					INNER JOIN workout_exercises AS w_exercises
+						ON w_exercises.id = w_sets.workout_exercise_id
+					INNER JOIN workouts ON workouts.id = w_exercises.workout_id
+					INNER JOIN exercises ON exercises.id = w_exercises.exercise_id
+					WHERE workouts.user_id = ${userId}
+						AND exercises.user_id = ${userId}
+						AND exercises.normalized_name = ${normalizedExerciseName}
+						AND w_sets.completed = true
 				),
-				volume: mapPersonalRecordSet(
-					row.volume_id,
-					row.volume_weight,
-					row.volume_reps,
-					row.volume_completed_at_ms,
+				weight_pr AS (
+					SELECT set_id, set_weight, set_reps, completed_at_ms
+					FROM matching_completed_sets
+					WHERE set_weight > 0
+					ORDER BY set_weight DESC, completed_at_ms ASC, workout_id ASC, exercise_position ASC, set_position ASC
+					LIMIT 1
 				),
-				bodyweightReps: mapPersonalRecordSet(
-					row.bodyweight_reps_id,
-					row.bodyweight_reps_weight,
-					row.bodyweight_reps_reps,
-					row.bodyweight_reps_completed_at_ms,
+				volume_pr AS (
+					SELECT set_id, set_weight, set_reps, completed_at_ms
+					FROM matching_completed_sets
+					WHERE set_weight * set_reps > 0
+					ORDER BY set_weight * set_reps DESC, completed_at_ms ASC, workout_id ASC, exercise_position ASC, set_position ASC
+					LIMIT 1
 				),
-			}));
-		}),
-});
+				bodyweight_reps_pr AS (
+					SELECT set_id, set_weight, set_reps, completed_at_ms
+					FROM matching_completed_sets
+					WHERE set_weight = 0 AND set_reps > 0
+					ORDER BY set_reps DESC, completed_at_ms ASC, workout_id ASC, exercise_position ASC, set_position ASC
+					LIMIT 1
+				)
+				SELECT
+					(SELECT count(*) > 0 FROM matching_completed_sets) AS "hasHistory",
+					weight_pr.set_id AS "weightId",
+					weight_pr.set_weight::double precision AS "weightWeight",
+					weight_pr.set_reps::double precision AS "weightReps",
+					weight_pr.completed_at_ms AS "weightCompletedAtMs",
+					volume_pr.set_id AS "volumeId",
+					volume_pr.set_weight::double precision AS "volumeWeight",
+					volume_pr.set_reps::double precision AS "volumeReps",
+					volume_pr.completed_at_ms AS "volumeCompletedAtMs",
+					bodyweight_reps_pr.set_id AS "bodyweightRepsId",
+					bodyweight_reps_pr.set_weight::double precision AS "bodyweightRepsWeight",
+					bodyweight_reps_pr.set_reps::double precision AS "bodyweightRepsReps",
+					bodyweight_reps_pr.completed_at_ms AS "bodyweightRepsCompletedAtMs"
+				FROM (SELECT 1) AS _one
+				LEFT JOIN weight_pr ON true
+				LEFT JOIN volume_pr ON true
+				LEFT JOIN bodyweight_reps_pr ON true
+			`,
+		});
+
+		return {
+			getExercisePr: (query) =>
+				getExercisePr(query).pipe(
+					Effect.map((row) => [
+						{
+							hasHistory: row.has_history ?? false,
+							highestWeight: row.highest_weight ?? 0,
+							highestVolume: row.highest_volume ?? 0,
+							highestBodyweightReps: row.highest_bodyweight_reps ?? 0,
+						},
+					]),
+					Effect.mapError((cause) => new DatabaseError({ cause })),
+				),
+			getExercisePersonalRecords: (query) =>
+				getExercisePersonalRecords(query).pipe(
+					Effect.map((rows) =>
+						rows.map((row) => ({
+							hasHistory: row.hasHistory,
+							weight: mapPersonalRecordSet({
+								id: row.weightId,
+								weight: row.weightWeight,
+								reps: row.weightReps,
+								completedAtMs: row.weightCompletedAtMs,
+							}),
+							volume: mapPersonalRecordSet({
+								id: row.volumeId,
+								weight: row.volumeWeight,
+								reps: row.volumeReps,
+								completedAtMs: row.volumeCompletedAtMs,
+							}),
+							bodyweightReps: mapPersonalRecordSet({
+								id: row.bodyweightRepsId,
+								weight: row.bodyweightRepsWeight,
+								reps: row.bodyweightRepsReps,
+								completedAtMs: row.bodyweightRepsCompletedAtMs,
+							}),
+						})),
+					),
+					Effect.mapError((cause) => new DatabaseError({ cause })),
+				),
+		} satisfies PersonalRecordsDb["Service"];
+	}),
+);

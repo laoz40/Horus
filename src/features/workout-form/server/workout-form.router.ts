@@ -1,10 +1,10 @@
+import { database } from "@/server/database";
 import "server-only";
 
 import { Effect } from "effect";
 import { z } from "zod";
 import { WorkoutForSaveSchema } from "@/features/workout-form/lib/validateWorkout";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
-import { transactions } from "@/server/transactions";
 import { createWorkout, updateWorkout } from "@/features/workout-form/server/workout-form.service";
 
 const createWorkoutInputSchema = z
@@ -59,7 +59,7 @@ export const workoutFormRouter = {
 		Effect.runPromise(
 			createWorkout({ userId: context.userId, workout: input.workout }).pipe(
 				Effect.map((workoutId) => ({ workoutId, workout: input.workout })),
-				Effect.provide(transactions),
+				Effect.provide(database),
 				Effect.catchTags({
 					INVALID_INPUT: () => Effect.fail(errors.INVALID_INPUT()),
 					DatabaseError: (error) =>
@@ -77,7 +77,7 @@ export const workoutFormRouter = {
 				workout: input.workout,
 			}).pipe(
 				Effect.map((workoutId) => ({ workoutId, workout: input.workout })),
-				Effect.provide(transactions),
+				Effect.provide(database),
 				Effect.catchTags({
 					NOT_FOUND: () => Effect.fail(errors.NOT_FOUND()),
 					INVALID_INPUT: () => Effect.fail(errors.INVALID_INPUT()),

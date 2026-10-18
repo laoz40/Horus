@@ -1,3 +1,4 @@
+import { database } from "@/server/database";
 import "server-only";
 
 import { Effect } from "effect";
@@ -6,7 +7,6 @@ import { MUSCLE_GROUP_CATEGORIES } from "@/features/exercise-library/lib/muscleG
 import { fetchApiExercises } from "@/features/exercise-picker/server/fetchApiExercises.server";
 import { logDatabaseError, protectedProcedure, publicProcedure } from "@/server/procedures";
 import { databaseError } from "@/features/exercise-library/server/exercise-library.router.helpers";
-import { exerciseDb } from "@/features/exercise-library/server/exercises.db";
 import {
 	listExercisesByCategory,
 	searchExercises,
@@ -29,7 +29,7 @@ export const exercisePickerRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				searchExercises(context.userId, input.query).pipe(
-					Effect.provide(exerciseDb),
+					Effect.provide(database),
 					Effect.catchTags({
 						DatabaseError: (error) =>
 							logDatabaseError("Failed to search exercises", error.cause, errors.DATABASE_ERROR()),
@@ -70,7 +70,7 @@ export const exercisePickerRouter = {
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
 				listExercisesByCategory(context.userId, input.category).pipe(
-					Effect.provide(exerciseDb),
+					Effect.provide(database),
 					Effect.catchTags({
 						DatabaseError: (error) =>
 							logDatabaseError(

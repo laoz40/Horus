@@ -5,7 +5,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev --hostname 127.0.0.1 --port 8000",
-		"db:generate": "prisma generate --sql",
+		"db:generate": "prisma generate",
 		"db:migrate": "prisma migrate deploy",
 		"build": "next build",
 		"start": "next start --hostname 127.0.0.1 --port 8000",
@@ -23,6 +23,7 @@
 	"dependencies": {
 		"@better-auth/prisma-adapter": "1.7.2",
 		"@daveyplate/better-auth-ui": "^3.4.0",
+		"@effect/sql-pg": "4.0.2",
 		"@hookform/resolvers": "^5.2.2",
 		"@orpc/client": "^1.14.8",
 		"@orpc/server": "^1.14.8",
