@@ -39,6 +39,7 @@
 		"effect-db/require-promise-error-mapper": "error",
 		"effect-db/no-cross-feature-db-imports": "error",
 		"effect-db/prefer-named-sql-queries": "error",
+		"effect-db/no-workflow-failures-in-db": "error",
 		"effect-boundaries/no-internal-runners": "error",
 		"effect-boundaries/no-service-provision": "error",
 
