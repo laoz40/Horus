@@ -1,3 +1,6 @@
+-- Keep the initial DDL in one statement for the PostgreSQL extended query protocol.
+DO $migration$
+BEGIN
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
 
@@ -191,3 +194,6 @@ ALTER TABLE "workout_sets" ADD CONSTRAINT "workout_sets_workout_exercise_id_work
 
 -- AddForeignKey
 ALTER TABLE "workouts" ADD CONSTRAINT "workouts_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+END
+$migration$;

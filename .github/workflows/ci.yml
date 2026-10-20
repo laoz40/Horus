@@ -118,17 +118,7 @@ jobs:
         run: echo "DATABASE_URL=$(cat database-url.txt)" >> "$GITHUB_ENV"
 
       - name: Apply migrations
-        if: github.event_name == 'pull_request'
-        run: |
-          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
-          # Forked Neon branches copy production schema but may lack _prisma_migrations.
-          pnpm exec prisma migrate resolve --applied 0_init || true
-          pnpm db:migrate
-
-      - name: Generate Prisma client with typed SQL
-        run: |
-          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
-          pnpm db:generate
+        run: pnpm db:migrate
 
       - name: Check formatting
         run: pnpm format:check
@@ -188,14 +178,8 @@ jobs:
       - name: Set DATABASE_URL
         run: echo "DATABASE_URL=$(cat database-url.txt)" >> "$GITHUB_ENV"
 
-      - name: Generate Prisma client with typed SQL
-        run: |
-          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
-          pnpm db:generate
-
       - name: Build
         run: |
-          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
           pnpm build
 
   e2e:
@@ -235,11 +219,6 @@ jobs:
       - name: Set DATABASE_URL
         run: echo "DATABASE_URL=$(cat database-url.txt)" >> "$GITHUB_ENV"
 
-      - name: Generate Prisma client with typed SQL
-        run: |
-          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
-          pnpm db:generate
-
       - name: Write .env.local for tests
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
@@ -260,7 +239,6 @@ jobs:
           umask 077
           {
             printf 'DATABASE_URL=%s\n' "$DATABASE_URL"
-            printf 'DATABASE_URL_UNPOOLED=%s\n' "${DATABASE_URL//-pooler/}"
             printf 'SITE_URL=http://localhost:8000\n'
             printf 'RESEND_API_KEY=%s\n' "$RESEND_API_KEY"
             printf 'RESEND_FROM_EMAIL=%s\n' "$RESEND_FROM_EMAIL"
@@ -276,7 +254,6 @@ jobs:
 
       - name: Build app for E2E
         run: |
-          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
           pnpm build
 
       - name: Run Playwright tests
@@ -337,13 +314,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma client with typed SQL
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: |
-          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
-          pnpm db:generate
-
       - name: Pull Vercel production env
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -371,7 +341,6 @@ jobs:
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
         run: |
-          export DATABASE_URL_UNPOOLED="${DATABASE_URL//-pooler/}"
           pnpm dlx vercel build --prod --token="$VERCEL_TOKEN"
 
       - name: Deploy prebuilt output to Vercel

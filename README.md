@@ -33,8 +33,7 @@ super inefficient, laggy and doesn't scale well.
 - TypeScript
 - Effect TS
 - PostgreSQL
-- Effect SQL for application queries and writes
-- Prisma for Better Auth and database migrations
+- Effect SQL for application queries, writes, and database migrations
 - oRPC
 - Better Auth
 - Redis
