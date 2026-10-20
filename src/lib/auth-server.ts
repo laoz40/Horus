@@ -1,13 +1,12 @@
 import "server-only";
 
 import { Redis } from "@upstash/redis";
-import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins";
 import { Resend } from "resend";
 import { z } from "zod";
 
-import { prisma } from "@/lib/db";
+import { authPool } from "@/lib/db/auth";
 import { env } from "@/env";
 import { shortHash } from "@/lib/shortHash";
 
@@ -46,9 +45,7 @@ const extraTrustedOrigins =
 export const auth = betterAuth({
 	baseURL: env.SITE_URL,
 	trustedOrigins: extraTrustedOrigins,
-	database: prismaAdapter(prisma, {
-		provider: "postgresql",
-	}),
+	database: authPool,
 	secondaryStorage: {
 		get: async (key) => {
 			const value = await redis.get(key);
