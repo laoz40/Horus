@@ -41,7 +41,7 @@ Writing code is cheap for you, which makes over-engineering easy. Counter it by 
 - If a task contains lots of changes which would result in a massive commit, split into different commits per large change or file changed.
 - do not run build unless asked to
 - never use ignore to bypass linter
-- run format, lint, typecheck, fallow:check once changes are complete or before creating prs
+- Run `pnpm verify` once changes are complete and before creating PRs. This checks lint, formatting, types, Fallow, and tests.
 
 ## Code Style Guidelines
 
