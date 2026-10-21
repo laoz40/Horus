@@ -49,14 +49,20 @@ export default function HistoryPagination({
 			className={cn("flex justify-center py-4", className)}
 			aria-busy={isLoading}
 			aria-live="polite">
-			{isLoading ? (
-				<p className="text-sm text-muted-foreground">Loading...</p>
-			) : (
-				<div
-					className="h-px w-full"
-					aria-hidden
-				/>
-			)}
+			<PaginationStatus isLoading={isLoading} />
 		</div>
+	);
+}
+
+function PaginationStatus({ isLoading }: { isLoading: boolean }) {
+	if (isLoading) {
+		return <p className="text-sm text-muted-foreground">Loading...</p>;
+	}
+
+	return (
+		<div
+			className="h-px w-full"
+			aria-hidden
+		/>
 	);
 }

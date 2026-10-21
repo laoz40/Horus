@@ -5,13 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import TrainingYearSelector, {
+	type TrainingYearSelectorProps,
+} from "@/features/dashboard/components/TrainingYearSelector";
 import { orpc } from "@/lib/orpc/client";
 
 type HeatmapValue = {
@@ -164,23 +160,27 @@ function resolveYearInTrainingBody({
 }
 
 function YearInTrainingHeatmapCard({ year, values }: { year: number; values: HeatmapValue[] }) {
+	if (values.length === 0) {
+		return (
+			<div className="rounded-lg border bg-card p-3 text-card-foreground shadow-sm">
+				<p className="py-8 text-center text-sm text-muted-foreground">{emptyText}</p>
+			</div>
+		);
+	}
+
 	return (
 		<div className="rounded-lg border bg-card p-3 text-card-foreground shadow-sm">
-			{values.length === 0 ? (
-				<p className="py-8 text-center text-sm text-muted-foreground">{emptyText}</p>
-			) : (
-				<div className="overflow-x-auto pb-1">
-					<CalendarHeatmap
-						gutterSize={2}
-						startDate={`${year}-01-01`}
-						endDate={`${year}-12-31`}
-						values={values}
-						showWeekdayLabels={false}
-						showMonthLabels
-						classForValue={heatmapClassForValue}
-					/>
-				</div>
-			)}
+			<div className="overflow-x-auto pb-1">
+				<CalendarHeatmap
+					gutterSize={2}
+					startDate={`${year}-01-01`}
+					endDate={`${year}-12-31`}
+					values={values}
+					showWeekdayLabels={false}
+					showMonthLabels
+					classForValue={heatmapClassForValue}
+				/>
+			</div>
 		</div>
 	);
 }
@@ -212,11 +212,7 @@ function YearInTrainingLoadingBody() {
 	);
 }
 
-type YearInTrainingShellProps = {
-	yearOptions: number[];
-	selectedYear: number;
-	yearSelectable: boolean;
-	onYearChange: (year: number) => void;
+type YearInTrainingShellProps = TrainingYearSelectorProps & {
 	children: React.ReactNode;
 };
 
@@ -231,29 +227,12 @@ function YearInTrainingShell({
 		<section className="mb-3 flex flex-col pr-4 pl-4">
 			<div className="flex items-center justify-between">
 				<h2 className="text-muted-foreground">Year in Training</h2>
-				{yearSelectable ? (
-					<Select
-						value={String(selectedYear)}
-						onValueChange={(value) => onYearChange(Number(value))}>
-						<SelectTrigger
-							size="sm"
-							className="h-auto border-0 bg-transparent px-0 text-muted-foreground shadow-none hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent"
-							aria-label="Training year">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent align="end">
-							{yearOptions.map((optionYear) => (
-								<SelectItem
-									key={optionYear}
-									value={String(optionYear)}>
-									{optionYear}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				) : (
-					<span className="text-sm text-muted-foreground">{selectedYear}</span>
-				)}
+				<TrainingYearSelector
+					yearOptions={yearOptions}
+					selectedYear={selectedYear}
+					yearSelectable={yearSelectable}
+					onYearChange={onYearChange}
+				/>
 			</div>
 			{children}
 		</section>

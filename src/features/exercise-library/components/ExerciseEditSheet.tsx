@@ -1,6 +1,6 @@
 "use client";
 
-import { IconLoader2 } from "@tabler/icons-react";
+import ExerciseMutationLabel from "@/features/exercise-library/components/ExerciseMutationLabel";
 import { useState } from "react";
 
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
@@ -62,17 +62,11 @@ function ExerciseEditDeleteButton({
 				type="button"
 				variant="destructive"
 				disabled={workoutCount > 0 || isSaving || isDeleting || isCombining}>
-				{isDeleting ? (
-					<>
-						<IconLoader2
-							className="size-4 animate-spin"
-							aria-hidden
-						/>
-						Deleting
-					</>
-				) : (
-					"Delete"
-				)}
+				<ExerciseMutationLabel
+					isPending={isDeleting}
+					label="Delete"
+					pendingLabel="Deleting"
+				/>
 			</Button>
 		</AlertDialogDestructive>
 	);
@@ -150,17 +144,11 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 					type="button"
 					onClick={() => saveExercise(trimmedName, categories)}
 					disabled={!canSave}>
-					{isSaving ? (
-						<>
-							<IconLoader2
-								className="size-4 animate-spin"
-								aria-hidden
-							/>
-							Saving
-						</>
-					) : (
-						"Save"
-					)}
+					<ExerciseMutationLabel
+						isPending={isSaving}
+						label="Save"
+						pendingLabel="Saving"
+					/>
 				</Button>
 			</DialogFooter>
 
