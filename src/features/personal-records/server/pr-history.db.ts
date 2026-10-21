@@ -223,18 +223,24 @@ export const prHistoryDb = Layer.effect(
 		});
 
 		return {
-			getPreviousPrs: (query) =>
-				query.exerciseIds.length === 0
-					? Effect.succeed([])
-					: withDatabaseError(
-							query.cutoff
-								? getPreviousPrsBeforeCutoff({ ...query, cutoff: query.cutoff })
-								: getPreviousPrs(query),
-						),
-			getAffectedSets: (query) =>
-				query.exerciseIds.length === 0
-					? Effect.succeed([])
-					: withDatabaseError(getAffectedSets(query)),
+			getPreviousPrs: (query) => {
+				if (query.exerciseIds.length === 0) {
+					return Effect.succeed([]);
+				}
+
+				if (query.cutoff) {
+					return withDatabaseError(getPreviousPrsBeforeCutoff({ ...query, cutoff: query.cutoff }));
+				}
+
+				return withDatabaseError(getPreviousPrs(query));
+			},
+			getAffectedSets: (query) => {
+				if (query.exerciseIds.length === 0) {
+					return Effect.succeed([]);
+				}
+
+				return withDatabaseError(getAffectedSets(query));
+			},
 			updateSetStatuses: (statuses) =>
 				withDatabaseError(
 					Effect.forEach(
@@ -250,10 +256,13 @@ export const prHistoryDb = Layer.effect(
 						{ concurrency: "unbounded", discard: true },
 					),
 				),
-			updateWorkoutTotals: ({ userId, workoutIds }) =>
-				workoutIds.length === 0
-					? Effect.void
-					: withDatabaseError(updateWorkoutTotals({ userId, workoutIds })),
+			updateWorkoutTotals: ({ userId, workoutIds }) => {
+				if (workoutIds.length === 0) {
+					return Effect.void;
+				}
+
+				return withDatabaseError(updateWorkoutTotals({ userId, workoutIds }));
+			},
 		} satisfies PrHistoryDb["Service"];
 	}),
 );
