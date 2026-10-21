@@ -122,20 +122,20 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 						selectedCategories={categories}
 						onChange={setCategories}
 					/>
-					{categories.length === 0 ? (
+					{categories.length === 0 && (
 						<p className="text-sm text-muted-foreground">Won&apos;t appear in category browse.</p>
-					) : null}
+					)}
 				</div>
 
-				{state.kind === "edit" ? (
+				{state.kind === "edit" && (
 					<p className="text-sm text-muted-foreground">
 						Used in {formatWorkoutCount(workoutCount)}
 					</p>
-				) : null}
+				)}
 			</div>
 
 			<DialogFooter className="flex-row justify-end">
-				{state.kind === "edit" ? (
+				{state.kind === "edit" && (
 					<ExerciseEditDeleteButton
 						exerciseName={state.exercise.name}
 						workoutCount={workoutCount}
@@ -144,7 +144,7 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 						isCombining={isCombining}
 						onDelete={deleteCurrentExercise}
 					/>
-				) : null}
+				)}
 
 				<Button
 					type="button"
@@ -164,7 +164,7 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 				</Button>
 			</DialogFooter>
 
-			{operation.kind === "confirmingMerge" || operation.kind === "combining" ? (
+			{(operation.kind === "confirmingMerge" || operation.kind === "combining") && (
 				<ExerciseMergeDialog
 					open
 					onOpenChange={(open) => {
@@ -179,7 +179,7 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 					onCombine={() => combineExercises(categories)}
 					isCombining={isCombining}
 				/>
-			) : null}
+			)}
 		</>
 	);
 }
@@ -199,13 +199,13 @@ export default function ExerciseEditSheet({ state, onClose }: ExerciseEditSheetP
 			<DialogContent
 				aria-describedby={undefined}
 				className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
-				{state.kind !== "closed" ? (
+				{state.kind !== "closed" && (
 					<ExerciseEditForm
 						key={formKey}
 						state={state}
 						onClose={onClose}
 					/>
-				) : null}
+				)}
 			</DialogContent>
 		</Dialog>
 	);

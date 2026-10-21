@@ -21,18 +21,18 @@ export default function WorkoutLoadError({ message, action }: WorkoutLoadErrorPr
 				<AlertDescription className="gap-4">
 					<p>{message}</p>
 					<div className="flex flex-wrap gap-2">
-						{action.type === "retry" ? (
+						{action.type === "retry" && (
 							<Button
 								type="button"
 								onClick={action.onRetry}>
 								Try again
 							</Button>
-						) : null}
-						{action.type === "link" ? (
+						)}
+						{action.type === "link" && (
 							<Button asChild>
 								<Link href={action.href}>{action.label}</Link>
 							</Button>
-						) : null}
+						)}
 						<Button
 							asChild
 							variant="outline">
