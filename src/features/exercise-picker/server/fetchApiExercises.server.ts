@@ -96,15 +96,21 @@ const convertWgerExercise = (exercise: WgerExercise): ExerciseSuggestion | undef
 		(muscle) => {
 			const muscleName = muscle.name_en ?? muscle.name;
 
-			return muscleName?.trim() ? [muscleName] : [];
+			if (!muscleName?.trim()) {
+				return [];
+			}
+
+			return [muscleName];
 		},
 	);
 
 	const deduplicatedMuscleGroups = Array.from(new Set(muscleGroups));
 
-	const categoryMuscleGroups = exercise.category?.name?.trim()
-		? [exercise.category.name]
-		: undefined;
+	let categoryMuscleGroups: string[] | undefined;
+
+	if (exercise.category?.name?.trim()) {
+		categoryMuscleGroups = [exercise.category.name];
+	}
 
 	const fallbackMuscleGroups =
 		deduplicatedMuscleGroups.length > 0 ? deduplicatedMuscleGroups : categoryMuscleGroups;
@@ -125,6 +131,10 @@ export const fetchApiExercises = (
 		return parsedResponse.results.flatMap((exercise) => {
 			const suggestion = convertWgerExercise(exercise);
 
-			return suggestion ? [suggestion] : [];
+			if (!suggestion) {
+				return [];
+			}
+
+			return [suggestion];
 		});
 	});

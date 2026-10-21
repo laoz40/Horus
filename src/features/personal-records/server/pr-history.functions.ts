@@ -60,8 +60,14 @@ export const calculatePrsForSet = (set: PrSet, currentRecords: ExercisePrs): PrR
 		const isBodyweightRepsPr =
 			currentRecords.hasHistory && set.reps > currentRecords.highestBodyweightReps;
 
+		const prTypes: PrType[] = [];
+
+		if (isBodyweightRepsPr) {
+			prTypes.push("bodyweightReps");
+		}
+
 		return {
-			prTypes: isBodyweightRepsPr ? ["bodyweightReps"] : [],
+			prTypes,
 			nextRecords: {
 				...currentRecords,
 				hasHistory: true,

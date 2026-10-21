@@ -73,10 +73,7 @@ export default function WorkoutForm({
 		handleAddExercise,
 	} = useWorkoutExercises({ control: methods.control });
 
-	const { isSubmitting, submitWorkout } = useWorkoutSubmit({
-		startedAtMs,
-		mode: workoutId ? { type: "update", workoutId } : { type: "create" },
-	});
+	const { isSubmitting, submitWorkout } = useWorkoutSubmit({ startedAtMs, workoutId });
 
 	const handleInvalidSubmit = (errors: FieldErrors<Workout>) => {
 		// find the first invalid exercise

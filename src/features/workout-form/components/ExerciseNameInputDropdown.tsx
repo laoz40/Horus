@@ -36,7 +36,12 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 	const { suggestions, isDbSearchLoading, isOnlineSearchLoading, fetchMoreSuggestions } =
 		useExerciseSuggestions(query, isOpen);
 
-	const filteredSuggestions = query.trim() ? suggestions : [];
+	let filteredSuggestions: typeof suggestions = [];
+
+	if (query.trim()) {
+		filteredSuggestions = suggestions;
+	}
+
 	const shouldShowSuggestions = isOpen && query.trim().length > 0;
 	// The search-online touch path lets the browser's synthetic click through, so
 	// the ref marks it handled and the click handler skips the duplicate fetch.

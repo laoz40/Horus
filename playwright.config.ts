@@ -9,9 +9,7 @@ const config: PlaywrightTestConfig = {
 	globalSetup: "./tests/global-setup.ts",
 	// Keep run artifacts (traces, screenshots, HTML report) inside tests/.
 	outputDir: "./tests/test-results",
-	reporter: isCI
-		? [["list"]]
-		: [["list"], ["html", { outputFolder: "tests/playwright-report", open: "never" }]],
+	reporter: [["list"]],
 	timeout: 60_000,
 	// Every test shares the dev Neon DB through the app — keep runs serial.
 	workers: 1,
@@ -28,6 +26,10 @@ const config: PlaywrightTestConfig = {
 // CI starts the server in the workflow so Playwright is not stuck waiting on webServer
 // teardown after all tests pass (pnpm/next child processes can outlive SIGKILL on GHA).
 if (!isCI) {
+	config.reporter = [
+		["list"],
+		["html", { outputFolder: "tests/playwright-report", open: "never" }],
+	];
 	config.webServer = {
 		command: "pnpm dev",
 		url: BASE_URL,

@@ -43,7 +43,12 @@ function buildExerciseSuggestions(
 	// Only use database results when they belong to the text currently in the input.
 	// This prevents results for an older deferred query from appearing after the user types more.
 	const isDbResultCurrent = query.length > 0 && deferredQuery === query;
-	const dbExercises = isDbResultCurrent ? (dbSearchResults ?? []) : [];
+	let dbExercises: ExerciseSuggestion[] = [];
+
+	if (isDbResultCurrent) {
+		dbExercises = dbSearchResults ?? [];
+	}
+
 	const onlineExercises = onlineExercisesByQuery[query] ?? [];
 
 	return sortExercisesAlphabetically(

@@ -39,8 +39,11 @@ export default function WorkoutFormBottomBar({
 		name: exerciseIds.map((_, exerciseIndex) => `exercises.${exerciseIndex}.global.name` as const),
 	});
 
-	const selectedExerciseName =
-		selectedExerciseIndex >= 0 ? (exerciseNames[selectedExerciseIndex]?.trim() ?? "") : "";
+	let selectedExerciseName = "";
+
+	if (selectedExerciseIndex >= 0) {
+		selectedExerciseName = exerciseNames[selectedExerciseIndex]?.trim() ?? "";
+	}
 
 	const show = exerciseIds.length > 0;
 

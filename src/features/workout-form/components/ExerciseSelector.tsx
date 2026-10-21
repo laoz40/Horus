@@ -35,12 +35,11 @@ export default function ExerciseSelector({ exerciseIds }: ExerciseSelectorProps)
 		(exerciseId) => exerciseId === selectedExerciseId,
 	);
 
-	const selectedExerciseLabel =
-		selectedExerciseIndex >= 0
-			? `${selectedExerciseIndex + 1}: ${
-					exerciseNames[selectedExerciseIndex]?.trim() || "No exercise added"
-				}`
-			: "Select exercise";
+	let selectedExerciseLabel = "Select exercise";
+
+	if (selectedExerciseIndex >= 0) {
+		selectedExerciseLabel = `${selectedExerciseIndex + 1}: ${exerciseNames[selectedExerciseIndex]?.trim() || "No exercise added"}`;
+	}
 
 	return (
 		<Select
