@@ -22,11 +22,13 @@ const getHistoryFeedErrorMessage = (error: Error) => {
 
 function HistoryFeedErrorFallback({ error, retry }: ErrorInfo) {
 	// React hands the boundary an arbitrary thrown value; only real Errors can carry an orpc code
-	const message =
-		error instanceof Error
-			? getHistoryFeedErrorMessage(error)
-			: "Unexpected error loading workout history.";
+	let message = "Unexpected error loading workout history.";
 
+	if (error instanceof Error) {
+		message = getHistoryFeedErrorMessage(error);
+	}
+
+	// Show the history failure message when the boundary displays its fallback.
 	useEffect(() => {
 		showErrorToast(message);
 	}, [message]);

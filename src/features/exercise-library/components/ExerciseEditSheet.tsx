@@ -1,6 +1,6 @@
 "use client";
 
-import { IconLoader2 } from "@tabler/icons-react";
+import ExerciseMutationLabel from "@/features/exercise-library/components/ExerciseMutationLabel";
 import { useState } from "react";
 
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
@@ -62,17 +62,11 @@ function ExerciseEditDeleteButton({
 				type="button"
 				variant="destructive"
 				disabled={workoutCount > 0 || isSaving || isDeleting || isCombining}>
-				{isDeleting ? (
-					<>
-						<IconLoader2
-							className="size-4 animate-spin"
-							aria-hidden
-						/>
-						Deleting
-					</>
-				) : (
-					"Delete"
-				)}
+				<ExerciseMutationLabel
+					isPending={isDeleting}
+					label="Delete"
+					pendingLabel="Deleting"
+				/>
 			</Button>
 		</AlertDialogDestructive>
 	);
@@ -122,20 +116,20 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 						selectedCategories={categories}
 						onChange={setCategories}
 					/>
-					{categories.length === 0 ? (
+					{categories.length === 0 && (
 						<p className="text-sm text-muted-foreground">Won&apos;t appear in category browse.</p>
-					) : null}
+					)}
 				</div>
 
-				{state.kind === "edit" ? (
+				{state.kind === "edit" && (
 					<p className="text-sm text-muted-foreground">
 						Used in {formatWorkoutCount(workoutCount)}
 					</p>
-				) : null}
+				)}
 			</div>
 
 			<DialogFooter className="flex-row justify-end">
-				{state.kind === "edit" ? (
+				{state.kind === "edit" && (
 					<ExerciseEditDeleteButton
 						exerciseName={state.exercise.name}
 						workoutCount={workoutCount}
@@ -144,27 +138,21 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 						isCombining={isCombining}
 						onDelete={deleteCurrentExercise}
 					/>
-				) : null}
+				)}
 
 				<Button
 					type="button"
 					onClick={() => saveExercise(trimmedName, categories)}
 					disabled={!canSave}>
-					{isSaving ? (
-						<>
-							<IconLoader2
-								className="size-4 animate-spin"
-								aria-hidden
-							/>
-							Saving
-						</>
-					) : (
-						"Save"
-					)}
+					<ExerciseMutationLabel
+						isPending={isSaving}
+						label="Save"
+						pendingLabel="Saving"
+					/>
 				</Button>
 			</DialogFooter>
 
-			{operation.kind === "confirmingMerge" || operation.kind === "combining" ? (
+			{(operation.kind === "confirmingMerge" || operation.kind === "combining") && (
 				<ExerciseMergeDialog
 					open
 					onOpenChange={(open) => {
@@ -179,7 +167,7 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 					onCombine={() => combineExercises(categories)}
 					isCombining={isCombining}
 				/>
-			) : null}
+			)}
 		</>
 	);
 }
@@ -199,13 +187,13 @@ export default function ExerciseEditSheet({ state, onClose }: ExerciseEditSheetP
 			<DialogContent
 				aria-describedby={undefined}
 				className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
-				{state.kind !== "closed" ? (
+				{state.kind !== "closed" && (
 					<ExerciseEditForm
 						key={formKey}
 						state={state}
 						onClose={onClose}
 					/>
-				) : null}
+				)}
 			</DialogContent>
 		</Dialog>
 	);

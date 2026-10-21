@@ -24,11 +24,11 @@ export default function RecentSetRow({ set }: RecentSetRowProps): ReactElement {
 			<span className={cn(set.isPr && "font-semibold")}>{set.weight}</span>
 			<span className={cn(set.isPr && "font-semibold")}>{set.reps}</span>
 			<span>
-				{primaryPrType ? (
+				{primaryPrType !== undefined && (
 					<span className="rounded-md border bg-muted px-1.5 py-0.5 text-xs whitespace-nowrap text-muted-foreground">
 						{setPrLabels[primaryPrType]}
 					</span>
-				) : null}
+				)}
 			</span>
 			<span
 				className={cn("min-w-0 truncate text-right", set.isPr && "font-semibold")}

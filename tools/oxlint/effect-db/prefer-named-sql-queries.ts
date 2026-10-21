@@ -17,8 +17,13 @@ function importedConstructor(sourceCode: SourceCode, node: ESTree.Node): string 
 
 	if (imported === null) return null;
 
-	if (target === null)
-		return imported.source === "effect/sql/SqlSchema" ? queryConstructor(imported.name) : null;
+	if (target === null) {
+		if (imported.source === "effect/sql/SqlSchema") {
+			return queryConstructor(imported.name);
+		}
+
+		return null;
+	}
 
 	if (imported.name === "*" && imported.source === "effect/sql/SqlSchema")
 		return queryConstructor(target.name);

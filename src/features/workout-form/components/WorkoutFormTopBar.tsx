@@ -47,14 +47,18 @@ export default function WorkoutFormTopBar({
 						disabled={isSubmitting}
 						size="icon"
 						aria-label={isSubmitting ? "Saving" : "Finish"}>
-						{isSubmitting ? (
-							<IconLoader2 className="size-7 animate-spin text-primary" />
-						) : (
-							<IconCheck className="size-7 text-primary" />
-						)}
+						<WorkoutSubmitIcon isSubmitting={isSubmitting} />
 					</Button>
 				</WorkoutNameDialog>
 			</div>
 		</div>
 	);
+}
+
+function WorkoutSubmitIcon({ isSubmitting }: { isSubmitting: boolean }) {
+	if (isSubmitting) {
+		return <IconLoader2 className="size-7 animate-spin text-primary" />;
+	}
+
+	return <IconCheck className="size-7 text-primary" />;
 }

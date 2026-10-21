@@ -26,20 +26,26 @@ function updateExerciseListCache(
 
 export function patchExerciseListCache(queryClient: QueryClient, exercise: ExerciseCatalogItem) {
 	updateExerciseListCache(queryClient, (exercises) =>
-		exercises.map((currentExercise) =>
-			currentExercise.id === exercise.id
-				? { ...exercise, workoutCount: currentExercise.workoutCount }
-				: currentExercise,
-		),
+		exercises.map((currentExercise) => {
+			if (currentExercise.id !== exercise.id) {
+				return currentExercise;
+			}
+
+			return { ...exercise, workoutCount: currentExercise.workoutCount };
+		}),
 	);
 }
 
 export function addExerciseToListCache(queryClient: QueryClient, exercise: ExerciseCatalogItem) {
 	updateExerciseListCache(queryClient, (exercises) => {
 		if (exercises.some((currentExercise) => currentExercise.id === exercise.id)) {
-			return exercises.map((currentExercise) =>
-				currentExercise.id === exercise.id ? exercise : currentExercise,
-			);
+			return exercises.map((currentExercise) => {
+				if (currentExercise.id !== exercise.id) {
+					return currentExercise;
+				}
+
+				return exercise;
+			});
 		}
 
 		return [...exercises, exercise];
@@ -62,14 +68,16 @@ export function mergeExercisesInListCache(
 
 		return exercises
 			.filter((exercise) => exercise.id !== sourceId)
-			.map((exercise) =>
-				exercise.id === targetExercise.id
-					? {
-							...targetExercise,
-							workoutCount: exercise.workoutCount + (sourceExercise?.workoutCount ?? 0),
-						}
-					: exercise,
-			);
+			.map((exercise) => {
+				if (exercise.id !== targetExercise.id) {
+					return exercise;
+				}
+
+				return {
+					...targetExercise,
+					workoutCount: exercise.workoutCount + (sourceExercise?.workoutCount ?? 0),
+				};
+			});
 	});
 }
 

@@ -8,7 +8,11 @@ export class DatabaseError extends Data.TaggedError("DatabaseError")<{
 
 export const withDatabaseError = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
 	effect.pipe(
-		Effect.mapError((cause) =>
-			cause instanceof DatabaseError ? cause : new DatabaseError({ cause }),
-		),
+		Effect.mapError((cause) => {
+			if (cause instanceof DatabaseError) {
+				return cause;
+			}
+
+			return new DatabaseError({ cause });
+		}),
 	);

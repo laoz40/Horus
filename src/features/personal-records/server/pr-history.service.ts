@@ -13,10 +13,7 @@ export const calculateSetPrsFromHistory = (query: { userId: string; sets: PrHist
 		const db = yield* PrHistoryDb;
 		const exerciseIds = [...new Set(query.sets.map((set) => set.exerciseId))];
 
-		const previousPrRows =
-			exerciseIds.length === 0
-				? []
-				: yield* db.getPreviousPrs({ userId: query.userId, exerciseIds });
+		const previousPrRows = yield* db.getPreviousPrs({ userId: query.userId, exerciseIds });
 
 		return calculateAffectedPrHistory(query.sets, previousPrRows).prStatuses;
 	});

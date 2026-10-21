@@ -22,15 +22,21 @@ export const useExerciseSelection = ({
 	const selectedExerciseId = useWorkoutFormUiStore(selectSelectedExerciseId);
 	const lastKnownSelectedIndexRef = useRef<number>(0);
 
-	const selectedExerciseIndex = selectedExerciseId
-		? exerciseIds.findIndex((exerciseId) => exerciseId === selectedExerciseId)
-		: -1;
+	let selectedExerciseIndex = -1;
 
+	if (selectedExerciseId) {
+		selectedExerciseIndex = exerciseIds.findIndex(
+			(exerciseId) => exerciseId === selectedExerciseId,
+		);
+	}
+
+	// Remember the selected position so deleting an exercise keeps the next selection nearby.
 	useEffect(() => {
 		if (selectedExerciseIndex < 0) return;
 		lastKnownSelectedIndexRef.current = selectedExerciseIndex;
 	}, [selectedExerciseIndex]);
 
+	// Select a nearby exercise when the current selection is no longer in the list.
 	useEffect(() => {
 		if (selectedExerciseId && exerciseIds.includes(selectedExerciseId)) return;
 

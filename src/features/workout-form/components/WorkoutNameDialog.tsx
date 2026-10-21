@@ -59,13 +59,13 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 						/>
 					</Field>
 				</FieldGroup>
-				{authStatus === "unauthenticated" ? (
+				{authStatus === "unauthenticated" && (
 					<p className="text-sm text-destructive">
 						You need an account to create and save workouts.
 					</p>
-				) : null}
+				)}
 				<DialogFooter className="flex flex-row justify-between">
-					{authStatus === "authenticated" ? (
+					{authStatus === "authenticated" && (
 						<>
 							<DialogClose asChild>
 								<Button variant="secondary">Cancel</Button>
@@ -77,8 +77,8 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 								Save
 							</Button>
 						</>
-					) : null}
-					{authStatus === "unauthenticated" ? (
+					)}
+					{authStatus === "unauthenticated" && (
 						<>
 							<DialogClose asChild>
 								<Button variant="secondary">Close</Button>
@@ -87,7 +87,7 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 								<Link href="/login">Sign in</Link>
 							</Button>
 						</>
-					) : null}
+					)}
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

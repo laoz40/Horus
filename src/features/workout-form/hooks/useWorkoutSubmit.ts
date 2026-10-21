@@ -14,16 +14,9 @@ import {
 import { orpc } from "@/lib/orpc/client";
 import { showErrorToast, showWorkoutSaveToast } from "@/lib/toastMessages";
 
-type WorkoutSubmitMode =
-	| { type: "create" }
-	| {
-			type: "update";
-			workoutId: string;
-	  };
-
 interface UseWorkoutSubmitProps {
 	startedAtMs: number;
-	mode: WorkoutSubmitMode;
+	workoutId?: string;
 }
 
 interface UseWorkoutSubmitReturn {
@@ -33,7 +26,7 @@ interface UseWorkoutSubmitReturn {
 
 export const useWorkoutSubmit = ({
 	startedAtMs,
-	mode,
+	workoutId,
 }: UseWorkoutSubmitProps): UseWorkoutSubmitReturn => {
 	const router = useRouter();
 	const exitWorkoutPage = useWorkoutPageExit();
@@ -156,29 +149,16 @@ export const useWorkoutSubmit = ({
 			return;
 		}
 
-		switch (mode.type) {
-			case "create":
-				setCreateWorkoutDraft(workoutResult.data);
-				showWorkoutSaveToast(createWorkout.mutateAsync({ workout: workoutResult.data }));
-				router.push("/workouts");
+		if (!workoutId) {
+			setCreateWorkoutDraft(workoutResult.data);
+			showWorkoutSaveToast(createWorkout.mutateAsync({ workout: workoutResult.data }));
+			router.push("/workouts");
 
-				return;
-			case "update":
-				showWorkoutSaveToast(
-					updateWorkout.mutateAsync({
-						workoutId: mode.workoutId,
-						workout: workoutResult.data,
-					}),
-				);
-				exitWorkoutPage("/workouts");
-
-				return;
-			default: {
-				const exhaustiveMode: never = mode;
-
-				return exhaustiveMode;
-			}
+			return;
 		}
+
+		showWorkoutSaveToast(updateWorkout.mutateAsync({ workoutId, workout: workoutResult.data }));
+		exitWorkoutPage("/workouts");
 	};
 
 	return {

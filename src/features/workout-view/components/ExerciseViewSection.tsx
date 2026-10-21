@@ -23,7 +23,7 @@ export default function ExerciseViewSection({ exercise }: ExerciseViewSectionPro
 					<h3 className="text-base leading-tight font-semibold">{exercise.global.name}</h3>
 					<DifficultyBadge difficulty={exercise.difficulty} />
 				</div>
-				{notes.length > 0 ? (
+				{notes.length > 0 && (
 					<DetailPopover
 						trigger={
 							<Button
@@ -37,7 +37,7 @@ export default function ExerciseViewSection({ exercise }: ExerciseViewSectionPro
 						}>
 						<p className="whitespace-pre-wrap">{notes}</p>
 					</DetailPopover>
-				) : null}
+				)}
 			</div>
 
 			<div className="flex flex-col">
@@ -59,7 +59,7 @@ export default function ExerciseViewSection({ exercise }: ExerciseViewSectionPro
 							<span className={cn(hasPr && "font-semibold")}>{set.weight ?? 0}</span>
 							<span className={cn(hasPr && "font-semibold")}>{set.reps ?? 0}</span>
 							<div className="flex justify-end">
-								{hasPr ? (
+								{hasPr && (
 									<DetailPopover
 										trigger={
 											<Button
@@ -77,7 +77,7 @@ export default function ExerciseViewSection({ exercise }: ExerciseViewSectionPro
 											))}
 										</ul>
 									</DetailPopover>
-								) : null}
+								)}
 							</div>
 						</div>
 					);

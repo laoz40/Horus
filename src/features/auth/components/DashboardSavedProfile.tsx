@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect } from "react";
-import DashboardAccountButton from "@/features/auth/components/DashboardAccountButton";
+import DashboardProfileFallback from "@/features/auth/components/DashboardProfileFallback";
 import {
 	paintSavedProfileFromCookie,
 	profileCookieName,
@@ -48,23 +48,7 @@ export default function DashboardSavedProfile({ isPending }: { isPending: boolea
 					</div>
 				</div>
 				<div className="flex flex-row items-start justify-between group-data-[profile=ready]:hidden">
-					{isPending ? (
-						<>
-							<div className="flex flex-col">
-								<div className="mb-1 h-4 w-22 animate-pulse rounded-sm bg-muted" />
-								<div className="h-8 w-32 animate-pulse rounded-sm bg-muted" />
-							</div>
-							<div className="size-10 animate-pulse rounded-full bg-muted" />
-						</>
-					) : (
-						<>
-							<div className="flex flex-col">
-								<h2 className="text-sm font-normal text-muted-foreground">Welcome,</h2>
-								<h1 className="text-2xl leading-tight font-semibold tracking-tight">Legend</h1>
-							</div>
-							<DashboardAccountButton initialUser={null} />
-						</>
-					)}
+					<DashboardProfileFallback isPending={isPending} />
 				</div>
 			</div>
 			<script

@@ -196,9 +196,11 @@ export const mergeUserExercises = (userId: string, input: MergeExerciseLibraryIn
 			return yield* Effect.fail(new ExerciseNotFoundError());
 		}
 
-		const sourceMuscleGroups = input.sourceMuscleGroups
-			? normalizeMuscleGroups(input.sourceMuscleGroups)
-			: null;
+		let sourceMuscleGroups: ReturnType<typeof normalizeMuscleGroups> | null = null;
+
+		if (input.sourceMuscleGroups) {
+			sourceMuscleGroups = normalizeMuscleGroups(input.sourceMuscleGroups);
+		}
 
 		yield* getUserExercise(userId, sourceId);
 		yield* getUserExercise(userId, targetId);

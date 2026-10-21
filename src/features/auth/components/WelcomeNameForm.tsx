@@ -48,6 +48,8 @@ export default function WelcomeNameForm(): ReactElement {
 		router.replace("/");
 	});
 
+	const nameErrorMessage = errors.name?.message ?? "";
+
 	return (
 		<form
 			onSubmit={onSubmit}
@@ -59,9 +61,9 @@ export default function WelcomeNameForm(): ReactElement {
 				placeholder="Legend"
 				disabled={isSubmitting}
 			/>
-			{errors.name?.message ? (
-				<p className="text-sm text-destructive">{errors.name.message}</p>
-			) : null}
+			{nameErrorMessage.length > 0 && (
+				<p className="text-sm text-destructive">{nameErrorMessage}</p>
+			)}
 			<Button
 				type="submit"
 				disabled={isSubmitting}

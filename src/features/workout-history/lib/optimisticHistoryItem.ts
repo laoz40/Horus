@@ -69,7 +69,13 @@ export function patchWorkoutInHistoryCache(
 		...data,
 		pages: data.pages.map((page) => ({
 			...page,
-			items: page.items.map((item) => (item.id === workoutId ? { ...item, ...fields } : item)),
+			items: page.items.map((item) => {
+				if (item.id !== workoutId) {
+					return item;
+				}
+
+				return { ...item, ...fields };
+			}),
 		})),
 	};
 }

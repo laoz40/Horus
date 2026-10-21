@@ -4,6 +4,7 @@
 	"jsPlugins": [
 		"@shadcn/lint",
 		{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" },
+		{ "name": "conditionals", "specifier": "./tools/oxlint/conditionals/index.ts" },
 		{ "name": "anti-slop-effect", "specifier": "./tools/oxlint/anti-slop/effect/index.ts" },
 		{ "name": "effect-router", "specifier": "./tools/oxlint/effect-router/index.ts" },
 		{ "name": "effect-db", "specifier": "./tools/oxlint/effect-db/index.ts" },
@@ -63,6 +64,10 @@
 		"anti-slop/no-unsafe-dictionary-type": "error",
 		"anti-slop/no-widen-then-assert": "error",
 		"anti-slop/no-array-filter-map": "error",
+		"conditionals/no-map-update-ternary": "error",
+		"conditionals/no-effect-operation-ternary": "error",
+		"conditionals/prefer-jsx-and": "error",
+		"conditionals/prefer-simple-ternary": "error",
 		"anti-slop/no-reduce-accumulator-copy": "error",
 		"anti-slop/require-readable-spacing": "error",
 		"anti-slop/require-safety-comment-for-type-assertion": "error",

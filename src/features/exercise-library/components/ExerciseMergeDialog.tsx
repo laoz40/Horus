@@ -1,6 +1,6 @@
 "use client";
 
-import { IconLoader2 } from "@tabler/icons-react";
+import ExerciseMutationLabel from "@/features/exercise-library/components/ExerciseMutationLabel";
 
 import {
 	AlertDialog,
@@ -65,17 +65,11 @@ export default function ExerciseMergeDialog({
 							event.preventDefault();
 							onCombine();
 						}}>
-						{isCombining ? (
-							<>
-								<IconLoader2
-									className="size-4 animate-spin"
-									aria-hidden
-								/>
-								Combining
-							</>
-						) : (
-							"Combine"
-						)}
+						<ExerciseMutationLabel
+							isPending={isCombining}
+							label="Combine"
+							pendingLabel="Combining"
+						/>
 					</AlertDialogAction>
 				</AlertDialogFooter>
 			</AlertDialogContent>

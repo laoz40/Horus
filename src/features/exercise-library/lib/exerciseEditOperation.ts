@@ -20,23 +20,39 @@ export function exerciseEditOperationReducer(
 ): ExerciseEditOperation {
 	switch (event.kind) {
 		case "start":
-			return state.kind === "editing" ? { kind: event.operation } : state;
+			if (state.kind !== "editing") {
+				return state;
+			}
+
+			return { kind: event.operation };
 		case "duplicateNameFound":
-			return state.kind === "saving"
-				? { kind: "confirmingMerge", existingExercise: event.existingExercise }
-				: state;
+			if (state.kind !== "saving") {
+				return state;
+			}
+
+			return { kind: "confirmingMerge", existingExercise: event.existingExercise };
 		case "confirmMerge":
-			return state.kind === "confirmingMerge"
-				? { kind: "combining", existingExercise: state.existingExercise }
-				: state;
+			if (state.kind !== "confirmingMerge") {
+				return state;
+			}
+
+			return { kind: "combining", existingExercise: state.existingExercise };
 		case "cancelMerge":
-			return state.kind === "confirmingMerge" ? { kind: "editing" } : state;
+			if (state.kind !== "confirmingMerge") {
+				return state;
+			}
+
+			return { kind: "editing" };
 		case "requestFinished":
 			if (state.kind === "combining") {
 				return { kind: "confirmingMerge", existingExercise: state.existingExercise };
 			}
 
-			return state.kind === "confirmingMerge" ? state : { kind: "editing" };
+			if (state.kind === "confirmingMerge") {
+				return state;
+			}
+
+			return { kind: "editing" };
 		default: {
 			const exhaustiveEvent: never = event;
 

@@ -101,9 +101,11 @@ export const workoutExerciseDb = Layer.effect(
 					`,
 				});
 
-				return (
-					groups.length === 0 ? Effect.void : addMuscleGroupsQuery({ exerciseId, groups })
-				).pipe(withDatabaseError);
+				if (groups.length === 0) {
+					return Effect.void;
+				}
+
+				return addMuscleGroupsQuery({ exerciseId, groups }).pipe(withDatabaseError);
 			},
 		};
 	}),

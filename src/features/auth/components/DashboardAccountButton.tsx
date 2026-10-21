@@ -1,5 +1,6 @@
 "use client";
 
+import SignOutIcon from "@/features/auth/components/SignOutIcon";
 import { type ReactElement, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
 import { UserAvatar } from "@daveyplate/better-auth-ui";
-import { IconLoader2, IconLogout, IconSettings, IconUser } from "@tabler/icons-react";
+import { IconSettings, IconUser } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -103,11 +104,10 @@ export default function DashboardAccountButton({
 						event.preventDefault();
 						void handleSignOut();
 					}}>
-					{isSigningOut ? (
-						<IconLoader2 className="size-5 animate-spin sm:size-4" />
-					) : (
-						<IconLogout className="size-5 sm:size-4" />
-					)}
+					<SignOutIcon
+						isSigningOut={isSigningOut}
+						className="size-5 sm:size-4"
+					/>
 					<span className="leading-0">{isSigningOut ? "Signing out..." : "Sign out"}</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>

@@ -2,7 +2,7 @@ import { IconHistory } from "@tabler/icons-react";
 import { type ReactElement } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 
-import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
+import ExerciseActionButton from "@/features/workout-form/components/ExerciseActionButton";
 import { Button } from "@/components/ui/button";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import {
@@ -39,38 +39,17 @@ export default function WorkoutFormBottomBar({
 		name: exerciseIds.map((_, exerciseIndex) => `exercises.${exerciseIndex}.global.name` as const),
 	});
 
-	const selectedExerciseName =
-		selectedExerciseIndex >= 0 ? (exerciseNames[selectedExerciseIndex]?.trim() ?? "") : "";
+	let selectedExerciseName = "";
+
+	if (selectedExerciseIndex >= 0) {
+		selectedExerciseName = exerciseNames[selectedExerciseIndex]?.trim() ?? "";
+	}
 
 	const show = exerciseIds.length > 0;
 
 	if (!show) return null;
 
 	const canToggleEdit = Boolean(selectedExerciseId);
-
-	const addOrDelete = isEditing ? (
-		<div className="w-full">
-			<AlertDialogDestructive
-				handleDelete={onDeleteExercise}
-				title="Delete exercise?"
-				description="This will permanently delete the exercise.">
-				<Button
-					variant="destructive"
-					className="w-full"
-					type="button">
-					Delete Exercise
-				</Button>
-			</AlertDialogDestructive>
-		</div>
-	) : (
-		<Button
-			variant="default"
-			className="w-full"
-			type="button"
-			onClick={onAddExercise}>
-			Add Exercise
-		</Button>
-	);
 
 	return (
 		<div className="ios-safe-area-bottom relative right-1/2 left-1/2 -mr-[50vw] -ml-[50vw] w-screen border-t bg-sidebar dark:bg-sidebar">
@@ -99,7 +78,11 @@ export default function WorkoutFormBottomBar({
 						onClick={toggleExerciseEdit}>
 						{isEditing ? "Done" : "Edit"}
 					</Button>
-					{addOrDelete}
+					<ExerciseActionButton
+						isEditing={isEditing}
+						onAddExercise={onAddExercise}
+						onDeleteExercise={onDeleteExercise}
+					/>
 				</div>
 			</div>
 		</div>

@@ -21,5 +21,11 @@ export const sqlClient = Layer.effectContext(
 
 export const withTransaction = <A, E, R>(workflow: Effect.Effect<A, E, R>) =>
 	Effect.flatMap(SqlClient.SqlClient, (sql) => sql.withTransaction(workflow)).pipe(
-		Effect.mapError((cause) => (SqlError.isSqlError(cause) ? new DatabaseError({ cause }) : cause)),
+		Effect.mapError((cause) => {
+			if (SqlError.isSqlError(cause)) {
+				return new DatabaseError({ cause });
+			}
+
+			return cause;
+		}),
 	);
