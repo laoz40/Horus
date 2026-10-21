@@ -5,29 +5,35 @@ import {
 	isKnownArrayExpression,
 	resolveArrayBinding,
 	unwrapArrayExpression,
-} from "../shared/array-method.ts";
+} from "../anti-slop/shared/array-method.ts";
 
 /** Find only inline map callbacks, stopping at nested function boundaries. */
 function mapCallback(node: ESTree.Node) {
 	let parent = node.parent;
+
 	while (parent !== null) {
 		if (parent.type === "FunctionDeclaration") return null;
+
 		if (parent.type === "ArrowFunctionExpression" || parent.type === "FunctionExpression") {
-			let owner: ESTree.Node | null = parent.parent;
-			while (owner !== null && unwrapArrayExpression(owner) === parent) owner = owner.parent;
+			const owner = parent.parent;
+
 			if (owner?.type !== "CallExpression") return null;
 			const method = arrayMethodTarget(owner.callee);
 			const callback = owner.arguments[0];
+
 			if (
 				method?.name !== "map" ||
 				callback === undefined ||
 				unwrapArrayExpression(callback) !== parent
 			)
 				return null;
+
 			return { callback: parent, receiver: method.object };
 		}
+
 		parent = parent.parent;
 	}
+
 	return null;
 }
 
@@ -47,18 +53,25 @@ export const noMapUpdateTernaryRule = defineRule({
 		return {
 			ConditionalExpression(node) {
 				const map = mapCallback(node);
+
 				if (map === null || !isKnownArrayExpression(context.sourceCode, map.receiver)) return;
 				const parameter = map.callback.params[0];
-				if (parameter?.type !== "Identifier") return;
+
+				if (parameter === undefined) return;
 				let returned: ESTree.Node = node;
+
 				while (returned.parent !== null && unwrapArrayExpression(returned.parent) === node)
 					returned = returned.parent;
+
 				if (returned !== map.callback.body && returned.parent?.type !== "ReturnStatement") return;
 				const item = resolveArrayBinding(context.sourceCode, parameter);
+
 				if (item === null) return;
 				const branches = [node.consequent, node.alternate].map(unwrapArrayExpression);
+
 				if (!branches.some((branch) => resolveArrayBinding(context.sourceCode, branch) === item))
 					return;
+
 				if (!branches.some((branch) => branch.type === "ObjectExpression")) return;
 				context.report({ node, messageId: "preferGuard" });
 			},

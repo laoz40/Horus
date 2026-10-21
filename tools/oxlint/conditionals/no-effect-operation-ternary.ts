@@ -1,7 +1,7 @@
 import { defineRule, type ESTree, type SourceCode } from "@oxlint/plugins";
 
-import { effectMethodTarget } from "../../effect-boundaries/lib.ts";
-import { unwrapArrayExpression } from "../shared/array-method.ts";
+import { effectMethodTarget } from "../effect-boundaries/lib.ts";
+import { unwrapArrayExpression } from "../anti-slop/shared/array-method.ts";
 
 // Only constructors with known Effect results; predicates and runners remain value choices.
 const effectConstructors = new Set([
@@ -18,10 +18,13 @@ const effectConstructors = new Set([
 
 function isEffectOperation(sourceCode: SourceCode, node: ESTree.Node): boolean {
 	node = unwrapArrayExpression(node);
+
 	if (node.type === "CallExpression") {
 		const method = effectMethodTarget(sourceCode, node.callee);
+
 		return method !== null && effectConstructors.has(method);
 	}
+
 	return effectMethodTarget(sourceCode, node) === "void";
 }
 

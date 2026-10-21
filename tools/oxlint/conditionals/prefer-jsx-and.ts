@@ -1,6 +1,6 @@
 import { defineRule } from "@oxlint/plugins";
 
-import { unwrapArrayExpression } from "../shared/array-method.ts";
+import { unwrapArrayExpression } from "../anti-slop/shared/array-method.ts";
 
 /** Optional JSX uses a boolean guard instead of a ternary with an empty branch. */
 export const preferJsxAndRule = defineRule({
@@ -17,6 +17,7 @@ export const preferJsxAndRule = defineRule({
 			ConditionalExpression(node) {
 				const content = unwrapArrayExpression(node.consequent);
 				const alternate = unwrapArrayExpression(node.alternate);
+
 				if (
 					(content.type === "JSXElement" || content.type === "JSXFragment") &&
 					alternate.type === "Literal" &&
