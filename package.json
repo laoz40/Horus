@@ -9,6 +9,7 @@
 		"build": "next build",
 		"start": "next start --hostname 127.0.0.1 --port 8000",
 		"test": "playwright test",
+		"verify": "pnpm lint:check && pnpm format:check && pnpm typecheck && pnpm fallow:check && pnpm test",
 		"postinstall": "playwright install chromium",
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",
