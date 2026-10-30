@@ -22,7 +22,10 @@ interface ExerciseSelectorProps {
 
 export default function ExerciseSelector({ exerciseIds }: ExerciseSelectorProps) {
 	const { control } = useFormContext<Workout>();
-	const selectedExerciseId = useWorkoutFormUiStore(selectSelectedExerciseId);
+
+	const selectedExerciseId = useWorkoutFormUiStore((state) =>
+		selectSelectedExerciseId(state, exerciseIds),
+	);
 
 	// map names of exercises from the form
 	const exerciseNames = useWatch({

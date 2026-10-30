@@ -29,8 +29,11 @@ const createInitialWorkoutFormUiState = (): WorkoutFormUiState => ({
 	restTimer: { kind: "idle" },
 });
 
-export const selectSelectedExerciseId = (state: WorkoutFormUiStore) =>
-	state.exerciseSelection.kind === "none" ? null : state.exerciseSelection.exerciseId;
+// Until the user selects or scrolls to an exercise, the first entry is selected.
+export const selectSelectedExerciseId = (state: WorkoutFormUiStore, exerciseIds: string[]) =>
+	state.exerciseSelection.kind === "none"
+		? (exerciseIds[0] ?? null)
+		: state.exerciseSelection.exerciseId;
 
 export const selectIsEditingExercise = (state: WorkoutFormUiStore) =>
 	state.exerciseSelection.kind === "editing";
@@ -79,9 +82,12 @@ export function selectExercise(exerciseId: string | null): void {
 	}));
 }
 
-export function toggleExerciseEdit(): void {
+export function toggleExerciseEdit(exerciseId: string | null): void {
 	useWorkoutFormUiStore.setState((state) => ({
-		exerciseSelection: exerciseSelectionReducer(state.exerciseSelection, { kind: "toggleEditing" }),
+		exerciseSelection: exerciseSelectionReducer(state.exerciseSelection, {
+			kind: "toggleEditing",
+			exerciseId,
+		}),
 	}));
 }
 

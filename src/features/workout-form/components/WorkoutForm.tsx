@@ -9,6 +9,7 @@ import { showExerciseDeletedToast } from "@/lib/toastMessages";
 import {
 	selectIsRecentSetsDialogOpen,
 	selectIsEditingExercise,
+	selectSelectedExerciseId,
 	selectExerciseAfterDeletion,
 	selectRecentSetsExerciseName,
 	setRecentSetsDialogOpen,
@@ -16,7 +17,6 @@ import {
 	useWorkoutFormUiStore,
 } from "@/features/workout-form/stores/workoutFormUiStore";
 import { useExerciseNavigation } from "@/features/workout-form/hooks/useExerciseNavigation";
-import { useExerciseSelection } from "@/features/workout-form/hooks/useExerciseSelection";
 import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit";
 import { useWorkoutExercises } from "@/features/workout-form/hooks/useWorkoutExercises";
 import { useWorkoutFormInit } from "@/features/workout-form/hooks/useWorkoutFormInit";
@@ -73,9 +73,14 @@ export default function WorkoutForm({
 
 	// exercise ids to pass to the exercise selector
 	const exerciseIds = exercises.map((exercise) => exercise.id);
-	const { selectedExerciseId, selectedExerciseIndex } = useExerciseSelection({ exerciseIds });
+
+	const selectedExerciseId = useWorkoutFormUiStore((state) =>
+		selectSelectedExerciseId(state, exerciseIds),
+	);
 
 	const handleDeleteExercise = () => {
+		const selectedExerciseIndex = exerciseIds.findIndex((id) => id === selectedExerciseId);
+
 		if (selectedExerciseIndex < 0) return;
 
 		remove(selectedExerciseIndex);
