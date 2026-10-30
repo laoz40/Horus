@@ -1,7 +1,10 @@
-import { useEffect } from "react";
-import type { UseFormReset } from "react-hook-form";
+import { useEffect, useState } from "react";
 
-import type { Workout } from "@/features/workout-form/lib/validateWorkout";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, type Resolver } from "react-hook-form";
+import { WorkoutSchema, type Workout } from "@/features/workout-form/lib/validateWorkout";
+import { createDefaultWorkoutValues } from "@/features/workout-form/lib/WorkoutFormDefaults";
+import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
 import { showErrorToast } from "@/lib/toastMessages";
 import {
 	initializeWorkoutSession,
@@ -11,33 +14,37 @@ import {
 } from "@/features/workout-form/stores/workoutFormUiStore";
 
 interface UseWorkoutFormInitProps {
-	reset: UseFormReset<Workout>;
 	initialData?: Workout;
 	workoutId?: string;
 	missingGlobalExercisesCount?: number;
 }
 
-interface UseWorkoutFormInitReturn {
-	initialDurationSeconds: number;
-}
+// Strip fully empty sets/exercises before RHF validation so blank rows don't block submit.
+const baseResolver = zodResolver(WorkoutSchema);
+
+const workoutResolver: Resolver<Workout> = (values, context, options) =>
+	baseResolver(stripEmptyWorkoutEntries(values), context, options);
 
 export const useWorkoutFormInit = ({
-	reset,
 	initialData,
 	workoutId,
 	missingGlobalExercisesCount = 0,
-}: UseWorkoutFormInitProps): UseWorkoutFormInitReturn => {
-	const createWorkoutDraft = useWorkoutFormUiStore(selectCreateWorkoutDraft);
-
+}: UseWorkoutFormInitProps) => {
 	// Editing restores the server-loaded workout; a new workout restores the local draft.
-	const restoredInitialData = workoutId ? initialData : (createWorkoutDraft ?? undefined);
-	const initialDurationSeconds = restoredInitialData?.durationSeconds ?? 0;
+	const [startingWorkout] = useState(() => {
+		if (workoutId) return initialData;
 
-	// Restore initial data once it is available.
-	useEffect(() => {
-		if (!restoredInitialData) return;
-		reset(restoredInitialData);
-	}, [reset, restoredInitialData]);
+		return selectCreateWorkoutDraft(useWorkoutFormUiStore.getState()) ?? undefined;
+	});
+
+	const initialDurationSeconds = startingWorkout?.durationSeconds ?? 0;
+
+	const methods = useForm<Workout>({
+		resolver: workoutResolver,
+		mode: "onSubmit",
+		reValidateMode: "onChange",
+		defaultValues: startingWorkout ?? createDefaultWorkoutValues(),
+	});
 
 	// Start the timer session on mount and clear form UI state on unmount.
 	useEffect(() => {
@@ -58,5 +65,5 @@ export const useWorkoutFormInit = ({
 		);
 	}, [missingGlobalExercisesCount]);
 
-	return { initialDurationSeconds };
+	return { methods, initialDurationSeconds };
 };

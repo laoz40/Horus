@@ -5,7 +5,7 @@ export type ExerciseSelection =
 
 type ExerciseSelectionEvent =
 	| { kind: "selectExercise"; exerciseId: string | null }
-	| { kind: "toggleEditing" }
+	| { kind: "toggleEditing"; exerciseId: string | null }
 	| { kind: "exerciseDeleted"; nextExerciseId: string | null };
 
 export function exerciseSelectionReducer(
@@ -24,13 +24,13 @@ export function exerciseSelectionReducer(
 
 			return { kind: "selected", exerciseId: event.exerciseId };
 		case "toggleEditing":
-			if (state.kind === "none") return state;
+			if (event.exerciseId === null) return { kind: "none" };
 
 			if (state.kind === "editing") {
-				return { kind: "selected", exerciseId: state.exerciseId };
+				return { kind: "selected", exerciseId: event.exerciseId };
 			}
 
-			return { kind: "editing", exerciseId: state.exerciseId };
+			return { kind: "editing", exerciseId: event.exerciseId };
 		case "exerciseDeleted":
 			if (event.nextExerciseId === null) return { kind: "none" };
 

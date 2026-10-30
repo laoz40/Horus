@@ -1,17 +1,15 @@
 "use client";
 
 import type { ReactElement } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, useForm, type FieldErrors, type Resolver } from "react-hook-form";
+import { FormProvider, type FieldErrors } from "react-hook-form";
 
 import { getFirstInvalidExerciseIndex } from "@/features/workout-form/lib/checkInvalidExercise";
-import { WorkoutSchema, type Workout } from "@/features/workout-form/lib/validateWorkout";
-import { createDefaultWorkoutValues } from "@/features/workout-form/lib/WorkoutFormDefaults";
-import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { showExerciseDeletedToast } from "@/lib/toastMessages";
 import {
 	selectIsRecentSetsDialogOpen,
 	selectIsEditingExercise,
+	selectSelectedExerciseId,
 	selectExerciseAfterDeletion,
 	selectRecentSetsExerciseName,
 	setRecentSetsDialogOpen,
@@ -19,7 +17,6 @@ import {
 	useWorkoutFormUiStore,
 } from "@/features/workout-form/stores/workoutFormUiStore";
 import { useExerciseNavigation } from "@/features/workout-form/hooks/useExerciseNavigation";
-import { useExerciseSelection } from "@/features/workout-form/hooks/useExerciseSelection";
 import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit";
 import { useWorkoutExercises } from "@/features/workout-form/hooks/useWorkoutExercises";
 import { useWorkoutFormInit } from "@/features/workout-form/hooks/useWorkoutFormInit";
@@ -35,12 +32,6 @@ interface WorkoutFormProps {
 	missingGlobalExercisesCount?: number;
 }
 
-// Strip fully empty sets/exercises before RHF validation so blank rows don't block submit.
-const baseResolver = zodResolver(WorkoutSchema);
-
-const workoutResolver: Resolver<Workout> = (values, context, options) =>
-	baseResolver(stripEmptyWorkoutEntries(values), context, options);
-
 export default function WorkoutForm({
 	initialData,
 	workoutId,
@@ -51,21 +42,13 @@ export default function WorkoutForm({
 	const isRecentSetsDialogOpen = useWorkoutFormUiStore(selectIsRecentSetsDialogOpen);
 	const recentSetsExerciseName = useWorkoutFormUiStore(selectRecentSetsExerciseName);
 
-	const methods = useForm<Workout>({
-		resolver: workoutResolver,
-		mode: "onSubmit",
-		reValidateMode: "onChange",
-		defaultValues: initialData ?? createDefaultWorkoutValues(),
-	});
-
-	const { handleSubmit, reset } = methods;
-
-	const { initialDurationSeconds } = useWorkoutFormInit({
-		reset,
+	const { methods, initialDurationSeconds } = useWorkoutFormInit({
 		initialData,
 		workoutId,
 		missingGlobalExercisesCount,
 	});
+
+	const { handleSubmit } = methods;
 
 	const {
 		fields: exercises,
@@ -90,9 +73,14 @@ export default function WorkoutForm({
 
 	// exercise ids to pass to the exercise selector
 	const exerciseIds = exercises.map((exercise) => exercise.id);
-	const { selectedExerciseId, selectedExerciseIndex } = useExerciseSelection({ exerciseIds });
+
+	const selectedExerciseId = useWorkoutFormUiStore((state) =>
+		selectSelectedExerciseId(state, exerciseIds),
+	);
 
 	const handleDeleteExercise = () => {
+		const selectedExerciseIndex = exerciseIds.findIndex((id) => id === selectedExerciseId);
+
 		if (selectedExerciseIndex < 0) return;
 
 		remove(selectedExerciseIndex);
@@ -104,7 +92,12 @@ export default function WorkoutForm({
 		showExerciseDeletedToast();
 	};
 
-	const { exerciseListRef, registerExerciseRef } = useExerciseNavigation({ exerciseIds });
+	const { exerciseListRef, registerExerciseRef, scrollToExerciseOnMount } = useExerciseNavigation();
+
+	const handleAddAndScroll = () => {
+		scrollToExerciseOnMount(exercises.length);
+		handleAddExercise();
+	};
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -128,7 +121,7 @@ export default function WorkoutForm({
 								key={exercise.id}
 								exerciseIndex={exerciseIndex}
 								ref={(exerciseFormElement) => {
-									registerExerciseRef(exercise.id, exerciseFormElement);
+									registerExerciseRef(exercise.id, exerciseIndex, exerciseFormElement);
 								}}
 								className="min-h-full snap-start"
 								isEditing={isEditing && selectedExerciseId === exercise.id}
@@ -139,7 +132,7 @@ export default function WorkoutForm({
 
 				<WorkoutFormBottomBar
 					exerciseIds={exerciseIds}
-					onAddExercise={handleAddExercise}
+					onAddExercise={handleAddAndScroll}
 					onDeleteExercise={handleDeleteExercise}
 				/>
 				<RecentSetsDialog

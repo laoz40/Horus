@@ -15,14 +15,7 @@ export const useWorkoutTimer = ({
 }: UseWorkoutTimerOptions): UseWorkoutTimerReturn => {
 	const [durationSeconds, setDurationSeconds] = useState<number>(initialDurationSeconds);
 
-	// Re-anchor the displayed duration when a restored session changes the initial value.
-	const [prevInitialSeconds, setPrevInitialSeconds] = useState(initialDurationSeconds);
-
-	if (prevInitialSeconds !== initialDurationSeconds) {
-		setPrevInitialSeconds(initialDurationSeconds);
-		setDurationSeconds(initialDurationSeconds);
-	}
-
+	// Update elapsed time from the session start immediately and every second.
 	useEffect(() => {
 		const updateDuration = () => {
 			setDurationSeconds(Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000)));

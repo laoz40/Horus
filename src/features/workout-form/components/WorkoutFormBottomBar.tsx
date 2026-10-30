@@ -27,7 +27,11 @@ export default function WorkoutFormBottomBar({
 	onDeleteExercise,
 }: WorkoutFormBottomBarProps): ReactElement | null {
 	const { control } = useFormContext<Workout>();
-	const selectedExerciseId = useWorkoutFormUiStore(selectSelectedExerciseId);
+
+	const selectedExerciseId = useWorkoutFormUiStore((state) =>
+		selectSelectedExerciseId(state, exerciseIds),
+	);
+
 	const isEditing = useWorkoutFormUiStore(selectIsEditingExercise);
 
 	const selectedExerciseIndex = exerciseIds.findIndex(
@@ -75,7 +79,7 @@ export default function WorkoutFormBottomBar({
 						className="w-full"
 						type="button"
 						disabled={!canToggleEdit}
-						onClick={toggleExerciseEdit}>
+						onClick={() => toggleExerciseEdit(selectedExerciseId)}>
 						{isEditing ? "Done" : "Edit"}
 					</Button>
 					<ExerciseActionButton

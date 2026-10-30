@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactElement } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Drawer,
@@ -35,33 +35,33 @@ export default function RestTimerButton(): ReactElement {
 	const isOpen = useWorkoutFormUiStore(selectIsRestTimerDrawerOpen);
 	const startedAtMs = useWorkoutFormUiStore(selectRestTimerStartedAtMs);
 	const [nowMs, setNowMs] = useState(() => Date.now());
-	const nextAutoOpenMsRef = useRef<number | null>(null);
 
+	// Update the rest clock and send due reminders while the timer is running.
 	useEffect(() => {
-		nextAutoOpenMsRef.current = startedAtMs ? startedAtMs + REST_TARGET_MS : null;
-
 		if (!startedAtMs) return;
 
-		const intervalId = window.setInterval(() => {
-			setNowMs(Date.now());
-		}, 1000);
+		let nextAutoOpenMs = startedAtMs + REST_TARGET_MS;
+
+		const tick = () => {
+			const currentTimeMs = Date.now();
+			setNowMs(currentTimeMs);
+
+			if (currentTimeMs < nextAutoOpenMs) return;
+
+			setRestTimerDrawerOpen(true);
+			void showRestTimerNotification(formatElapsedTime(currentTimeMs - startedAtMs));
+
+			// ensure next auto-open time is in the future
+			while (nextAutoOpenMs <= currentTimeMs) {
+				nextAutoOpenMs += REST_TARGET_REMINDER_INTERVAL_MS;
+			}
+		};
+
+		tick();
+		const intervalId = window.setInterval(tick, 1000);
 
 		return () => window.clearInterval(intervalId);
 	}, [startedAtMs]);
-
-	useEffect(() => {
-		if (!startedAtMs || !nextAutoOpenMsRef.current) return;
-
-		if (nowMs < nextAutoOpenMsRef.current) return;
-
-		setRestTimerDrawerOpen(true);
-		void showRestTimerNotification(formatElapsedTime(nowMs - startedAtMs));
-
-		// ensure next auto-open time is in the future
-		while (nextAutoOpenMsRef.current <= nowMs) {
-			nextAutoOpenMsRef.current += REST_TARGET_REMINDER_INTERVAL_MS;
-		}
-	}, [nowMs, startedAtMs]);
 
 	if (!startedAtMs) return <></>;
 
