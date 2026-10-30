@@ -31,6 +31,7 @@ export default function EditWorkoutLoader({ workoutId }: EditWorkoutLoaderProps)
 
 	return (
 		<WorkoutForm
+			key={workoutId}
 			initialData={workoutQuery.data}
 			workoutId={workoutId}
 		/>

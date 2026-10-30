@@ -7,31 +7,42 @@ import {
 	useWorkoutFormUiStore,
 } from "@/features/workout-form/stores/workoutFormUiStore";
 
-interface UseExerciseNavigationProps {
-	exerciseIds: string[];
-}
-
 interface UseExerciseNavigationReturn {
 	exerciseListRef: RefObject<HTMLDivElement | null>;
-	registerExerciseRef: (exerciseId: string, exerciseFormElement: HTMLDivElement | null) => void;
+	registerExerciseRef: (
+		exerciseId: string,
+		exerciseIndex: number,
+		element: HTMLDivElement | null,
+	) => void;
+	scrollToExerciseOnMount: (exerciseIndex: number) => void;
 }
 
-export const useExerciseNavigation = ({
-	exerciseIds,
-}: UseExerciseNavigationProps): UseExerciseNavigationReturn => {
+export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
 	const scrollTargetId = useWorkoutFormUiStore(selectScrollTargetId);
 	const exerciseListRef = useRef<HTMLDivElement | null>(null);
 	const exerciseFormRefs = useRef<Record<string, HTMLDivElement | null>>({});
 	const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
-	const previousExerciseIdsRef = useRef<string[]>([]);
+	const pendingScrollIndexRef = useRef<number | null>(null);
 
 	// store form element by id to find and scroll to it later
-	const registerExerciseRef = (exerciseId: string, exerciseFormElement: HTMLDivElement | null) => {
+	const registerExerciseRef = (
+		exerciseId: string,
+		exerciseIndex: number,
+		exerciseFormElement: HTMLDivElement | null,
+	) => {
 		const previousElement = exerciseFormRefs.current[exerciseId];
 		exerciseFormRefs.current[exerciseId] = exerciseFormElement;
 
 		if (exerciseFormElement) {
 			exerciseFormElement.dataset.exerciseId = exerciseId;
+
+			// The add action requests scrolling; wait until its new form has mounted.
+			if (pendingScrollIndexRef.current === exerciseIndex) {
+				pendingScrollIndexRef.current = null;
+
+				exerciseFormElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+			}
+
 			// Track newly mounted exercise forms with the visibility observer.
 			visibilityObserverRef.current?.observe(exerciseFormElement);
 		} else if (previousElement) {
@@ -39,6 +50,7 @@ export const useExerciseNavigation = ({
 		}
 	};
 
+	// Scroll to an existing exercise requested by the selector or validation.
 	useEffect(() => {
 		if (!scrollTargetId) return;
 
@@ -49,24 +61,6 @@ export const useExerciseNavigation = ({
 		});
 		setScrollTarget(null);
 	}, [scrollTargetId]);
-
-	useEffect(() => {
-		const previousExerciseIds = previousExerciseIdsRef.current;
-
-		const appendedExercise =
-			exerciseIds.length === previousExerciseIds.length + 1 &&
-			previousExerciseIds.every((exerciseId, index) => exerciseId === exerciseIds[index]);
-
-		if (appendedExercise) {
-			const latestExerciseId = exerciseIds[exerciseIds.length - 1];
-
-			if (latestExerciseId) {
-				setScrollTarget(latestExerciseId);
-			}
-		}
-
-		previousExerciseIdsRef.current = exerciseIds;
-	}, [exerciseIds]);
 
 	// Create the visibility observer once; exercise forms register and unregister
 	// themselves through registerExerciseRef as they mount and unmount.
@@ -118,5 +112,8 @@ export const useExerciseNavigation = ({
 	return {
 		exerciseListRef,
 		registerExerciseRef,
+		scrollToExerciseOnMount: (exerciseIndex) => {
+			pendingScrollIndexRef.current = exerciseIndex;
+		},
 	};
 };
