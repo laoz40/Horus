@@ -69,12 +69,10 @@ export function useExerciseSuggestions(rawQuery: string, isOpen: boolean) {
 	// An empty query disables the DB search immediately.
 	const dbSearchQuery = query.length === 0 ? "" : deferredQuery;
 
-	const defaultExercises = sortExercisesAlphabetically(fetchDefaultExercises(query));
-
 	const exerciseSearch = useQuery(
 		orpc.exercises.search.queryOptions({
 			input: { query: dbSearchQuery },
-			enabled: dbSearchQuery.length > 0,
+			enabled: isOpen && dbSearchQuery.length > 0,
 		}),
 	);
 
@@ -85,7 +83,6 @@ export function useExerciseSuggestions(rawQuery: string, isOpen: boolean) {
 	});
 
 	const onlineSearch = useQuery({ ...onlineSearchOptions, enabled: false });
-	const isOnlineSearchLoading = isOpen && onlineSearch.isFetching;
 
 	// Cancel the previous online search when its text changes, the picker closes, or it unmounts.
 	useEffect(() => {
@@ -99,17 +96,22 @@ export function useExerciseSuggestions(rawQuery: string, isOpen: boolean) {
 		};
 	}, [isOpen, query, queryClient]);
 
-	// Combine instant local matches with PostgreSQL matches, remove duplicates, and sort the dropdown.
-	const suggestions = buildExerciseSuggestions(
-		query,
-		dbSearchQuery,
-		exerciseSearch.data,
-		defaultExercises,
-		onlineExercisesByQuery,
-	);
+	// Only prepare suggestions while the dropdown can display them.
+	let suggestions: ExerciseSuggestion[] = [];
+
+	if (isOpen) {
+		// Combine instant local matches with PostgreSQL matches, remove duplicates, and sort the dropdown.
+		suggestions = buildExerciseSuggestions(
+			query,
+			dbSearchQuery,
+			exerciseSearch.data,
+			sortExercisesAlphabetically(fetchDefaultExercises(query)),
+			onlineExercisesByQuery,
+		);
+	}
 
 	const isDbSearchLoading =
-		query.length > 0 && (deferredQuery !== query || exerciseSearch.isFetching);
+		isOpen && query.length > 0 && (deferredQuery !== query || exerciseSearch.isFetching);
 
 	const fetchMoreSuggestions = () => {
 		if (!isOpen || query.length === 0) return Promise.resolve();
@@ -144,8 +146,8 @@ export function useExerciseSuggestions(rawQuery: string, isOpen: boolean) {
 	return {
 		suggestions,
 		isDbSearchLoading,
-		isLoading: isDbSearchLoading || isOnlineSearchLoading,
-		isOnlineSearchLoading,
+		isLoading: isDbSearchLoading || (isOpen && onlineSearch.isFetching),
+		isOnlineSearchLoading: isOpen && onlineSearch.isFetching,
 		fetchMoreSuggestions,
 	};
 }

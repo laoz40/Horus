@@ -5,6 +5,7 @@ The dashboard (`/`) is the home screen: a personalized greeting, a "Start" secti
 ## Sub-features
 
 - `greeting` — signed-in shows "Welcome back," + verify user's name ("Verify Agent"); signed-out shows "Welcome," + "Legend".
+- `sign-in-prompt` — signed-out visitors see "Not Signed In"; "Let me test" dismisses it, and "Sign in" opens `/login`. Starting a workout after dismissal does not show a second prompt.
 - `start-workout` — "Start Workout" navigates to `/workouts/new`.
 - `presets-stub-start` — "Create a Preset" in the Start section shows the info toast "Presets are coming soon."
 - `presets-stub-section` — "COMING SOON" in the Presets section shows "Please read. Please be patient. 😠".

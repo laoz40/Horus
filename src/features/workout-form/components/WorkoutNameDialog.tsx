@@ -3,7 +3,6 @@ import {
 	Dialog,
 	DialogClose,
 	DialogContent,
-	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -43,10 +42,11 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 			open={open}
 			onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-sm">
+			<DialogContent
+				className="sm:max-w-sm"
+				aria-describedby={undefined}>
 				<DialogHeader>
 					<DialogTitle>Save Workout</DialogTitle>
-					<DialogDescription>Add a name to your workout before saving.</DialogDescription>
 				</DialogHeader>
 				<FieldGroup>
 					<Field>

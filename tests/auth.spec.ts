@@ -1,12 +1,12 @@
 // Tests in this file:
 //
 // - dashboard greets a stranger without a name
-//   Signed out, visiting / shows the generic "Welcome, Legend" heading instead of
-//   a personal greeting.
+//   Signed out, visiting / shows the sign-in prompt; dismissing it reveals the
+//   generic "Welcome, Legend" heading instead of a personal greeting.
 //
-// - workout form shows the auth gate
-//   Signed out, /workouts/new warns that workouts cannot be saved without an
-//   account and shows a Sign in link.
+// - workout form opens without a sign-in prompt and still requires login to save
+//   Dismiss the dashboard prompt and start a workout without a second prompt.
+//   The save dialog still requires an account.
 //
 // - email OTP login lands on /welcome
 //   The real login flow: request a code, read the stored OTP, type it in, and land
@@ -30,14 +30,30 @@ test.describe("signed out", () => {
 
 	test("dashboard greets a stranger without a name", async ({ page }) => {
 		await page.goto("/");
+		const prompt = page.getByRole("alertdialog", { name: "Not Signed In" });
+		await expect(prompt).toBeVisible();
+		await expect(prompt.getByRole("link", { name: "Sign in" })).toBeVisible();
+		await prompt.getByRole("button", { name: "Let me test" }).click();
 		await expect(page.getByRole("heading", { name: "Welcome," })).toBeVisible();
 		await expect(page.getByRole("heading", { name: "Legend" })).toBeVisible();
 	});
 
-	test("workout form shows the auth gate", async ({ page }) => {
-		await page.goto("/workouts/new");
-		await expect(page.getByText("Your workouts cannot be saved without an account.")).toBeVisible();
-		await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
+	test("workout form opens without a sign-in prompt and still requires login to save", async ({
+		page,
+	}) => {
+		await page.goto("/");
+		await page.getByRole("button", { name: "Let me test" }).click();
+		await page.getByRole("link", { name: "Start Workout" }).click();
+		await expect(page).toHaveURL(/\/workouts\/new$/);
+		await expect(page.getByRole("button", { name: "Chest", exact: true })).toBeVisible();
+		await expect(page.getByRole("alertdialog", { name: "Not Signed In" })).toBeHidden();
+		await page.getByRole("button", { name: "Finish" }).click();
+		const saveDialog = page.getByRole("dialog", { name: "Save Workout" });
+		await expect(
+			saveDialog.getByText("You need an account to create and save workouts."),
+		).toBeVisible();
+		await expect(saveDialog.getByRole("link", { name: "Sign in" })).toBeVisible();
+		await expect(saveDialog.getByRole("button", { name: "Save", exact: true })).toBeHidden();
 	});
 
 	test("email OTP login lands on /welcome", async ({ page }) => {

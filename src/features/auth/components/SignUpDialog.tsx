@@ -12,20 +12,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { showErrorToast } from "@/lib/toastMessages";
 import Link from "next/link";
-import { type ReactElement } from "react";
+import { useRef, type ReactElement } from "react";
 
-interface SignUpDialogProps {
-	show: boolean;
-}
-
-export default function SignUpDialog({ show }: SignUpDialogProps): ReactElement {
-	if (!show) {
-		return <></>;
-	}
+export default function SignUpDialog(): ReactElement {
+	const dialogRef = useRef<HTMLDivElement>(null);
 
 	return (
 		<AlertDialog defaultOpen>
-			<AlertDialogContent size="sm">
+			<AlertDialogContent
+				ref={dialogRef}
+				size="sm"
+				className="outline-none"
+				onOpenAutoFocus={(event) => {
+					event.preventDefault();
+					dialogRef.current?.focus();
+				}}>
 				<AlertDialogHeader>
 					<AlertDialogTitle>Not Signed In</AlertDialogTitle>
 					<AlertDialogDescription className="text-balance">
