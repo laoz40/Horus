@@ -15,7 +15,7 @@
 
 ## How to get to it (user POV)
 
-- Navbar → "Settings" → `/settings`; account bar → `/settings/account`.
+- Dashboard avatar → "Settings" → `/settings`; account bar → `/settings/account`.
 
 ## Driving it with drive.mjs
 

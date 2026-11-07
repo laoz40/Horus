@@ -12,7 +12,7 @@ Horus has no passwords: users sign in with an email OTP (delivered by Resend) or
 ## How to get to it (user POV)
 
 - `/login` — the sign-in page (OTP form).
-- Navbar → Settings → account section / "Sign out" card on `/settings/account`.
+- Dashboard avatar → Settings → account section / "Sign out" card on `/settings/account`.
 
 ## Driving it with drive.mjs
 

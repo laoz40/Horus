@@ -15,8 +15,8 @@ From `/workouts/new` the user logs a workout: pick an exercise via the muscle-gr
 
 ## How to get to it (user POV)
 
-- Dashboard "Start Workout" button → `/workouts/new`.
-- Navbar → History → a workout card's options (`aria-label="Workout options"`) → "Edit" → `/workouts/<id>/edit`.
+- Floating "Start Workout" button → `/workouts/new`.
+- Dashboard → Workout history → a workout card's options (`aria-label="Workout options"`) → "Edit" → `/workouts/<id>/edit`.
 
 ## Driving it with drive.mjs
 
