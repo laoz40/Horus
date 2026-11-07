@@ -4,7 +4,9 @@ import { type ReactElement } from "react";
 import DashboardHeader from "@/features/dashboard/components/DashboardHeader";
 import DashboardDesktopNotice from "@/features/dashboard/components/DashboardDesktopNotice";
 import DashboardPresetsSection from "@/features/dashboard/components/DashboardPresetsSection";
-import DashboardStartSection from "@/features/dashboard/components/DashboardStartSection";
+import { Button } from "@/components/ui/button";
+import { IconClock } from "@tabler/icons-react";
+import Link from "next/link";
 import DashboardYearInTrainingSection from "@/features/dashboard/components/DashboardYearInTrainingSection";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { authClient } from "@/lib/auth-client";
@@ -20,7 +22,7 @@ export default function DashboardPage(): ReactElement {
 		sessionData === null && (isPending || (error !== null && error.status !== 401));
 
 	return (
-		<div className="flex flex-col gap-3 pt-2 pb-5 max-md:pb-20">
+		<div className="flex flex-col gap-3 pt-2 pb-5">
 			{!isPending && !isSignedIn && <SignUpDialog />}
 			<DashboardHeader
 				shouldShowSavedProfile={shouldShowSavedProfile}
@@ -31,17 +33,27 @@ export default function DashboardPage(): ReactElement {
 			<div className="px-4">
 				<DashboardDesktopNotice />
 			</div>
-			<ErrorBoundary>
-				<DashboardStartSection />
-			</ErrorBoundary>
-			<ErrorBoundary>
-				<DashboardPresetsSection />
-			</ErrorBoundary>
 			<DashboardYearInTrainingSection
 				isAuthPending={isPending}
 				isSignedIn={isSignedIn}
 				userId={user?.id}
+				yearSelectable
 			/>
+			<div className="px-4">
+				<Button
+					asChild
+					variant="outline"
+					size="lg"
+					className="w-full">
+					<Link href="/workouts">
+						<IconClock data-icon="inline-start" />
+						Workout history
+					</Link>
+				</Button>
+			</div>
+			<ErrorBoundary>
+				<DashboardPresetsSection />
+			</ErrorBoundary>
 		</div>
 	);
 }

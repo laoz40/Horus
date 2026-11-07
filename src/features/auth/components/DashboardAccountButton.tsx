@@ -117,10 +117,22 @@ export default function DashboardAccountButton({
 
 function SignInPrompt() {
 	return (
-		<Button
-			size="sm"
-			asChild>
-			<Link href="/login">Sign in</Link>
-		</Button>
+		<div className="flex items-center gap-2">
+			<Button
+				variant="ghost"
+				size="icon-lg"
+				asChild>
+				<Link
+					href="/settings"
+					aria-label="Settings">
+					<IconSettings aria-hidden="true" />
+				</Link>
+			</Button>
+			<Button
+				size="sm"
+				asChild>
+				<Link href="/login">Sign in</Link>
+			</Button>
+		</div>
 	);
 }

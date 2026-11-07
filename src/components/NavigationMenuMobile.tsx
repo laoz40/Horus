@@ -5,15 +5,13 @@ import { cn } from "@/lib/utils";
 import {
 	IconBarbell,
 	IconBarbellFilled,
+	IconPlayerPlayFilled,
 	IconChartBarPopular,
-	IconClock,
-	IconClockFilled,
-	IconSettings,
-	IconSettingsFilled,
 	type Icon,
 } from "@tabler/icons-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { startTransition, useOptimistic } from "react";
 
 const navigationMenuItems: {
 	title: string;
@@ -21,53 +19,73 @@ const navigationMenuItems: {
 	icon: Icon;
 	iconActive: Icon;
 }[] = [
-	{ title: "Workout", href: "/", icon: IconBarbell, iconActive: IconBarbellFilled },
-	{ title: "History", href: "/workouts", icon: IconClock, iconActive: IconClockFilled },
+	{ title: "Workouts", href: "/", icon: IconBarbell, iconActive: IconBarbellFilled },
 	{
 		title: "Progress",
 		href: "/progress",
 		icon: IconChartBarPopular,
 		iconActive: IconChartBarPopularFilled,
 	},
-	{ title: "Settings", href: "/settings", icon: IconSettings, iconActive: IconSettingsFilled },
 ];
-
-function isRouteActive(pathname: string, href: string): boolean {
-	if (href === "/") return pathname === "/";
-
-	return pathname.startsWith(href);
-}
 
 export default function NavigationMenuMobile() {
 	const pathname = usePathname();
+	const router = useRouter();
+	const [activePathname, setActivePathname] = useOptimistic(pathname);
 
 	return (
 		<nav
 			aria-label="Main navigation"
-			className="ios-safe-area-bottom order-2 flex w-full shrink-0 items-center justify-around border-t bg-sidebar max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-40 md:relative md:order-first md:h-full md:w-16 md:flex-col md:border-t-0 md:border-r dark:bg-sidebar">
-			<ul className="flex w-full flex-1 list-none items-center justify-around gap-1 md:h-full md:flex-col md:justify-center md:gap-2">
-				{navigationMenuItems.map((item) => {
-					const active = isRouteActive(pathname, item.href);
-					const NavIcon = active ? item.iconActive : item.icon;
+			className="ios-safe-area-bottom pointer-events-none fixed inset-x-0 bottom-0 z-40">
+			<div className="mx-auto mb-4 flex w-full max-w-5xl items-center justify-between gap-4 px-4">
+				<ul className="pointer-events-auto flex h-16 max-w-48 flex-1 list-none items-stretch rounded-full border bg-sidebar/95 p-1 shadow-lg backdrop-blur-xl md:h-18 md:max-w-56">
+					{navigationMenuItems.map((item) => {
+						const active =
+							activePathname === item.href ||
+							(item.href !== "/" && activePathname.startsWith(item.href));
 
-					return (
-						<li
-							key={item.title}
-							className="relative flex-1 md:w-full md:flex-initial">
-							<Link
-								href={item.href}
-								aria-current={active ? "page" : undefined}
-								className={cn(
-									"flex h-auto w-full flex-col items-center justify-center rounded-none bg-transparent! px-3 py-2.5 text-xs text-muted-foreground transition-colors duration-150 hover:bg-transparent hover:text-primary focus:bg-transparent focus:text-primary focus-visible:ring-0 focus-visible:outline-none",
-									active && "text-primary",
-								)}>
-								<NavIcon className="mb-1 size-6 text-current" />
-								{item.title}
-							</Link>
-						</li>
-					);
-				})}
-			</ul>
+						const NavIcon = active ? item.iconActive : item.icon;
+
+						return (
+							<li
+								key={item.title}
+								className="flex flex-1">
+								<Link
+									href={item.href}
+									onNavigate={(event) => {
+										event.preventDefault();
+										startTransition(() => {
+											setActivePathname(item.href);
+											router.push(item.href);
+										});
+									}}
+									aria-current={active ? "page" : undefined}
+									className={cn(
+										"flex w-full flex-col items-center justify-center gap-0.5 rounded-full px-2 text-xs font-medium transition-colors duration-100 hover:bg-background/60 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-95 active:bg-background active:text-primary md:px-4",
+										active
+											? "bg-sidebar-accent text-primary shadow-sm hover:bg-sidebar-accent active:bg-sidebar-accent"
+											: "text-sidebar-foreground",
+									)}>
+									<NavIcon
+										className="size-7 md:size-8"
+										aria-hidden="true"
+									/>
+									{item.title}
+								</Link>
+							</li>
+						);
+					})}
+				</ul>
+				<Link
+					href="/workouts/new"
+					aria-label="Start Workout"
+					className="pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-full border bg-sidebar/95 text-sidebar-foreground shadow-lg backdrop-blur-xl transition-colors duration-100 hover:bg-accent hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-95 active:bg-accent active:text-primary md:size-18">
+					<IconPlayerPlayFilled
+						className="size-7 md:size-8"
+						aria-hidden="true"
+					/>
+				</Link>
+			</div>
 		</nav>
 	);
 }

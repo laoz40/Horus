@@ -19,7 +19,7 @@ export default function WorkoutCard({ workout, isPrPending = false }: WorkoutCar
 		.map((muscleGroup) => toTitleCase(muscleGroup));
 
 	return (
-		<Card className="transition-colors hover:bg-accent/30">
+		<Card className="transition duration-100 hover:bg-card has-[>a:active]:bg-muted has-[>a:hover]:bg-muted motion-safe:has-[>a:active]:scale-95 motion-reduce:transition-none">
 			{!isPrPending && workout.totalPrSets > 2 && (
 				<ShineBorder
 					shineColor="#34e1c9"

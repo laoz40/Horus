@@ -9,7 +9,7 @@ export default function ProgressLayout({ children }: { children: ReactNode }): R
 	const isProgressPage = usePathname() === "/progress";
 
 	return (
-		<div className={`flex h-full w-full flex-1 flex-col ${isProgressPage ? "max-md:pb-20" : ""}`}>
+		<div className="flex h-full w-full flex-1 flex-col">
 			{children}
 			<Activity mode={isProgressPage ? "visible" : "hidden"}>
 				<ProgressExerciseBrowseSection />

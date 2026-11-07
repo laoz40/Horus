@@ -14,7 +14,7 @@
 
 ## How to get to it (user POV)
 
-- Navbar ("Main navigation") → "History" → `/workouts`.
+- Dashboard → "Workout history" below Year in Training → `/workouts`.
 - Tap a workout card → `/workouts/<id>` → "Edit" or back to history.
 
 ## Driving it with drive.mjs
