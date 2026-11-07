@@ -10,7 +10,8 @@ import {
 	type Icon,
 } from "@tabler/icons-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { startTransition, useOptimistic } from "react";
 
 const navigationMenuItems: {
 	title: string;
@@ -29,6 +30,8 @@ const navigationMenuItems: {
 
 export default function NavigationMenuMobile() {
 	const pathname = usePathname();
+	const router = useRouter();
+	const [activePathname, setActivePathname] = useOptimistic(pathname);
 
 	return (
 		<nav
@@ -38,7 +41,8 @@ export default function NavigationMenuMobile() {
 				<ul className="pointer-events-auto flex h-14 max-w-44 flex-1 list-none items-stretch rounded-full border bg-sidebar/95 p-1.5 shadow-lg backdrop-blur-xl md:h-18 md:max-w-64">
 					{navigationMenuItems.map((item) => {
 						const active =
-							pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+							activePathname === item.href ||
+							(item.href !== "/" && activePathname.startsWith(item.href));
 
 						const NavIcon = active ? item.iconActive : item.icon;
 
@@ -48,10 +52,19 @@ export default function NavigationMenuMobile() {
 								className="flex flex-1">
 								<Link
 									href={item.href}
+									onNavigate={(event) => {
+										event.preventDefault();
+										startTransition(() => {
+											setActivePathname(item.href);
+											router.push(item.href);
+										});
+									}}
 									aria-current={active ? "page" : undefined}
 									className={cn(
-										"flex w-full flex-col items-center justify-center gap-1 rounded-full px-2 text-xs font-medium transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:px-4",
-										active ? "bg-background text-primary shadow-sm" : "text-sidebar-foreground",
+										"flex w-full flex-col items-center justify-center gap-1 rounded-full px-2 text-xs font-medium transition-colors duration-100 hover:bg-background/60 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-95 active:bg-background active:text-primary md:px-4",
+										active
+											? "bg-primary-foreground text-primary shadow-sm hover:bg-primary-foreground active:bg-primary-foreground"
+											: "text-sidebar-foreground",
 									)}>
 									<NavIcon
 										className="size-5 md:size-6"
@@ -66,7 +79,7 @@ export default function NavigationMenuMobile() {
 				<Link
 					href="/workouts/new"
 					aria-label="Start Workout"
-					className="pointer-events-auto flex size-14 shrink-0 items-center justify-center rounded-full border bg-sidebar/95 text-sidebar-foreground shadow-lg backdrop-blur-xl transition-colors hover:bg-accent hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:size-18">
+					className="pointer-events-auto flex size-14 shrink-0 items-center justify-center rounded-full border bg-sidebar/95 text-sidebar-foreground shadow-lg backdrop-blur-xl transition-colors duration-100 hover:bg-accent hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-95 active:bg-accent active:text-primary md:size-18">
 					<IconPlayerPlayFilled
 						className="size-6 md:size-8"
 						aria-hidden="true"
