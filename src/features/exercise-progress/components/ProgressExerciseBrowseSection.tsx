@@ -18,7 +18,6 @@ function ProgressExerciseBrowse() {
 
 	return (
 		<section className="flex min-h-0 flex-1 flex-col px-4 pb-4">
-			<h2 className="mb-1 text-muted-foreground">Exercises</h2>
 			<div className="flex min-h-72 flex-1 flex-col">
 				<MuscleGroupExerciseBrowser onSelectExercise={handleSelectExercise} />
 			</div>

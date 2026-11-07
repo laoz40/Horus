@@ -1,22 +1,18 @@
-"use client";
+import { BackNavButton, backNavIconClassName } from "@/components/BackNavButton";
+import { IconChevronLeft } from "@tabler/icons-react";
+import Link from "next/link";
 
-import { type ReactElement } from "react";
-
-import DashboardYearInTrainingSection from "@/features/dashboard/components/DashboardYearInTrainingSection";
-import { authClient } from "@/lib/auth-client";
-
-export default function ProgressPage(): ReactElement {
-	const { data: sessionData, isPending } = authClient.useSession();
-	const isSignedIn = sessionData?.user !== undefined && sessionData.user !== null;
-
+export default function ProgressPage() {
 	return (
-		<div className="flex shrink-0 flex-col pt-4">
-			<DashboardYearInTrainingSection
-				isAuthPending={isPending}
-				isSignedIn={isSignedIn}
-				userId={sessionData?.user?.id}
-				yearSelectable
-			/>
+		<div className="flex shrink-0 items-center gap-0.5 p-4">
+			<BackNavButton asChild>
+				<Link
+					href="/"
+					aria-label="Back to workouts">
+					<IconChevronLeft className={backNavIconClassName} />
+				</Link>
+			</BackNavButton>
+			<h1 className="text-2xl font-semibold">Your progress</h1>
 		</div>
 	);
 }
