@@ -224,7 +224,7 @@ function YearInTrainingShell({
 	children,
 }: YearInTrainingShellProps) {
 	return (
-		<section className="mb-3 flex flex-col pr-4 pl-4">
+		<section className="flex flex-col px-4">
 			<div className="flex items-center justify-between">
 				<h2 className="text-muted-foreground">Year in Training</h2>
 				<TrainingYearSelector
