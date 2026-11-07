@@ -8,6 +8,7 @@ import DashboardStartSection from "@/features/dashboard/components/DashboardStar
 import DashboardYearInTrainingSection from "@/features/dashboard/components/DashboardYearInTrainingSection";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { authClient } from "@/lib/auth-client";
+import SignUpDialog from "@/features/auth/components/SignUpDialog";
 
 export default function DashboardPage(): ReactElement {
 	const { data: sessionData, isPending, error } = authClient.useSession();
@@ -20,6 +21,7 @@ export default function DashboardPage(): ReactElement {
 
 	return (
 		<div className="flex flex-col gap-3 pt-2 pb-5 max-md:pb-20">
+			{!isPending && !isSignedIn && <SignUpDialog />}
 			<DashboardHeader
 				shouldShowSavedProfile={shouldShowSavedProfile}
 				isPending={isPending}

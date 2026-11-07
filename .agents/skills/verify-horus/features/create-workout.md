@@ -11,7 +11,7 @@ From `/workouts/new` the user logs a workout: pick an exercise via the muscle-gr
 - `rest-timer` — completing a set opens drawer "Rest Timer" with a "Finish Rest" button; the page behind it is blocked until dismissed.
 - `save` — top-bar "Finish" opens the "Save Workout" dialog; "Save" redirects to `/workouts` and immediately shows a spinner with "Saving workout". The same toast changes to "Saved <name>" after saving and refreshing history, or an error if saving fails.
 - `edit-existing` — `/workouts/<id>/edit` loads the saved workout for changes (drive like create, with the name pre-filled).
-- `auth-gate` — signed-out users see a "Not Signed In" alert on the form; the Save dialog shows "You need an account to create and save workouts." and a "Sign in" link to `/login`.
+- `auth-gate` — signed-out users can open the form without a prompt; the Save dialog shows "You need an account to create and save workouts." and a "Sign in" link to `/login`. The initial "Not Signed In" alert appears on the dashboard.
 
 ## How to get to it (user POV)
 
