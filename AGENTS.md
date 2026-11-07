@@ -2,6 +2,8 @@
 
 Gym workout tracker to log exercise progress and show workout stats.
 
+Designed primarily for mobile touchscreen devices, usually used as an installed PWA. Prioritise touch interactions and responsiveness on mobile.
+
 ### Main goals
 
 - simple, minimal UI
