@@ -6,7 +6,6 @@ import type { ReactElement } from "react";
 
 import { BackNavButton, backNavIconClassName } from "@/components/BackNavButton";
 import { Button } from "@/components/ui/button";
-import { useWorkoutPageExit } from "@/features/workout-form/lib/workoutPageExit";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import ExerciseViewSection from "@/features/workout-view/components/ExerciseViewSection";
 import WorkoutViewSummary from "@/features/workout-view/components/WorkoutViewSummary";
@@ -17,8 +16,6 @@ interface WorkoutViewProps {
 }
 
 export default function WorkoutView({ workout, workoutId }: WorkoutViewProps): ReactElement {
-	const exitWorkoutPage = useWorkoutPageExit();
-
 	const exercisesWithCompletedSets = workout.exercises.filter((exercise) =>
 		exercise.sets.some((set) => set.completed),
 	);
@@ -30,10 +27,6 @@ export default function WorkoutView({ workout, workoutId }: WorkoutViewProps): R
 					<BackNavButton asChild>
 						<Link
 							href="/workouts"
-							onNavigate={(event) => {
-								event.preventDefault();
-								exitWorkoutPage("/workouts");
-							}}
 							aria-label="Back">
 							<IconChevronLeft className={backNavIconClassName} />
 						</Link>

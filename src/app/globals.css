@@ -307,40 +307,47 @@ body {
 	padding-bottom: env(safe-area-inset-bottom);
 }
 
-@keyframes page-slide-up {
+@keyframes page-slide-in {
 	from {
 		opacity: 1;
-		transform: translateY(50rem);
+		transform: translateX(100%);
 	}
 
 	to {
 		opacity: 1;
-		transform: translateY(0);
+		transform: translateX(0);
 	}
 }
 
-.page-slide-up {
-	animation: page-slide-up 175ms ease-out both;
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation: none;
 }
 
-@keyframes page-slide-down {
+::view-transition-new(.workout-enter) {
+	animation: page-slide-in 250ms ease-out both;
+}
+
+@keyframes page-slide-out {
 	from {
 		opacity: 1;
-		transform: translateY(0);
+		transform: translateX(0);
 	}
 
 	to {
 		opacity: 1;
-		transform: translateY(50rem);
+		transform: translateX(100%);
 	}
 }
 
-.page-slide-down {
-	animation: page-slide-down 175ms ease-in both;
+::view-transition-old(.workout-exit) {
+	animation: page-slide-out 250ms ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.create-workout-page {
+	::view-transition-group(*),
+	::view-transition-old(*),
+	::view-transition-new(*) {
 		animation-duration: 0s !important;
 		animation-delay: 0s !important;
 	}
