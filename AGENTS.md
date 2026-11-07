@@ -43,7 +43,7 @@ Writing code is cheap for you, which makes over-engineering easy. Counter it by 
 - If a task contains lots of changes which would result in a massive commit, split into different commits per large change or file changed.
 - do not run build unless asked to
 - never use ignore to bypass linter
-- Run `pnpm verify` once changes are complete and before creating PRs. This checks lint, formatting, types, Fallow, and tests.
+- Match verification to risk: skip checks for non-functional edits (comments, docs, wording); use relevant checks for small, low-risk code changes. Run `pnpm verify` after substantive changes and before PRs containing functional changes.
 
 ## Code Style Guidelines
 

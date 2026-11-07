@@ -204,12 +204,21 @@ body {
 	letter-spacing: var(--tracking-normal);
 }
 
-/* Keep touch inputs at 16px to prevent iOS focus zoom, including compact field variants. */
+/* Prevent iOS focus zoom with a 16px minimum while preserving larger input text. */
 @media (any-pointer: coarse) {
 	input,
 	textarea,
 	select {
-		font-size: var(--text-base);
+		--text-xs: var(--text-base);
+		--text-sm: var(--text-base);
+	}
+
+	@layer base {
+		input,
+		textarea,
+		select {
+			font-size: var(--text-base);
+		}
 	}
 }
 
