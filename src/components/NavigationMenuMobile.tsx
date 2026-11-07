@@ -63,7 +63,7 @@ export default function NavigationMenuMobile() {
 									className={cn(
 										"flex w-full flex-col items-center justify-center gap-0.5 rounded-full px-2 text-xs font-medium transition-colors duration-100 hover:bg-background/60 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-95 active:bg-background active:text-primary md:px-4",
 										active
-											? "bg-primary-foreground text-primary shadow-sm hover:bg-primary-foreground active:bg-primary-foreground"
+											? "bg-sidebar-accent text-primary shadow-sm hover:bg-sidebar-accent active:bg-sidebar-accent"
 											: "text-sidebar-foreground",
 									)}>
 									<NavIcon
