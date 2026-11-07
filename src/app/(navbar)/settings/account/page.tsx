@@ -1,3 +1,6 @@
+import { BackNavButton, backNavIconClassName } from "@/components/BackNavButton";
+import { IconChevronLeft } from "@tabler/icons-react";
+import Link from "next/link";
 import SignOutCard from "@/features/auth/components/SignOutCard";
 import {
 	AccountSettingsCards,
@@ -7,8 +10,18 @@ import {
 
 export default function AccountPage() {
 	return (
-		<div className="flex justify-center px-4 py-12 max-md:pb-20">
+		<div className="flex justify-center px-4 py-4">
 			<div className="flex w-full max-w-xl flex-col gap-4">
+				<div className="flex items-center gap-0.5">
+					<BackNavButton asChild>
+						<Link
+							href="/settings"
+							aria-label="Back to settings">
+							<IconChevronLeft className={backNavIconClassName} />
+						</Link>
+					</BackNavButton>
+					<h1 className="text-2xl font-semibold">Your account</h1>
+				</div>
 				<span className="text-sm text-muted-foreground">User</span>
 				<AccountSettingsCards
 					classNames={{

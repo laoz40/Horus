@@ -1,3 +1,6 @@
+import { BackNavButton, backNavIconClassName } from "@/components/BackNavButton";
+import { IconChevronLeft } from "@tabler/icons-react";
+import Link from "next/link";
 import { ModeToggle } from "@/components/ModeToggle";
 import SettingsAccountSection from "@/features/auth/components/SettingsAccountSection";
 import ExercisesSettingsSection from "@/features/settings/components/ExercisesSettingsSection";
@@ -6,8 +9,15 @@ import SettingsDataSection from "@/features/settings/components/SettingsDataSect
 
 export default function SettingsPage() {
 	return (
-		<div className="max-md:pb-20">
-			<div className="p-4">
+		<div>
+			<div className="flex items-center gap-0.5 p-4">
+				<BackNavButton asChild>
+					<Link
+						href="/"
+						aria-label="Back to workouts">
+						<IconChevronLeft className={backNavIconClassName} />
+					</Link>
+				</BackNavButton>
 				<h1 className="text-2xl font-semibold">Settings</h1>
 			</div>
 
