@@ -316,6 +316,15 @@ body {
 	padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* Keep scrollable content above the floating controls, including on notched devices. */
+.floating-navigation-space {
+	padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+
+	@media (width >= 48rem) {
+		padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+	}
+}
+
 @keyframes page-slide-in {
 	from {
 		opacity: 1;

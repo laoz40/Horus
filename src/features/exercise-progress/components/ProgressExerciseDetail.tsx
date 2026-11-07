@@ -33,7 +33,7 @@ export default function ProgressExerciseDetail({
 				</div>
 			</div>
 
-			<div className="no-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-4 pb-6 max-md:pb-20">
+			<div className="no-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-4 pb-6">
 				<WeightProgressionSection exerciseName={exerciseName} />
 				<RecentSetsSection exerciseName={exerciseName} />
 				<PersonalRecordsSection exerciseName={exerciseName} />
