@@ -204,6 +204,15 @@ body {
 	letter-spacing: var(--tracking-normal);
 }
 
+/* Keep touch inputs at 16px to prevent iOS focus zoom, including compact field variants. */
+@media (any-pointer: coarse) {
+	input,
+	textarea,
+	select {
+		font-size: var(--text-base);
+	}
+}
+
 .react-calendar-heatmap {
 	width: 634px;
 	max-width: none;
