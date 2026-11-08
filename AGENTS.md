@@ -7,7 +7,7 @@ Designed primarily for mobile touchscreen devices, usually used as an installed 
 ### Main goals
 
 - simple, minimal UI
-- efficient, fast queries and mutations (due to using free database)
+- efficient, fast queries and mutations
 - Aim for the most responsiveness possible on the client-side
 
 ### Stack
@@ -20,19 +20,17 @@ Designed primarily for mobile touchscreen devices, usually used as an installed 
 ### Preserving long-term maintainability of the codebase
 
 - Push for restructuring the codebase to remove complexity instead of making bandaid fixes or making the fast, easy fix/refactor
-  - e.g. NO weird wrappers functions, preserving existing bad patterns, barrel files, factory helpers
+  - NO useless wrappers functions, barrel files, factory helpers, duplicated functions
   - Look for opportunities to reframe the change so that whole branches, helpers, modes, conditionals, or layers disappear entirely.
   - Every extraction must own real responsibility. If it only forwards or reconnects code split, undo the split and restructure
-  - **Question the threading.** If a task asks you to pass a new signal through types, schemas, pipelines, or similar layers, stop and look for a more direct path.
-  - **Sweat the small leaks.** Remove tiny pass-throughs, representation leaks, and duplicated choices before they spread. Small leaks compound into permanent coordination costs.
-  - **Prefer deletion.** When asked to refactor or improve, look for removals before additions.
-  - **Maintain a flat call hierarchy.** Avoid deep call chains. A rich interface that hides substantial work is not a deep call chain. If answering a question requires tracing through more than 3 files or layers, flatten it.
+  - Prefer deletion when asked to refactor or improve, look for removals before additions.
+  - Maintain a flat call hierarchy. Avoid deep call chains. A rich interface that hides substantial work is not a deep call chain. If answering a question requires tracing through more than 3 files or layers, flatten it.
 - When adding a new feature, always avoid feature creep and over-engineering
   - Reach for the simplest thing that works
-  - Suggest issues from edge cases before you implement fixes for them or build for hypothetical futures.
-  - Do not assume backwards compatibility, migrations, or backfills are needed. Check if the feature is actually in the main branch already
-  - Make sure not to write low value tests that don't relate to the core behaviour
-  - Make sure not to add unecessary fields to the db schema
+  - Ask the user if there are potential edge cases before you implement fixes for them or build for hypothetical futures.
+  - Don't automatically assume backwards compatibility, migrations, or backfills are needed. Check if the feature is actually in the main branch already
+  - Verify you don't write low value tests that don't relate to the **core** behaviour of the app
+  - Do not to add unecessary fields to the db schema
 - Use YAGNI and DRY principles
 
 Writing code is cheap for you, which makes over-engineering easy. Counter it by borrowing a human maintainer's fatigue. Aim for the most result with the least code and complexity. If a human developer would find the code exhausting to maintain, it is a bad solution. Be lazy. Stay simple.
@@ -40,21 +38,20 @@ Writing code is cheap for you, which makes over-engineering easy. Counter it by 
 ## Behavior
 
 - Ask user before making assumptions that change behavior, UX, architecture
-- If a task contains lots of changes which would result in a massive commit, split into different commits per large change or file changed.
-- do not run build unless asked to
 - never use ignore to bypass linter
-- Match verification to risk: skip checks for non-functional edits (comments, docs, wording); use relevant checks for small, low-risk code changes. Run `pnpm verify` after substantive changes and before PRs containing functional changes.
+- Match verification to risk: skip checks for non-functional edits (comments, docs, wording); use relevant checks for small, low-risk code changes (lint, format, typecheck). Run `pnpm verify` after substantive changes and before PRs containing functional changes.
 
 ## Code Style Guidelines
 
-### Components and pages
+### React
 
-- Move reusable helpers, constants, and mappers into nearest appropriate `lib/` file instead of keeping them inside components and routes
-- React component files: `PascalCase.tsx`.
-- Type names: `PascalCase`.
-- Extract major or self-contained UI sections into separate component files.
-- Group related React setup and state with short section comments.
-- Add a short comment before each `useEffect` explaining what it does.
+- This project uses React Compiler for automatic memoization. Avoid manual `useMemo` and `useCallback` unless there is a specific need.
+- Keep React components focused on rendering and user interactions.
+- Pass `useReducer`'s typed `dispatch` directly; avoid callback props that only wrap it.
+- Prefer `useReducer` for related state and centralized transitions rather than scattering state and business logic across React components.
+- Extract data fetching, reusable stateful logic, and external synchronisation into appropriately scoped hooks or modules.
+- Prefer derived state and event handlers over effects.
+- Only introduce effects when synchronising with external systems, and avoid abstractions that merely hide unnecessary effects.
 
 ### TypeScript
 
@@ -69,9 +66,6 @@ Writing code is cheap for you, which makes over-engineering easy. Counter it by 
 
 ### Comments
 
-- Preserve existing comments during refactors; do not delete comments just because code moved.
-- Update comments when behavior changes so they stay accurate.
-
 - At top of every test file, maintain one file-level comment that describes each test.
   - Format each test with short subheading, description on next line.
 
@@ -79,9 +73,9 @@ Writing code is cheap for you, which makes over-engineering easy. Counter it by 
 
 - Avoid arbitrary values: clamp, min(...), custom pixel brackets, and custom breakpoints.
 - Use theme-token color utilities (background, foreground, primary, etc.) over standard palette classes (white, gray, black).
-- Do not add styles that would be inherited from the parent component
 - For loading states, show animated spinner icon alongside concise state label e.g. `Saving`, not just trailing ellipsis label e.g. `Saving...`
 
-## Database operations and workflows
+### Application logic and database operations
 
-Keep workflow sequencing and domain decisions in the feature's `.service.ts`; database methods should perform coherent persistence operations and return what the service needs next. Keep row batching, value conversion, and read-result assembly near the SQL; split database methods by responsibility, not statement count.
+- Keep business rules and workflow sequencing in the feature's `.service.ts`; delegate lower-level operations to focused functions.
+- Keep queries, batching, and database row conversion in the feature's `.db.ts`.

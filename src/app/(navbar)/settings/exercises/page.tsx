@@ -16,7 +16,6 @@ import { orpc } from "@/lib/orpc/client";
 
 export default function ExercisesSettingsPage() {
 	const [sheetState, setSheetState] = useState<ExerciseEditSheetState>({ kind: "closed" });
-	const exercisesQuery = useQuery(orpc.exercises.list.queryOptions());
 
 	function openCreateSheet() {
 		setSheetState({ kind: "create" });
@@ -30,38 +29,44 @@ export default function ExercisesSettingsPage() {
 		setSheetState({ kind: "closed" });
 	}
 
-	if (exercisesQuery.isPending) {
-		return (
-			<ExercisesPageShell onAddExercise={openCreateSheet}>
-				<PageLoadingSpinner
-					label="Loading exercises"
-					className="min-h-40"
-				/>
-			</ExercisesPageShell>
-		);
-	}
-
-	if (exercisesQuery.isError) {
-		return (
-			<ExercisesPageShell onAddExercise={openCreateSheet}>
-				<p className="py-8 text-center text-sm text-destructive">Failed to load exercises.</p>
-			</ExercisesPageShell>
-		);
-	}
-
 	return (
 		<>
 			<ExercisesPageShell onAddExercise={openCreateSheet}>
-				<ExerciseList
-					exercises={exercisesQuery.data.exercises}
-					onSelectExercise={openEditSheet}
-				/>
+				<ExercisesListContent onSelectExercise={openEditSheet} />
 			</ExercisesPageShell>
 			<ExerciseEditSheet
 				state={sheetState}
 				onClose={closeSheet}
 			/>
 		</>
+	);
+}
+
+function ExercisesListContent({
+	onSelectExercise,
+}: {
+	onSelectExercise: (exercise: ExerciseCatalogItem) => void;
+}) {
+	const exercisesQuery = useQuery(orpc.exercises.list.queryOptions());
+
+	if (exercisesQuery.isPending) {
+		return (
+			<PageLoadingSpinner
+				label="Loading exercises"
+				className="min-h-40"
+			/>
+		);
+	}
+
+	if (exercisesQuery.isError) {
+		return <p className="py-8 text-center text-sm text-destructive">Failed to load exercises.</p>;
+	}
+
+	return (
+		<ExerciseList
+			exercises={exercisesQuery.data.exercises}
+			onSelectExercise={onSelectExercise}
+		/>
 	);
 }
 

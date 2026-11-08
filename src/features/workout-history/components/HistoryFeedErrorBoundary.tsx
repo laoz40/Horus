@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import type { ErrorInfo } from "next/error";
 import { Button } from "@/components/ui/button";
-import { showErrorToast } from "@/lib/toastMessages";
 import HistoryFeed from "@/features/workout-history/components/HistoryFeed";
 
 interface HistoryFeedErrorBoundaryProps {
@@ -27,11 +25,6 @@ function HistoryFeedErrorFallback({ error, retry }: ErrorInfo) {
 	if (error instanceof Error) {
 		message = getHistoryFeedErrorMessage(error);
 	}
-
-	// Show the history failure message when the boundary displays its fallback.
-	useEffect(() => {
-		showErrorToast(message);
-	}, [message]);
 
 	return (
 		<div className="space-y-3 rounded-md border border-border/80 bg-card px-5 py-6 text-center">

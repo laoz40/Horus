@@ -15,7 +15,7 @@ import {
 import { IconDotsVertical, IconEdit, IconShare, IconTrash } from "@tabler/icons-react";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { Button } from "@/components/ui/button";
-import { markWorkoutDeleted } from "@/features/workout-history/stores/historyUiStore";
+import type { WorkoutHistoryInfiniteData } from "@/features/workout-history/lib/optimisticHistoryItem";
 import { orpc } from "@/lib/orpc/client";
 import { showErrorToast, showWorkoutDeletedToast } from "@/lib/toastMessages";
 
@@ -33,10 +33,22 @@ export default function WorkoutCardOptions({
 	const deleteWorkout = useMutation(
 		orpc.workouts.delete.mutationOptions({
 			onSuccess: async (result) => {
-				markWorkoutDeleted(result.deletedWorkoutId);
+				const queryKey = orpc.workouts.list.key({ type: "infinite" });
+				await queryClient.cancelQueries({ queryKey });
+				queryClient.setQueriesData<WorkoutHistoryInfiniteData>({ queryKey }, (data) => {
+					if (!data) return data;
+
+					return {
+						...data,
+						pages: data.pages.map((page) => ({
+							...page,
+							items: page.items.filter((workout) => workout.id !== result.deletedWorkoutId),
+						})),
+					};
+				});
 				showWorkoutDeletedToast(result.deletedWorkoutName);
 				await queryClient.invalidateQueries({
-					queryKey: orpc.workouts.list.key({ type: "infinite" }),
+					queryKey,
 				});
 			},
 			onError: (error) => {

@@ -2,7 +2,6 @@
 
 import dayjs from "dayjs";
 import type { ReactElement } from "react";
-import { useMemo } from "react";
 import type { DotItemDotProps } from "recharts";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { z } from "zod";
@@ -75,14 +74,10 @@ interface WeightProgressionChartProps {
 export default function WeightProgressionChart({
 	points,
 }: WeightProgressionChartProps): ReactElement {
-	const chartData: ProgressionChartDatum[] = useMemo(
-		() =>
-			points.map((point) => ({
-				...point,
-				weekLabel: formatWeekLabel(point.weekStartMs),
-			})),
-		[points],
-	);
+	const chartData: ProgressionChartDatum[] = points.map((point) => ({
+		...point,
+		weekLabel: formatWeekLabel(point.weekStartMs),
+	}));
 
 	const peakIndex = chartData.findIndex((point) => point.isPeriodPeak);
 

@@ -32,21 +32,7 @@ export default function DashboardYearInTrainingSection(props: DashboardYearInTra
 	);
 }
 
-function DashboardYearInTraining(props: DashboardYearInTrainingSectionProps) {
-	const view = useYearInTrainingView(props);
-
-	return (
-		<YearInTrainingShell
-			yearOptions={view.yearOptions}
-			selectedYear={view.year}
-			yearSelectable={view.yearSelectable}
-			onYearChange={view.setSelectedYear}>
-			{view.body}
-		</YearInTrainingShell>
-	);
-}
-
-function useYearInTrainingView({
+function DashboardYearInTraining({
 	isAuthPending,
 	isSignedIn,
 	userId,
@@ -63,7 +49,11 @@ function useYearInTrainingView({
 		}),
 	);
 
-	const statsQuery = useQuery(
+	const {
+		data: stats = [],
+		isPending: isStatsPending,
+		isError: isStatsError,
+	} = useQuery(
 		orpc.dashboard.yearInTraining.queryOptions({
 			input: { year, userId },
 			enabled: isSignedIn,
@@ -75,70 +65,46 @@ function useYearInTrainingView({
 		trainingYearRangeQuery.data?.lastYear ?? currentYear,
 	);
 
-	const body = resolveYearInTrainingBody({
-		isAuthPending,
-		isSignedIn,
-		yearSelectable,
-		year,
-		statsQuery,
-		trainingYearRangeQuery,
-	});
+	const values: HeatmapValue[] = stats.map((row) => ({ date: row.dayKey, count: row.setCount }));
 
-	return {
-		year,
-		yearOptions,
-		yearSelectable,
-		setSelectedYear,
-		body,
-	};
+	return (
+		<YearInTrainingShell
+			yearOptions={yearOptions}
+			selectedYear={year}
+			yearSelectable={yearSelectable}
+			onYearChange={setSelectedYear}>
+			<YearInTrainingBody
+				isAuthPending={isAuthPending}
+				isStatsPending={isSignedIn && isStatsPending}
+				isYearRangePending={isSignedIn && yearSelectable && trainingYearRangeQuery.isPending}
+				isError={isStatsError}
+				year={year}
+				values={values}
+			/>
+		</YearInTrainingShell>
+	);
 }
 
-type YearInTrainingStatsQuery = ReturnType<
-	typeof useQuery<
-		{ dayKey: string; setCount: number }[],
-		Error,
-		{ dayKey: string; setCount: number }[],
-		readonly unknown[]
-	>
->;
-
-type TrainingYearRangeQuery = ReturnType<
-	typeof useQuery<
-		{ firstYear: number; lastYear: number },
-		Error,
-		{ firstYear: number; lastYear: number },
-		readonly unknown[]
-	>
->;
-
-function resolveYearInTrainingBody({
+function YearInTrainingBody({
 	isAuthPending,
-	isSignedIn,
-	yearSelectable,
+	isStatsPending,
+	isYearRangePending,
+	isError,
 	year,
-	statsQuery,
-	trainingYearRangeQuery,
+	values,
 }: {
 	isAuthPending: boolean;
-	isSignedIn: boolean;
-	yearSelectable: boolean;
+	isStatsPending: boolean;
+	isYearRangePending: boolean;
+	isError: boolean;
 	year: number;
-	statsQuery: YearInTrainingStatsQuery;
-	trainingYearRangeQuery: TrainingYearRangeQuery;
+	values: HeatmapValue[];
 }) {
-	if (isAuthPending) {
+	if (isAuthPending || isStatsPending || isYearRangePending) {
 		return <YearInTrainingLoadingBody />;
 	}
 
-	if (isSignedIn && statsQuery.isPending) {
-		return <YearInTrainingLoadingBody />;
-	}
-
-	if (isSignedIn && yearSelectable && trainingYearRangeQuery.isPending) {
-		return <YearInTrainingLoadingBody />;
-	}
-
-	if (statsQuery.isError) {
+	if (isError) {
 		return (
 			<div className="rounded-lg border bg-card p-3 text-card-foreground shadow-sm">
 				<p className="py-8 text-center text-sm text-destructive">
@@ -147,9 +113,6 @@ function resolveYearInTrainingBody({
 			</div>
 		);
 	}
-
-	const values: HeatmapValue[] =
-		statsQuery.data?.map((row) => ({ date: row.dayKey, count: row.setCount })) ?? [];
 
 	return (
 		<YearInTrainingHeatmapCard

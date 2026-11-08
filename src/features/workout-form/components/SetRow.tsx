@@ -3,16 +3,7 @@
 import { type ReactElement } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { IconTrash } from "@tabler/icons-react";
-import {
-	type Control,
-	type ControllerRenderProps,
-	type UseFormClearErrors,
-	type UseFormGetValues,
-	type UseFormSetError,
-	Controller,
-	useFormContext,
-	useWatch,
-} from "react-hook-form";
+import { type ControllerRenderProps, Controller, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { type Workout, validateCompletedSet } from "@/features/workout-form/lib/validateWorkout";
@@ -43,201 +34,6 @@ const parseOptionalNumber = (value: string | number | null): number | undefined 
 
 type CompletedFieldName = `exercises.${number}.sets.${number}.completed`;
 
-type ExerciseNameFieldName = `exercises.${number}.global.name`;
-
-type ExerciseSetsFieldName = `exercises.${number}.sets`;
-
-type RepsFieldName = `exercises.${number}.sets.${number}.reps`;
-
-type WeightFieldName = `exercises.${number}.sets.${number}.weight`;
-
-interface ValidateSetCompletionParams {
-	setIndex: number;
-	exerciseSetsFieldName: ExerciseSetsFieldName;
-	repsFieldName: RepsFieldName;
-	weightFieldName: WeightFieldName;
-	getValues: UseFormGetValues<Workout>;
-	setError: UseFormSetError<Workout>;
-	clearErrors: UseFormClearErrors<Workout>;
-}
-
-function validateSetCompletion({
-	setIndex,
-	exerciseSetsFieldName,
-	repsFieldName,
-	weightFieldName,
-	getValues,
-	setError,
-	clearErrors,
-}: ValidateSetCompletionParams): boolean {
-	// Field-level RHF trigger is not enough here because draft sets allow empty reps;
-	// the submit schema only requires reps later at the exercise level. Checkbox
-	// completion needs an immediate per-set Zod check so blank rows cannot be checked.
-	const result = validateCompletedSet(getValues(exerciseSetsFieldName)?.[setIndex]);
-
-	if (result.success) {
-		clearErrors([repsFieldName, weightFieldName]);
-
-		return true;
-	}
-
-	const repsIssue = result.error.issues.find((issue) => issue.path[0] === "reps");
-	const weightIssue = result.error.issues.find((issue) => issue.path[0] === "weight");
-
-	if (repsIssue) {
-		setError(repsFieldName, { type: "zod", message: repsIssue.message });
-	}
-
-	if (weightIssue) {
-		setError(weightFieldName, { type: "zod", message: weightIssue.message });
-	}
-
-	return false;
-}
-
-interface ApplySetCompletedChangeParams extends ValidateSetCompletionParams {
-	value: boolean | "indeterminate";
-	field: ControllerRenderProps<Workout, CompletedFieldName>;
-	exerciseNameFieldName: ExerciseNameFieldName;
-	checkSetPr: (input: {
-		exerciseName: string;
-		sets: { completed: boolean; reps?: number; weight?: number }[];
-		setIndex: number;
-	}) => void;
-}
-
-function applySetCompletedChange({
-	value,
-	field,
-	setIndex,
-	exerciseNameFieldName,
-	exerciseSetsFieldName,
-	repsFieldName,
-	weightFieldName,
-	getValues,
-	setError,
-	clearErrors,
-	checkSetPr,
-}: ApplySetCompletedChangeParams): void {
-	const nextChecked = !!value;
-	const previousChecked = field.value;
-
-	if (
-		nextChecked &&
-		!validateSetCompletion({
-			setIndex,
-			exerciseSetsFieldName,
-			repsFieldName,
-			weightFieldName,
-			getValues,
-			setError,
-			clearErrors,
-		})
-	) {
-		field.onChange(false);
-
-		return;
-	}
-
-	field.onChange(nextChecked);
-
-	if (previousChecked || !nextChecked) return;
-
-	startRestTimer();
-
-	const exerciseName = getValues(exerciseNameFieldName)?.trim();
-
-	if (!exerciseName) return;
-
-	const sets = getValues(exerciseSetsFieldName);
-	const currentSet = sets?.[setIndex];
-
-	if (!currentSet || currentSet.reps === undefined) return;
-
-	const setsForPrCheck = sets.map((set, index) => ({
-		completed: index === setIndex ? true : set.completed,
-		reps: set.reps,
-		weight: set.weight,
-	}));
-
-	// If the PR check fails, keep the set completed and skip only the PR toast.
-	checkSetPr({
-		exerciseName,
-		sets: setsForPrCheck,
-		setIndex,
-	});
-}
-
-interface SetRowActionsProps extends ValidateSetCompletionParams {
-	isEditing: boolean;
-	onDeleteSet: () => void;
-	completedFieldName: CompletedFieldName;
-	exerciseNameFieldName: ExerciseNameFieldName;
-	control: Control<Workout>;
-	checkSetPr: ApplySetCompletedChangeParams["checkSetPr"];
-}
-
-function SetRowActions({
-	isEditing,
-	onDeleteSet,
-	completedFieldName,
-	control,
-	setIndex,
-	exerciseNameFieldName,
-	exerciseSetsFieldName,
-	repsFieldName,
-	weightFieldName,
-	getValues,
-	setError,
-	clearErrors,
-	checkSetPr,
-}: SetRowActionsProps): ReactElement {
-	if (isEditing) {
-		return (
-			<div className="ml-4 flex items-center justify-center text-destructive">
-				<Button
-					variant="ghost"
-					className="size-7"
-					type="button"
-					onClick={onDeleteSet}>
-					<IconTrash className="size-5" />
-				</Button>
-			</div>
-		);
-	}
-
-	return (
-		<Controller
-			name={completedFieldName}
-			control={control}
-			defaultValue={false}
-			render={({ field }) => (
-				<Checkbox
-					className="ml-4 size-7 bg-card"
-					iconClassName="size-5"
-					aria-label="Color success"
-					checked={field.value}
-					onCheckedChange={(value) =>
-						applySetCompletedChange({
-							value,
-							field,
-							setIndex,
-							exerciseNameFieldName,
-							exerciseSetsFieldName,
-							repsFieldName,
-							weightFieldName,
-							getValues,
-							setError,
-							clearErrors,
-							checkSetPr,
-						})
-					}
-				/>
-			)}
-		/>
-	);
-}
-
 export default function SetRow({
 	exerciseIndex,
 	setIndex,
@@ -263,13 +59,116 @@ export default function SetRow({
 		}),
 	);
 
-	const completedFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.completed` as const;
-	const weightFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.weight` as const;
-	const repsFieldName = `exercises.${exerciseIndex}.sets.${setIndex}.reps` as const;
-	const exerciseNameFieldName = `exercises.${exerciseIndex}.global.name` as const;
-	const exerciseSetsFieldName = `exercises.${exerciseIndex}.sets` as const;
+	const fields = {
+		completed: `exercises.${exerciseIndex}.sets.${setIndex}.completed`,
+		weight: `exercises.${exerciseIndex}.sets.${setIndex}.weight`,
+		reps: `exercises.${exerciseIndex}.sets.${setIndex}.reps`,
+		exerciseName: `exercises.${exerciseIndex}.global.name`,
+		sets: `exercises.${exerciseIndex}.sets`,
+	} as const;
 
-	const isChecked = useWatch({ control, name: completedFieldName, defaultValue: false });
+	const isChecked = useWatch({ control, name: fields.completed, defaultValue: false });
+
+	function validateSetCompletion(): boolean {
+		// Field-level RHF trigger is not enough here because draft sets allow empty reps;
+		// the submit schema only requires reps later at the exercise level. Checkbox
+		// completion needs an immediate per-set Zod check so blank rows cannot be checked.
+		const result = validateCompletedSet(getValues(fields.sets)?.[setIndex]);
+
+		if (result.success) {
+			clearErrors([fields.reps, fields.weight]);
+
+			return true;
+		}
+
+		const repsIssue = result.error.issues.find((issue) => issue.path[0] === "reps");
+		const weightIssue = result.error.issues.find((issue) => issue.path[0] === "weight");
+
+		if (repsIssue) {
+			setError(fields.reps, { type: "zod", message: repsIssue.message });
+		}
+
+		if (weightIssue) {
+			setError(fields.weight, { type: "zod", message: weightIssue.message });
+		}
+
+		return false;
+	}
+
+	function handleCompletedChange(
+		value: boolean | "indeterminate",
+		field: ControllerRenderProps<Workout, CompletedFieldName>,
+	): void {
+		const nextChecked = !!value;
+		const previousChecked = field.value;
+
+		if (nextChecked && !validateSetCompletion()) {
+			field.onChange(false);
+
+			return;
+		}
+
+		field.onChange(nextChecked);
+
+		if (previousChecked || !nextChecked) return;
+
+		startRestTimer();
+
+		const exerciseName = getValues(fields.exerciseName)?.trim();
+
+		if (!exerciseName) return;
+
+		const sets = getValues(fields.sets);
+		const currentSet = sets?.[setIndex];
+
+		if (!currentSet || currentSet.reps === undefined) return;
+
+		const setsForPrCheck = sets.map((set, index) => ({
+			completed: index === setIndex ? true : set.completed,
+			reps: set.reps,
+			weight: set.weight,
+		}));
+
+		// If the PR check fails, keep the set completed and skip only the PR toast.
+		checkSetPrMutation.mutate({
+			exerciseName,
+			sets: setsForPrCheck,
+			setIndex,
+		});
+	}
+
+	let action: ReactElement;
+
+	if (isEditing) {
+		action = (
+			<div className="ml-4 flex items-center justify-center text-destructive">
+				<Button
+					variant="ghost"
+					className="size-7"
+					type="button"
+					onClick={() => onDeleteSet(setIndex)}>
+					<IconTrash className="size-5" />
+				</Button>
+			</div>
+		);
+	} else {
+		action = (
+			<Controller
+				name={fields.completed}
+				control={control}
+				defaultValue={false}
+				render={({ field }) => (
+					<Checkbox
+						className="ml-4 size-7 bg-card"
+						iconClassName="size-5"
+						aria-label="Color success"
+						checked={field.value}
+						onCheckedChange={(value) => handleCompletedChange(value, field)}
+					/>
+				)}
+			/>
+		);
+	}
 
 	const inputClassName = cn(
 		"h-11 bg-card text-2xl text-foreground",
@@ -287,7 +186,7 @@ export default function SetRow({
 					placeholder="kg"
 					className={inputClassName}
 					maxLength={6}
-					{...register(weightFieldName, { setValueAs: parseOptionalNumber })}
+					{...register(fields.weight, { setValueAs: parseOptionalNumber })}
 				/>
 				<span className={separatorClassName}>×</span>
 				<NumberInput
@@ -295,23 +194,9 @@ export default function SetRow({
 					placeholder="reps"
 					className={inputClassName}
 					maxLength={6}
-					{...register(repsFieldName, { setValueAs: parseOptionalNumber })}
+					{...register(fields.reps, { setValueAs: parseOptionalNumber })}
 				/>
-				<SetRowActions
-					isEditing={isEditing}
-					onDeleteSet={() => onDeleteSet(setIndex)}
-					completedFieldName={completedFieldName}
-					control={control}
-					setIndex={setIndex}
-					exerciseNameFieldName={exerciseNameFieldName}
-					exerciseSetsFieldName={exerciseSetsFieldName}
-					repsFieldName={repsFieldName}
-					weightFieldName={weightFieldName}
-					getValues={getValues}
-					setError={setError}
-					clearErrors={clearErrors}
-					checkSetPr={checkSetPrMutation.mutate}
-				/>
+				{action}
 			</div>
 			{(repsErrorMessage?.length ?? 0) > 0 && (
 				<span className="text-sm text-destructive">{repsErrorMessage}</span>

@@ -13,7 +13,6 @@ import {
 	selectExerciseAfterDeletion,
 	selectRecentSetsExerciseName,
 	setRecentSetsDialogOpen,
-	setScrollTarget,
 	useWorkoutFormUiStore,
 } from "@/features/workout-form/stores/workoutFormUiStore";
 import { useExerciseNavigation } from "@/features/workout-form/hooks/useExerciseNavigation";
@@ -58,6 +57,9 @@ export default function WorkoutForm({
 
 	const { isSubmitting, submitWorkout } = useWorkoutSubmit({ startedAtMs, workoutId });
 
+	const { exerciseListRef, registerExerciseRef, scrollToExercise, scrollToExerciseOnMount } =
+		useExerciseNavigation();
+
 	const handleInvalidSubmit = (errors: FieldErrors<Workout>) => {
 		// find the first invalid exercise
 		const firstInvalidExerciseIndex = getFirstInvalidExerciseIndex(errors);
@@ -68,7 +70,7 @@ export default function WorkoutForm({
 		const firstInvalidExerciseId = exercises[firstInvalidExerciseIndex]?.id;
 
 		if (!firstInvalidExerciseId) return;
-		setScrollTarget(firstInvalidExerciseId);
+		scrollToExercise(firstInvalidExerciseId);
 	};
 
 	// exercise ids to pass to the exercise selector
@@ -91,8 +93,6 @@ export default function WorkoutForm({
 		selectExerciseAfterDeletion(nextExerciseId);
 		showExerciseDeletedToast();
 	};
-
-	const { exerciseListRef, registerExerciseRef, scrollToExerciseOnMount } = useExerciseNavigation();
 
 	const handleAddAndScroll = () => {
 		scrollToExerciseOnMount(exercises.length);
@@ -134,6 +134,7 @@ export default function WorkoutForm({
 					exerciseIds={exerciseIds}
 					onAddExercise={handleAddAndScroll}
 					onDeleteExercise={handleDeleteExercise}
+					onScrollToExercise={scrollToExercise}
 				/>
 				<RecentSetsDialog
 					open={isRecentSetsDialogOpen}
