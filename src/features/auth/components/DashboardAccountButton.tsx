@@ -1,7 +1,7 @@
 "use client";
 
 import SignOutIcon from "@/features/auth/components/SignOutIcon";
-import { type ReactElement, useState } from "react";
+import { type ReactElement } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -11,11 +11,10 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { authClient } from "@/lib/auth-client";
+import useSignOut from "@/features/auth/hooks/useSignOut";
 import { UserAvatar } from "@daveyplate/better-auth-ui";
 import { IconSettings, IconUser } from "@tabler/icons-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 interface DashboardAccountButtonUser {
 	name?: string | null;
@@ -30,27 +29,11 @@ interface DashboardAccountButtonProps {
 export default function DashboardAccountButton({
 	initialUser,
 }: DashboardAccountButtonProps): ReactElement {
-	const router = useRouter();
-	const [isSigningOut, setIsSigningOut] = useState<boolean>(false);
+	const { isSigningOut, signOut } = useSignOut();
 
 	if (!initialUser) {
 		return <SignInPrompt />;
 	}
-
-	const handleSignOut = async () => {
-		if (isSigningOut) {
-			return;
-		}
-
-		setIsSigningOut(true);
-
-		try {
-			await authClient.signOut();
-		} finally {
-			router.refresh();
-			setIsSigningOut(false);
-		}
-	};
 
 	return (
 		<DropdownMenu>
@@ -102,7 +85,7 @@ export default function DashboardAccountButton({
 					disabled={isSigningOut}
 					onSelect={(event) => {
 						event.preventDefault();
-						void handleSignOut();
+						void signOut();
 					}}>
 					<SignOutIcon
 						isSigningOut={isSigningOut}
