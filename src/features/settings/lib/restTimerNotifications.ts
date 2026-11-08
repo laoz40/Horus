@@ -38,21 +38,16 @@ type RestTimerNotificationPermissionError = "unsupported" | "blocked" | "dismiss
 
 // iOS/Safari only allows permission prompts from a direct user gesture.
 function requestRestTimerNotificationPermission(): Effect.Effect<NotificationPermission, "failed"> {
-	const permissionRequest = Effect.try({
-		try: () => Notification.requestPermission(),
-		catch: () => "failed" as const,
-	}).pipe(
-		Effect.match({
-			onFailure: () => ({ ok: false as const }),
-			onSuccess: (permissionPromise) => ({ ok: true as const, permissionPromise }),
-		}),
-		Effect.runSync,
-	);
+	let permissionPromise: Promise<NotificationPermission>;
 
-	if (!permissionRequest.ok) return Effect.fail("failed");
+	try {
+		permissionPromise = Notification.requestPermission();
+	} catch {
+		return Effect.fail("failed");
+	}
 
 	return Effect.tryPromise({
-		try: () => permissionRequest.permissionPromise,
+		try: () => permissionPromise,
 		catch: () => "failed" as const,
 	});
 }
