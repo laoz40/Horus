@@ -32,6 +32,7 @@
 		"src/components/ui/chart.tsx"
 	],
 	"rules": {
+		"effecttsgo/unstable-api-usage": "off",
 		"shadcn/no-raw-colors": "error",
 		"shadcn/no-arbitrary-values": ["error", { "allow": ["layout"] }],
 		"shadcn/no-unknown-classes": "error",
