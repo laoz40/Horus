@@ -34,17 +34,17 @@ const cutoffQuerySchema = Schema.Struct({
 const exercisePrRowSchema = Schema.Struct({
 	exerciseId: Schema.String,
 	hasHistory: Schema.Boolean,
-	highestWeight: Schema.Number,
-	highestVolume: Schema.Number,
-	highestBodyweightReps: Schema.Number,
+	highestWeight: Schema.Finite,
+	highestVolume: Schema.Finite,
+	highestBodyweightReps: Schema.Finite,
 });
 
 const affectedSetRowSchema = Schema.Struct({
 	setId: Schema.String,
 	workoutId: Schema.String,
 	exerciseId: Schema.String,
-	weight: Schema.Number,
-	reps: Schema.Number,
+	weight: Schema.Finite,
+	reps: Schema.Finite,
 	completed: Schema.Boolean,
 });
 

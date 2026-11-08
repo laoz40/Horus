@@ -12,7 +12,7 @@ const exerciseQuerySchema = Schema.Struct({
 const weeklyWeightProgressionQuerySchema = Schema.Struct({
 	...exerciseQuerySchema.fields,
 	sinceCreatedAt: Schema.Date,
-	minReps: Schema.Number,
+	minReps: Schema.Finite,
 });
 
 export interface RecentSetRow {
@@ -55,7 +55,7 @@ export const progressDb = Layer.effect(
 			Request: weeklyWeightProgressionQuerySchema,
 			Result: Schema.Struct({
 				week_start: Schema.NullOr(Schema.Date),
-				max_weight: Schema.NullOr(Schema.Number),
+				max_weight: Schema.NullOr(Schema.Finite),
 			}),
 			execute: ({ userId, normalizedExerciseName, sinceCreatedAt, minReps }) => sql`
 				SELECT
@@ -82,9 +82,9 @@ export const progressDb = Layer.effect(
 			Request: exerciseQuerySchema,
 			Result: Schema.Struct({
 				id: Schema.String,
-				weight: Schema.Number,
-				reps: Schema.Number,
-				completed_at_ms: Schema.NullOr(Schema.Number),
+				weight: Schema.Finite,
+				reps: Schema.Finite,
+				completed_at_ms: Schema.NullOr(Schema.Finite),
 				is_weight_pr: Schema.NullOr(Schema.Boolean),
 				is_volume_pr: Schema.NullOr(Schema.Boolean),
 				is_bodyweight_reps_pr: Schema.NullOr(Schema.Boolean),

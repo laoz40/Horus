@@ -11,25 +11,25 @@ const personalRecordsQuerySchema = Schema.Struct({
 
 const personalRecordSetSchema = Schema.Struct({
 	id: Schema.NullOr(Schema.String),
-	weight: Schema.NullOr(Schema.Number),
-	reps: Schema.NullOr(Schema.Number),
-	completedAtMs: Schema.NullOr(Schema.Number),
+	weight: Schema.NullOr(Schema.Finite),
+	reps: Schema.NullOr(Schema.Finite),
+	completedAtMs: Schema.NullOr(Schema.Finite),
 });
 
 const personalRecordsRowSchema = Schema.Struct({
 	hasHistory: Schema.Boolean,
 	weightId: Schema.NullOr(Schema.String),
-	weightWeight: Schema.NullOr(Schema.Number),
-	weightReps: Schema.NullOr(Schema.Number),
-	weightCompletedAtMs: Schema.NullOr(Schema.Number),
+	weightWeight: Schema.NullOr(Schema.Finite),
+	weightReps: Schema.NullOr(Schema.Finite),
+	weightCompletedAtMs: Schema.NullOr(Schema.Finite),
 	volumeId: Schema.NullOr(Schema.String),
-	volumeWeight: Schema.NullOr(Schema.Number),
-	volumeReps: Schema.NullOr(Schema.Number),
-	volumeCompletedAtMs: Schema.NullOr(Schema.Number),
+	volumeWeight: Schema.NullOr(Schema.Finite),
+	volumeReps: Schema.NullOr(Schema.Finite),
+	volumeCompletedAtMs: Schema.NullOr(Schema.Finite),
 	bodyweightRepsId: Schema.NullOr(Schema.String),
-	bodyweightRepsWeight: Schema.NullOr(Schema.Number),
-	bodyweightRepsReps: Schema.NullOr(Schema.Number),
-	bodyweightRepsCompletedAtMs: Schema.NullOr(Schema.Number),
+	bodyweightRepsWeight: Schema.NullOr(Schema.Finite),
+	bodyweightRepsReps: Schema.NullOr(Schema.Finite),
+	bodyweightRepsCompletedAtMs: Schema.NullOr(Schema.Finite),
 });
 
 export interface ExercisePersonalRecordsRow {
@@ -100,9 +100,9 @@ export const personalRecordsDb = Layer.effect(
 			Request: personalRecordsQuerySchema,
 			Result: Schema.Struct({
 				has_history: Schema.NullOr(Schema.Boolean),
-				highest_weight: Schema.NullOr(Schema.Number),
-				highest_volume: Schema.NullOr(Schema.Number),
-				highest_bodyweight_reps: Schema.NullOr(Schema.Number),
+				highest_weight: Schema.NullOr(Schema.Finite),
+				highest_volume: Schema.NullOr(Schema.Finite),
+				highest_bodyweight_reps: Schema.NullOr(Schema.Finite),
 			}),
 			execute: ({ userId, normalizedExerciseName }) => sql`
 				SELECT

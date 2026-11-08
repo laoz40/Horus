@@ -17,7 +17,7 @@ const workoutHistoryRowSchema = Schema.Struct({
 	durationSeconds: Schema.NullOr(Schema.Int),
 	totalPrSets: Schema.Int,
 	exerciseCount: Schema.Int,
-	totalVolume: Schema.Number,
+	totalVolume: Schema.Finite,
 	muscleGroups: Schema.mutable(Schema.Array(Schema.String)),
 });
 

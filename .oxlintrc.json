@@ -33,6 +33,7 @@
 	],
 	"rules": {
 		"effecttsgo/unstable-api-usage": "off",
+		"effecttsgo/schema-number": "error",
 		"shadcn/no-raw-colors": "error",
 		"shadcn/no-arbitrary-values": ["error", { "allow": ["layout"] }],
 		"shadcn/no-unknown-classes": "error",
