@@ -1,10 +1,13 @@
-import { database } from "@/server/database";
 import "server-only";
 
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 import { z } from "zod";
+import { sqlClient } from "@/lib/db/sql";
+import { workoutViewDb } from "@/features/workout-view/server/workout-view.db";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
 import { getWorkoutById } from "@/features/workout-view/server/workout-view.service";
+
+const database = workoutViewDb.pipe(Layer.provide(sqlClient));
 
 const workoutFormSchema = z.object({
 	name: z.string(),

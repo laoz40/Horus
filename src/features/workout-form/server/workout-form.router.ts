@@ -1,11 +1,18 @@
-import { database } from "@/server/database";
 import "server-only";
 
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 import { z } from "zod";
+import { sqlClient } from "@/lib/db/sql";
+import { workoutFormDb } from "@/features/workout-form/server/workout-form.db";
+import { workoutExerciseDb } from "@/features/workout-form/server/workout-exercises.db";
+import { prHistoryDb } from "@/features/personal-records/server/pr-history.db";
 import { WorkoutForSaveSchema } from "@/features/workout-form/lib/validateWorkout";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
 import { createWorkout, updateWorkout } from "@/features/workout-form/server/workout-form.service";
+
+const database = Layer.mergeAll(workoutFormDb, workoutExerciseDb, prHistoryDb).pipe(
+	Layer.provideMerge(sqlClient),
+);
 
 const createWorkoutInputSchema = z
 	.object({

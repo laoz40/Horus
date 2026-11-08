@@ -1,8 +1,9 @@
-import { database } from "@/server/database";
 import "server-only";
 
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 import { z } from "zod";
+import { sqlClient } from "@/lib/db/sql";
+import { exerciseDb } from "@/features/exercise-library/server/exercises.db";
 import { MUSCLE_GROUP_CATEGORIES } from "@/features/exercise-library/lib/muscleGroupCategories";
 import { fetchApiExercises } from "@/features/exercise-picker/server/fetchApiExercises.server";
 import { logDatabaseError, protectedProcedure, publicProcedure } from "@/server/procedures";
@@ -16,6 +17,8 @@ import {
 	onlineExerciseSearchErrors,
 	onlineExerciseSuggestionsSchema,
 } from "@/features/exercise-picker/server/exercise-picker.router.helpers";
+
+const database = exerciseDb.pipe(Layer.provide(sqlClient));
 
 export const exercisePickerRouter = {
 	search: protectedProcedure

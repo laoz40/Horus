@@ -1,14 +1,18 @@
-import { database } from "@/server/database";
 import "server-only";
 
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 import { z } from "zod";
+import { sqlClient } from "@/lib/db/sql";
+import { workoutHistoryDb } from "@/features/workout-history/server/workout-history.db";
+import { prHistoryDb } from "@/features/personal-records/server/pr-history.db";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
 import {
 	deleteAllWorkouts,
 	deleteWorkout,
 	listWorkouts,
 } from "@/features/workout-history/server/workout-history.service";
+
+const database = Layer.mergeAll(workoutHistoryDb, prHistoryDb).pipe(Layer.provideMerge(sqlClient));
 
 const deleteWorkoutInputSchema = z.object({ workoutId: z.uuid() }).strict();
 

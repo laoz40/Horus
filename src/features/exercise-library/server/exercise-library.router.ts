@@ -1,8 +1,10 @@
-import { database } from "@/server/database";
 import "server-only";
 
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 import { z } from "zod";
+import { sqlClient } from "@/lib/db/sql";
+import { exerciseDb } from "@/features/exercise-library/server/exercises.db";
+import { prHistoryDb } from "@/features/personal-records/server/pr-history.db";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
 import {
 	createUserExercise,
@@ -19,6 +21,8 @@ import {
 	exerciseLibraryWriteOutputSchema,
 	exerciseLibraryWriteProcedureErrors,
 } from "@/features/exercise-library/server/exercise-library.router.helpers";
+
+const database = Layer.mergeAll(exerciseDb, prHistoryDb).pipe(Layer.provideMerge(sqlClient));
 
 const exerciseLibraryWriteInputSchema = z
 	.object({

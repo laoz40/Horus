@@ -1,13 +1,16 @@
-import { database } from "@/server/database";
 import "server-only";
 
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 import { z } from "zod";
+import { sqlClient } from "@/lib/db/sql";
+import { dashboardDb } from "@/features/dashboard/server/dashboard.db";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
 import {
 	getTrainingYearRange,
 	getYearInTraining,
 } from "@/features/dashboard/server/dashboard.service";
+
+const database = dashboardDb.pipe(Layer.provide(sqlClient));
 
 const yearInTrainingInputSchema = z
 	.object({
