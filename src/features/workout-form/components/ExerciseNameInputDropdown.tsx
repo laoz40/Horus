@@ -36,12 +36,6 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 	const { suggestions, isDbSearchLoading, isOnlineSearchLoading, fetchMoreSuggestions } =
 		useExerciseSuggestions(query, isOpen);
 
-	let filteredSuggestions: typeof suggestions = [];
-
-	if (query.trim()) {
-		filteredSuggestions = suggestions;
-	}
-
 	const shouldShowSuggestions = isOpen && query.trim().length > 0;
 	// The search-online touch path lets the browser's synthetic click through, so
 	// the ref marks it handled and the click handler skips the duplicate fetch.
@@ -49,6 +43,25 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 
 	const { listboxRef, listboxTouchProps, shouldHandleTouchTap, stopTouch } =
 		useSuggestionListTouchScroll();
+
+	const handleSearchOnlineTouchEnd = () => {
+		if (shouldHandleTouchTap()) {
+			didHandleTouchFetchRef.current = true;
+			void fetchMoreSuggestions();
+		}
+
+		stopTouch();
+	};
+
+	const fetchMoreSuggestionsFromClick = () => {
+		if (didHandleTouchFetchRef.current) {
+			didHandleTouchFetchRef.current = false;
+
+			return;
+		}
+
+		void fetchMoreSuggestions();
+	};
 
 	const getSearchLabel = () => {
 		if (isDbSearchLoading) return "Searching database...";
@@ -63,10 +76,6 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 			name={exerciseNamePath}
 			control={control}
 			render={({ field }) => {
-				const clearExerciseIdentity = () => {
-					setValue(`exercises.${exerciseIndex}.exerciseId`, undefined);
-				};
-
 				const selectExercise = (exerciseName: string) => {
 					const match = suggestions.find((exercise) => exercise.name === exerciseName);
 
@@ -93,11 +102,6 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 					stopTouch();
 				};
 
-				const handleSearchOnlineTouchEnd = () => {
-					fetchMoreSuggestionsFromTouch();
-					stopTouch();
-				};
-
 				const listboxClassName =
 					"max-h-72 scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0";
 
@@ -105,23 +109,6 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 					if (!shouldHandleTouchTap()) return;
 
 					selectExercise(exerciseName);
-				};
-
-				const fetchMoreSuggestionsFromTouch = () => {
-					if (!shouldHandleTouchTap()) return;
-
-					didHandleTouchFetchRef.current = true;
-					void fetchMoreSuggestions();
-				};
-
-				const fetchMoreSuggestionsFromClick = () => {
-					if (didHandleTouchFetchRef.current) {
-						didHandleTouchFetchRef.current = false;
-
-						return;
-					}
-
-					void fetchMoreSuggestions();
 				};
 
 				const handleClearName = () => {
@@ -150,7 +137,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 								onChange={(e) => {
 									const nextQuery = e.target.value ?? "";
 									field.onChange(nextQuery);
-									clearExerciseIdentity();
+									setValue(`exercises.${exerciseIndex}.exerciseId`, undefined);
 									setIsOpen(true);
 									// Reset metadata when typing because the name no longer identifies the selected exercise.
 									setValue(`exercises.${exerciseIndex}.global.muscleGroups`, []);
@@ -196,7 +183,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 										role="listbox"
 										className={listboxClassName}
 										{...listboxTouchProps}>
-										{filteredSuggestions.map((exercise) => (
+										{suggestions.map((exercise) => (
 											<button
 												key={exercise.normalizedName}
 												type="button"

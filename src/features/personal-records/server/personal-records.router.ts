@@ -1,13 +1,16 @@
-import { database } from "@/server/database";
 import "server-only";
 
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 import { z } from "zod";
+import { sqlClient } from "@/lib/db/sql";
+import { personalRecordsDb } from "@/features/personal-records/server/personal-records.db";
 import {
 	checkSetPr,
 	getExercisePersonalRecords,
 } from "@/features/personal-records/server/personal-records.service";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
+
+const database = personalRecordsDb.pipe(Layer.provide(sqlClient));
 
 const databaseError = {
 	DATABASE_ERROR: {

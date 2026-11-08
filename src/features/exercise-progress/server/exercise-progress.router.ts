@@ -1,14 +1,17 @@
-import { database } from "@/server/database";
 import "server-only";
 
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 import { z } from "zod";
+import { sqlClient } from "@/lib/db/sql";
+import { progressDb } from "@/features/exercise-progress/server/exercise-progress.db";
 import { exerciseWeightProgressionRanges } from "@/features/exercise-progress/lib/exerciseWeightProgression";
 import { logDatabaseError, protectedProcedure } from "@/server/procedures";
 import {
 	getExerciseWeeklyWeightProgression,
 	getRecentSets,
 } from "@/features/exercise-progress/server/exercise-progress.service";
+
+const database = progressDb.pipe(Layer.provide(sqlClient));
 
 const databaseError = {
 	DATABASE_ERROR: {

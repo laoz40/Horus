@@ -38,7 +38,7 @@ function DashboardYearInTraining({
 	userId,
 	yearSelectable = false,
 }: DashboardYearInTrainingSectionProps) {
-	const currentYear = new Date().getFullYear();
+	const [currentYear] = useState(() => new Date().getFullYear());
 	const [selectedYear, setSelectedYear] = useState(currentYear);
 	const year = yearSelectable ? selectedYear : currentYear;
 

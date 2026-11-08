@@ -43,16 +43,14 @@ const fetchWgerExercises = (query: string) =>
 		});
 
 		if (response.status === 429) {
-			return yield* Effect.fail(new RateLimitedError());
+			return yield* new RateLimitedError();
 		}
 
 		if (!response.ok) {
-			return yield* Effect.fail(
-				new RequestFailedError({
-					reason: "http",
-					cause: { status: response.status, statusText: response.statusText },
-				}),
-			);
+			return yield* new RequestFailedError({
+				reason: "http",
+				cause: { status: response.status, statusText: response.statusText },
+			});
 		}
 
 		const responseBody: unknown = yield* Effect.tryPromise({
@@ -67,9 +65,10 @@ const fetchWgerExercises = (query: string) =>
 		const parsedResponse = WgerExerciseResponseSchema.safeParse(responseBody);
 
 		if (!parsedResponse.success) {
-			return yield* Effect.fail(
-				new RequestFailedError({ reason: "invalid-response", cause: parsedResponse.error }),
-			);
+			return yield* new RequestFailedError({
+				reason: "invalid-response",
+				cause: parsedResponse.error,
+			});
 		}
 
 		return parsedResponse.data;

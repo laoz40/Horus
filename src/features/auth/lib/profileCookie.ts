@@ -10,29 +10,32 @@ type SessionData = typeof authClient.$Infer.Session;
 
 // This cookie is a display hint only. Never use it to authorize requests.
 export function saveProfileCookie(session: SessionData | null): void {
-	const writeCookie = Effect.try(() => {
-		let expires = 0;
-		let value = "";
+	const writeCookie = Effect.try({
+		try: () => {
+			let expires = 0;
+			let value = "";
 
-		if (session) {
-			expires = new Date(session.session.expiresAt).getTime();
-			value = new URLSearchParams({
-				name: (session.user.name ?? "Legend").slice(0, 256),
-				image: session.user.image ?? "",
-				expires: String(expires),
-			}).toString();
-		}
+			if (session) {
+				expires = new Date(session.session.expiresAt).getTime();
+				value = new URLSearchParams({
+					name: (session.user.name ?? "Legend").slice(0, 256),
+					image: session.user.image ?? "",
+					expires: String(expires),
+				}).toString();
+			}
 
-		const secure = location.protocol === "https:" ? "; Secure" : "";
+			const secure = location.protocol === "https:" ? "; Secure" : "";
 
-		// Leave room below the browser's cookie size limit for attributes.
-		let maxAge = 0;
+			// Leave room below the browser's cookie size limit for attributes.
+			let maxAge = 0;
 
-		if (value.length <= 3500) {
-			maxAge = Math.max(0, Math.floor((expires - Date.now()) / 1000));
-		}
+			if (value.length <= 3500) {
+				maxAge = Math.max(0, Math.floor((expires - Date.now()) / 1000));
+			}
 
-		document.cookie = `${profileCookieName}=${maxAge > 0 ? value : ""}; Path=/; Max-Age=${maxAge}; SameSite=Lax${secure}`;
+			document.cookie = `${profileCookieName}=${maxAge > 0 ? value : ""}; Path=/; Max-Age=${maxAge}; SameSite=Lax${secure}`;
+		},
+		catch: () => undefined,
 	});
 
 	// Ignore failures saving the optional name/avatar cookie so sign-in and sign-out still work.

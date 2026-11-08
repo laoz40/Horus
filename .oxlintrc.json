@@ -1,6 +1,7 @@
 {
-	"$schema": "./node_modules/oxlint/configuration_schema.json",
-	"plugins": ["nextjs", "typescript", "unicorn"],
+	"$schema": "./node_modules/@effect/tsgo/oxlint-schema.json",
+	"extends": ["./node_modules/@effect/tsgo/oxlint-presets/strict.json"],
+	"plugins": ["nextjs", "typescript", "unicorn", "effecttsgo"],
 	"jsPlugins": [
 		"@shadcn/lint",
 		{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" },
@@ -31,6 +32,8 @@
 		"src/components/ui/chart.tsx"
 	],
 	"rules": {
+		"effecttsgo/unstable-api-usage": "off",
+		"effecttsgo/schema-number": "error",
 		"shadcn/no-raw-colors": "error",
 		"shadcn/no-arbitrary-values": ["error", { "allow": ["layout"] }],
 		"shadcn/no-unknown-classes": "error",
@@ -129,6 +132,12 @@
 		"@typescript-eslint/consistent-return": "off"
 	},
 	"overrides": [
+		{
+			"files": ["src/features/**/server/*.router.ts", "tools/db/migrate.ts"],
+			"rules": {
+				"effecttsgo/strict-effect-provide": "off"
+			}
+		},
 		{
 			"files": ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
 			"rules": {

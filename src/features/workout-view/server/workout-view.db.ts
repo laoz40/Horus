@@ -18,15 +18,15 @@ const exerciseRowSchema = Schema.Struct({
 	exerciseId: Schema.String,
 	name: Schema.String,
 	muscleGroups: Schema.mutable(Schema.Array(Schema.String)),
-	difficulty: Schema.NullOr(Schema.Number),
+	difficulty: Schema.NullOr(Schema.Finite),
 	notes: Schema.String,
 });
 
 const setRowSchema = Schema.Struct({
 	id: Schema.String,
 	workoutExerciseId: Schema.String,
-	weight: Schema.Number,
-	reps: Schema.Number,
+	weight: Schema.Finite,
+	reps: Schema.Finite,
 	completed: Schema.Boolean,
 	isWeightPr: Schema.Boolean,
 	isVolumePr: Schema.Boolean,
