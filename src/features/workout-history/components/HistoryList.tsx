@@ -1,13 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-
 import type { WorkoutHistoryItem } from "@/features/workout-history/lib/optimisticHistoryItem";
-import {
-	clearDeletedWorkoutIds,
-	selectDeletedWorkoutIds,
-	useHistoryUiStore,
-} from "@/features/workout-history/stores/historyUiStore";
 
 import WorkoutCard from "@/features/workout-history/components/WorkoutCard";
 import { WorkoutCardSkeletonList } from "@/features/workout-history/components/HistoryWorkoutCardSkeleton";
@@ -23,19 +16,7 @@ export default function HistoryList({
 	WORKOUTS_PER_PAGE: number;
 	isPrPending: boolean;
 }) {
-	const deletedWorkoutIds = useHistoryUiStore(selectDeletedWorkoutIds);
-
-	useEffect(() => {
-		clearDeletedWorkoutIds();
-
-		return () => {
-			clearDeletedWorkoutIds();
-		};
-	}, []);
-
-	const visibleWorkouts = workouts.filter((workout) => !deletedWorkoutIds.has(workout.id));
-
-	if (visibleWorkouts.length === 0) {
+	if (workouts.length === 0) {
 		if (isLoading) {
 			return <WorkoutCardSkeletonList count={WORKOUTS_PER_PAGE} />;
 		}
@@ -51,7 +32,7 @@ export default function HistoryList({
 
 	return (
 		<div className="space-y-4 md:space-y-5">
-			{visibleWorkouts.map((workout) => (
+			{workouts.map((workout) => (
 				<WorkoutCard
 					key={workout.id}
 					workout={workout}
