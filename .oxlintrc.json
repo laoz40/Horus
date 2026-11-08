@@ -131,6 +131,12 @@
 	},
 	"overrides": [
 		{
+			"files": ["src/features/**/server/*.router.ts", "tools/db/migrate.ts"],
+			"rules": {
+				"effecttsgo/strict-effect-provide": "off"
+			}
+		},
+		{
 			"files": ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
 			"rules": {
 				"react/display-name": "error",
