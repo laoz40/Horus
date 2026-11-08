@@ -19,12 +19,14 @@ interface WorkoutFormBottomBarProps {
 	exerciseIds: string[];
 	onAddExercise: () => void;
 	onDeleteExercise: () => void;
+	onScrollToExercise: (exerciseId: string) => void;
 }
 
 export default function WorkoutFormBottomBar({
 	exerciseIds,
 	onAddExercise,
 	onDeleteExercise,
+	onScrollToExercise,
 }: WorkoutFormBottomBarProps): ReactElement | null {
 	const { control } = useFormContext<Workout>();
 
@@ -60,7 +62,10 @@ export default function WorkoutFormBottomBar({
 			<div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-4">
 				<div className="flex items-center gap-2">
 					<div className="min-w-0 flex-1">
-						<ExerciseSelector exerciseIds={exerciseIds} />
+						<ExerciseSelector
+							exerciseIds={exerciseIds}
+							onScrollToExercise={onScrollToExercise}
+						/>
 					</div>
 					<Button
 						variant="outline"

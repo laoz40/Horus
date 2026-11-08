@@ -10,7 +10,6 @@ import { restTimerReducer, type RestTimerState } from "@/features/workout-form/l
 export interface WorkoutFormUiState {
 	createWorkoutDraft: Workout | null;
 	exerciseSelection: ExerciseSelection;
-	scrollTargetId: string | null;
 	startedAtMs: number;
 	isRecentSetsDialogOpen: boolean;
 	recentSetsExerciseName: string;
@@ -22,7 +21,6 @@ export type WorkoutFormUiStore = WorkoutFormUiState;
 const createInitialWorkoutFormUiState = (): WorkoutFormUiState => ({
 	createWorkoutDraft: null,
 	exerciseSelection: { kind: "none" },
-	scrollTargetId: null,
 	startedAtMs: Date.now(),
 	isRecentSetsDialogOpen: false,
 	recentSetsExerciseName: "",
@@ -39,8 +37,6 @@ export const selectIsEditingExercise = (state: WorkoutFormUiStore) =>
 	state.exerciseSelection.kind === "editing";
 
 export const selectCreateWorkoutDraft = (state: WorkoutFormUiStore) => state.createWorkoutDraft;
-
-export const selectScrollTargetId = (state: WorkoutFormUiStore) => state.scrollTargetId;
 
 export const selectIsRecentSetsDialogOpen = (state: WorkoutFormUiStore) =>
 	state.isRecentSetsDialogOpen;
@@ -61,7 +57,6 @@ export const useWorkoutFormUiStore = create<WorkoutFormUiStore>()(() => ({
 export function initializeWorkoutSession(initialDurationSeconds = 0): void {
 	useWorkoutFormUiStore.setState({
 		exerciseSelection: { kind: "none" },
-		scrollTargetId: null,
 		startedAtMs: Date.now() - Math.max(0, initialDurationSeconds ?? 0) * 1000,
 		isRecentSetsDialogOpen: false,
 		recentSetsExerciseName: "",
@@ -98,10 +93,6 @@ export function selectExerciseAfterDeletion(nextExerciseId: string | null): void
 			nextExerciseId,
 		}),
 	}));
-}
-
-export function setScrollTarget(exerciseId: string | null): void {
-	useWorkoutFormUiStore.setState({ scrollTargetId: exerciseId });
 }
 
 export function openRecentSetsDialog(exerciseName: string): void {

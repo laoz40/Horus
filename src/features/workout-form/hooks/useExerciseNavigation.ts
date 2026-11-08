@@ -1,11 +1,6 @@
 import { useEffect, useRef, type RefObject } from "react";
 
-import {
-	selectScrollTargetId,
-	selectExercise,
-	setScrollTarget,
-	useWorkoutFormUiStore,
-} from "@/features/workout-form/stores/workoutFormUiStore";
+import { selectExercise } from "@/features/workout-form/stores/workoutFormUiStore";
 
 interface UseExerciseNavigationReturn {
 	exerciseListRef: RefObject<HTMLDivElement | null>;
@@ -14,11 +9,11 @@ interface UseExerciseNavigationReturn {
 		exerciseIndex: number,
 		element: HTMLDivElement | null,
 	) => void;
+	scrollToExercise: (exerciseId: string) => void;
 	scrollToExerciseOnMount: (exerciseIndex: number) => void;
 }
 
 export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
-	const scrollTargetId = useWorkoutFormUiStore(selectScrollTargetId);
 	const exerciseListRef = useRef<HTMLDivElement | null>(null);
 	const exerciseFormRefs = useRef<Record<string, HTMLDivElement | null>>({});
 	const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
@@ -50,17 +45,13 @@ export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
 		}
 	};
 
-	// Scroll to an existing exercise requested by the selector or validation.
-	useEffect(() => {
-		if (!scrollTargetId) return;
-
-		const scrollTarget = exerciseFormRefs.current[scrollTargetId];
-		scrollTarget?.scrollIntoView({
+	// Scroll directly to an existing exercise from selection or validation handlers.
+	const scrollToExercise = (exerciseId: string) => {
+		exerciseFormRefs.current[exerciseId]?.scrollIntoView({
 			behavior: "smooth",
 			block: "nearest",
 		});
-		setScrollTarget(null);
-	}, [scrollTargetId]);
+	};
 
 	// Create the visibility observer once; exercise forms register and unregister
 	// themselves through registerExerciseRef as they mount and unmount.
@@ -112,6 +103,7 @@ export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
 	return {
 		exerciseListRef,
 		registerExerciseRef,
+		scrollToExercise,
 		scrollToExerciseOnMount: (exerciseIndex) => {
 			pendingScrollIndexRef.current = exerciseIndex;
 		},

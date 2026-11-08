@@ -11,16 +11,19 @@ import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import {
 	selectExercise,
 	selectSelectedExerciseId,
-	setScrollTarget,
 	useWorkoutFormUiStore,
 } from "@/features/workout-form/stores/workoutFormUiStore";
 import { useFormContext, useWatch } from "react-hook-form";
 
 interface ExerciseSelectorProps {
 	exerciseIds: string[];
+	onScrollToExercise: (exerciseId: string) => void;
 }
 
-export default function ExerciseSelector({ exerciseIds }: ExerciseSelectorProps) {
+export default function ExerciseSelector({
+	exerciseIds,
+	onScrollToExercise,
+}: ExerciseSelectorProps) {
 	const { control } = useFormContext<Workout>();
 
 	const selectedExerciseId = useWorkoutFormUiStore((state) =>
@@ -50,7 +53,8 @@ export default function ExerciseSelector({ exerciseIds }: ExerciseSelectorProps)
 			onValueChange={(value) => {
 				const nextExerciseId = value || null;
 				selectExercise(nextExerciseId);
-				setScrollTarget(nextExerciseId);
+
+				if (nextExerciseId) onScrollToExercise(nextExerciseId);
 			}}>
 			<SelectTrigger className="w-full">
 				<SelectValue>{selectedExerciseLabel}</SelectValue>
