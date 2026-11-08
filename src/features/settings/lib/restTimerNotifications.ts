@@ -31,12 +31,7 @@ export function writeRestTimerNotificationsEnabled(enabled: boolean): boolean {
 		catch: (): LocalStorageError => ({ reason: "UNAVAILABLE" }),
 	});
 
-	return Effect.runSync(
-		Effect.match(writePreference, {
-			onFailure: () => false,
-			onSuccess: () => true,
-		}),
-	);
+	return Effect.runSync(Effect.isSuccess(writePreference));
 }
 
 type RestTimerNotificationPermissionError = "unsupported" | "blocked" | "dismissed" | "failed";

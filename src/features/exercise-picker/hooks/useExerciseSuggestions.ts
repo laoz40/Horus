@@ -133,7 +133,7 @@ export function useExerciseSuggestions(rawQuery: string, isOpen: boolean) {
 				}
 			}).pipe(
 				Effect.catchTags({
-					CANCELLED: () => Effect.succeed(undefined),
+					CANCELLED: () => Effect.undefined,
 					RATE_LIMITED: () =>
 						Effect.sync(() => showErrorToast("Too many requests. Please try again later.")),
 					REQUEST_FAILED: () => Effect.sync(() => showErrorToast("Failed to fetch exercises.")),
