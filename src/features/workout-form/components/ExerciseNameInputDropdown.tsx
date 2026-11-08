@@ -74,7 +74,6 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 						exerciseIndex,
 						setName: field.onChange,
 						setValue,
-						setFocus,
 						exercise: {
 							name: exerciseName,
 							muscleGroups: match?.muscleGroups,

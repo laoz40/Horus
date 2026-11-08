@@ -10,9 +10,7 @@ export async function selectExercise(page: Page, name: string): Promise<void> {
 	await expect(option).toBeVisible({ timeout: 10_000 });
 	await option.click();
 
-	// Selection defers focus until the set rows mount. Wait for it before typing
-	// so it cannot steal focus back from the reps input during the next fill.
-	await expect(page.getByPlaceholder("kg")).toBeFocused({ timeout: 10_000 });
+	await expect(page.getByPlaceholder("kg")).toBeVisible();
 }
 
 async function dismissRestTimer(page: Page): Promise<void> {

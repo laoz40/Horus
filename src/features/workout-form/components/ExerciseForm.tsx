@@ -35,7 +35,7 @@ function ExerciseForm({ className, exerciseIndex, isEditing, ref }: ExerciseForm
 	});
 
 	const handleAddSet = () => {
-		append(createDefaultSet());
+		append(createDefaultSet(), { shouldFocus: false });
 		void trigger(`exercises.${exerciseIndex}.sets`);
 	};
 
