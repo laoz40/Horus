@@ -1,6 +1,7 @@
 {
-	"$schema": "./node_modules/oxlint/configuration_schema.json",
-	"plugins": ["nextjs", "typescript", "unicorn"],
+	"$schema": "./node_modules/@effect/tsgo/oxlint-schema.json",
+	"extends": ["./node_modules/@effect/tsgo/oxlint-presets/recommended.json"],
+	"plugins": ["nextjs", "typescript", "unicorn", "effecttsgo"],
 	"jsPlugins": [
 		"@shadcn/lint",
 		{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" },
