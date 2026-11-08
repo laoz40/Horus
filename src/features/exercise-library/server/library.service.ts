@@ -72,7 +72,7 @@ const validateExerciseNameAvailability = ({
 
 		const existingExercise = yield* getUserExercise(userId, existingExerciseId);
 
-		return yield* Effect.fail(new ExerciseNameCollisionError({ existingExercise }));
+		return yield* new ExerciseNameCollisionError({ existingExercise });
 	});
 
 interface CreateExerciseInput {
@@ -102,9 +102,7 @@ export const createUserExercise = (input: CreateExerciseInput) =>
 				const row = yield* db.getUserExercise({ userId: input.userId, exerciseId });
 
 				if (!row) {
-					return yield* Effect.fail(
-						new DatabaseError({ cause: new Error("Created exercise was not found") }),
-					);
+					return yield* new DatabaseError({ cause: new Error("Created exercise was not found") });
 				}
 
 				return row;
@@ -137,7 +135,7 @@ export const updateUserExercise = (input: UpdateExerciseInput) =>
 					normalizedName: exercise.normalizedName,
 				});
 
-				if (updatedExerciseId === null) return yield* Effect.fail(new ExerciseNotFoundError());
+				if (updatedExerciseId === null) return yield* new ExerciseNotFoundError();
 				yield* replaceMuscleGroupsIfChanged(db, input.exerciseId, exercise.muscleGroups);
 
 				const row = yield* db.getUserExercise({
@@ -193,7 +191,7 @@ export const mergeUserExercises = (userId: string, input: MergeExerciseLibraryIn
 			const db = yield* ExerciseDb;
 			yield* db.getUserExercise({ userId, exerciseId: sourceId });
 
-			return yield* Effect.fail(new ExerciseNotFoundError());
+			return yield* new ExerciseNotFoundError();
 		}
 
 		let sourceMuscleGroups: ReturnType<typeof normalizeMuscleGroups> | null = null;
@@ -217,7 +215,7 @@ export const mergeUserExercises = (userId: string, input: MergeExerciseLibraryIn
 					{ concurrency: "unbounded" },
 				);
 
-				if (!source || !target) return yield* Effect.fail(new ExerciseNotFoundError());
+				if (!source || !target) return yield* new ExerciseNotFoundError();
 
 				if (sourceMuscleGroups !== null) {
 					yield* replaceMuscleGroupsIfChanged(db, sourceId, sourceMuscleGroups);
