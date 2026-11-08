@@ -48,13 +48,7 @@ const createMissingExercisesAndAttachIds = (input: {
 		const missing = getMissingExercises({ exercises: input.exercises, storedExercises });
 
 		if (missing.length > 0) {
-			yield* db.create({ userId: input.userId, exercises: missing });
-
-			// Look up IDs again in case another save created the same exercise.
-			const createdExercises = yield* db.find({
-				userId: input.userId,
-				names: missing.map((exercise) => exercise.normalizedName),
-			});
+			const createdExercises = yield* db.create({ userId: input.userId, exercises: missing });
 
 			storedExercises = [...storedExercises, ...createdExercises];
 		}

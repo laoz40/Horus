@@ -28,7 +28,7 @@ export class WorkoutExerciseDb extends Context.Service<
 		readonly create: (input: {
 			userId: string;
 			exercises: ExerciseGlobal[];
-		}) => Effect.Effect<void, DatabaseError>;
+		}) => Effect.Effect<readonly StoredExercise[], DatabaseError>;
 	}
 >()("horus/WorkoutExerciseDb") {}
 
@@ -51,7 +51,6 @@ function addMuscleGroups({
 }) {
 	const insertedIds = new Map(inserted.map((row) => [row.normalizedName, row.id]));
 
-	// Only this insert's winners attach groups; existing exercises keep their groups.
 	const groups = exercises.flatMap((exercise) => {
 		const exerciseId = insertedIds.get(exercise.normalizedName);
 
@@ -102,11 +101,12 @@ export const workoutExerciseDb = Layer.effect(
 							${exercises.map((exercise) => exercise.name)}::text[],
 							${exercises.map((exercise) => exercise.normalizedName)}::text[]
 						) AS incoming(name, normalized_name)
-						WHERE true ON CONFLICT (user_id, normalized_name) DO NOTHING
 						RETURNING id, normalized_name AS "normalizedName"
 					`.pipe(Effect.flatMap(Schema.decodeUnknownEffect(ExerciseRows)));
 
 					yield* addMuscleGroups({ sql, exercises, inserted });
+
+					return inserted;
 				}).pipe(withDatabaseError),
 		};
 	}),
