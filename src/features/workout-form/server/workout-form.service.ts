@@ -7,7 +7,6 @@ import {
 	WorkoutExerciseDb,
 	type PreparedWorkoutWriteExercise,
 } from "@/features/workout-form/server/workout-exercises.db";
-import { DatabaseError } from "@/lib/db/database";
 import { WorkoutFormDb } from "@/features/workout-form/server/workout-form.db";
 import type { WorkoutUpdateInput } from "@/features/workout-form/server/workout-form.db";
 import {
@@ -20,6 +19,8 @@ import {
 } from "@/features/personal-records/server/pr-history.functions";
 import { requireWorkout } from "@/features/workout-view/server/workout-view.functions";
 import {
+	attachExerciseIdsToWorkout,
+	getMissingExercises,
 	buildNewWorkoutPrSets,
 	normalizeWorkoutForWrite,
 	validateUniqueWorkoutChildIds,
@@ -30,44 +31,35 @@ type WorkoutSaveInput = {
 	workout: WorkoutForSave;
 };
 
-const findOrCreateWorkoutExercises = (input: {
+const createMissingExercisesAndAttachIds = (input: {
 	userId: string;
 	exercises: PreparedWorkoutWriteExercise[];
 }) =>
 	Effect.gen(function* () {
+		if (input.exercises.length === 0) return [];
+
 		const db = yield* WorkoutExerciseDb;
 
-		return yield* Effect.forEach(
-			input.exercises,
-			(exercise) =>
-				Effect.gen(function* () {
-					const lookup = { userId: input.userId, normalizedName: exercise.global.normalizedName };
-					const existingId = yield* db.findExercise(lookup);
+		let storedExercises = yield* db.find({
+			userId: input.userId,
+			names: input.exercises.map((exercise) => exercise.global.normalizedName),
+		});
 
-					if (existingId !== null) return { ...exercise, exerciseId: existingId };
+		const missing = getMissingExercises({ exercises: input.exercises, storedExercises });
 
-					const insertedId = yield* db.insertExerciseIfMissing({
-						...lookup,
-						name: exercise.global.name,
-					});
+		if (missing.length > 0) {
+			yield* db.create({ userId: input.userId, exercises: missing });
 
-					const exerciseId = yield* db.findExercise(lookup);
+			// Look up IDs again in case another save created the same exercise.
+			const createdExercises = yield* db.find({
+				userId: input.userId,
+				names: missing.map((exercise) => exercise.normalizedName),
+			});
 
-					if (exerciseId === null)
-						return yield* Effect.fail(
-							new DatabaseError({
-								cause: new Error("Exercise was not found after the insert"),
-							}),
-						);
+			storedExercises = [...storedExercises, ...createdExercises];
+		}
 
-					// Only this insert's winner attaches groups; existing exercises keep their groups.
-					if (insertedId !== null)
-						yield* db.addMuscleGroups({ exerciseId, groups: exercise.global.muscleGroups });
-
-					return { ...exercise, exerciseId };
-				}),
-			{ concurrency: "unbounded" },
-		);
+		return yield* attachExerciseIdsToWorkout({ exercises: input.exercises, storedExercises });
 	});
 
 export const createWorkout = (createInput: WorkoutSaveInput) =>
@@ -79,7 +71,7 @@ export const createWorkout = (createInput: WorkoutSaveInput) =>
 				const workouts = yield* WorkoutFormDb;
 				const workoutId = yield* workouts.create({ ...createInput, workout });
 
-				const exercisesWithDatabaseIds = yield* findOrCreateWorkoutExercises({
+				const exercisesWithDatabaseIds = yield* createMissingExercisesAndAttachIds({
 					userId: createInput.userId,
 					exercises: workout.exercises,
 				});
@@ -115,7 +107,7 @@ const updateWorkoutAndRecalculatePrs = (updateInput: WorkoutUpdateInput) =>
 			if (!workout) return null;
 			const previousExerciseIds = yield* workouts.getExerciseIds(updateInput.workoutId);
 
-			const exercisesWithDatabaseIds = yield* findOrCreateWorkoutExercises({
+			const exercisesWithDatabaseIds = yield* createMissingExercisesAndAttachIds({
 				userId: updateInput.userId,
 				exercises: updateInput.workout.exercises,
 			});

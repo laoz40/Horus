@@ -4,7 +4,12 @@ import { Data, Effect } from "effect";
 import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { normalizeName } from "@/lib/normalizeName";
 import { normalizeMuscleGroups } from "@/features/exercise-library/lib/normalizeMuscleGroups";
-import type { WorkoutExerciseWithDatabaseId } from "@/features/workout-form/server/workout-exercises.db";
+import { DatabaseError } from "@/lib/db/database";
+import type {
+	PreparedWorkoutWriteExercise,
+	StoredExercise,
+	WorkoutExerciseWithDatabaseId,
+} from "@/features/workout-form/server/workout-exercises.db";
 
 class InvalidWorkoutInputError extends Data.TaggedError("INVALID_INPUT") {}
 
@@ -52,4 +57,44 @@ export function buildNewWorkoutPrSets(
 			completed: set.completed,
 		})),
 	);
+}
+
+export function getMissingExercises({
+	exercises,
+	storedExercises,
+}: {
+	exercises: PreparedWorkoutWriteExercise[];
+	storedExercises: readonly StoredExercise[];
+}) {
+	const unique = new Map(
+		exercises.toReversed().map(({ global }) => [global.normalizedName, global]),
+	);
+
+	const storedNames = new Set(storedExercises.map((exercise) => exercise.normalizedName));
+
+	return [...unique.values()].filter((exercise) => !storedNames.has(exercise.normalizedName));
+}
+
+export function attachExerciseIdsToWorkout({
+	exercises,
+	storedExercises,
+}: {
+	exercises: PreparedWorkoutWriteExercise[];
+	storedExercises: readonly StoredExercise[];
+}) {
+	const idsByName = new Map(
+		storedExercises.map((exercise) => [exercise.normalizedName, exercise.id]),
+	);
+
+	return Effect.forEach(exercises, (exercise) => {
+		const exerciseId = idsByName.get(exercise.global.normalizedName);
+
+		if (exerciseId === undefined) {
+			return Effect.fail(
+				new DatabaseError({ cause: new Error("Exercise was not found after the insert") }),
+			);
+		}
+
+		return Effect.succeed({ ...exercise, exerciseId });
+	});
 }
