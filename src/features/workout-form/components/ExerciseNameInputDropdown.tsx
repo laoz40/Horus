@@ -1,6 +1,6 @@
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { useRef, useState } from "react";
-import type { MouseEvent, PointerEvent } from "react";
+import type { SyntheticEvent } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import { IconLoader2, IconSearch, IconXboxX } from "@tabler/icons-react";
@@ -15,19 +15,15 @@ import { useExerciseSuggestions } from "@/features/exercise-picker/hooks/useExer
 import { applyPickedExercise } from "@/features/workout-form/lib/selectExercise";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
-// The footer is an action, not an autocomplete item. Keep the name input focused
-// without intercepting touch scrolling or handling activation before click.
-const preventPointerBlur = (event: PointerEvent) => {
-	event.preventDefault();
-};
-
-const preventMouseBlur = (event: MouseEvent) => {
+// Keep the keyboard open when tapping Search Online. iOS can also send a
+// synthetic mousedown without pointerdown, so both events use this guard.
+const preventInputBlur = (event: SyntheticEvent) => {
 	event.preventDefault();
 };
 
 export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: number }) {
 	const anchorRef = useRef<HTMLDivElement | null>(null);
-	const { control, setValue, setFocus } = useFormContext<Workout>();
+	const { control, setValue } = useFormContext<Workout>();
 	const exerciseNamePath = `exercises.${exerciseIndex}.global.name` as const;
 	const query = useWatch({ control, name: exerciseNamePath }) ?? "";
 	const [isOpen, setIsOpen] = useState(false);
@@ -97,10 +93,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 									<Autocomplete.Clear
 										render={<InputGroupButton size="icon-sm" />}
 										aria-label="Clear exercise name"
-										onClick={() => {
-											setFocus(exerciseNamePath);
-											setIsOpen(false);
-										}}>
+										onClick={() => setIsOpen(false)}>
 										<IconXboxX />
 									</Autocomplete.Clear>
 								</InputGroupAddon>
@@ -140,8 +133,8 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 										type="button"
 										className="flex w-full items-center justify-start gap-2 p-2 text-base text-muted-foreground underline disabled:opacity-50"
 										disabled={isSearching}
-										onPointerDown={preventPointerBlur}
-										onMouseDown={preventMouseBlur}
+										onPointerDown={preventInputBlur}
+										onMouseDown={preventInputBlur}
 										onClick={() => void fetchMoreSuggestions()}>
 										{isSearching && <IconLoader2 className="size-4 animate-spin" />}
 										{searchLabel}
