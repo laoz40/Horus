@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactElement } from "react";
+import type { ReactElement } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Drawer,
@@ -10,64 +10,21 @@ import {
 	DrawerTrigger,
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
-import { showRestTimerNotification } from "@/features/settings/lib/restTimerNotifications";
+import { useRestTimer } from "@/features/workout-form/hooks/useRestTimer";
 import {
 	finishRestTimer,
 	selectIsRestTimerDrawerOpen,
-	selectRestTimerStartedAtMs,
 	setRestTimerDrawerOpen,
 	useWorkoutFormUiStore,
 } from "@/features/workout-form/stores/workoutFormUiStore";
 
-const formatElapsedTime = (elapsedMs: number): string => {
-	const totalSeconds = Math.max(0, Math.floor(elapsedMs / 1000));
-	const minutes = Math.floor(totalSeconds / 60);
-	const seconds = totalSeconds % 60;
-
-	return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-};
-
-const REST_TARGET_MS = 2 * 60 * 1000; // 2 minutes
-
-const REST_TARGET_REMINDER_INTERVAL_MS = 30 * 1000; // 30 seconds
-
 export default function RestTimerButton(): ReactElement {
 	const isOpen = useWorkoutFormUiStore(selectIsRestTimerDrawerOpen);
-	const startedAtMs = useWorkoutFormUiStore(selectRestTimerStartedAtMs);
-	const [nowMs, setNowMs] = useState(() => Date.now());
+	const timer = useRestTimer();
 
-	// Update the rest clock and send due reminders while the timer is running.
-	useEffect(() => {
-		if (!startedAtMs) return;
+	if (!timer) return <></>;
 
-		let nextAutoOpenMs = startedAtMs + REST_TARGET_MS;
-
-		const tick = () => {
-			const currentTimeMs = Date.now();
-			setNowMs(currentTimeMs);
-
-			if (currentTimeMs < nextAutoOpenMs) return;
-
-			setRestTimerDrawerOpen(true);
-			void showRestTimerNotification(formatElapsedTime(currentTimeMs - startedAtMs));
-
-			// ensure next auto-open time is in the future
-			while (nextAutoOpenMs <= currentTimeMs) {
-				nextAutoOpenMs += REST_TARGET_REMINDER_INTERVAL_MS;
-			}
-		};
-
-		tick();
-		const intervalId = window.setInterval(tick, 1000);
-
-		return () => window.clearInterval(intervalId);
-	}, [startedAtMs]);
-
-	if (!startedAtMs) return <></>;
-
-	const elapsedMs = nowMs - startedAtMs;
-	const elapsedTime = formatElapsedTime(elapsedMs);
-	const isOverRestTarget = elapsedMs >= REST_TARGET_MS;
+	const { elapsedTime, isOverRestTarget } = timer;
 
 	return (
 		<Drawer
