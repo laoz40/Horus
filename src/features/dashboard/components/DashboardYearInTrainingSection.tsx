@@ -9,6 +9,7 @@ import TrainingYearSelector, {
 	type TrainingYearSelectorProps,
 } from "@/features/dashboard/components/TrainingYearSelector";
 import { orpc } from "@/lib/orpc/client";
+import type { DashboardSession } from "@/features/dashboard/hooks/useDashboardSession";
 
 type HeatmapValue = {
 	date: string;
@@ -18,9 +19,7 @@ type HeatmapValue = {
 const emptyText = "Your consistency map starts with your next session.";
 
 type DashboardYearInTrainingSectionProps = {
-	isAuthPending: boolean;
-	isSignedIn: boolean;
-	userId?: string;
+	session: DashboardSession;
 	yearSelectable?: boolean;
 };
 
@@ -33,19 +32,20 @@ export default function DashboardYearInTrainingSection(props: DashboardYearInTra
 }
 
 function DashboardYearInTraining({
-	isAuthPending,
-	isSignedIn,
-	userId,
+	session,
 	yearSelectable = false,
 }: DashboardYearInTrainingSectionProps) {
 	const [currentYear] = useState(() => new Date().getFullYear());
 	const [selectedYear, setSelectedYear] = useState(currentYear);
 	const year = yearSelectable ? selectedYear : currentYear;
+	const isSignedIn = session.kind === "authenticated";
+	const userId = session.kind === "authenticated" ? session.user.id : undefined;
+	const needsYearRange = isSignedIn && yearSelectable;
 
 	const trainingYearRangeQuery = useQuery(
 		orpc.dashboard.trainingYearRange.queryOptions({
 			input: {},
-			enabled: isSignedIn && yearSelectable,
+			enabled: needsYearRange,
 		}),
 	);
 
@@ -74,9 +74,9 @@ function DashboardYearInTraining({
 			yearSelectable={yearSelectable}
 			onYearChange={setSelectedYear}>
 			<YearInTrainingBody
-				isAuthPending={isAuthPending}
+				isAuthPending={session.kind === "loading"}
 				isStatsPending={isSignedIn && isStatsPending}
-				isYearRangePending={isSignedIn && yearSelectable && trainingYearRangeQuery.isPending}
+				isYearRangePending={needsYearRange && trainingYearRangeQuery.isPending}
 				isError={isStatsError}
 				year={year}
 				values={values}
