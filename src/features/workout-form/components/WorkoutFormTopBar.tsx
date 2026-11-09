@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import { useWorkoutTimer } from "@/features/workout-form/hooks/useWorkoutTimer";
 import { useWorkoutFormUiStore } from "@/features/workout-form/stores/workoutFormUiStore";
 import { formatDurationFull } from "@/lib/time";
+import type { WorkoutFormMode } from "@/features/workout-form/components/WorkoutForm";
 
 import { WorkoutNameDialog } from "@/features/workout-form/components/WorkoutNameDialog";
 import WorkoutExitLink from "@/features/workout-form/components/WorkoutExitLink";
 
 interface WorkoutFormTopBarProps {
 	initialDurationSeconds: number;
-	workoutId?: string;
+	mode: WorkoutFormMode["kind"];
 	isSubmitting: boolean;
 }
 
@@ -30,15 +31,15 @@ function WorkoutDuration({ initialDurationSeconds }: WorkoutDurationProps): Reac
 
 export default function WorkoutFormTopBar({
 	initialDurationSeconds,
-	workoutId,
+	mode,
 	isSubmitting,
 }: WorkoutFormTopBarProps): ReactElement {
 	return (
 		<div className="ios-safe-area-top relative right-1/2 left-1/2 -mr-[50vw] -ml-[50vw] w-screen border-b bg-sidebar dark:bg-sidebar">
 			<div className="mx-auto flex max-w-5xl flex-row items-center justify-between px-4 py-2">
 				<WorkoutExitLink
-					href={workoutId ? "/workouts" : "/"}
-					isCreate={!workoutId}
+					href={mode === "edit" ? "/workouts" : "/"}
+					isCreate={mode === "create"}
 				/>
 				<WorkoutDuration initialDurationSeconds={initialDurationSeconds} />
 				<WorkoutNameDialog>
