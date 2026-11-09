@@ -21,6 +21,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@base-ui/react": "1.9.0",
 		"@daveyplate/better-auth-ui": "^3.4.0",
 		"@effect/sql-pg": "4.0.2",
 		"@hookform/resolvers": "^5.2.2",
