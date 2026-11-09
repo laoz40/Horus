@@ -50,6 +50,12 @@ export default function DeleteAllWorkoutsSection() {
 		}),
 	);
 
+	function handleDeleteAllWorkouts() {
+		if (deleteAllWorkouts.isPending) return;
+
+		deleteAllWorkouts.mutate({});
+	}
+
 	return (
 		<SectionCard header="Data">
 			<div className="flex flex-row items-center justify-between">
@@ -57,9 +63,10 @@ export default function DeleteAllWorkoutsSection() {
 				<AlertDialogDestructive
 					title="Delete all workouts?"
 					description="This will permanently delete all workouts."
-					handleDelete={() => deleteAllWorkouts.mutate({})}>
+					handleDelete={handleDeleteAllWorkouts}>
 					<Button
 						variant="destructive"
+						disabled={deleteAllWorkouts.isPending}
 						size="sm">
 						Delete all workouts
 					</Button>

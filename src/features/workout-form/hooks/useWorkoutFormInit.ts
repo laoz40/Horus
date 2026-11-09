@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type Resolver } from "react-hook-form";
 import { WorkoutSchema, type Workout } from "@/features/workout-form/lib/validateWorkout";
+import type { WorkoutFormMode } from "@/features/workout-form/components/WorkoutForm";
 import { createDefaultWorkoutValues } from "@/features/workout-form/lib/WorkoutFormDefaults";
 import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
 import { showErrorToast } from "@/lib/toastMessages";
@@ -14,8 +15,7 @@ import {
 } from "@/features/workout-form/stores/workoutFormUiStore";
 
 interface UseWorkoutFormInitProps {
-	initialData?: Workout;
-	workoutId?: string;
+	mode: WorkoutFormMode;
 	missingGlobalExercisesCount?: number;
 }
 
@@ -26,13 +26,12 @@ const workoutResolver: Resolver<Workout> = (values, context, options) =>
 	baseResolver(stripEmptyWorkoutEntries(values), context, options);
 
 export const useWorkoutFormInit = ({
-	initialData,
-	workoutId,
+	mode,
 	missingGlobalExercisesCount = 0,
 }: UseWorkoutFormInitProps) => {
 	// Editing restores the server-loaded workout; a new workout restores the local draft.
 	const [startingWorkout] = useState(() => {
-		if (workoutId) return initialData;
+		if (mode.kind === "edit") return mode.initialData;
 
 		return selectCreateWorkoutDraft(useWorkoutFormUiStore.getState()) ?? undefined;
 	});

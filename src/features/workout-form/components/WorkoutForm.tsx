@@ -25,15 +25,17 @@ import WorkoutFormBottomBar from "@/features/workout-form/components/WorkoutForm
 import WorkoutFormTopBar from "@/features/workout-form/components/WorkoutFormTopBar";
 import RecentSetsDialog from "@/features/workout-form/components/RecentSetsDialog";
 
+export type WorkoutFormMode =
+	| { kind: "create" }
+	| { kind: "edit"; workoutId: string; initialData: Workout };
+
 interface WorkoutFormProps {
-	initialData?: Workout;
-	workoutId?: string;
+	mode: WorkoutFormMode;
 	missingGlobalExercisesCount?: number;
 }
 
 export default function WorkoutForm({
-	initialData,
-	workoutId,
+	mode,
 	missingGlobalExercisesCount,
 }: WorkoutFormProps): ReactElement {
 	const isEditing = useWorkoutFormUiStore(selectIsEditingExercise);
@@ -42,8 +44,7 @@ export default function WorkoutForm({
 	const recentSetsExerciseName = useWorkoutFormUiStore(selectRecentSetsExerciseName);
 
 	const { methods, initialDurationSeconds } = useWorkoutFormInit({
-		initialData,
-		workoutId,
+		mode,
 		missingGlobalExercisesCount,
 	});
 
@@ -55,7 +56,7 @@ export default function WorkoutForm({
 		handleAddExercise,
 	} = useWorkoutExercises({ control: methods.control });
 
-	const { isSubmitting, submitWorkout } = useWorkoutSubmit({ startedAtMs, workoutId });
+	const { isSubmitting, submitWorkout } = useWorkoutSubmit({ startedAtMs, mode });
 
 	const { exerciseListRef, registerExerciseRef, scrollToExercise, scrollToExerciseOnMount } =
 		useExerciseNavigation();
@@ -104,7 +105,7 @@ export default function WorkoutForm({
 			<FormProvider {...methods}>
 				<WorkoutFormTopBar
 					initialDurationSeconds={initialDurationSeconds}
-					workoutId={workoutId}
+					mode={mode.kind}
 					isSubmitting={isSubmitting}
 				/>
 

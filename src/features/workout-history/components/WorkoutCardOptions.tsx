@@ -82,6 +82,12 @@ export default function WorkoutCardOptions({
 		}),
 	);
 
+	function handleDeleteWorkout() {
+		if (deleteWorkout.isPending) return;
+
+		deleteWorkout.mutate({ workoutId });
+	}
+
 	return (
 		<>
 			<DropdownMenu>
@@ -119,10 +125,11 @@ export default function WorkoutCardOptions({
 						<AlertDialogDestructive
 							title="Delete workout?"
 							description={`This will permanently delete workout: ${workoutName}`}
-							handleDelete={() => deleteWorkout.mutate({ workoutId })}>
+							handleDelete={handleDeleteWorkout}>
 							<DropdownMenuItem
 								className="h-10 gap-1"
 								variant="destructive"
+								disabled={deleteWorkout.isPending}
 								onSelect={(e) => e.preventDefault()}>
 								<IconTrash className="size-4" />
 								Delete

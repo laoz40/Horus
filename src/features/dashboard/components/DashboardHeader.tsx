@@ -1,27 +1,20 @@
 import DashboardAccountButton from "@/features/auth/components/DashboardAccountButton";
 import DashboardSavedProfile from "@/features/auth/components/DashboardSavedProfile";
 
-interface DashboardHeaderProps {
-	shouldShowSavedProfile: boolean;
-	isPending: boolean;
-	user: Parameters<typeof DashboardAccountButton>[0]["initialUser"];
-}
+import type { DashboardSession } from "@/features/dashboard/hooks/useDashboardSession";
 
-export default function DashboardHeader({
-	shouldShowSavedProfile,
-	isPending,
-	user,
-}: DashboardHeaderProps) {
-	const displayName = user !== null ? (user.name ?? "Legend") : "Legend";
-	const headingText = user !== null ? "Welcome back," : "Welcome,";
-
-	if (shouldShowSavedProfile) {
+export default function DashboardHeader({ session }: { session: DashboardSession }) {
+	if (session.kind === "loading" || session.kind === "unavailable") {
 		return (
 			<div className="px-4 pt-2">
-				<DashboardSavedProfile isPending={isPending} />
+				<DashboardSavedProfile isPending={session.kind === "loading"} />
 			</div>
 		);
 	}
+
+	const user = session.kind === "authenticated" ? session.user : null;
+	const displayName = user !== null ? (user.name ?? "Legend") : "Legend";
+	const headingText = user !== null ? "Welcome back," : "Welcome,";
 
 	return (
 		<div className="flex flex-row items-start justify-between px-4 pt-2">

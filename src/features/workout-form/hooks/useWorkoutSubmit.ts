@@ -2,6 +2,7 @@ import { isDefinedError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
+import type { WorkoutFormMode } from "@/features/workout-form/components/WorkoutForm";
 import { parseWorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
 import { invalidateExerciseQueriesInBackground } from "@/features/exercise-library/lib/invalidateExerciseQueries";
@@ -15,7 +16,7 @@ import { showErrorToast, showWorkoutSaveToast } from "@/lib/toastMessages";
 
 interface UseWorkoutSubmitProps {
 	startedAtMs: number;
-	workoutId?: string;
+	mode: WorkoutFormMode;
 }
 
 interface UseWorkoutSubmitReturn {
@@ -25,7 +26,7 @@ interface UseWorkoutSubmitReturn {
 
 export const useWorkoutSubmit = ({
 	startedAtMs,
-	workoutId,
+	mode,
 }: UseWorkoutSubmitProps): UseWorkoutSubmitReturn => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
@@ -147,7 +148,7 @@ export const useWorkoutSubmit = ({
 			return;
 		}
 
-		if (!workoutId) {
+		if (mode.kind === "create") {
 			setCreateWorkoutDraft(workoutResult.data);
 			showWorkoutSaveToast(createWorkout.mutateAsync({ workout: workoutResult.data }));
 			router.push("/workouts");
@@ -155,7 +156,9 @@ export const useWorkoutSubmit = ({
 			return;
 		}
 
-		showWorkoutSaveToast(updateWorkout.mutateAsync({ workoutId, workout: workoutResult.data }));
+		showWorkoutSaveToast(
+			updateWorkout.mutateAsync({ workoutId: mode.workoutId, workout: workoutResult.data }),
+		);
 		router.push("/workouts");
 	};
 
