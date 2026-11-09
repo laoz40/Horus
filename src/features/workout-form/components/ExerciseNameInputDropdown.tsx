@@ -1,8 +1,9 @@
-import { useId, useRef, useState } from "react";
-import type { MouseEvent, PointerEvent, TouchEvent } from "react";
+import { Autocomplete } from "@base-ui/react/autocomplete";
+import { useRef, useState } from "react";
+import type { SyntheticEvent } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
-import { IconSearch, IconXboxX } from "@tabler/icons-react";
+import { IconLoader2, IconSearch, IconXboxX } from "@tabler/icons-react";
 
 import {
 	InputGroup,
@@ -11,24 +12,18 @@ import {
 	InputGroupInput,
 } from "@/components/ui/input-group";
 import { useExerciseSuggestions } from "@/features/exercise-picker/hooks/useExerciseSuggestions";
-import { useSuggestionListTouchScroll } from "@/features/workout-form/hooks/useSuggestionListTouchScroll";
 import { applyPickedExercise } from "@/features/workout-form/lib/selectExercise";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
-// Keep the input focused when the mouse is used on the dropdown options.
-const preventMouseBlur = (event: MouseEvent) => {
+// Keep the keyboard open when tapping Search Online. iOS can also send a
+// synthetic mousedown without pointerdown, so both events use this guard.
+const preventInputBlur = (event: SyntheticEvent) => {
 	event.preventDefault();
 };
 
-const preventMousePointerBlur = (event: PointerEvent) => {
-	if (event.pointerType === "mouse") {
-		event.preventDefault();
-	}
-};
-
 export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: number }) {
-	const listboxId = useId();
-	const { control, setValue, setFocus } = useFormContext<Workout>();
+	const anchorRef = useRef<HTMLDivElement | null>(null);
+	const { control, setValue } = useFormContext<Workout>();
 	const exerciseNamePath = `exercises.${exerciseIndex}.global.name` as const;
 	const query = useWatch({ control, name: exerciseNamePath }) ?? "";
 	const [isOpen, setIsOpen] = useState(false);
@@ -36,135 +31,75 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 	const { suggestions, isDbSearchLoading, isOnlineSearchLoading, fetchMoreSuggestions } =
 		useExerciseSuggestions(query, isOpen);
 
-	const shouldShowSuggestions = isOpen && query.trim().length > 0;
-	// The search-online touch path lets the browser's synthetic click through, so
-	// the ref marks it handled and the click handler skips the duplicate fetch.
-	const didHandleTouchFetchRef = useRef(false);
+	const isEmpty = !query.trim();
+	const isSearching = isDbSearchLoading || isOnlineSearchLoading;
+	let searchLabel = "Search Online";
 
-	const { listboxRef, listboxTouchProps, shouldHandleTouchTap, stopTouch } =
-		useSuggestionListTouchScroll();
-
-	const handleSearchOnlineTouchEnd = () => {
-		if (shouldHandleTouchTap()) {
-			didHandleTouchFetchRef.current = true;
-			void fetchMoreSuggestions();
-		}
-
-		stopTouch();
-	};
-
-	const fetchMoreSuggestionsFromClick = () => {
-		if (didHandleTouchFetchRef.current) {
-			didHandleTouchFetchRef.current = false;
-
-			return;
-		}
-
-		void fetchMoreSuggestions();
-	};
-
-	const getSearchLabel = () => {
-		if (isDbSearchLoading) return "Searching database...";
-
-		if (isOnlineSearchLoading) return "Loading...";
-
-		return "Search Online";
-	};
+	if (isDbSearchLoading) {
+		searchLabel = "Searching database";
+	} else if (isOnlineSearchLoading) {
+		searchLabel = "Loading";
+	}
 
 	return (
 		<Controller
 			name={exerciseNamePath}
 			control={control}
-			render={({ field }) => {
-				const selectExercise = (exerciseName: string) => {
-					const match = suggestions.find((exercise) => exercise.name === exerciseName);
+			render={({ field }) => (
+				<Autocomplete.Root
+					items={suggestions.map((exercise) => exercise.name)}
+					filter={null}
+					value={query}
+					open={isOpen && !isEmpty}
+					openOnInputClick
+					onOpenChange={setIsOpen}
+					onValueChange={(name, details) => {
+						if (details.reason === "item-press") {
+							const match = suggestions.find((exercise) => exercise.name === name);
 
-					applyPickedExercise({
-						exerciseIndex,
-						setName: field.onChange,
-						setValue,
-						exercise: {
-							name: exerciseName,
-							muscleGroups: match?.muscleGroups,
-						},
-					});
-					setIsOpen(false);
-				};
-
-				const handleOptionTouchEnd = (
-					event: TouchEvent<HTMLButtonElement>,
-					exerciseName: string,
-				) => {
-					// Selecting an option unmounts the dropdown and mounts set rows under the finger;
-					// preventDefault stops the browser's synthetic click from focusing the reps input.
-					event.preventDefault();
-					selectExerciseFromTouch(exerciseName);
-					stopTouch();
-				};
-
-				const listboxClassName =
-					"max-h-72 scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0";
-
-				const selectExerciseFromTouch = (exerciseName: string) => {
-					if (!shouldHandleTouchTap()) return;
-
-					selectExercise(exerciseName);
-				};
-
-				const handleClearName = () => {
-					field.onChange("");
-					setValue(`exercises.${exerciseIndex}.exerciseId`, undefined);
-					setValue(`exercises.${exerciseIndex}.global.muscleGroups`, []);
-					setFocus(exerciseNamePath);
-					setIsOpen(false);
-				};
-
-				const isEmpty = !query.trim();
-
-				return (
+							applyPickedExercise({
+								exerciseIndex,
+								setName: field.onChange,
+								setValue,
+								exercise: { name, muscleGroups: match?.muscleGroups },
+							});
+						} else {
+							field.onChange(name);
+							setValue(`exercises.${exerciseIndex}.exerciseId`, undefined);
+							// Typed names no longer identify the previously selected exercise.
+							setValue(`exercises.${exerciseIndex}.global.muscleGroups`, []);
+						}
+					}}>
 					<div className="relative w-full">
-						<InputGroup className="h-11 w-full rounded-none border-x-0 border-t-0 border-b border-transparent bg-transparent! shadow-none has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-[>[data-align=inline-end]]:[&>input]:pr-0">
-							<InputGroupInput
+						<Autocomplete.InputGroup
+							ref={anchorRef}
+							render={<InputGroup />}
+							className="h-11 w-full rounded-none border-x-0 border-t-0 border-b border-transparent bg-transparent! shadow-none has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-[>[data-align=inline-end]]:[&>input]:pr-0">
+							<Autocomplete.Input
+								ref={field.ref}
+								name={field.name}
+								render={<InputGroupInput className="px-0 font-semibold placeholder:opacity-0" />}
 								placeholder="Search an exercise..."
-								className="px-0 font-semibold placeholder:opacity-0"
 								maxLength={64}
-								value={query}
 								autoComplete="off"
-								role="combobox"
 								aria-label="Exercise name"
-								aria-expanded={shouldShowSuggestions}
-								aria-controls={listboxId}
-								onChange={(e) => {
-									const nextQuery = e.target.value ?? "";
-									field.onChange(nextQuery);
-									setValue(`exercises.${exerciseIndex}.exerciseId`, undefined);
-									setIsOpen(true);
-									// Reset metadata when typing because the name no longer identifies the selected exercise.
-									setValue(`exercises.${exerciseIndex}.global.muscleGroups`, []);
-								}}
 								onFocus={() => setIsOpen(true)}
-								onClick={() => setIsOpen(true)}
-								onBlur={() => {
-									field.onBlur();
-									setIsOpen(false);
-								}}
+								onBlur={field.onBlur}
 							/>
 							{query && (
 								<InputGroupAddon
 									align="inline-end"
 									className="pr-0">
-									<InputGroupButton
-										size="icon-sm"
+									<Autocomplete.Clear
+										render={<InputGroupButton size="icon-sm" />}
 										aria-label="Clear exercise name"
-										onMouseDown={preventMouseBlur}
-										onClick={handleClearName}>
+										onClick={() => setIsOpen(false)}>
 										<IconXboxX />
-									</InputGroupButton>
+									</Autocomplete.Clear>
 								</InputGroupAddon>
 							)}
-						</InputGroup>
+						</Autocomplete.InputGroup>
 
-						{/* overlays placeholder on input so the search icon to disappear as well */}
 						{isEmpty && (
 							<div
 								className="pointer-events-none absolute inset-y-0 left-0 flex items-center gap-2 text-muted-foreground"
@@ -173,47 +108,43 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 								<span className="text-xl font-semibold">Search an exercise...</span>
 							</div>
 						)}
-
-						{shouldShowSuggestions && (
-							<div className="absolute top-full left-0 isolate z-50 mt-1.5 w-full">
-								<div className="group/combobox-content relative max-h-96 w-full overflow-hidden rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10">
-									<div
-										ref={listboxRef}
-										id={listboxId}
-										role="listbox"
-										className={listboxClassName}
-										{...listboxTouchProps}>
-										{suggestions.map((exercise) => (
-											<button
-												key={exercise.normalizedName}
-												type="button"
-												role="option"
-												aria-selected={exercise.name === query}
-												className="relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-left text-base outline-hidden select-none hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
-												onPointerDown={preventMousePointerBlur}
-												onMouseDown={preventMouseBlur}
-												onTouchEnd={(event) => handleOptionTouchEnd(event, exercise.name)}
-												onClick={() => selectExercise(exercise.name)}>
-												{exercise.name}
-											</button>
-										))}
-										<button
-											type="button"
-											className="flex w-full justify-start p-2 text-base text-muted-foreground underline disabled:opacity-50"
-											disabled={isDbSearchLoading || isOnlineSearchLoading}
-											onPointerDown={preventMousePointerBlur}
-											onMouseDown={preventMouseBlur}
-											onTouchEnd={handleSearchOnlineTouchEnd}
-											onClick={fetchMoreSuggestionsFromClick}>
-											{getSearchLabel()}
-										</button>
-									</div>
-								</div>
-							</div>
-						)}
 					</div>
-				);
-			}}
+
+					<Autocomplete.Portal>
+						<Autocomplete.Positioner
+							anchor={anchorRef}
+							side="bottom"
+							align="start"
+							sideOffset={6}
+							collisionAvoidance={{ side: "none", align: "none", fallbackAxisSide: "none" }}>
+							<Autocomplete.Popup className="relative max-h-96 w-(--anchor-width) overflow-hidden rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10">
+								<div className="max-h-72 scroll-py-1 overflow-y-auto overscroll-contain p-1">
+									<Autocomplete.List>
+										{suggestions.map((exercise) => (
+											<Autocomplete.Item
+												key={exercise.normalizedName}
+												value={exercise.name}
+												className="relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-left text-base outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground">
+												{exercise.name}
+											</Autocomplete.Item>
+										))}
+									</Autocomplete.List>
+									<button
+										type="button"
+										className="flex w-full items-center justify-start gap-2 p-2 text-base text-muted-foreground underline disabled:opacity-50"
+										disabled={isSearching}
+										onPointerDown={preventInputBlur}
+										onMouseDown={preventInputBlur}
+										onClick={() => void fetchMoreSuggestions()}>
+										{isSearching && <IconLoader2 className="size-4 animate-spin" />}
+										{searchLabel}
+									</button>
+								</div>
+							</Autocomplete.Popup>
+						</Autocomplete.Positioner>
+					</Autocomplete.Portal>
+				</Autocomplete.Root>
+			)}
 		/>
 	);
 }
