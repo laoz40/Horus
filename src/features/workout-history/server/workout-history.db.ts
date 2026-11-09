@@ -69,6 +69,13 @@ export const workoutHistoryDb = Layer.effect(
 					Request: listWorkoutsQuerySchema,
 					Result: workoutHistoryRowSchema,
 					execute: (queryInput) => sql`
+				WITH page_workouts AS MATERIALIZED (
+					SELECT * FROM workouts
+					WHERE user_id = ${queryInput.userId}
+					ORDER BY created_at DESC
+					LIMIT ${queryInput.limit + 1}
+					OFFSET ${queryInput.offset}
+				)
 				SELECT
 					workouts.id,
 					workouts.created_at AS "createdAt",
@@ -92,16 +99,18 @@ export const workoutHistoryDb = Layer.effect(
 						JOIN muscle_groups ON muscle_groups.id = e_muscle_groups.muscle_group_id
 						WHERE w_exercises_muscles.workout_id = workouts.id
 					) AS "muscleGroups"
-				FROM workouts
+				FROM page_workouts AS workouts
 				LEFT JOIN workout_exercises AS w_exercises
 					ON w_exercises.workout_id = workouts.id
 				LEFT JOIN workout_sets AS w_sets
 					ON w_sets.workout_exercise_id = w_exercises.id
-				WHERE workouts.user_id = ${queryInput.userId}
-				GROUP BY workouts.id
+				GROUP BY
+					workouts.id,
+					workouts.created_at,
+					workouts.name,
+					workouts.duration_seconds,
+					workouts.total_pr_sets
 				ORDER BY workouts.created_at DESC
-				LIMIT ${queryInput.limit + 1}
-				OFFSET ${queryInput.offset}
 			`,
 				});
 
