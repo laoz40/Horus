@@ -29,11 +29,8 @@ Designed primarily for mobile touchscreen devices, usually used as an installed 
   - Reach for the simplest thing that works
   - Ask the user if there are potential edge cases before you implement fixes for them or build for hypothetical futures.
   - Don't automatically assume backwards compatibility, migrations, or backfills are needed. Check if the feature is actually in the main branch already
-  - Verify you don't write low value tests that don't relate to the **core** behaviour of the app
   - Do not to add unecessary fields to the db schema
 - Use YAGNI and DRY principles
-
-Writing code is cheap for you, which makes over-engineering easy. Counter it by borrowing a human maintainer's fatigue. Aim for the most result with the least code and complexity. If a human developer would find the code exhausting to maintain, it is a bad solution. Be lazy. Stay simple.
 
 ## Behavior
 
@@ -59,15 +56,10 @@ Writing code is cheap for you, which makes over-engineering easy. Counter it by 
 - Parse boundary data once, allow types to flow through the app.
 - Express internal contracts with types instead of untyped dictionaries or redundant runtime checks.
 
-### Tests
+### Testing
 
-- Testing is E2E only, no unit tests, no tautological tests.
-- Create state through UI only; verify through UI (status/read-back). No seeding behind the app (except login).
-
-### Comments
-
-- At top of every test file, maintain one file-level comment that describes each test.
-  - Format each test with short subheading, description on next line.
+- Read the [tests skill](./.agents/skills/tests/SKILL.md) before proposing new tests or updating existing tests.
+- Don't write new tests. Instead record candidates in [test proposals](./docs/test-proposals.md) and continue implementation.
 
 ### Tailwind
 
