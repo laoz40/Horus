@@ -33,7 +33,6 @@ super inefficient, laggy and doesn't scale well.
 - TypeScript
 - Effect TS
 - PostgreSQL
-- Effect SQL for application queries, writes, and database migrations
 - oRPC
 - Better Auth
 - Redis
@@ -61,6 +60,8 @@ In the future, I plan to build a native mobile version of this app.
 
 ---
 
+## TODO
+
 ### General
 
 - [x] redesign nav bar component
@@ -83,7 +84,7 @@ In the future, I plan to build a native mobile version of this app.
   - [x] fix glass theme bg on UserButton component
 - [x] fix grey colours on light mode for inputs and secondary buttons, so it doesn't look disabled
 - [x] replace glass theme with pure black theme
-  - glass theme looked like ai slop
+	- glass theme looked like ai slop
 - [x] implement auth (clerk)
   - [x] add chevron to indicate profile bar is clickable without affecting trigger
   - [x] fix div min height on profile bar
@@ -101,26 +102,16 @@ In the future, I plan to build a native mobile version of this app.
   - [x] sign out on dashboard doesn't refresh the name
   - [x] session expiry
   - [ ] emails for delete account, stale account
-- [x] change db, from sqlite to convex
-  - [x] remove unused prisma and sqlite code
-  - [x] remove old nested workout schema
-- [x] change db 2, from convex to PostgreSQL (Neon)
-  - [x] remove convex code
-  - [x] implement orpc for type safety between server and client
-  - [x] implement drizzle for type safety between server and client
-  - [x] use neverthrow for clean error handling
-  - [x] migrate prod data to postgres
-- [x] use t3env for env var validation
 - [ ] rate limit every endpoint
 - [ ] add max/upper character limits to inputs
 - [x] add webmanifest to support ios app shortcut
   - [x] a bottom margin so that the home button indicator does not cover the nav content
-- [x] add proper error boundaries to entire app to handle unexpected errors
 - [x] change icon pack to one that has a filled variant (Tabler icons)
 - [x] add rounded corners, the square look doesnt work doesnt look intentional
-- [ ] migrate from tailwind to styleX or use shadcn/lint
-- [x] migrate from drizzle to Prisma TypedSQL to use raw SQL (i hate the layer of abstraction of drizzle)
-- [x] migrate from neverthrow to Effect (I am Effect pilled now)
+- [x] redesign app layout and nav bar
+	- [x] 3 main buttons: workouts, create, progress
+	- [x] settings doesnt need its own button, history can be moved to be accessible via dashboard
+	- [x] dashboard order: just year in progress, history link, presets, create preset
 
 ### Create Workout Page
 
@@ -175,7 +166,7 @@ In the future, I plan to build a native mobile version of this app.
 - [x] fix dropdown not matching width of input
 - [x] implement another way to delete exercise without inputting the name
 - [x] filter out empty sets and exercises rather than invalidating the workout
-- [ ] clear input button on exercise name when typing
+- [x] clear input button on exercise name when typing
 - [x] fix duration timer to increment using real time
 - [x] redesign the ui and remove the redundant add set button
   - [x] move position of edit and recent buttons
@@ -183,19 +174,22 @@ In the future, I plan to build a native mobile version of this app.
 - [x] fix workouts always save as same day of week
 - [x] add pr notification on set completion
 - [x] add way to manage exercises
-- [ ] add a discard workout dialog on exit
+- [x] add a discard workout dialog on exit
 - [x] pick exercises using muscle group categories, with exercises listed without having to search
 - [ ] When wger times out or is unreachable, `fetchApiExercises` throws uncaught → `/api/exercises/search` returns 500 with empty body → client `response.json()` fails.
 - [x] rest timer
-  - [x] browser notifications upon rest timer hitting 2 minutes
-  - [x] add enable and disable options in settings
+	- [x] browser notifications upon rest timer hitting 2 minutes
+	- [x] add enable and disable options in settings
+- [ ] for bodyweight exercises, use the user's weight instead of having 0?
+- [ ] Make rest timer stop button primary
+	- [ ] Use ? before 2 min and ! After 2 min
 
 ### History
 
 - [x] load save workouts from db
 - [x] edit workouts using the same form
 - [x] make seperate workout view page for past workouts
-  - [x] replace the hover card component for viewing notes and pr type, it doesnt work on mobile
+	- [x] replace the hover card component for viewing notes and pr type, it doesnt work on mobile
 - [x] fix card layout when no prs
 - [x] implement muscle groups to display on the workout card
   - [x] workouts need to save muscle groups info
@@ -215,7 +209,7 @@ In the future, I plan to build a native mobile version of this app.
 - [x] calculate total volume lifted
 - [x] calculate total exercises in workout
 - [x] make pr shine effect on 3 or more prs
-- [x] remove workout count on workout card it sucks
+- [x] remove workout index count on workout card it sucks
   - [ ] but still calculate it (properly) for the view page
 - [ ] add search bar
   - [ ] make it expand from button
@@ -228,12 +222,14 @@ In the future, I plan to build a native mobile version of this app.
 - [x] add pagination
 - [x] ensure fixed height on workout card
 - [x] optimise update workout (very slow due to pr recalculation)
+- [ ] import/export workouts as a csv or json
 
 ### Progress
 
 - [x] graphs to show progression over time
+	- [x] exercise max weight lifted line graph
+	- [ ] exercise avg volume lifted per set line graph (this would be good for bw progression if it calculates with body weight)
 - [ ] [filter stats](workout-tracker.md#stats-to-calculate)
-- [x] frequency heatmap to show sessions per time period
 - [ ] weekly summary
 
 ### Dashboard
@@ -241,14 +237,34 @@ In the future, I plan to build a native mobile version of this app.
 - [x] need to add loading state for name and button (used for first load)
 - [ ] show goals/stats on dashboard for motivation
   - [x] show frequency heatmap of sessions
-  - [ ] prs
+  - [x] prs
+- [x] frequency heatmap to show sessions per time period
+	- [ ] make the graph show/focus/scroll to the current date
 
 ### Chores
 
 - [x] setup more strict linting rules
-  - [x] add dillon mulroys anti-slop plugin
+	- [x] add dillon mulroys anti-slop plugin
 - [x] setup CI
 - [x] update to typescript 7 go
 - [x] update to latest next (16.3.3)
 - [x] use src directory structure
 - [x] setup end to end testing with playwright
+- [ ] add unit tests for pr calculation (and averages)
+- [ ] migrate from tailwind to styleX or use shadcn/lint
+- [x] change db, from sqlite to convex
+  - [x] remove unused prisma and sqlite code
+  - [x] remove old nested workout schema
+- [x] change db 2, from convex to PostgreSQL (Neon)
+  - [x] remove convex code
+  - [x] implement orpc for type safety between server and client
+  - [x] implement drizzle for type safety between server and client
+  - [x] use neverthrow for clean error handling
+  - [x] migrate prod data to postgres
+- [x] add proper error boundaries to entire app to handle unexpected errors
+- [x] use t3env for env var validation
+- [x] migrate from drizzle to Prisma TypedSQL to use raw SQL (i hate the layer of abstraction of drizzle)
+- [x] migrate from neverthrow to Effect.ts (I am Effect pilled now!)
+- [x] migrate from Prisma TypedSQL to use Effect SQL (more Effect integration, and dont need to run db generate commands)
+- [x] optimise unecessary rerenders in react
+- [x] refactor react code state, use explicit state machines
