@@ -84,7 +84,7 @@ In the future, I plan to build a native mobile version of this app.
   - [x] fix glass theme bg on UserButton component
 - [x] fix grey colours on light mode for inputs and secondary buttons, so it doesn't look disabled
 - [x] replace glass theme with pure black theme
-	- glass theme looked like ai slop
+  - glass theme looked like ai slop
 - [x] implement auth (clerk)
   - [x] add chevron to indicate profile bar is clickable without affecting trigger
   - [x] fix div min height on profile bar
@@ -109,9 +109,9 @@ In the future, I plan to build a native mobile version of this app.
 - [x] change icon pack to one that has a filled variant (Tabler icons)
 - [x] add rounded corners, the square look doesnt work doesnt look intentional
 - [x] redesign app layout and nav bar
-	- [x] 3 main buttons: workouts, create, progress
-	- [x] settings doesnt need its own button, history can be moved to be accessible via dashboard
-	- [x] dashboard order: just year in progress, history link, presets, create preset
+  - [x] 3 main buttons: workouts, create, progress
+  - [x] settings doesnt need its own button, history can be moved to be accessible via dashboard
+  - [x] dashboard order: just year in progress, history link, presets, create preset
 
 ### Create Workout Page
 
@@ -178,18 +178,18 @@ In the future, I plan to build a native mobile version of this app.
 - [x] pick exercises using muscle group categories, with exercises listed without having to search
 - [ ] When wger times out or is unreachable, `fetchApiExercises` throws uncaught → `/api/exercises/search` returns 500 with empty body → client `response.json()` fails.
 - [x] rest timer
-	- [x] browser notifications upon rest timer hitting 2 minutes
-	- [x] add enable and disable options in settings
+  - [x] browser notifications upon rest timer hitting 2 minutes
+  - [x] add enable and disable options in settings
 - [ ] for bodyweight exercises, use the user's weight instead of having 0?
 - [ ] Make rest timer stop button primary
-	- [ ] Use ? before 2 min and ! After 2 min
+  - [ ] Use ? before 2 min and ! After 2 min
 
 ### History
 
 - [x] load save workouts from db
 - [x] edit workouts using the same form
 - [x] make seperate workout view page for past workouts
-	- [x] replace the hover card component for viewing notes and pr type, it doesnt work on mobile
+  - [x] replace the hover card component for viewing notes and pr type, it doesnt work on mobile
 - [x] fix card layout when no prs
 - [x] implement muscle groups to display on the workout card
   - [x] workouts need to save muscle groups info
@@ -227,8 +227,8 @@ In the future, I plan to build a native mobile version of this app.
 ### Progress
 
 - [x] graphs to show progression over time
-	- [x] exercise max weight lifted line graph
-	- [ ] exercise avg volume lifted per set line graph (this would be good for bw progression if it calculates with body weight)
+  - [x] exercise max weight lifted line graph
+  - [ ] exercise avg volume lifted per set line graph (this would be good for bw progression if it calculates with body weight)
 - [ ] [filter stats](workout-tracker.md#stats-to-calculate)
 - [ ] weekly summary
 
@@ -239,12 +239,12 @@ In the future, I plan to build a native mobile version of this app.
   - [x] show frequency heatmap of sessions
   - [x] prs
 - [x] frequency heatmap to show sessions per time period
-	- [ ] make the graph show/focus/scroll to the current date
+  - [ ] make the graph show/focus/scroll to the current date
 
 ### Chores
 
 - [x] setup more strict linting rules
-	- [x] add dillon mulroys anti-slop plugin
+  - [x] add dillon mulroys anti-slop plugin
 - [x] setup CI
 - [x] update to typescript 7 go
 - [x] update to latest next (16.3.3)
