@@ -4,6 +4,7 @@ import { Effect, Redacted } from "effect";
 import { Migrator } from "effect/sql";
 import { z } from "zod";
 import initial from "../../migrations/001_initial";
+import betterAuthAccountIdentity from "../../migrations/002_better_auth_account_identity";
 
 config({ path: ".env.local", quiet: true });
 
@@ -15,7 +16,10 @@ const directUrl = new URL(
 directUrl.hostname = directUrl.hostname.replace("-pooler", "");
 
 const migrate = Migrator.make({})({
-	loader: Migrator.fromRecord({ "001_initial": initial }),
+	loader: Migrator.fromRecord({
+		"001_initial": initial,
+		"002_better_auth_account_identity": betterAuthAccountIdentity,
+	}),
 }).pipe(
 	Effect.tap((applied) =>
 		Effect.logInfo(applied.length === 0 ? "Database is up to date." : "Applied migrations.", {
