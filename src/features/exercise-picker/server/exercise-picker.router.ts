@@ -6,8 +6,12 @@ import { sqlClient } from "@/lib/db/sql";
 import { exerciseDb } from "@/features/exercise-library/server/exercises.db";
 import { MUSCLE_GROUP_CATEGORIES } from "@/features/exercise-library/lib/muscleGroupCategories";
 import { fetchApiExercises } from "@/features/exercise-picker/server/fetchApiExercises.server";
-import { logDatabaseError, protectedProcedure, publicProcedure } from "@/server/procedures";
-import { databaseError } from "@/features/exercise-library/server/exercise-library.router.helpers";
+import {
+	databaseError,
+	logDatabaseError,
+	protectedProcedure,
+	publicProcedure,
+} from "@/server/procedures";
 import {
 	listExercisesByCategory,
 	searchExercises,

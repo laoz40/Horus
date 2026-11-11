@@ -5,6 +5,12 @@ import { os } from "@orpc/server";
 
 import { auth } from "@/lib/auth-server";
 
+export const databaseError = {
+	DATABASE_ERROR: {
+		message: "The database operation failed",
+	},
+};
+
 interface ORPCContext {
 	headers: Headers;
 	requestId: string;

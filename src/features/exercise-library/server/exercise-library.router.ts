@@ -5,7 +5,9 @@ import { z } from "zod";
 import { sqlClient } from "@/lib/db/sql";
 import { exerciseDb } from "@/features/exercise-library/server/exercises.db";
 import { prHistoryDb } from "@/features/personal-records/server/pr-history.db";
-import { logDatabaseError, protectedProcedure } from "@/server/procedures";
+import { databaseError, logDatabaseError, protectedProcedure } from "@/server/procedures";
+import type { DatabaseError } from "@/lib/db/database";
+import type { ExerciseNameCollisionError } from "@/features/exercise-library/server/library.functions";
 import {
 	createUserExercise,
 	deleteUserExercise,
@@ -13,14 +15,57 @@ import {
 	mergeUserExercises,
 	updateUserExercise,
 } from "@/features/exercise-library/server/library.service";
-import {
-	databaseError,
-	exerciseLibraryErrors,
-	exerciseLibraryItemSchema,
-	exerciseLibraryWriteErrorHandlers,
-	exerciseLibraryWriteOutputSchema,
-	exerciseLibraryWriteProcedureErrors,
-} from "@/features/exercise-library/server/exercise-library.router.helpers";
+
+const exerciseLibraryItemSchema = z
+	.object({
+		id: z.uuid(),
+		name: z.string(),
+		muscleGroups: z.array(z.string()),
+		workoutCount: z.number().int().nonnegative(),
+	})
+	.strict();
+
+const exerciseLibraryWriteOutputSchema = z
+	.object({
+		exercise: exerciseLibraryItemSchema,
+	})
+	.strict();
+
+const exerciseLibraryWriteProcedureErrors = {
+	...databaseError,
+	EXERCISE_NOT_FOUND: {
+		message: "The exercise was not found",
+	},
+	NAME_COLLISION: {
+		message: "An exercise with this name already exists",
+		data: z
+			.object({
+				existingExercise: exerciseLibraryItemSchema,
+			})
+			.strict(),
+	},
+};
+
+function exerciseLibraryWriteErrorHandlers<NameCollisionError, NotFoundError, DatabaseRpcError>(
+	errors: {
+		NAME_COLLISION: (options: {
+			data: {
+				existingExercise: InstanceType<typeof ExerciseNameCollisionError>["existingExercise"];
+			};
+		}) => NameCollisionError;
+		EXERCISE_NOT_FOUND: () => NotFoundError;
+		DATABASE_ERROR: () => DatabaseRpcError;
+	},
+	databaseErrorMessage: string,
+) {
+	return {
+		DatabaseError: (error: DatabaseError) =>
+			logDatabaseError(databaseErrorMessage, error.cause, errors.DATABASE_ERROR()),
+		ExerciseNameCollisionError: (error: ExerciseNameCollisionError) =>
+			Effect.fail(errors.NAME_COLLISION({ data: { existingExercise: error.existingExercise } })),
+		ExerciseNotFoundError: () => Effect.fail(errors.EXERCISE_NOT_FOUND()),
+	};
+}
 
 const database = Layer.mergeAll(exerciseDb, prHistoryDb).pipe(Layer.provideMerge(sqlClient));
 
@@ -63,26 +108,14 @@ export const exerciseLibraryRouter = {
 				createUserExercise({ userId: context.userId, exercise: input }).pipe(
 					Effect.map((exercise) => ({ exercise })),
 					Effect.provide(database),
-					Effect.catchTags({
-						...exerciseLibraryWriteErrorHandlers(errors),
-						DatabaseError: (error) =>
-							logDatabaseError("Failed to create exercise", error.cause, errors.DATABASE_ERROR()),
-					}),
+					Effect.catchTags(exerciseLibraryWriteErrorHandlers(errors, "Failed to create exercise")),
 					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),
 	update: protectedProcedure
 		.errors(exerciseLibraryWriteProcedureErrors)
-		.input(
-			z
-				.object({
-					id: z.uuid(),
-					name: z.string().trim().min(1),
-					muscleGroups: z.array(z.string()),
-				})
-				.strict(),
-		)
+		.input(exerciseLibraryWriteInputSchema.extend({ id: z.uuid() }))
 		.output(exerciseLibraryWriteOutputSchema)
 		.handler(({ input, context, errors }) =>
 			Effect.runPromise(
@@ -93,20 +126,20 @@ export const exerciseLibraryRouter = {
 				}).pipe(
 					Effect.map((exercise) => ({ exercise })),
 					Effect.provide(database),
-					Effect.catchTags({
-						...exerciseLibraryWriteErrorHandlers(errors),
-						DatabaseError: (error) =>
-							logDatabaseError("Failed to update exercise", error.cause, errors.DATABASE_ERROR()),
-					}),
+					Effect.catchTags(exerciseLibraryWriteErrorHandlers(errors, "Failed to update exercise")),
 					Effect.annotateLogs(context.logAnnotations),
 				),
 			),
 		),
 	delete: protectedProcedure
 		.errors({
-			DATABASE_ERROR: exerciseLibraryErrors.DATABASE_ERROR,
-			EXERCISE_NOT_FOUND: exerciseLibraryErrors.EXERCISE_NOT_FOUND,
-			EXERCISE_IN_USE: exerciseLibraryErrors.EXERCISE_IN_USE,
+			...databaseError,
+			EXERCISE_NOT_FOUND: {
+				message: "The exercise was not found",
+			},
+			EXERCISE_IN_USE: {
+				message: "This exercise is used in workouts and cannot be deleted",
+			},
 		})
 		.input(z.object({ id: z.uuid() }).strict())
 		.output(z.object({ deleted: z.literal(true) }).strict())
@@ -126,8 +159,10 @@ export const exerciseLibraryRouter = {
 		),
 	merge: protectedProcedure
 		.errors({
-			DATABASE_ERROR: exerciseLibraryErrors.DATABASE_ERROR,
-			EXERCISE_NOT_FOUND: exerciseLibraryErrors.EXERCISE_NOT_FOUND,
+			...databaseError,
+			EXERCISE_NOT_FOUND: {
+				message: "The exercise was not found",
+			},
 		})
 		.input(
 			z
