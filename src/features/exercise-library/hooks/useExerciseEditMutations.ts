@@ -2,7 +2,7 @@
 
 import { useReducer } from "react";
 
-import { isDefinedError } from "@orpc/client";
+import { isDefinedError, type InferClientErrorUnion } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { MuscleGroupCategory } from "@/features/exercise-library/lib/muscleGroupCategories";
@@ -22,6 +22,25 @@ import { exerciseEditOperationReducer } from "@/features/exercise-library/lib/ex
 import { orpc } from "@/lib/orpc/client";
 import { showErrorToast, showExerciseDeletedToast, showInfoToast } from "@/lib/toastMessages";
 
+const mutationErrorMessages = {
+	add: {
+		failure: "Failed to add exercise.",
+		unauthorized: "You must be signed in to add exercises.",
+	},
+	save: {
+		failure: "Failed to save exercise.",
+		unauthorized: "You must be signed in to edit exercises.",
+	},
+	combine: {
+		failure: "Failed to combine exercises.",
+		unauthorized: "You must be signed in to combine exercises.",
+	},
+	delete: {
+		failure: "Failed to delete exercise.",
+		unauthorized: "You must be signed in to delete exercises.",
+	},
+};
+
 interface UseExerciseEditMutationsOptions {
 	state: OpenExerciseEditSheetState;
 	onClose: () => void;
@@ -30,6 +49,57 @@ interface UseExerciseEditMutationsOptions {
 export function useExerciseEditMutations({ state, onClose }: UseExerciseEditMutationsOptions) {
 	const queryClient = useQueryClient();
 	const [operation, dispatch] = useReducer(exerciseEditOperationReducer, { kind: "editing" });
+
+	function handleMutationError(
+		error: InferClientErrorUnion<
+			(typeof orpc.exercises)["create" | "update" | "merge" | "delete"]["call"]
+		>,
+		action: keyof typeof mutationErrorMessages,
+	) {
+		const messages = mutationErrorMessages[action];
+
+		if (!isDefinedError(error)) {
+			showErrorToast(messages.failure);
+			console.error(error);
+
+			return;
+		}
+
+		switch (error.code) {
+			case "NAME_COLLISION":
+				dispatch({
+					kind: "duplicateNameFound",
+					existingExercise: error.data.existingExercise,
+				});
+
+				return;
+			case "EXERCISE_NOT_FOUND":
+				showErrorToast(
+					action === "combine"
+						? "Couldn't find one of these exercises."
+						: "Couldn't find this exercise.",
+				);
+
+				return;
+			case "EXERCISE_IN_USE":
+				showErrorToast("This exercise is used in workouts and cannot be deleted.");
+
+				return;
+			case "DATABASE_ERROR":
+				showErrorToast("Couldn't access the database. Please try again.");
+
+				return;
+			case "UNAUTHORIZED":
+				showErrorToast(messages.unauthorized);
+
+				return;
+			default: {
+				const exhaustiveError: never = error;
+
+				return exhaustiveError;
+			}
+		}
+	}
 
 	const createExercise = useMutation(
 		orpc.exercises.create.mutationOptions({
@@ -40,41 +110,7 @@ export function useExerciseEditMutations({ state, onClose }: UseExerciseEditMuta
 				onClose();
 				invalidateExerciseQueriesInBackground(queryClient);
 			},
-			onError: (error) => {
-				if (!isDefinedError(error)) {
-					showErrorToast("Failed to add exercise.");
-					console.error(error);
-
-					return;
-				}
-
-				switch (error.code) {
-					case "NAME_COLLISION":
-						dispatch({
-							kind: "duplicateNameFound",
-							existingExercise: error.data.existingExercise,
-						});
-
-						return;
-					case "EXERCISE_NOT_FOUND":
-						showErrorToast("Couldn't find this exercise.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to add exercises.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
-			},
+			onError: (error) => handleMutationError(error, "add"),
 		}),
 	);
 
@@ -87,41 +123,7 @@ export function useExerciseEditMutations({ state, onClose }: UseExerciseEditMuta
 				onClose();
 				invalidateExerciseQueriesInBackground(queryClient);
 			},
-			onError: (error) => {
-				if (!isDefinedError(error)) {
-					showErrorToast("Failed to save exercise.");
-					console.error(error);
-
-					return;
-				}
-
-				switch (error.code) {
-					case "NAME_COLLISION":
-						dispatch({
-							kind: "duplicateNameFound",
-							existingExercise: error.data.existingExercise,
-						});
-
-						return;
-					case "EXERCISE_NOT_FOUND":
-						showErrorToast("Couldn't find this exercise.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to edit exercises.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
-			},
+			onError: (error) => handleMutationError(error, "save"),
 		}),
 	);
 
@@ -134,34 +136,7 @@ export function useExerciseEditMutations({ state, onClose }: UseExerciseEditMuta
 				onClose();
 				invalidateExerciseQueriesInBackground(queryClient);
 			},
-			onError: (error) => {
-				if (!isDefinedError(error)) {
-					showErrorToast("Failed to combine exercises.");
-					console.error(error);
-
-					return;
-				}
-
-				switch (error.code) {
-					case "EXERCISE_NOT_FOUND":
-						showErrorToast("Couldn't find one of these exercises.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to combine exercises.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
-			},
+			onError: (error) => handleMutationError(error, "combine"),
 		}),
 	);
 
@@ -174,38 +149,7 @@ export function useExerciseEditMutations({ state, onClose }: UseExerciseEditMuta
 				onClose();
 				invalidateExerciseQueriesInBackground(queryClient);
 			},
-			onError: (error) => {
-				if (!isDefinedError(error)) {
-					showErrorToast("Failed to delete exercise.");
-					console.error(error);
-
-					return;
-				}
-
-				switch (error.code) {
-					case "EXERCISE_NOT_FOUND":
-						showErrorToast("Couldn't find this exercise.");
-
-						return;
-					case "EXERCISE_IN_USE":
-						showErrorToast("This exercise is used in workouts and cannot be deleted.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to delete exercises.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
-			},
+			onError: (error) => handleMutationError(error, "delete"),
 		}),
 	);
 
