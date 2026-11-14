@@ -2,6 +2,14 @@
 
 ## Proposals
 
+### Local verification refuses stale servers
+
+- Behavior: Local tests refuse an occupied app port unless the caller explicitly selects dev attachment. Fresh-production verification builds current source, starts its own server, and cleans it up after success or failure without stopping another owner's server.
+- Regression: Silent reuse of an old production build produces misleading verification results, or cleanup kills a user-owned server.
+- Risk: 5/10. Misleading verification can hide application regressions; incorrect cleanup interrupts local work.
+- Gap: Existing Playwright journeys exercise application behavior, not the verification process lifecycle.
+- Level: Tooling integration with controlled listeners and child processes. UI E2E cannot verify its own launch and teardown reliably. Requires approval before implementation.
+
 ### Enforce Effect error handling in application code
 
 - Behavior: The lint command rejects native `try/catch`, `try/finally`, and `try/catch/finally` under `src/`, while accepting `Effect.try`, `Effect.tryPromise`, and native statements in tests and tooling outside `src/`. Only direct statements in the two approved browser functions are exempt.
