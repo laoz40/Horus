@@ -12,7 +12,7 @@
 
 ### Deleted sets stay deleted when editing and adding rows
 
-- Behavior: Edit a saved workout with distinct sets, delete a middle or final set, and add rows. New rows stay blank, surviving rows keep their values and completion state, and saving persists only the intended sets. Deleting the only row leaves a fresh blank row. Adding rows with incomplete inputs does not run save validation, while ticking a set or saving still rejects invalid entries.
+- Behavior: Edit a saved workout with distinct sets, delete a middle or final set, and add rows. New rows stay blank, surviving rows keep their values and completion state, and saving persists only the intended sets. Deleting the only row leaves a fresh blank row. Adding rows with incomplete inputs does not run save validation. Ticking a set rejects invalid entries; the top-right Finish tick opens the save dialog only for a valid workout, and Save validates again.
 - Regression: Reused array indices restore deleted numeric defaults, field identities move values to the wrong row, or Add Set triggers premature validation.
 - Risk: 7/10. Resurrected sets can silently corrupt workout history and progress statistics.
 - Gap: `tests/workout-history.spec.ts` only renames workouts when editing; `tests/create-workout.spec.ts` does not delete and re-add sets or exercise completion validation.
