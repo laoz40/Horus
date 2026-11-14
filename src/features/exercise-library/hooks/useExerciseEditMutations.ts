@@ -13,11 +13,11 @@ import {
 import type { OpenExerciseEditSheetState } from "@/features/exercise-library/lib/exerciseEditSheet";
 import {
 	addExerciseToListCache,
-	invalidateExerciseQueriesInBackground,
 	mergeExercisesInListCache,
 	patchExerciseListCache,
 	removeExerciseFromListCache,
-} from "@/features/exercise-library/lib/invalidateExerciseQueries";
+} from "@/features/exercise-library/lib/exerciseListCache";
+import { invalidateExerciseCache } from "@/lib/orpc/mutationCache";
 import { exerciseEditOperationReducer } from "@/features/exercise-library/lib/exerciseEditOperation";
 import { orpc } from "@/lib/orpc/client";
 import { showErrorToast, showExerciseDeletedToast, showInfoToast } from "@/lib/toastMessages";
@@ -108,7 +108,7 @@ export function useExerciseEditMutations({ state, onClose }: UseExerciseEditMuta
 				addExerciseToListCache(queryClient, result.exercise);
 				showInfoToast("Exercise added");
 				onClose();
-				invalidateExerciseQueriesInBackground(queryClient);
+				invalidateExerciseCache(queryClient, { kind: "catalog" });
 			},
 			onError: (error) => handleMutationError(error, "add"),
 		}),
@@ -121,7 +121,7 @@ export function useExerciseEditMutations({ state, onClose }: UseExerciseEditMuta
 				patchExerciseListCache(queryClient, result.exercise);
 				showInfoToast("Exercise saved");
 				onClose();
-				invalidateExerciseQueriesInBackground(queryClient);
+				invalidateExerciseCache(queryClient, { kind: "catalog" });
 			},
 			onError: (error) => handleMutationError(error, "save"),
 		}),
@@ -134,7 +134,7 @@ export function useExerciseEditMutations({ state, onClose }: UseExerciseEditMuta
 				mergeExercisesInListCache(queryClient, variables.sourceId, result.targetExercise);
 				showInfoToast("Exercises combined");
 				onClose();
-				invalidateExerciseQueriesInBackground(queryClient);
+				invalidateExerciseCache(queryClient, { kind: "merge" });
 			},
 			onError: (error) => handleMutationError(error, "combine"),
 		}),
@@ -147,7 +147,7 @@ export function useExerciseEditMutations({ state, onClose }: UseExerciseEditMuta
 				removeExerciseFromListCache(queryClient, variables.id);
 				showExerciseDeletedToast();
 				onClose();
-				invalidateExerciseQueriesInBackground(queryClient);
+				invalidateExerciseCache(queryClient, { kind: "catalog" });
 			},
 			onError: (error) => handleMutationError(error, "delete"),
 		}),

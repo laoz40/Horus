@@ -5,7 +5,7 @@ import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import type { WorkoutFormMode } from "@/features/workout-form/components/WorkoutForm";
 import { parseWorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
 import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
-import { invalidateExerciseQueriesInBackground } from "@/features/exercise-library/lib/invalidateExerciseQueries";
+import { invalidateWorkoutCache } from "@/lib/orpc/mutationCache";
 import {
 	buildOptimisticHistoryFields,
 	patchWorkoutInHistoryCache,
@@ -36,13 +36,7 @@ export const useWorkoutSubmit = ({
 		orpc.workouts.create.mutationOptions({
 			onSuccess: async () => {
 				router.refresh();
-				void queryClient.invalidateQueries({ queryKey: orpc.dashboard.key() });
-				await queryClient.invalidateQueries({
-					queryKey: historyListQueryKey,
-					refetchType: "all",
-				});
-
-				invalidateExerciseQueriesInBackground(queryClient);
+				await invalidateWorkoutCache(queryClient);
 				setCreateWorkoutDraft(null);
 			},
 			onError: (error) => {
@@ -89,24 +83,10 @@ export const useWorkoutSubmit = ({
 
 				return { previousHistory };
 			},
-			onSuccess: async (result) => {
+			onSuccess: () => {
 				router.refresh();
-				void queryClient.invalidateQueries({ queryKey: orpc.dashboard.key() });
-				// Keep the history pending state until refreshed list data (incl. PRs) lands.
-				await queryClient.invalidateQueries({
-					queryKey: historyListQueryKey,
-					refetchType: "all",
-				});
 
-				// Refresh cached views in the background after navigating to history.
-				void queryClient.invalidateQueries({
-					queryKey: orpc.workouts.getById.key({
-						type: "query",
-						input: { id: result.workoutId },
-					}),
-				});
-
-				invalidateExerciseQueriesInBackground(queryClient);
+				return invalidateWorkoutCache(queryClient);
 			},
 			onError: (error, _variables, context) => {
 				if (context?.previousHistory !== undefined) {
