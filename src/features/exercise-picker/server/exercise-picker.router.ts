@@ -1,5 +1,7 @@
 import "server-only";
 
+import { MAX_EXERCISE_NAME_LENGTH } from "@/features/workout-form/lib/validateWorkout";
+
 import { Effect, Layer } from "effect";
 import { z } from "zod";
 import { sqlClient } from "@/lib/db/sql";
@@ -29,7 +31,7 @@ export const exercisePickerRouter = {
 		.errors(databaseError)
 		.input(
 			z.object({
-				query: z.string(),
+				query: z.string().max(MAX_EXERCISE_NAME_LENGTH),
 			}),
 		)
 		.output(exerciseCatalogItemsSchema)
@@ -47,7 +49,7 @@ export const exercisePickerRouter = {
 		),
 	searchOnline: publicProcedure
 		.errors(onlineExerciseSearchErrors)
-		.input(z.object({ query: z.string().trim().min(1) }).strict())
+		.input(z.object({ query: z.string().trim().min(1).max(MAX_EXERCISE_NAME_LENGTH) }).strict())
 		.output(onlineExerciseSuggestionsSchema)
 		.handler(({ input, context, errors, signal }) =>
 			Effect.runPromise(

@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 
+const MAX_PROFILE_NAME_LENGTH = 32;
+
 const welcomeProfileSchema = z.object({
-	name: z.string().max(32, "Please enter a name less than 32 characters."),
+	name: z.string().max(MAX_PROFILE_NAME_LENGTH, "Please enter a name less than 32 characters."),
 });
 
 type WelcomeProfileFormData = z.infer<typeof welcomeProfileSchema>;
@@ -59,6 +61,7 @@ export default function WelcomeNameForm(): ReactElement {
 				type="text"
 				{...register("name")}
 				placeholder="Legend"
+				maxLength={MAX_PROFILE_NAME_LENGTH}
 				disabled={isSubmitting}
 			/>
 			{nameErrorMessage.length > 0 && (

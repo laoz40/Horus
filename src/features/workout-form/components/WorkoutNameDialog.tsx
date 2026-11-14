@@ -12,7 +12,7 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { getCurrentDay } from "@/lib/date";
-import type { Workout } from "@/features/workout-form/lib/validateWorkout";
+import { MAX_WORKOUT_NAME_LENGTH, type Workout } from "@/features/workout-form/lib/validateWorkout";
 import Link from "next/link";
 import { useState } from "react";
 import { type SubmitErrorHandler, useFormContext } from "react-hook-form";
@@ -64,7 +64,7 @@ export function WorkoutNameDialog({ children, onInvalidSubmit }: WorkoutNameDial
 						<FieldLabel htmlFor="name-1">Enter workout name</FieldLabel>
 						<Input
 							id="name-1"
-							maxLength={64}
+							maxLength={MAX_WORKOUT_NAME_LENGTH}
 							placeholder={`${getCurrentDay()} Workout`}
 							{...register("name")}
 						/>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MAX_EXERCISE_NAME_LENGTH } from "@/features/workout-form/lib/validateWorkout";
 
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import ExerciseListContent, {
@@ -34,6 +35,7 @@ export default function ExerciseList({ exercises, onSelectExercise }: ExerciseLi
 			<InputGroup className="h-11 border-border/70 bg-card shadow-none transition-colors focus-within:border-primary/60 dark:bg-card">
 				<InputGroupInput
 					placeholder="Search exercises..."
+					maxLength={MAX_EXERCISE_NAME_LENGTH}
 					value={searchQuery}
 					onChange={(event) => setSearchQuery(event.target.value)}
 					className="text-sm placeholder:text-muted-foreground/80"

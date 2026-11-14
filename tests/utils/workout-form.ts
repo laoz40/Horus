@@ -10,11 +10,11 @@ export async function selectExercise(page: Page, name: string): Promise<void> {
 	await expect(option).toBeVisible({ timeout: 10_000 });
 	await option.click();
 
-	await expect(page.getByPlaceholder("kg")).toBeVisible();
+	await expect(page.getByRole("textbox", { name: "Weight (kg)", exact: true })).toBeVisible();
 }
 
 async function dismissRestTimer(page: Page): Promise<void> {
-	const finishRest = page.getByRole("button", { name: "FINISH REST" });
+	const finishRest = page.getByRole("button", { name: /^Stop timer[?!]$/ });
 	const timerTab = page.getByRole("button", { name: /^\d{2}:\d{2}$/ });
 
 	await expect(finishRest.or(timerTab)).toBeVisible({ timeout: 15_000 });
@@ -36,7 +36,7 @@ export async function addCompletedBenchSet(page: Page): Promise<void> {
 	await page.goto("/workouts/new");
 	await selectExercise(page, "Bench Press");
 
-	const weightInput = page.getByPlaceholder("kg");
+	const weightInput = page.getByRole("textbox", { name: "Weight (kg)", exact: true });
 	const repsInput = page.getByPlaceholder("reps");
 
 	await weightInput.fill("60");

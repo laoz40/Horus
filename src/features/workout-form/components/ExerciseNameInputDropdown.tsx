@@ -13,7 +13,10 @@ import {
 } from "@/components/ui/input-group";
 import { useExerciseSuggestions } from "@/features/exercise-picker/hooks/useExerciseSuggestions";
 import { applyPickedExercise } from "@/features/workout-form/lib/selectExercise";
-import type { Workout } from "@/features/workout-form/lib/validateWorkout";
+import {
+	MAX_EXERCISE_NAME_LENGTH,
+	type Workout,
+} from "@/features/workout-form/lib/validateWorkout";
 
 // Keep the keyboard open when tapping Search Online. iOS can also send a
 // synthetic mousedown without pointerdown, so both events use this guard.
@@ -80,7 +83,7 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 								name={field.name}
 								render={<InputGroupInput className="px-0 font-semibold placeholder:opacity-0" />}
 								placeholder="Search an exercise..."
-								maxLength={64}
+								maxLength={MAX_EXERCISE_NAME_LENGTH}
 								autoComplete="off"
 								aria-label="Exercise name"
 								onFocus={() => setIsOpen(true)}

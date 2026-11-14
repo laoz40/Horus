@@ -2,11 +2,11 @@ import * as z from "zod";
 import { getCurrentDay } from "@/lib/date";
 import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
 
-const MAX_WORKOUT_NAME_LENGTH = 64;
+export const MAX_WORKOUT_NAME_LENGTH = 64;
 
-const MAX_EXERCISE_NAME_LENGTH = 64;
+export const MAX_EXERCISE_NAME_LENGTH = 64;
 
-const MAX_EXERCISE_NOTES_LENGTH = 500;
+export const MAX_EXERCISE_NOTES_LENGTH = 500;
 
 const MAX_SET_WEIGHT = 999999;
 

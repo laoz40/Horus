@@ -2,6 +2,7 @@
 
 import ExerciseMutationLabel from "@/features/exercise-library/components/ExerciseMutationLabel";
 import { useState } from "react";
+import { MAX_EXERCISE_NAME_LENGTH } from "@/features/workout-form/lib/validateWorkout";
 
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { Button } from "@/components/ui/button";
@@ -103,6 +104,7 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 					<FieldContent>
 						<Input
 							id="exercise-name"
+							maxLength={MAX_EXERCISE_NAME_LENGTH}
 							value={name}
 							onChange={(event) => setName(event.target.value)}
 							autoComplete="off"

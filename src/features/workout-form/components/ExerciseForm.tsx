@@ -1,5 +1,6 @@
 "use client";
 
+import { useWeightPlaceholder } from "@/features/workout-form/hooks/useWeightPlaceholder";
 import { IconPlus } from "@tabler/icons-react";
 import { type Ref } from "react";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,9 @@ function ExerciseForm({ className, exerciseIndex, isEditing, ref }: ExerciseForm
 	});
 
 	const handleAddSet = () => {
-		append(createDefaultSet(), { shouldFocus: false });
+		append(createDefaultSet(), {
+			focusName: `exercises.${exerciseIndex}.sets.${sets.length}.weight`,
+		});
 	};
 
 	const handleDeleteSet = (setIndex: number) => {
@@ -54,6 +57,7 @@ function ExerciseForm({ className, exerciseIndex, isEditing, ref }: ExerciseForm
 	});
 
 	const hasExerciseName = Boolean(exerciseName?.trim());
+	const weightPlaceholder = useWeightPlaceholder(exerciseIndex, exerciseName ?? "");
 
 	const exerciseError = errors.exercises?.[exerciseIndex];
 	const nameError = exerciseError?.global?.name;
@@ -86,6 +90,7 @@ function ExerciseForm({ className, exerciseIndex, isEditing, ref }: ExerciseForm
 									setIndex={setIndex}
 									exerciseIndex={exerciseIndex}
 									isEditing={isEditing}
+									weightPlaceholder={weightPlaceholder}
 									onDeleteSet={handleDeleteSet}
 								/>
 							))}
