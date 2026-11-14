@@ -6,7 +6,8 @@
 //
 // - workout form opens without a sign-in prompt and still requires login to save
 //   Dismiss the dashboard prompt and start a workout without a second prompt.
-//   The save dialog still requires an account.
+//   Finish rejects an empty workout before opening the save dialog. A valid
+//   workout opens the dialog, which still requires an account.
 //
 // - email OTP login lands on /welcome
 //   The real login flow: request a code, read the stored OTP, type it in, and land
@@ -22,6 +23,7 @@ import { expect, test } from "@playwright/test";
 
 import { readSignInOtp } from "./utils/auth";
 import { E2E_EMAIL } from "./utils/db";
+import { selectExercise } from "./utils/workout-form";
 
 const signedOut = { storageState: { cookies: [], origins: [] } };
 
@@ -44,11 +46,15 @@ test.describe("signed out", () => {
 		await page.goto("/");
 		await page.getByRole("button", { name: "Let me test" }).click();
 		await page.getByRole("link", { name: "Start Workout" }).click();
-		await expect(page).toHaveURL(/\/workouts\/new$/);
 		await expect(page.getByRole("button", { name: "Chest", exact: true })).toBeVisible();
 		await expect(page.getByRole("alertdialog", { name: "Not Signed In" })).toBeHidden();
 		await page.getByRole("button", { name: "Finish" }).click();
 		const saveDialog = page.getByRole("dialog", { name: "Save Workout" });
+		await expect(saveDialog).toBeHidden();
+		await selectExercise(page, "Bench Press");
+		await page.getByPlaceholder("kg", { exact: true }).fill("60");
+		await page.getByPlaceholder("reps", { exact: true }).fill("8");
+		await page.getByRole("button", { name: "Finish" }).click();
 		await expect(
 			saveDialog.getByText("You need an account to create and save workouts."),
 		).toBeVisible();

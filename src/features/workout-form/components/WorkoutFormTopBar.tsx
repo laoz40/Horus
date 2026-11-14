@@ -2,6 +2,8 @@
 
 import { IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { type ReactElement } from "react";
+import type { SubmitErrorHandler } from "react-hook-form";
+import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 import { Button } from "@/components/ui/button";
 import { useWorkoutTimer } from "@/features/workout-form/hooks/useWorkoutTimer";
@@ -16,6 +18,7 @@ interface WorkoutFormTopBarProps {
 	initialDurationSeconds: number;
 	mode: WorkoutFormMode["kind"];
 	isSubmitting: boolean;
+	onInvalidSubmit: SubmitErrorHandler<Workout>;
 }
 
 interface WorkoutDurationProps {
@@ -33,6 +36,7 @@ export default function WorkoutFormTopBar({
 	initialDurationSeconds,
 	mode,
 	isSubmitting,
+	onInvalidSubmit,
 }: WorkoutFormTopBarProps): ReactElement {
 	return (
 		<div className="ios-safe-area-top relative right-1/2 left-1/2 -mr-[50vw] -ml-[50vw] w-screen border-b bg-sidebar dark:bg-sidebar">
@@ -42,7 +46,7 @@ export default function WorkoutFormTopBar({
 					isCreate={mode === "create"}
 				/>
 				<WorkoutDuration initialDurationSeconds={initialDurationSeconds} />
-				<WorkoutNameDialog>
+				<WorkoutNameDialog onInvalidSubmit={onInvalidSubmit}>
 					<Button
 						variant="ghost"
 						disabled={isSubmitting}
