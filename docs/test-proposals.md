@@ -2,6 +2,14 @@
 
 ## Proposals
 
+### Online exercise search survives upstream failures
+
+- Behavior: When Wger is unreachable, times out during headers or body reading, rate-limits requests, or sends an invalid response, online exercise search shows its existing error toast and leaves local suggestions usable. A later successful search still adds online suggestions.
+- Regression: An upstream failure escapes the Effect error channel, returns an empty or unstructured server error, or causes a client JSON parsing rejection instead of the expected toast.
+- Risk: 4/10. Users cannot discover online exercises, but existing exercises and workout data remain available.
+- Gap: The existing workout journeys select local exercises and do not cover online search failures or recovery.
+- Level: E2E with controlled Wger responses at the server's external HTTP boundary, exercising the real RPC serialization and picker. Browser-only RPC interception would miss the server transport failure.
+
 ### Local verification refuses stale servers
 
 - Behavior: Local tests refuse an occupied app port unless the caller explicitly selects dev attachment. Fresh-production verification builds current source, starts its own server, and cleans it up after success or failure without stopping another owner's server.
