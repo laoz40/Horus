@@ -3,7 +3,7 @@
 import CalendarHeatmap from "react-calendar-heatmap";
 import { useQuery } from "@tanstack/react-query";
 import { IconLoader2 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Match } from "effect";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import TrainingYearSelector from "@/features/dashboard/components/TrainingYearSelector";
@@ -123,6 +123,28 @@ function YearInTrainingBody(state: YearInTrainingState) {
 }
 
 function YearInTrainingHeatmapCard({ year, values }: { year: number; values: HeatmapValue[] }) {
+	// Keep the ref stable so query updates don't reset the user's scroll position.
+	const scrollToToday = useCallback(
+		(container: HTMLDivElement | null) => {
+			const today = new Date();
+
+			if (!container || year !== today.getFullYear()) return;
+
+			const start = Date.UTC(year, 0, 1);
+			const end = Date.UTC(year + 1, 0, 1);
+			const date = Date.UTC(year, today.getMonth(), today.getDate());
+			const progress = (date - start) / (end - start);
+
+			container.scrollTo({
+				left: progress * container.scrollWidth - container.clientWidth / 2,
+				behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+					? "instant"
+					: "smooth",
+			});
+		},
+		[year],
+	);
+
 	if (values.length === 0) {
 		return (
 			<div className="rounded-lg border bg-card p-3 text-card-foreground shadow-sm">
@@ -133,7 +155,9 @@ function YearInTrainingHeatmapCard({ year, values }: { year: number; values: Hea
 
 	return (
 		<div className="rounded-lg border bg-card p-3 text-card-foreground shadow-sm">
-			<div className="overflow-x-auto pb-1">
+			<div
+				ref={scrollToToday}
+				className="overflow-x-auto pb-1">
 				<CalendarHeatmap
 					gutterSize={2}
 					startDate={`${year}-01-01`}
@@ -193,7 +217,7 @@ function YearInTrainingShell({
 }) {
 	return (
 		<section className="flex flex-col px-4">
-			<div className="flex items-center justify-between">
+			<div className="flex min-h-8 items-center justify-between">
 				<h2 className="text-muted-foreground">Year in Training</h2>
 				{yearSelector}
 			</div>
