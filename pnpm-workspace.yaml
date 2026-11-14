@@ -4,7 +4,15 @@ allowBuilds:
   sharp: false
 
 overrides:
-  "@better-auth/core": "1.7.2"
+  "@better-auth/core": "1.7.20"
 
 minimumReleaseAgeExclude:
   - effect@4.0.2
+  - "@better-auth/drizzle-adapter@1.7.20"
+  - "@better-auth/kysely-adapter@1.7.20"
+  - "@better-auth/memory-adapter@1.7.20"
+  - "@better-auth/mongo-adapter@1.7.20"
+  - "@better-auth/prisma-adapter@1.7.20"
+  - "@better-auth/telemetry@1.7.20"
+  - better-auth@1.7.20
+  - "@better-auth/core@1.7.20"
