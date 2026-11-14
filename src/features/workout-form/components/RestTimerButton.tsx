@@ -56,7 +56,7 @@ export default function RestTimerButton(): ReactElement {
 					{elapsedTime}
 				</div>
 				<Button
-					variant="default"
+					variant={isOverRestTarget ? "destructive" : "default"}
 					className="w-fit px-12"
 					onClick={finishRestTimer}>
 					{isOverRestTarget ? "Stop timer!" : "Stop timer?"}
