@@ -4,23 +4,27 @@ import CalendarHeatmap from "react-calendar-heatmap";
 import { useQuery } from "@tanstack/react-query";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
+import { Match } from "effect";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import TrainingYearSelector, {
-	type TrainingYearSelectorProps,
-} from "@/features/dashboard/components/TrainingYearSelector";
+import TrainingYearSelector from "@/features/dashboard/components/TrainingYearSelector";
 import { orpc } from "@/lib/orpc/client";
-import type { DashboardSession } from "@/features/dashboard/hooks/useDashboardSession";
+import { useDashboardSession } from "@/features/dashboard/hooks/useDashboardSession";
 
 type HeatmapValue = {
 	date: string;
 	count: number;
 };
 
+type YearInTrainingState =
+	| { kind: "loading" }
+	| { kind: "error" }
+	| { kind: "ready"; year: number; values: HeatmapValue[] };
+
 const emptyText = "Your consistency map starts with your next session.";
 
 type DashboardYearInTrainingSectionProps = {
-	session: DashboardSession;
-	yearSelectable?: boolean;
+	userId: string | null;
+	currentYear: number;
 };
 
 export default function DashboardYearInTrainingSection(props: DashboardYearInTrainingSectionProps) {
@@ -32,20 +36,26 @@ export default function DashboardYearInTrainingSection(props: DashboardYearInTra
 }
 
 function DashboardYearInTraining({
-	session,
-	yearSelectable = false,
+	userId: serverUserId,
+	currentYear,
 }: DashboardYearInTrainingSectionProps) {
-	const [currentYear] = useState(() => new Date().getFullYear());
-	const [selectedYear, setSelectedYear] = useState(currentYear);
-	const year = yearSelectable ? selectedYear : currentYear;
-	const isSignedIn = session.kind === "authenticated";
-	const userId = session.kind === "authenticated" ? session.user.id : undefined;
-	const needsYearRange = isSignedIn && yearSelectable;
+	const [year, setSelectedYear] = useState(currentYear);
+	const session = useDashboardSession();
+
+	// Render server data immediately, but follow subsequent client session changes.
+	const userId = Match.value(session).pipe(
+		Match.when({ kind: "authenticated" }, ({ user }) => user.id),
+		Match.when({ kind: "unauthenticated" }, () => null),
+		Match.orElse(() => serverUserId),
+	);
+
+	const isSignedIn = userId !== null;
 
 	const trainingYearRangeQuery = useQuery(
 		orpc.dashboard.trainingYearRange.queryOptions({
-			input: {},
-			enabled: needsYearRange,
+			input: { userId: userId ?? undefined },
+			enabled: session.kind === "authenticated",
+			staleTime: 30_000,
 		}),
 	);
 
@@ -55,8 +65,9 @@ function DashboardYearInTraining({
 		isError: isStatsError,
 	} = useQuery(
 		orpc.dashboard.yearInTraining.queryOptions({
-			input: { year, userId },
-			enabled: isSignedIn,
+			input: { year, userId: userId ?? undefined },
+			enabled: session.kind === "authenticated",
+			staleTime: 30_000,
 		}),
 	);
 
@@ -66,45 +77,34 @@ function DashboardYearInTraining({
 	);
 
 	const values: HeatmapValue[] = stats.map((row) => ({ date: row.dayKey, count: row.setCount }));
+	let state: YearInTrainingState = { kind: "ready", year, values };
+
+	if (isSignedIn && isStatsPending) {
+		state = { kind: "loading" };
+	} else if (isStatsError || trainingYearRangeQuery.isError) {
+		state = { kind: "error" };
+	}
 
 	return (
 		<YearInTrainingShell
-			yearOptions={yearOptions}
-			selectedYear={year}
-			yearSelectable={yearSelectable}
-			onYearChange={setSelectedYear}>
-			<YearInTrainingBody
-				isAuthPending={session.kind === "loading"}
-				isStatsPending={isSignedIn && isStatsPending}
-				isYearRangePending={needsYearRange && trainingYearRangeQuery.isPending}
-				isError={isStatsError}
-				year={year}
-				values={values}
-			/>
+			yearSelector={
+				<TrainingYearSelector
+					yearOptions={yearOptions}
+					selectedYear={year}
+					onYearChange={setSelectedYear}
+				/>
+			}>
+			<YearInTrainingBody {...state} />
 		</YearInTrainingShell>
 	);
 }
 
-function YearInTrainingBody({
-	isAuthPending,
-	isStatsPending,
-	isYearRangePending,
-	isError,
-	year,
-	values,
-}: {
-	isAuthPending: boolean;
-	isStatsPending: boolean;
-	isYearRangePending: boolean;
-	isError: boolean;
-	year: number;
-	values: HeatmapValue[];
-}) {
-	if (isAuthPending || isStatsPending || isYearRangePending) {
+function YearInTrainingBody(state: YearInTrainingState) {
+	if (state.kind === "loading") {
 		return <YearInTrainingLoadingBody />;
 	}
 
-	if (isError) {
+	if (state.kind === "error") {
 		return (
 			<div className="rounded-lg border bg-card p-3 text-card-foreground shadow-sm">
 				<p className="py-8 text-center text-sm text-destructive">
@@ -116,8 +116,8 @@ function YearInTrainingBody({
 
 	return (
 		<YearInTrainingHeatmapCard
-			year={year}
-			values={values}
+			year={state.year}
+			values={state.values}
 		/>
 	);
 }
@@ -166,36 +166,36 @@ function heatmapClassForValue(value: { count?: number } | undefined) {
 
 function YearInTrainingLoadingBody() {
 	return (
-		<div className="flex min-h-28 items-center justify-center rounded-lg border bg-card p-3 text-muted-foreground shadow-sm md:min-h-36">
+		<div className="flex min-h-28 items-center justify-center gap-2 rounded-lg border bg-card p-3 text-muted-foreground shadow-sm md:min-h-36">
 			<IconLoader2
 				className="size-5 animate-spin"
-				aria-label="Loading year in training"
+				aria-hidden="true"
 			/>
+			<span>Loading training data</span>
 		</div>
 	);
 }
 
-type YearInTrainingShellProps = TrainingYearSelectorProps & {
-	children: React.ReactNode;
-};
+export function DashboardYearInTrainingPlaceholder({ kind }: { kind: "loading" | "error" }) {
+	return (
+		<YearInTrainingShell yearSelector={null}>
+			<YearInTrainingBody kind={kind} />
+		</YearInTrainingShell>
+	);
+}
 
 function YearInTrainingShell({
-	yearOptions,
-	selectedYear,
-	yearSelectable,
-	onYearChange,
+	yearSelector,
 	children,
-}: YearInTrainingShellProps) {
+}: {
+	yearSelector: React.ReactNode;
+	children: React.ReactNode;
+}) {
 	return (
 		<section className="flex flex-col px-4">
 			<div className="flex items-center justify-between">
 				<h2 className="text-muted-foreground">Year in Training</h2>
-				<TrainingYearSelector
-					yearOptions={yearOptions}
-					selectedYear={selectedYear}
-					yearSelectable={yearSelectable}
-					onYearChange={onYearChange}
-				/>
+				{yearSelector}
 			</div>
 			{children}
 		</section>

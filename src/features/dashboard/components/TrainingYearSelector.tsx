@@ -6,23 +6,17 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 
-export interface TrainingYearSelectorProps {
+interface TrainingYearSelectorProps {
 	yearOptions: number[];
 	selectedYear: number;
-	yearSelectable: boolean;
 	onYearChange: (year: number) => void;
 }
 
 export default function TrainingYearSelector({
 	yearOptions,
 	selectedYear,
-	yearSelectable,
 	onYearChange,
 }: TrainingYearSelectorProps) {
-	if (!yearSelectable) {
-		return <span className="text-sm text-muted-foreground">{selectedYear}</span>;
-	}
-
 	return (
 		<Select
 			value={String(selectedYear)}

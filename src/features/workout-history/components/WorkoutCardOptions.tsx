@@ -4,6 +4,7 @@ import { isDefinedError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -29,10 +30,13 @@ export default function WorkoutCardOptions({
 	workoutName,
 }: WorkoutCardOptionsProps): ReactElement {
 	const queryClient = useQueryClient();
+	const router = useRouter();
 
 	const deleteWorkout = useMutation(
 		orpc.workouts.delete.mutationOptions({
 			onSuccess: async (result) => {
+				router.refresh();
+				void queryClient.invalidateQueries({ queryKey: orpc.dashboard.key() });
 				const queryKey = orpc.workouts.list.key({ type: "infinite" });
 				await queryClient.cancelQueries({ queryKey });
 				queryClient.setQueriesData<WorkoutHistoryInfiniteData>({ queryKey }, (data) => {

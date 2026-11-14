@@ -35,6 +35,8 @@ export const useWorkoutSubmit = ({
 	const createWorkout = useMutation(
 		orpc.workouts.create.mutationOptions({
 			onSuccess: async () => {
+				router.refresh();
+				void queryClient.invalidateQueries({ queryKey: orpc.dashboard.key() });
 				await queryClient.invalidateQueries({
 					queryKey: historyListQueryKey,
 					refetchType: "all",
@@ -88,6 +90,8 @@ export const useWorkoutSubmit = ({
 				return { previousHistory };
 			},
 			onSuccess: async (result) => {
+				router.refresh();
+				void queryClient.invalidateQueries({ queryKey: orpc.dashboard.key() });
 				// Keep the history pending state until refreshed list data (incl. PRs) lands.
 				await queryClient.invalidateQueries({
 					queryKey: historyListQueryKey,
