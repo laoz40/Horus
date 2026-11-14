@@ -35,6 +35,7 @@ export const useWorkoutSubmit = ({
 	const createWorkout = useMutation(
 		orpc.workouts.create.mutationOptions({
 			onSuccess: async () => {
+				router.refresh();
 				await invalidateWorkoutCache(queryClient);
 				setCreateWorkoutDraft(null);
 			},
@@ -82,7 +83,11 @@ export const useWorkoutSubmit = ({
 
 				return { previousHistory };
 			},
-			onSuccess: () => invalidateWorkoutCache(queryClient),
+			onSuccess: () => {
+				router.refresh();
+
+				return invalidateWorkoutCache(queryClient);
+			},
 			onError: (error, _variables, context) => {
 				if (context?.previousHistory !== undefined) {
 					queryClient.setQueryData(historyListQueryKey, context.previousHistory);

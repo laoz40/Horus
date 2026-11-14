@@ -40,7 +40,7 @@ export const dashboardRouter = {
 				message: "The database operation failed",
 			},
 		})
-		.input(z.object({}).strict())
+		.input(z.object({ userId: z.string().optional() }).strict())
 		.output(trainingYearRangeOutputSchema)
 		.handler(({ context, errors }) =>
 			Effect.runPromise(
