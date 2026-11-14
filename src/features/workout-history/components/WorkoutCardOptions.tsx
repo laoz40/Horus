@@ -17,6 +17,7 @@ import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { Button } from "@/components/ui/button";
 import type { WorkoutHistoryInfiniteData } from "@/features/workout-history/lib/optimisticHistoryItem";
 import { orpc } from "@/lib/orpc/client";
+import { removeDeletedWorkoutsAndInvalidateCache } from "@/lib/orpc/mutationCache";
 import { showErrorToast, showWorkoutDeletedToast } from "@/lib/toastMessages";
 
 interface WorkoutCardOptionsProps {
@@ -47,8 +48,9 @@ export default function WorkoutCardOptions({
 					};
 				});
 				showWorkoutDeletedToast(result.deletedWorkoutName);
-				await queryClient.invalidateQueries({
-					queryKey,
+				await removeDeletedWorkoutsAndInvalidateCache(queryClient, {
+					kind: "one",
+					workoutId: result.deletedWorkoutId,
 				});
 			},
 			onError: (error) => {

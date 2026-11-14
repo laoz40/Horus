@@ -6,6 +6,7 @@ import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import SectionCard from "@/components/SectionCard";
 import { Button } from "@/components/ui/button";
 import { orpc } from "@/lib/orpc/client";
+import { removeDeletedWorkoutsAndInvalidateCache } from "@/lib/orpc/mutationCache";
 import { showErrorToast, showWorkoutsDeletedToast } from "@/lib/toastMessages";
 
 export default function DeleteAllWorkoutsSection() {
@@ -15,9 +16,7 @@ export default function DeleteAllWorkoutsSection() {
 		orpc.workouts.deleteAll.mutationOptions({
 			onSuccess: async (result) => {
 				showWorkoutsDeletedToast(result.deletedCount);
-				await queryClient.invalidateQueries({
-					queryKey: orpc.workouts.list.key({ type: "infinite" }),
-				});
+				await removeDeletedWorkoutsAndInvalidateCache(queryClient, { kind: "all" });
 			},
 			onError: (error) => {
 				if (!isDefinedError(error)) {
