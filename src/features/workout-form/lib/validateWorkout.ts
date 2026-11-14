@@ -37,15 +37,18 @@ const GlobalExerciseInputSchema = z.object({
 	muscleGroups: z.array(z.string()).optional(),
 });
 
+const SetWeightSchema = z.number().nonnegative().max(MAX_SET_WEIGHT, NUMERIC_MAX_MESSAGE);
+
+const SetRepsSchema = z
+	.number(SET_REPS_MISSING_MESSAGE)
+	.int()
+	.positive(SET_REPS_MISSING_MESSAGE)
+	.max(MAX_SET_REPS, NUMERIC_MAX_MESSAGE);
+
 const SetSchema = z.object({
 	id: z.string(),
-	weight: z.number().nonnegative().max(MAX_SET_WEIGHT, NUMERIC_MAX_MESSAGE).optional(),
-	reps: z
-		.number(SET_REPS_MISSING_MESSAGE)
-		.int()
-		.positive(SET_REPS_MISSING_MESSAGE)
-		.max(MAX_SET_REPS, NUMERIC_MAX_MESSAGE)
-		.optional(),
+	weight: SetWeightSchema.nullish(),
+	reps: SetRepsSchema.nullish(),
 	completed: z.boolean(),
 	prTypes: z.array(z.enum(["weight", "volume", "bodyweightReps"])).optional(),
 });
@@ -54,11 +57,7 @@ const SetSchema = z.object({
 // Completing a set is stricter: the current row must be valid immediately, before
 // the broader workout submit flow strips empty rows and runs exercise-level checks.
 const CompletedSetSchema = SetSchema.extend({
-	reps: z
-		.number(SET_REPS_MISSING_MESSAGE)
-		.int()
-		.positive(SET_REPS_MISSING_MESSAGE)
-		.max(MAX_SET_REPS, NUMERIC_MAX_MESSAGE),
+	reps: SetRepsSchema,
 });
 
 const ExerciseSchema = z
@@ -73,7 +72,7 @@ const ExerciseSchema = z
 	.superRefine((exercise, context) => {
 		// Empty rows are stripped before validation; for every remaining set, reps is required.
 		exercise.sets.forEach((set, setIndex) => {
-			if (set.reps !== undefined) return;
+			if (set.reps !== undefined && set.reps !== null) return;
 
 			context.addIssue({
 				code: "custom",
@@ -89,9 +88,11 @@ export const WorkoutSchema = z.object({
 	exercises: z.array(ExerciseSchema).min(1, NO_EXERCISES_MESSAGE),
 });
 
-const SetForSaveSchema = SetSchema.required({ weight: true, reps: true })
-	.extend({ id: z.uuid() })
-	.strict();
+const SetForSaveSchema = SetSchema.extend({
+	id: z.uuid(),
+	weight: SetWeightSchema,
+	reps: SetRepsSchema,
+}).strict();
 
 const ExerciseForSaveSchema = ExerciseSchema.safeExtend({
 	id: z.uuid(),

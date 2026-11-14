@@ -9,7 +9,7 @@ From `/workouts/new` the user logs a workout: pick an exercise via the muscle-gr
 - `log-sets` — per-set `kg`/`reps` inputs; completing a set (checkbox "Color success") starts the "Rest Timer" drawer.
 - `exercise-selection` — switching exercises preserves edit mode; deleting the selected exercise returns to normal mode with the next exercise selected, or the previous one when deleting the last entry.
 - `rest-timer` — completing a set opens drawer "Rest Timer" with a "Finish Rest" button; the page behind it is blocked until dismissed.
-- `save` — top-bar "Finish" opens the "Save Workout" dialog; "Save" redirects to `/workouts` and immediately shows a spinner with "Saving workout". The same toast changes to "Saved <name>" after saving and refreshing history, or an error if saving fails.
+- `save` — top-bar "Finish" validates the workout and opens the "Save Workout" dialog only if valid, including when signed out. Invalid workouts stay on the form. "Save" validates again, redirects to `/workouts`, and immediately shows a spinner with "Saving workout". The same toast changes to "Saved <name>" after saving and refreshing history, or an error if saving fails.
 - `edit-existing` — `/workouts/<id>/edit` loads the saved workout for changes (drive like create, with the name pre-filled).
 - `auth-gate` — signed-out users can open the form without a prompt; the Save dialog shows "You need an account to create and save workouts." and a "Sign in" link to `/login`. The initial "Not Signed In" alert appears on the dashboard.
 
@@ -58,6 +58,6 @@ Preconditions: doctor authenticated; note the verify user's `workouts` row count
 - The save dialog name field is labeled "Enter workout name" — use `{"fill": {"name": "Enter workout name", ...}}`.
 - Combobox search placeholder is "Search an exercise..." but the reliable handle is `combobox` + `"Exercise name"`.
 - Set completion is the checkbox "Color success" (color-swatch toggle). Heatmap/PR aggregates only count completed sets.
-- Submit validation requires weight AND reps on every set and at least one exercise; invalid submits scroll to the first invalid exercise and stay on the form.
+- Finish validates before opening the save dialog; Save validates again. Validation requires at least one named exercise with a nonempty set and positive whole-number reps on each nonempty set. Blank weight saves as zero; fully blank rows are omitted. Invalid workouts stay on the form and scroll to the first invalid exercise.
 - The duration timer starts on page load and is saved as `duration_seconds`.
 - Cleanup: this feature creates rows — delete the verify user's workouts afterwards (SKILL.md Cleanup).

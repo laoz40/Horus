@@ -5,10 +5,9 @@
 //   database directly to prove the row landed in Neon with the right values — not
 //   just that a "Saved" toast appeared.
 //
-// - submitting without weight and reps stays on the form
-//   Add an exercise with no set data and try to save: the URL stays on
-//   /workouts/new and no row with that name exists in the DB, so validation
-//   truly blocked the write.
+// - finishing without weight and reps stays on the form
+//   Add an exercise with no set data and tap Finish: validation shows the
+//   missing-sets error without opening the save dialog or writing a workout.
 
 import { expect, test } from "@playwright/test";
 
@@ -49,19 +48,21 @@ test("create and save a workout persists it", async ({ page }) => {
 	expect(set).toMatchObject({ weight: "60", reps: "8", completed: true });
 });
 
-test("submitting without weight and reps stays on the form", async ({ page }) => {
+test("finishing without weight and reps stays on the form", async ({ page }) => {
+	const before = await sql(workoutIdRow)`
+		SELECT id FROM workouts WHERE user_id = ${E2E_USER_ID} ORDER BY id`;
+
 	await page.goto("/workouts/new");
 	await selectExercise(page, "Bench Press");
 
 	await page.getByRole("button", { name: "Finish" }).click();
-	await page.getByRole("textbox", { name: "Enter workout name" }).fill("E2E Invalid Workout");
-	await page.getByRole("button", { name: "Save" }).click();
 
-	// Validation blocks the save: still on the form, nothing persisted.
+	await expect(page.getByText("Exercise has no sets. Did you even do it?")).toBeVisible();
+	await expect(page.getByRole("dialog", { name: "Save Workout" })).toBeHidden();
 	await expect(page).toHaveURL(/\/workouts\/new$/);
 
-	const rows = await sql(workoutIdRow)`
-		SELECT id FROM workouts WHERE user_id = ${E2E_USER_ID} AND name = 'E2E Invalid Workout'`;
+	const after = await sql(workoutIdRow)`
+		SELECT id FROM workouts WHERE user_id = ${E2E_USER_ID} ORDER BY id`;
 
-	expect(rows).toHaveLength(0);
+	expect(after).toEqual(before);
 });

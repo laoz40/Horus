@@ -2,8 +2,9 @@ import type { Exercise, Set, Workout } from "@/features/workout-form/lib/validat
 
 export const createDefaultSet = (): Set => ({
 	id: crypto.randomUUID(),
-	weight: undefined,
-	reps: undefined,
+	// Explicit blanks prevent RHF from restoring indexed defaults when a set is re-added.
+	weight: null,
+	reps: null,
 	completed: false,
 });
 

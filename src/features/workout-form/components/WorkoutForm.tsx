@@ -107,6 +107,7 @@ export default function WorkoutForm({
 					initialDurationSeconds={initialDurationSeconds}
 					mode={mode.kind}
 					isSubmitting={isSubmitting}
+					onInvalidSubmit={handleInvalidSubmit}
 				/>
 
 				<form

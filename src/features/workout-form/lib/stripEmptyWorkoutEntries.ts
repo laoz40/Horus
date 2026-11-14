@@ -6,7 +6,11 @@ export const stripEmptyWorkoutEntries = (workout: Workout): Workout => {
 		.map((exercise) => ({
 			...exercise,
 			// Drop sets where neither weight nor reps was entered.
-			sets: exercise.sets.filter((set) => set.weight !== undefined || set.reps !== undefined),
+			sets: exercise.sets.filter(
+				(set) =>
+					(set.weight !== undefined && set.weight !== null) ||
+					(set.reps !== undefined && set.reps !== null),
+			),
 		}))
 		// Drop exercises with no name and no remaining sets.
 		.filter((exercise) => exercise.global.name.trim() !== "" || exercise.sets.length > 0);

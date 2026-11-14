@@ -10,6 +10,14 @@
 - Gap: The existing workout journeys select local exercises and do not cover online search failures or recovery.
 - Level: E2E with controlled Wger responses at the server's external HTTP boundary, exercising the real RPC serialization and picker. Browser-only RPC interception would miss the server transport failure.
 
+### Deleted sets stay deleted when editing and adding rows
+
+- Behavior: Edit a saved workout with distinct sets, delete a middle or final set, and add rows. New rows stay blank, surviving rows keep their values and completion state, and saving persists only the intended sets. Deleting the only row leaves a fresh blank row. Adding rows with incomplete inputs does not run save validation. Ticking a set rejects invalid entries; the top-right Finish tick opens the save dialog only for a valid workout, and Save validates again.
+- Regression: Reused array indices restore deleted numeric defaults, field identities move values to the wrong row, or Add Set triggers premature validation.
+- Risk: 7/10. Resurrected sets can silently corrupt workout history and progress statistics.
+- Gap: `tests/workout-history.spec.ts` only renames workouts when editing; `tests/create-workout.spec.ts` does not delete and re-add sets or exercise completion validation.
+- Level: E2E, extending the saved-workout editing journey through the real form and checking saved history.
+
 ### Local verification refuses stale servers
 
 - Behavior: Local tests refuse an occupied app port unless the caller explicitly selects dev attachment. Fresh-production verification builds current source, starts its own server, and cleans it up after success or failure without stopping another owner's server.

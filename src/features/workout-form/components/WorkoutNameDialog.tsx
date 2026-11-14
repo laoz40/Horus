@@ -15,16 +15,17 @@ import { getCurrentDay } from "@/lib/date";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import Link from "next/link";
 import { useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { type SubmitErrorHandler, useFormContext } from "react-hook-form";
 
 interface WorkoutNameDialogProps {
 	children: React.ReactNode;
+	onInvalidSubmit: SubmitErrorHandler<Workout>;
 }
 
 type AuthStatus = "pending" | "authenticated" | "unauthenticated";
 
-export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
-	const { register } = useFormContext<Workout>();
+export function WorkoutNameDialog({ children, onInvalidSubmit }: WorkoutNameDialogProps) {
+	const { register, handleSubmit } = useFormContext<Workout>();
 	const [open, setOpen] = useState(false);
 	const { data: sessionData, isPending } = authClient.useSession();
 	let authStatus: AuthStatus = "unauthenticated";
@@ -37,10 +38,20 @@ export function WorkoutNameDialog({ children }: WorkoutNameDialogProps) {
 		authStatus = "pending";
 	}
 
+	const handleOpenChange = (nextOpen: boolean) => {
+		if (!nextOpen) {
+			setOpen(false);
+
+			return;
+		}
+
+		void handleSubmit(() => setOpen(true), onInvalidSubmit)();
+	};
+
 	return (
 		<Dialog
 			open={open}
-			onOpenChange={setOpen}>
+			onOpenChange={handleOpenChange}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
 			<DialogContent
 				className="sm:max-w-sm"

@@ -20,16 +20,16 @@ interface SetRowProps {
 	onDeleteSet: (setIndex: number) => void;
 }
 
-// Convert blank inputs to undefined instead of nan, so empty fields stay empty in RHF.
+// Keep blanks explicit so registering a new row cannot restore an old indexed default.
 // DOM events hand us strings, but editing an existing workout pre-fills numbers.
-const parseOptionalNumber = (value: string | number | null): number | undefined => {
+const parseOptionalNumber = (value: string | number | null): number | null => {
 	const trimmed = String(value ?? "").trim();
 
-	if (trimmed === "") return undefined;
+	if (trimmed === "") return null;
 
 	const parsedValue = Number(trimmed);
 
-	return Number.isFinite(parsedValue) ? parsedValue : undefined;
+	return Number.isFinite(parsedValue) ? parsedValue : null;
 };
 
 type CompletedFieldName = `exercises.${number}.sets.${number}.completed`;
@@ -121,12 +121,12 @@ export default function SetRow({
 		const sets = getValues(fields.sets);
 		const currentSet = sets?.[setIndex];
 
-		if (!currentSet || currentSet.reps === undefined) return;
+		if (!currentSet || currentSet.reps === undefined || currentSet.reps === null) return;
 
 		const setsForPrCheck = sets.map((set, index) => ({
 			completed: index === setIndex ? true : set.completed,
-			reps: set.reps,
-			weight: set.weight,
+			reps: set.reps ?? undefined,
+			weight: set.weight ?? undefined,
 		}));
 
 		// If the PR check fails, keep the set completed and skip only the PR toast.
