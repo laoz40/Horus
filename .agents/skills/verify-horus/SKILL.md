@@ -9,11 +9,28 @@ Drive the real app the way a user does and capture evidence. The feature map in 
 
 ## Launch
 
-The app is a Next.js 16 dev server on `http://localhost:8000` (`pnpm dev`, binds `127.0.0.1`).
+The app runs on `http://localhost:8000` and binds `127.0.0.1`. Choose the launch mode explicitly. An HTTP response proves availability, not that a server is running current source.
 
-- **Attach first**: the user usually has the dev server running. Check with `curl -s -o /dev/null -w "%{http_code}" http://localhost:8000` — `200`/`307` means attach to it. **Never start a second instance** and never kill one you didn't start.
-- Only if nothing answers: start `pnpm dev` from the repo root in the background, note the PID, and wait until the port answers. Tear that instance down on cleanup by killing the PID you recorded. Port 8000 is also claimed by `tailscale serve` (HTTPS on the tailnet IP); that is a proxy, not the app — do not touch it.
-- Env lives in `.env.local` (t3env-validated). External deps are real: Neon dev Postgres, Upstash Redis, Resend, OAuth. Writing rows is acceptable (dev DB), but only as the verify user (see Doctor).
+### Current-source development verification
+
+- Check whether port 8000 is occupied before starting anything. Attach only after identifying the listener as `next dev` from this checkout, using its process command and working directory. An unknown listener or an existing `next start` is not current-source proof. Stop and ask its owner to free the port; never kill a server the run did not start.
+- If nothing is listening, start `pnpm dev` from this checkout, record the process ownership, and wait for readiness. Tear down only that run's server and children on completion or failure. Port 8000 is also claimed by `tailscale serve` on the tailnet IP; that is a proxy, not the app. Do not touch it.
+- `pnpm test` and `pnpm verify` now refuse an occupied app port by default. To reuse an identified user-owned dev server for Playwright, explicitly run `HORUS_TEST_SERVER=attach pnpm test` or `HORUS_TEST_SERVER=attach pnpm verify`. Attached servers remain running afterward.
+- Env lives in `.env.local` (t3env-validated). External deps are real: Neon dev Postgres, Upstash Redis, Resend, OAuth. Writing rows is acceptable (dev DB), but only as the verify user for skill-driven flows (see Doctor). The Playwright suite uses its separate E2E user.
+
+### Fresh-production verification
+
+From this checkout, with port 8000 free, run:
+
+```sh
+pnpm test:production
+```
+
+This uses Playwright's existing server lifecycle to run `pnpm build && pnpm start` before the existing E2E suite. It rebuilds current source every time and never reuses a listener. Playwright owns the launched process group and tears it down on success, failure, or interruption. An occupied port fails the run without killing or attaching to the existing server. Do not run another dev server or edit source during the build and verification.
+
+For additional skill-driven browser flows against a fresh production build, use two terminals. In the first, confirm port 8000 is free, then run `pnpm build && pnpm start` in the foreground from this checkout. Record that this terminal owns the server. After it reports ready, run `doctor` and the needed flows in the second terminal. Stop the owned server with Ctrl-C when finished, including after failed flows, and confirm it released the port. Do not reuse a production server whose build and launch were not part of this run.
+
+CI already builds before production E2E and owns its server in the workflow. This local path does not change CI.
 
 ## Doctor
 
@@ -64,6 +81,18 @@ Proofs go to `.agents/skills/verify-horus/evidence/<run-label>/` (git-ignored, s
   (`db-query.mjs` refuses non-SELECT queries without `--yes`; use it for cleanup deletes too.)
 - Record the run label, feature ID, and entry point used. A skipped path is not verified — report it as skipped.
 
+## SQL experiments with session-local temporary tables
+
+Before using session-local temporary tables, run:
+
+```sh
+node .agents/skills/verify-horus/helpers/db-query.mjs --session-preflight
+```
+
+This requires `DATABASE_URL_UNPOOLED` in `.env.local`, rejects a Neon pooler hostname, and checks a temporary table across separate statements on one direct `pg.Client` connection. It closes that connection afterward, dropping the table, and never prints credentials. If the URL is missing or pooled, copy the direct connection URL with pooling disabled from Neon into `DATABASE_URL_UNPOOLED` and rerun the preflight.
+
+A successful preflight does not make subsequent connections session-affine. The experiment must also use `DATABASE_URL_UNPOOLED` with **one connected `pg.Client`** for all temp-table statements, closing it in `finally`. Do not use Neon HTTP queries or separate pool calls for this work. Ordinary read-only `db-query.mjs --sql` probes and normal app queries continue using their usual pooled `DATABASE_URL`.
+
 ## Cleanup
 
 - Never kill processes by name. If the run started the dev server, kill only the recorded PID; if it attached, do nothing.
@@ -74,5 +103,5 @@ Proofs go to `.agents/skills/verify-horus/evidence/<run-label>/` (git-ignored, s
 ## Helpers
 
 - `helpers/drive.mjs` — `auth | doctor | session-dump | login | flow --out <label> --steps '<json>'` (auto-installs playwright-core into `helpers/node_modules` on first use; uses Playwright's bundled Chromium from `~/.cache/ms-playwright`).
-- `helpers/db-query.mjs` — SQL probe against the dev Neon DB (`--sql "..."`, `--yes` for writes). Reads `DATABASE_URL` from `.env.local`.
+- `helpers/db-query.mjs` — SQL probe against the dev Neon DB (`--sql "..."`, `--yes` for writes), or `--session-preflight` before session-local temporary-table work. Reads `DATABASE_URL` for ordinary probes and `DATABASE_URL_UNPOOLED` for the preflight from `.env.local`.
 - `features/` — the maintained verification map. Keep it updated when routes, labels, or flows change.

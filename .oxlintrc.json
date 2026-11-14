@@ -236,6 +236,7 @@
 		{
 			"files": ["src/**"],
 			"rules": {
+				"effect-boundaries/no-native-try": "error",
 				"no-restricted-imports": [
 					"error",
 					{

@@ -2,6 +2,30 @@
 
 ## Proposals
 
+### Local verification refuses stale servers
+
+- Behavior: Local tests refuse an occupied app port unless the caller explicitly selects dev attachment. Fresh-production verification builds current source, starts its own server, and cleans it up after success or failure without stopping another owner's server.
+- Regression: Silent reuse of an old production build produces misleading verification results, or cleanup kills a user-owned server.
+- Risk: 5/10. Misleading verification can hide application regressions; incorrect cleanup interrupts local work.
+- Gap: Existing Playwright journeys exercise application behavior, not the verification process lifecycle.
+- Level: Tooling integration with controlled listeners and child processes. UI E2E cannot verify its own launch and teardown reliably. Requires approval before implementation.
+
+### Session-local SQL preflight rejects pooled connections
+
+- Behavior: The SQL preflight rejects missing or pooled direct-connection configuration without printing credentials, and checks temporary-table continuity on one direct connection. Ordinary read-only probes keep using their normal connection.
+- Regression: Experiments use a pooled or stateless transport and lose session-local tables between statements, or connection errors expose credentials.
+- Risk: 4/10. Invalid measurements can misdirect database changes; leaked credentials can expose development data.
+- Gap: No coverage exists for the SQL helper's connection preflight or sanitized failure output.
+- Level: Tooling integration invoking the helper with controlled configuration and a disposable database session. UI E2E cannot observe SQL transport affinity or CLI error output. Requires approval before implementation.
+
+### Enforce Effect error handling in application code
+
+- Behavior: The lint command rejects native `try/catch`, `try/finally`, and `try/catch/finally` under `src/`, while accepting `Effect.try`, `Effect.tryPromise`, and native statements in tests and tooling outside `src/`. Only direct statements in the two approved browser functions are exempt.
+- Regression: A configuration or rule change silently permits native error handling, rejects Effect option properties, or exempts other functions and nested callbacks in the browser exception files.
+- Risk: 4/10. Lost enforcement allows inconsistent error handling into application code, but does not itself change stored data or runtime behavior.
+- Gap: No coverage exists for the native-try restriction or its file-and-function exceptions.
+- Level: Tooling integration, invoking the real lint command on temporary source fixtures. UI E2E cannot observe lint diagnostics or exit status. This non-E2E proposal requires approval before implementation.
+
 ### Refresh cached progress after workout deletion
 
 - Behavior: After viewing an exercise's recent sets and personal records, delete its workout or delete all workouts, then revisit the exercise using client-side navigation. Progress must reflect the remaining completed sets.

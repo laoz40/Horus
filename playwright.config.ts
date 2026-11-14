@@ -4,6 +4,8 @@ const BASE_URL = "http://localhost:8000";
 
 const isCI = Boolean(process.env.CI);
 
+const serverMode = process.env.HORUS_TEST_SERVER ?? "dev";
+
 const config: PlaywrightTestConfig = {
 	testDir: "./tests",
 	globalSetup: "./tests/global-setup.ts",
@@ -31,10 +33,11 @@ if (!isCI) {
 		["html", { outputFolder: "tests/playwright-report", open: "never" }],
 	];
 	config.webServer = {
-		command: "pnpm dev",
+		command: serverMode === "production" ? "pnpm build && pnpm start" : "pnpm dev",
 		url: BASE_URL,
-		reuseExistingServer: true,
-		timeout: 120_000,
+		// Only reuse a server when the caller explicitly identifies it as their dev server.
+		reuseExistingServer: serverMode === "attach",
+		timeout: serverMode === "production" ? 300_000 : 120_000,
 	};
 }
 
