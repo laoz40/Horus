@@ -1,5 +1,7 @@
 import "server-only";
 
+import { MAX_EXERCISE_NAME_LENGTH } from "@/features/workout-form/lib/validateWorkout";
+
 import { Effect, Layer } from "effect";
 import { z } from "zod";
 import { sqlClient } from "@/lib/db/sql";
@@ -71,7 +73,7 @@ const database = Layer.mergeAll(exerciseDb, prHistoryDb).pipe(Layer.provideMerge
 
 const exerciseLibraryWriteInputSchema = z
 	.object({
-		name: z.string().trim().min(1),
+		name: z.string().trim().min(1).max(MAX_EXERCISE_NAME_LENGTH),
 		muscleGroups: z.array(z.string()),
 	})
 	.strict();

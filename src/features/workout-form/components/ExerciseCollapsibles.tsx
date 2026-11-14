@@ -11,7 +11,10 @@ import { IconFlame, IconNotes } from "@tabler/icons-react";
 
 import { Textarea } from "@/components/ui/textarea";
 import { Controller, useFormContext } from "react-hook-form";
-import type { Workout } from "@/features/workout-form/lib/validateWorkout";
+import {
+	MAX_EXERCISE_NOTES_LENGTH,
+	type Workout,
+} from "@/features/workout-form/lib/validateWorkout";
 
 interface ExerciseCollapsiblesProps {
 	exerciseIndex: number;
@@ -98,6 +101,7 @@ function ExerciseNotes({ exerciseIndex }: ExerciseCollapsiblesProps) {
 				<div className="flex flex-col gap-1">
 					<Textarea
 						placeholder="Write a note..."
+						maxLength={MAX_EXERCISE_NOTES_LENGTH}
 						className="bg-card text-foreground"
 						{...register(`exercises.${exerciseIndex}.notes`)}
 					/>
