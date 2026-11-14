@@ -22,7 +22,6 @@ interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
 function ExerciseForm({ className, exerciseIndex, isEditing, ref }: ExerciseFormProps) {
 	const {
 		control,
-		trigger,
 		formState: { errors },
 	} = useFormContext<Workout>();
 
@@ -30,26 +29,23 @@ function ExerciseForm({ className, exerciseIndex, isEditing, ref }: ExerciseForm
 		fields: sets,
 		append,
 		remove,
+		replace,
 	} = useFieldArray({
 		name: `exercises.${exerciseIndex}.sets`,
 	});
 
 	const handleAddSet = () => {
 		append(createDefaultSet(), { shouldFocus: false });
-		void trigger(`exercises.${exerciseIndex}.sets`);
 	};
 
-	// BUG: when loading a workout to edit, adding new sets after deleting sets loads previous data
 	const handleDeleteSet = (setIndex: number) => {
-		const isLastSet = sets.length === 1;
-		remove(setIndex);
-
-		if (isLastSet) {
-			append(createDefaultSet(), { shouldFocus: false });
+		if (sets.length === 1) {
+			replace([createDefaultSet()]);
+		} else {
+			remove(setIndex);
 		}
 
 		showSetDeletedToast();
-		void trigger(`exercises.${exerciseIndex}.sets`);
 	};
 
 	const exerciseName = useWatch({
