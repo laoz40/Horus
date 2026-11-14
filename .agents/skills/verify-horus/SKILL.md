@@ -81,6 +81,18 @@ Proofs go to `.agents/skills/verify-horus/evidence/<run-label>/` (git-ignored, s
   (`db-query.mjs` refuses non-SELECT queries without `--yes`; use it for cleanup deletes too.)
 - Record the run label, feature ID, and entry point used. A skipped path is not verified — report it as skipped.
 
+## SQL experiments with session-local temporary tables
+
+Before using session-local temporary tables, run:
+
+```sh
+node .agents/skills/verify-horus/helpers/db-query.mjs --session-preflight
+```
+
+This requires `DATABASE_URL_UNPOOLED` in `.env.local`, rejects a Neon pooler hostname, and checks a temporary table across separate statements on one direct `pg.Client` connection. It closes that connection afterward, dropping the table, and never prints credentials. If the URL is missing or pooled, copy the direct connection URL with pooling disabled from Neon into `DATABASE_URL_UNPOOLED` and rerun the preflight.
+
+A successful preflight does not make subsequent connections session-affine. The experiment must also use `DATABASE_URL_UNPOOLED` with **one connected `pg.Client`** for all temp-table statements, closing it in `finally`. Do not use Neon HTTP queries or separate pool calls for this work. Ordinary read-only `db-query.mjs --sql` probes and normal app queries continue using their usual pooled `DATABASE_URL`.
+
 ## Cleanup
 
 - Never kill processes by name. If the run started the dev server, kill only the recorded PID; if it attached, do nothing.
@@ -91,5 +103,5 @@ Proofs go to `.agents/skills/verify-horus/evidence/<run-label>/` (git-ignored, s
 ## Helpers
 
 - `helpers/drive.mjs` — `auth | doctor | session-dump | login | flow --out <label> --steps '<json>'` (auto-installs playwright-core into `helpers/node_modules` on first use; uses Playwright's bundled Chromium from `~/.cache/ms-playwright`).
-- `helpers/db-query.mjs` — SQL probe against the dev Neon DB (`--sql "..."`, `--yes` for writes). Reads `DATABASE_URL` from `.env.local`.
+- `helpers/db-query.mjs` — SQL probe against the dev Neon DB (`--sql "..."`, `--yes` for writes), or `--session-preflight` before session-local temporary-table work. Reads `DATABASE_URL` for ordinary probes and `DATABASE_URL_UNPOOLED` for the preflight from `.env.local`.
 - `features/` — the maintained verification map. Keep it updated when routes, labels, or flows change.
