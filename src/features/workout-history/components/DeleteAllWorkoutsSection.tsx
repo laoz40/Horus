@@ -2,6 +2,7 @@
 
 import { isDefinedError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import SectionCard from "@/components/SectionCard";
 import { Button } from "@/components/ui/button";
@@ -10,10 +11,13 @@ import { showErrorToast, showWorkoutsDeletedToast } from "@/lib/toastMessages";
 
 export default function DeleteAllWorkoutsSection() {
 	const queryClient = useQueryClient();
+	const router = useRouter();
 
 	const deleteAllWorkouts = useMutation(
 		orpc.workouts.deleteAll.mutationOptions({
 			onSuccess: async (result) => {
+				router.refresh();
+				void queryClient.invalidateQueries({ queryKey: orpc.dashboard.key() });
 				showWorkoutsDeletedToast(result.deletedCount);
 				await queryClient.invalidateQueries({
 					queryKey: orpc.workouts.list.key({ type: "infinite" }),
