@@ -56,10 +56,10 @@ export default function RestTimerButton(): ReactElement {
 					{elapsedTime}
 				</div>
 				<Button
-					variant={isOverRestTarget ? "destructive" : "outline"}
+					variant="default"
 					className="w-fit px-12"
 					onClick={finishRestTimer}>
-					Finish Rest
+					{isOverRestTarget ? "Stop timer!" : "Stop timer?"}
 				</Button>
 			</DrawerContent>
 		</Drawer>

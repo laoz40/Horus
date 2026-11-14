@@ -14,7 +14,7 @@ export async function selectExercise(page: Page, name: string): Promise<void> {
 }
 
 async function dismissRestTimer(page: Page): Promise<void> {
-	const finishRest = page.getByRole("button", { name: "FINISH REST" });
+	const finishRest = page.getByRole("button", { name: /^Stop timer[?!]$/ });
 	const timerTab = page.getByRole("button", { name: /^\d{2}:\d{2}$/ });
 
 	await expect(finishRest.or(timerTab)).toBeVisible({ timeout: 15_000 });
