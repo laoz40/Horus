@@ -2,9 +2,11 @@ import { z } from "zod";
 
 export const onlineExerciseSearchErrors = {
 	RATE_LIMITED: {
+		status: 429,
 		message: "Too many requests. Please try again later.",
 	},
 	REQUEST_FAILED: {
+		status: 502,
 		message: "Failed to fetch exercises.",
 	},
 };
