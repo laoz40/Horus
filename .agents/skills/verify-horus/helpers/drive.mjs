@@ -15,7 +15,7 @@ import { spawnSync } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
 
 const HELPERS_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -83,7 +83,7 @@ function signedCookieValue(token, secret) {
 	return `${token}.${sig}`;
 }
 
-async function mintSession() {
+export async function mintSession() {
 	const envVars = readEnvLocal();
 	const sql = await neonClient();
 	const token = crypto.randomBytes(32).toString("hex");
@@ -123,7 +123,7 @@ async function injectCookie(value) {
 
 // Runs inside the app's own page origin, so Origin matches SITE_URL and credentials are sent.
 // GET (not POST — the app's session config rejects POST without deferSessionRefresh).
-async function fetchSession(page) {
+export async function fetchSession(page) {
 	return page.evaluate(async () => {
 		const response = await fetch("/api/auth/get-session", {
 			headers: { accept: "application/json" },
@@ -133,7 +133,7 @@ async function fetchSession(page) {
 	});
 }
 
-async function withPersistentContext(headless, fn) {
+export async function withPersistentContext(headless, fn) {
 	const { getChromium } = await ensurePlaywright();
 	const context = await getChromium().launchPersistentContext(PROFILE_DIR, {
 		headless,
@@ -280,23 +280,25 @@ function describeStep(step) {
 	return detail ? `${kind} ${detail}` : kind;
 }
 
-const [command, ...args] = process.argv.slice(2);
-const flag = (name) => {
-	const index = args.indexOf(name);
-	return index === -1 ? undefined : args[index + 1];
-};
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+	const [command, ...args] = process.argv.slice(2);
+	const flag = (name) => {
+		const index = args.indexOf(name);
+		return index === -1 ? undefined : args[index + 1];
+	};
 
-try {
-	if (command === "auth") await mintSession();
-	else if (command === "doctor") await doctor();
-	else if (command === "session-dump") await sessionDump();
-	else if (command === "login") await login();
-	else if (command === "flow") await flow({ out: flag("--out"), stepsJson: flag("--steps") });
-	else
-		throw new Error(
-			`Unknown command: ${command}. Use auth | doctor | session-dump | login | flow.`,
-		);
-} catch (error) {
-	console.error(`ERROR: ${error.message}`);
-	process.exit(1);
+	try {
+		if (command === "auth") await mintSession();
+		else if (command === "doctor") await doctor();
+		else if (command === "session-dump") await sessionDump();
+		else if (command === "login") await login();
+		else if (command === "flow") await flow({ out: flag("--out"), stepsJson: flag("--steps") });
+		else
+			throw new Error(
+				`Unknown command: ${command}. Use auth | doctor | session-dump | login | flow.`,
+			);
+	} catch (error) {
+		console.error(`ERROR: ${error.message}`);
+		process.exit(1);
+	}
 }
