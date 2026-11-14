@@ -3,9 +3,6 @@ allowBuilds:
   esbuild: false
   sharp: false
 
-overrides:
-  "@better-auth/core": "1.7.20"
-
 minimumReleaseAgeExclude:
   - effect@4.0.2
   - "@better-auth/drizzle-adapter@1.7.20"
