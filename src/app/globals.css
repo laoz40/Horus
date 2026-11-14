@@ -204,6 +204,11 @@ body {
 	letter-spacing: var(--tracking-normal);
 }
 
+input,
+textarea {
+	caret-color: var(--primary);
+}
+
 /* Prevent iOS focus zoom with a 16px minimum while preserving larger input text. */
 @media (any-pointer: coarse) {
 	input,
