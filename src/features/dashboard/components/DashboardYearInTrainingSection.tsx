@@ -193,7 +193,7 @@ function YearInTrainingShell({
 }) {
 	return (
 		<section className="flex flex-col px-4">
-			<div className="flex items-center justify-between">
+			<div className="flex min-h-8 items-center justify-between">
 				<h2 className="text-muted-foreground">Year in Training</h2>
 				{yearSelector}
 			</div>
