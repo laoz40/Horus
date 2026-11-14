@@ -17,6 +17,7 @@ interface SetRowProps {
 	exerciseIndex: number;
 	setIndex: number;
 	isEditing: boolean;
+	weightPlaceholder: string;
 	onDeleteSet: (setIndex: number) => void;
 }
 
@@ -38,6 +39,7 @@ export default function SetRow({
 	exerciseIndex,
 	setIndex,
 	isEditing,
+	weightPlaceholder,
 	onDeleteSet,
 }: SetRowProps): ReactElement {
 	const {
@@ -183,7 +185,8 @@ export default function SetRow({
 			<div className="grid grid-cols-[1fr_min-content_1fr_min-content] place-items-center gap-5">
 				<NumberInput
 					variant="decimal"
-					placeholder="kg"
+					aria-label="Weight (kg)"
+					placeholder={weightPlaceholder}
 					className={inputClassName}
 					maxLength={6}
 					{...register(fields.weight, { setValueAs: parseOptionalNumber })}
@@ -191,6 +194,7 @@ export default function SetRow({
 				<span className={separatorClassName}>×</span>
 				<NumberInput
 					variant="integer"
+					aria-label="Reps"
 					placeholder="reps"
 					className={inputClassName}
 					maxLength={6}
