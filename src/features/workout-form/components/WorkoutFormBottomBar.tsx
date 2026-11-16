@@ -41,7 +41,7 @@ export default function WorkoutFormBottomBar({
 		(store) => store.exerciseSelection.state === "editing",
 	);
 
-	const exerciseActions = useStore(exerciseSelectionStore, (store) => store.actions);
+	const sendExercise = useStore(exerciseSelectionStore, (store) => store.send);
 
 	const selectedExerciseIndex = exerciseIds.findIndex(
 		(exerciseId) => exerciseId === selectedExerciseId,
@@ -92,7 +92,9 @@ export default function WorkoutFormBottomBar({
 						className="w-full"
 						type="button"
 						disabled={!canToggleEdit}
-						onClick={() => exerciseActions.toggleExerciseEdit(selectedExerciseId)}>
+						onClick={() =>
+							sendExercise({ event: "TOGGLE_EXERCISE_EDIT", exerciseId: selectedExerciseId })
+						}>
 						{isEditing ? "Done" : "Edit"}
 					</Button>
 					<ExerciseActionButton

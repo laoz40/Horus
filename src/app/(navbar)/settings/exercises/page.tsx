@@ -7,11 +7,12 @@ import Link from "next/link";
 
 import PageLoadingSpinner from "@/components/PageLoadingSpinner";
 import { Button } from "@/components/ui/button";
-import ExerciseEditor, {
-	type ExerciseCatalogItem,
-	type ExerciseEditorState,
-} from "@/features/exercise-library/components/ExerciseEditor";
+import ExerciseEditor from "@/features/exercise-library/components/ExerciseEditor";
 import ExerciseList from "@/features/exercise-library/components/ExerciseList";
+import type {
+	ExerciseCatalogItem,
+	ExerciseEditorState,
+} from "@/features/exercise-library/lib/exerciseEditor";
 import { orpc } from "@/lib/orpc/client";
 
 export default function ExercisesSettingsPage() {
@@ -26,7 +27,11 @@ export default function ExercisesSettingsPage() {
 	}
 
 	function closeEditor() {
-		setEditor({ state: "closed" });
+		setEditor((current) => {
+			if (current !== editor) return current;
+
+			return { state: "closed" };
+		});
 	}
 
 	return (

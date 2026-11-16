@@ -21,7 +21,7 @@ export default function RestTimerButton({
 	restTimerStore: RestTimerStore;
 }): ReactElement {
 	const isOpen = useStore(restTimerStore, (state) => state.restTimer.state === "expanded");
-	const actions = useStore(restTimerStore, (store) => store.actions);
+	const send = useStore(restTimerStore, (store) => store.send);
 	const timer = useRestTimer({ restTimerStore });
 
 	if (!timer) return <></>;
@@ -33,7 +33,7 @@ export default function RestTimerButton({
 			direction="left"
 			noBodyStyles
 			open={isOpen}
-			onOpenChange={actions.setRestTimerDrawerOpen}>
+			onOpenChange={(open) => send({ event: "SET_REST_TIMER_DRAWER_OPEN", open })}>
 			<DrawerTrigger asChild>
 				<Button
 					className={cn(
@@ -60,7 +60,7 @@ export default function RestTimerButton({
 				<Button
 					variant={isOverRestTarget ? "destructive" : "default"}
 					className="w-fit px-12"
-					onClick={actions.finishRestTimer}>
+					onClick={() => send({ event: "FINISH_REST_TIMER" })}>
 					{isOverRestTarget ? "Stop timer!" : "Stop timer?"}
 				</Button>
 			</DrawerContent>

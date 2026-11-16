@@ -19,7 +19,7 @@ export const useExerciseNavigation = ({
 }: {
 	exerciseSelectionStore: ExerciseSelectionStore;
 }): UseExerciseNavigationReturn => {
-	const actions = useStore(exerciseSelectionStore, (store) => store.actions);
+	const send = useStore(exerciseSelectionStore, (store) => store.send);
 	const exerciseFormRefs = useRef<Record<string, HTMLDivElement | null>>({});
 	const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
 	const pendingScrollIndexRef = useRef<number | null>(null);
@@ -78,7 +78,7 @@ export const useExerciseNavigation = ({
 				const exerciseId = target instanceof HTMLElement ? target.dataset.exerciseId : undefined;
 
 				if (exerciseId) {
-					actions.selectExercise(exerciseId);
+					send({ event: "SELECT_EXERCISE", exerciseId });
 				}
 			},
 			{

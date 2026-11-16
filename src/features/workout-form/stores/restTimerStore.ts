@@ -10,13 +10,14 @@ type RestTimerState =
 	| { state: "expanded"; startedAtMs: number }
 	| { state: "collapsed"; startedAtMs: number };
 
+type RestTimerEvent =
+	| { event: "START_REST_TIMER" }
+	| { event: "SET_REST_TIMER_DRAWER_OPEN"; open: boolean }
+	| { event: "FINISH_REST_TIMER" };
+
 type RestTimerStoreState = {
 	restTimer: RestTimerState;
-	actions: {
-		startRestTimer: () => void;
-		setRestTimerDrawerOpen: (open: boolean) => void;
-		finishRestTimer: () => void;
-	};
+	send: (event: RestTimerEvent) => void;
 };
 
 export const createRestTimerStore = () => {
@@ -24,44 +25,52 @@ export const createRestTimerStore = () => {
 
 	return createStore<RestTimerStoreState>()((set, get) => ({
 		restTimer: { state: "idle" },
-		actions: {
-			startRestTimer: () => {
-				stopReminders?.();
-				const startedAtMs = Date.now();
-				let nextReminderAtMs = startedAtMs + REST_TARGET_MS;
-				set({ restTimer: { state: "expanded", startedAtMs } });
+		send: (event) => {
+			switch (event.event) {
+				case "START_REST_TIMER": {
+					stopReminders?.();
+					const startedAtMs = Date.now();
+					let nextReminderAtMs = startedAtMs + REST_TARGET_MS;
+					set({ restTimer: { state: "expanded", startedAtMs } });
+					stopReminders = clock.subscribe(() => {
+						const nowMs = clock.getSnapshot();
 
-				stopReminders = clock.subscribe(() => {
-					const nowMs = clock.getSnapshot();
+						if (nowMs < nextReminderAtMs) return;
+						get().send({ event: "SET_REST_TIMER_DRAWER_OPEN", open: true });
+						void showRestTimerNotification(formatRestElapsedTime(nowMs - startedAtMs));
 
-					if (nowMs < nextReminderAtMs) return;
+						while (nextReminderAtMs <= nowMs) {
+							nextReminderAtMs += REST_TARGET_REMINDER_INTERVAL_MS;
+						}
+					});
+					break;
+				}
 
-					get().actions.setRestTimerDrawerOpen(true);
-					void showRestTimerNotification(formatRestElapsedTime(nowMs - startedAtMs));
+				case "SET_REST_TIMER_DRAWER_OPEN":
+					set((store) => {
+						const { restTimer } = store;
 
-					while (nextReminderAtMs <= nowMs) {
-						nextReminderAtMs += REST_TARGET_REMINDER_INTERVAL_MS;
-					}
-				});
-			},
-			setRestTimerDrawerOpen: (open) =>
-				set((state) => {
-					const { restTimer } = state;
+						if (restTimer.state === "idle") return store;
 
-					if (restTimer.state === "idle") return state;
+						return {
+							restTimer: {
+								state: event.open ? "expanded" : "collapsed",
+								startedAtMs: restTimer.startedAtMs,
+							},
+						};
+					});
+					break;
+				case "FINISH_REST_TIMER":
+					stopReminders?.();
+					stopReminders = undefined;
+					set({ restTimer: { state: "idle" } });
+					break;
+				default: {
+					const exhaustiveEvent: never = event;
 
-					return {
-						restTimer: {
-							state: open ? "expanded" : "collapsed",
-							startedAtMs: restTimer.startedAtMs,
-						},
-					};
-				}),
-			finishRestTimer: () => {
-				stopReminders?.();
-				stopReminders = undefined;
-				set({ restTimer: { state: "idle" } });
-			},
+					return exhaustiveEvent;
+				}
+			}
 		},
 	}));
 };

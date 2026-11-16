@@ -5,6 +5,7 @@
 	"jsPlugins": [
 		"@shadcn/lint",
 		{ "name": "react-effects", "specifier": "./tools/oxlint/react-effects/index.ts" },
+		{ "name": "zustand", "specifier": "./tools/oxlint/zustand/index.ts" },
 		{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" },
 		{ "name": "conditionals", "specifier": "./tools/oxlint/conditionals/index.ts" },
 		{ "name": "anti-slop-effect", "specifier": "./tools/oxlint/anti-slop/effect/index.ts" },
@@ -34,6 +35,7 @@
 	],
 	"rules": {
 		"react-effects/no-use-effect": "error",
+		"zustand/set-only-in-send": "error",
 		"effecttsgo/unstable-api-usage": "off",
 		"effecttsgo/schema-number": "error",
 		"shadcn/no-raw-colors": "error",
@@ -238,6 +240,13 @@
 		{
 			"files": ["src/**"],
 			"rules": {
+				"no-restricted-properties": [
+					"error",
+					{
+						"property": "setState",
+						"message": "Send an event with store.getState().send({ event: ... }) instead. Keep mutations inside the store."
+					}
+				],
 				"effect-boundaries/no-native-try": "error",
 				"no-restricted-imports": [
 					"error",

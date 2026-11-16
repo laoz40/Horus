@@ -2,6 +2,14 @@
 
 ## Proposals
 
+### Zustand mutations stay inside send
+
+- Behavior: Oxlint accepts setter calls directly in the store's returned `send` function and rejects calls in helpers, other actions, and nested callbacks, as well as setter aliases and forwarding.
+- Regression: Renamed imports or setter parameters, shadowed bindings, or a different store's `send` cause missed violations or false positives.
+- Risk: 3/10. A missed diagnostic permits state updates that bypass transition checks; it does not itself change workout data.
+- Gap: No automated coverage exists for `zustand/set-only-in-send`; temporary CLI smoke checks covered these cases during implementation.
+- Level: Unit coverage through Oxlint's rule tester, because browser E2E cannot assert source-code lint diagnostics.
+
 ### Browser startup registers the notification worker
 
 - Behavior: A full page load registers `/sw.js` after loading completes. Client navigation does not register it again, and unsupported browsers still load the app.
@@ -153,3 +161,11 @@
 - Risk: 3/10. Users can misunderstand whether rest reminders are enabled.
 - Gap: No notification settings coverage exists. Manual verification reproduced the reload mismatch with both the original reducer and the local-action refactor.
 - Level: E2E, granting browser notification permission, enabling through settings, reloading, and asserting the visible switch state.
+
+### Reopening an exercise editor while a request finishes
+
+- Behavior: Close an editor during a pending save, open a fresh editor, and enter a new draft. The earlier request can refresh the catalog but must not close or change the new draft. Reopening after an ordinary close starts with fresh values.
+- Regression: A delayed success closes the new editor, or a delayed failure replaces its operation state or merge confirmation.
+- Risk: 6/10. A completion from an earlier edit can discard a user's new draft or show a collision for the wrong exercise.
+- Gap: Existing E2E tests cover workouts and authentication, but do not cover the exercise editor's close/reopen lifecycle or delayed request completion.
+- Level: E2E, using the exercise catalog UI and delaying a save response before reopening the editor.

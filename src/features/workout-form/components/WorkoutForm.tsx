@@ -47,9 +47,9 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 	);
 
 	// Leaving the form stops reminders as well as discarding its store.
-	const formRef = (element: HTMLDivElement | null) => {
-		if (element) return restTimerStore.getState().actions.finishRestTimer;
-	};
+	const [formRef] = useState(() => (element: HTMLDivElement | null) => {
+		if (element) return () => restTimerStore.getState().send({ event: "FINISH_REST_TIMER" });
+	});
 
 	const { methods, initialDurationSeconds, startedAtMs } = useWorkoutFormInit({
 		mode,
@@ -96,7 +96,10 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 		const nextExerciseId =
 			exerciseIds[selectedExerciseIndex + 1] ?? exerciseIds[selectedExerciseIndex - 1] ?? null;
 
-		exerciseSelectionStore.getState().actions.selectExerciseAfterDeletion(nextExerciseId);
+		exerciseSelectionStore.getState().send({
+			event: "SELECT_EXERCISE_AFTER_DELETION",
+			exerciseId: nextExerciseId,
+		});
 		showExerciseDeletedToast();
 	};
 

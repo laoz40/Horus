@@ -5,13 +5,15 @@ type ExerciseSelection =
 	| { state: "selected"; exerciseId: string }
 	| { state: "editing"; exerciseId: string };
 
+type ExerciseSelectionEvent =
+	| { event: "SELECT_EXERCISE"; exerciseId: string | null }
+	| { event: "TOGGLE_EXERCISE_EDIT"; exerciseId: string | null }
+	| { event: "SELECT_EXERCISE_AFTER_DELETION"; exerciseId: string | null }
+	| { event: "RESET" };
+
 type ExerciseSelectionStoreState = {
 	exerciseSelection: ExerciseSelection;
-	actions: {
-		selectExercise: (exerciseId: string | null) => void;
-		toggleExerciseEdit: (exerciseId: string | null) => void;
-		selectExerciseAfterDeletion: (nextExerciseId: string | null) => void;
-	};
+	send: (event: ExerciseSelectionEvent) => void;
 };
 
 export const selectSelectedExerciseId = (
@@ -25,57 +27,40 @@ export const selectSelectedExerciseId = (
 export const createExerciseSelectionStore = () =>
 	createStore<ExerciseSelectionStoreState>()((set) => ({
 		exerciseSelection: { state: "none" },
-		actions: {
-			selectExercise: (exerciseId) =>
-				set((store) => {
-					if (exerciseId === null) return { exerciseSelection: { state: "none" } };
+		send: (event) =>
+			set((store) => {
+				if (event.event === "RESET" || event.exerciseId === null) {
+					return { exerciseSelection: { state: "none" } };
+				}
 
-					const selection = store.exerciseSelection;
+				const { exerciseSelection } = store;
+				const { exerciseId } = event;
 
-					switch (selection.state) {
-						case "none":
+				switch (event.event) {
+					case "SELECT_EXERCISE":
+						if (exerciseSelection.state === "none") {
 							return { exerciseSelection: { state: "selected", exerciseId } };
-						case "selected":
-							if (selection.exerciseId === exerciseId) return store;
-
-							return { exerciseSelection: { state: "selected", exerciseId } };
-						case "editing":
-							if (selection.exerciseId === exerciseId) return store;
-
-							return { exerciseSelection: { state: "editing", exerciseId } };
-						default: {
-							const exhaustiveState: never = selection;
-
-							return exhaustiveState;
 						}
+
+						if (exerciseSelection.exerciseId === exerciseId) return store;
+
+						return { exerciseSelection: { state: exerciseSelection.state, exerciseId } };
+					case "TOGGLE_EXERCISE_EDIT":
+						return {
+							exerciseSelection: {
+								state: exerciseSelection.state === "editing" ? "selected" : "editing",
+								exerciseId,
+							},
+						};
+					case "SELECT_EXERCISE_AFTER_DELETION":
+						return { exerciseSelection: { state: "selected", exerciseId } };
+					default: {
+						const exhaustiveEvent: never = event;
+
+						return exhaustiveEvent;
 					}
-				}),
-			toggleExerciseEdit: (exerciseId) =>
-				set((store) => {
-					if (exerciseId === null) return { exerciseSelection: { state: "none" } };
-
-					const selection = store.exerciseSelection;
-
-					switch (selection.state) {
-						case "none":
-						case "selected":
-							return { exerciseSelection: { state: "editing", exerciseId } };
-						case "editing":
-							return { exerciseSelection: { state: "selected", exerciseId } };
-						default: {
-							const exhaustiveState: never = selection;
-
-							return exhaustiveState;
-						}
-					}
-				}),
-			selectExerciseAfterDeletion: (nextExerciseId) =>
-				set(() => {
-					if (nextExerciseId === null) return { exerciseSelection: { state: "none" } };
-
-					return { exerciseSelection: { state: "selected", exerciseId: nextExerciseId } };
-				}),
-		},
+				}
+			}),
 	}));
 
 export type ExerciseSelectionStore = ReturnType<typeof createExerciseSelectionStore>;
