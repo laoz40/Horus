@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { type Workout, validateCompletedSet } from "@/features/workout-form/lib/validateWorkout";
 import { orpc } from "@/lib/orpc/client";
-import { startRestTimer } from "@/features/workout-form/stores/workoutFormUiStore";
+import { useRestTimerStore } from "@/features/workout-form/stores/restTimerStore";
 import { showSetPrToast } from "@/lib/toastMessages";
 import NumberInput from "@/features/workout-form/components/NumberInput";
 import { cn } from "@/lib/utils";
@@ -42,6 +42,8 @@ export default function SetRow({
 	weightPlaceholder,
 	onDeleteSet,
 }: SetRowProps): ReactElement {
+	const actions = useRestTimerStore((store) => store.actions);
+
 	const {
 		register,
 		control,
@@ -114,7 +116,7 @@ export default function SetRow({
 
 		if (previousChecked || !nextChecked) return;
 
-		startRestTimer();
+		actions.startRestTimer();
 
 		const exerciseName = getValues(fields.exerciseName)?.trim();
 

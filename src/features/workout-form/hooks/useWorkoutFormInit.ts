@@ -7,6 +7,7 @@ import type { WorkoutFormMode } from "@/features/workout-form/components/Workout
 import { createDefaultWorkoutValues } from "@/features/workout-form/lib/WorkoutFormDefaults";
 import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
 import { showErrorToast } from "@/lib/toastMessages";
+import { useRestTimerStore } from "@/features/workout-form/stores/restTimerStore";
 import {
 	initializeWorkoutSession,
 	resetWorkoutFormUi,
@@ -29,6 +30,8 @@ export const useWorkoutFormInit = ({
 	mode,
 	missingGlobalExercisesCount = 0,
 }: UseWorkoutFormInitProps) => {
+	const actions = useRestTimerStore((store) => store.actions);
+
 	// Editing restores the server-loaded workout; a new workout restores the local draft.
 	const [startingWorkout] = useState(() => {
 		if (mode.kind === "edit") return mode.initialData;
@@ -48,11 +51,13 @@ export const useWorkoutFormInit = ({
 	// Start the timer session on mount and clear form UI state on unmount.
 	useEffect(() => {
 		initializeWorkoutSession(initialDurationSeconds);
+		actions.finishRestTimer();
 
 		return () => {
 			resetWorkoutFormUi();
+			actions.finishRestTimer();
 		};
-	}, [initialDurationSeconds]);
+	}, [initialDurationSeconds, actions]);
 
 	// Warn when a loaded workout references exercises that were deleted globally.
 	useEffect(() => {

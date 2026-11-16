@@ -5,7 +5,6 @@ import {
 	exerciseSelectionReducer,
 	type ExerciseSelection,
 } from "@/features/workout-form/lib/exerciseSelection";
-import { restTimerReducer, type RestTimerState } from "@/features/workout-form/lib/restTimer";
 
 export interface WorkoutFormUiState {
 	createWorkoutDraft: Workout | null;
@@ -13,7 +12,6 @@ export interface WorkoutFormUiState {
 	startedAtMs: number;
 	isRecentSetsDialogOpen: boolean;
 	recentSetsExerciseName: string;
-	restTimer: RestTimerState;
 }
 
 export type WorkoutFormUiStore = WorkoutFormUiState;
@@ -24,7 +22,6 @@ const createInitialWorkoutFormUiState = (): WorkoutFormUiState => ({
 	startedAtMs: Date.now(),
 	isRecentSetsDialogOpen: false,
 	recentSetsExerciseName: "",
-	restTimer: { kind: "idle" },
 });
 
 // Until the user selects or scrolls to an exercise, the first entry is selected.
@@ -44,12 +41,6 @@ export const selectIsRecentSetsDialogOpen = (state: WorkoutFormUiStore) =>
 export const selectRecentSetsExerciseName = (state: WorkoutFormUiStore) =>
 	state.recentSetsExerciseName;
 
-export const selectIsRestTimerDrawerOpen = (state: WorkoutFormUiStore) =>
-	state.restTimer.kind === "expanded";
-
-export const selectRestTimerStartedAtMs = (state: WorkoutFormUiStore) =>
-	state.restTimer.kind === "idle" ? null : state.restTimer.startedAtMs;
-
 export const useWorkoutFormUiStore = create<WorkoutFormUiStore>()(() => ({
 	...createInitialWorkoutFormUiState(),
 }));
@@ -60,7 +51,6 @@ export function initializeWorkoutSession(initialDurationSeconds = 0): void {
 		startedAtMs: Date.now() - Math.max(0, initialDurationSeconds ?? 0) * 1000,
 		isRecentSetsDialogOpen: false,
 		recentSetsExerciseName: "",
-		restTimer: { kind: "idle" },
 	});
 }
 
@@ -104,24 +94,6 @@ export function openRecentSetsDialog(exerciseName: string): void {
 
 export function setRecentSetsDialogOpen(open: boolean): void {
 	useWorkoutFormUiStore.setState({ isRecentSetsDialogOpen: open });
-}
-
-export function startRestTimer(): void {
-	useWorkoutFormUiStore.setState((state) => ({
-		restTimer: restTimerReducer(state.restTimer, { kind: "start", startedAtMs: Date.now() }),
-	}));
-}
-
-export function setRestTimerDrawerOpen(open: boolean): void {
-	useWorkoutFormUiStore.setState((state) => ({
-		restTimer: restTimerReducer(state.restTimer, { kind: open ? "openDrawer" : "closeDrawer" }),
-	}));
-}
-
-export function finishRestTimer(): void {
-	useWorkoutFormUiStore.setState((state) => ({
-		restTimer: restTimerReducer(state.restTimer, { kind: "finish" }),
-	}));
 }
 
 export function resetWorkoutFormUi(): void {
