@@ -1,5 +1,5 @@
 import { useStore } from "zustand";
-import { useCallback, useRef, type RefCallback } from "react";
+import { useRef, type RefCallback } from "react";
 
 import type { ExerciseSelectionStore } from "@/features/workout-form/stores/exerciseSelectionStore";
 
@@ -59,51 +59,48 @@ export const useExerciseNavigation = ({
 	};
 
 	// Exercise forms register and unregister as they mount and unmount.
-	const exerciseListRef = useCallback(
-		(scrollContainer: HTMLDivElement | null) => {
-			if (!scrollContainer) return;
+	const exerciseListRef = (scrollContainer: HTMLDivElement | null) => {
+		if (!scrollContainer) return;
 
-			const observer = new IntersectionObserver(
-				(forms) => {
-					const visible = forms.filter((form) => form.isIntersecting);
+		const observer = new IntersectionObserver(
+			(forms) => {
+				const visible = forms.filter((form) => form.isIntersecting);
 
-					if (visible.length === 0) return;
+				if (visible.length === 0) return;
 
-					const mostVisible = visible.toSorted(
-						(a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0),
-					)[0];
+				const mostVisible = visible.toSorted(
+					(a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0),
+				)[0];
 
-					if (!mostVisible) return;
+				if (!mostVisible) return;
 
-					const { target } = mostVisible;
-					const exerciseId = target instanceof HTMLElement ? target.dataset.exerciseId : undefined;
+				const { target } = mostVisible;
+				const exerciseId = target instanceof HTMLElement ? target.dataset.exerciseId : undefined;
 
-					if (exerciseId) {
-						actions.selectExercise(exerciseId);
-					}
-				},
-				{
-					root: scrollContainer,
-					rootMargin: "-45% 0px -45% 0px",
-					threshold: [0, 0.5, 1],
-				},
-			);
-
-			visibilityObserverRef.current = observer;
-
-			Object.values(exerciseFormRefs.current).forEach((exerciseForm) => {
-				if (exerciseForm) {
-					observer.observe(exerciseForm);
+				if (exerciseId) {
+					actions.selectExercise(exerciseId);
 				}
-			});
+			},
+			{
+				root: scrollContainer,
+				rootMargin: "-45% 0px -45% 0px",
+				threshold: [0, 0.5, 1],
+			},
+		);
 
-			return () => {
-				observer.disconnect();
-				visibilityObserverRef.current = null;
-			};
-		},
-		[actions],
-	);
+		visibilityObserverRef.current = observer;
+
+		Object.values(exerciseFormRefs.current).forEach((exerciseForm) => {
+			if (exerciseForm) {
+				observer.observe(exerciseForm);
+			}
+		});
+
+		return () => {
+			observer.disconnect();
+			visibilityObserverRef.current = null;
+		};
+	};
 
 	return {
 		exerciseListRef,

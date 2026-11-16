@@ -2,7 +2,7 @@
 
 import { useStore } from "zustand";
 
-import { useCallback, useState, type ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { FormProvider, type FieldErrors } from "react-hook-form";
 
 import { getFirstInvalidExerciseIndex } from "@/features/workout-form/lib/checkInvalidExercise";
@@ -47,12 +47,9 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 	);
 
 	// Leaving the form stops reminders as well as discarding its store.
-	const formRef = useCallback(
-		(element: HTMLDivElement | null) => {
-			if (element) return restTimerStore.getState().actions.finishRestTimer;
-		},
-		[restTimerStore],
-	);
+	const formRef = (element: HTMLDivElement | null) => {
+		if (element) return restTimerStore.getState().actions.finishRestTimer;
+	};
 
 	const { methods, initialDurationSeconds, startedAtMs } = useWorkoutFormInit({
 		mode,
