@@ -6,13 +6,11 @@ import { WorkoutSchema, type Workout } from "@/features/workout-form/lib/validat
 import type { WorkoutFormMode } from "@/features/workout-form/components/WorkoutForm";
 import { createDefaultWorkoutValues } from "@/features/workout-form/lib/WorkoutFormDefaults";
 import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
-import { showErrorToast } from "@/lib/toastMessages";
 import { useRestTimerStore } from "@/features/workout-form/stores/restTimerStore";
 import { useExerciseSelectionStore } from "@/features/workout-form/stores/exerciseSelectionStore";
 
 interface UseWorkoutFormInitProps {
 	mode: WorkoutFormMode;
-	missingGlobalExercisesCount?: number;
 }
 
 // Strip fully empty sets/exercises before RHF validation so blank rows don't block submit.
@@ -21,10 +19,7 @@ const baseResolver = zodResolver(WorkoutSchema);
 const workoutResolver: Resolver<Workout> = (values, context, options) =>
 	baseResolver(stripEmptyWorkoutEntries(values), context, options);
 
-export const useWorkoutFormInit = ({
-	mode,
-	missingGlobalExercisesCount = 0,
-}: UseWorkoutFormInitProps) => {
+export const useWorkoutFormInit = ({ mode }: UseWorkoutFormInitProps) => {
 	const restTimerActions = useRestTimerStore((store) => store.actions);
 	const exerciseActions = useExerciseSelectionStore((store) => store.actions);
 
@@ -49,16 +44,6 @@ export const useWorkoutFormInit = ({
 			restTimerActions.finishRestTimer();
 		};
 	}, [exerciseActions, restTimerActions]);
-
-	// Warn when a loaded workout references exercises that were deleted globally.
-	useEffect(() => {
-		if (missingGlobalExercisesCount <= 0) return;
-
-		const s = missingGlobalExercisesCount === 1 ? "" : "s";
-		showErrorToast(
-			`Some exercises in this workout no longer exist. Skipped ${missingGlobalExercisesCount} exercise${s}.`,
-		);
-	}, [missingGlobalExercisesCount]);
 
 	return { methods, initialDurationSeconds, startedAtMs };
 };

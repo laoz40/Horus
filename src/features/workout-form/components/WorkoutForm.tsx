@@ -26,13 +26,9 @@ export type WorkoutFormMode =
 
 interface WorkoutFormProps {
 	mode: WorkoutFormMode;
-	missingGlobalExercisesCount?: number;
 }
 
-export default function WorkoutForm({
-	mode,
-	missingGlobalExercisesCount,
-}: WorkoutFormProps): ReactElement {
+export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 	const [recentSetsDialog, setRecentSetsDialog] = useState<{
 		state: "closed" | "open";
 		exerciseName: string;
@@ -46,7 +42,6 @@ export default function WorkoutForm({
 
 	const { methods, initialDurationSeconds, startedAtMs } = useWorkoutFormInit({
 		mode,
-		missingGlobalExercisesCount,
 	});
 
 	const { handleSubmit } = methods;
