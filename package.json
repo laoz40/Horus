@@ -11,7 +11,7 @@
 		"test": "playwright test",
 		"test:production": "HORUS_TEST_SERVER=production playwright test",
 		"verify": "pnpm lint:check && pnpm format:check && pnpm typecheck && pnpm fallow:check && pnpm test",
-		"postinstall": "playwright install chromium",
+		"postinstall": "test \"$PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD\" = 1 || playwright install chromium",
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",
 		"lint": "effect-tsgo oxlint . --fix",
