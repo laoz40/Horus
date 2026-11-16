@@ -15,18 +15,18 @@ import ExerciseList from "@/features/exercise-library/components/ExerciseList";
 import { orpc } from "@/lib/orpc/client";
 
 export default function ExercisesSettingsPage() {
-	const [sheetState, setSheetState] = useState<ExerciseEditSheetState>({ kind: "closed" });
+	const [sheet, setSheet] = useState<ExerciseEditSheetState>({ state: "closed" });
 
 	function openCreateSheet() {
-		setSheetState({ kind: "create" });
+		setSheet({ state: "create" });
 	}
 
 	function openEditSheet(exercise: ExerciseCatalogItem) {
-		setSheetState({ kind: "edit", exercise });
+		setSheet({ state: "edit", exercise });
 	}
 
 	function closeSheet() {
-		setSheetState({ kind: "closed" });
+		setSheet({ state: "closed" });
 	}
 
 	return (
@@ -35,7 +35,7 @@ export default function ExercisesSettingsPage() {
 				<ExercisesListContent onSelectExercise={openEditSheet} />
 			</ExercisesPageShell>
 			<ExerciseEditSheet
-				state={sheetState}
+				sheet={sheet}
 				onClose={closeSheet}
 			/>
 		</>

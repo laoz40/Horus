@@ -29,25 +29,42 @@ export const useExerciseSelectionStore = create<ExerciseSelectionStore>()((set) 
 
 				const selection = store.exerciseSelection;
 
-				if (selection.state !== "none" && selection.exerciseId === exerciseId) return store;
+				switch (selection.state) {
+					case "none":
+						return { exerciseSelection: { state: "selected", exerciseId } };
+					case "selected":
+						if (selection.exerciseId === exerciseId) return store;
 
-				return {
-					exerciseSelection: {
-						state: selection.state === "editing" ? "editing" : "selected",
-						exerciseId,
-					},
-				};
+						return { exerciseSelection: { state: "selected", exerciseId } };
+					case "editing":
+						if (selection.exerciseId === exerciseId) return store;
+
+						return { exerciseSelection: { state: "editing", exerciseId } };
+					default: {
+						const exhaustiveState: never = selection;
+
+						return exhaustiveState;
+					}
+				}
 			}),
 		toggleExerciseEdit: (exerciseId) =>
 			set((store) => {
 				if (exerciseId === null) return { exerciseSelection: { state: "none" } };
 
-				return {
-					exerciseSelection: {
-						state: store.exerciseSelection.state === "editing" ? "selected" : "editing",
-						exerciseId,
-					},
-				};
+				const selection = store.exerciseSelection;
+
+				switch (selection.state) {
+					case "none":
+					case "selected":
+						return { exerciseSelection: { state: "editing", exerciseId } };
+					case "editing":
+						return { exerciseSelection: { state: "selected", exerciseId } };
+					default: {
+						const exhaustiveState: never = selection;
+
+						return exhaustiveState;
+					}
+				}
 			}),
 		selectExerciseAfterDeletion: (nextExerciseId) =>
 			set(() => {

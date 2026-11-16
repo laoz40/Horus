@@ -9,33 +9,33 @@ export interface ExerciseCatalogItem {
 }
 
 export type ExerciseEditSheetState =
-	| { kind: "closed" }
-	| { kind: "create" }
-	| { kind: "edit"; exercise: ExerciseCatalogItem };
+	| { state: "closed" }
+	| { state: "create" }
+	| { state: "edit"; exercise: ExerciseCatalogItem };
 
-export type OpenExerciseEditSheetState = Exclude<ExerciseEditSheetState, { kind: "closed" }>;
+export type OpenExerciseEditSheetState = Exclude<ExerciseEditSheetState, { state: "closed" }>;
 
-export function getExerciseEditSheetTitle(state: OpenExerciseEditSheetState): string {
-	if (state.kind === "create") {
+export function getExerciseEditSheetTitle(sheet: OpenExerciseEditSheetState): string {
+	if (sheet.state === "create") {
 		return "Add exercise";
 	}
 
 	return "Edit exercise";
 }
 
-export function getExerciseEditInitialName(state: OpenExerciseEditSheetState): string {
-	if (state.kind === "edit") {
-		return state.exercise.name;
+export function getExerciseEditInitialName(sheet: OpenExerciseEditSheetState): string {
+	if (sheet.state === "edit") {
+		return sheet.exercise.name;
 	}
 
 	return "";
 }
 
 export function getExerciseEditInitialCategories(
-	state: OpenExerciseEditSheetState,
+	sheet: OpenExerciseEditSheetState,
 ): MuscleGroupCategory[] {
-	if (state.kind === "edit") {
-		return readSelectedCategories(state.exercise.muscleGroups);
+	if (sheet.state === "edit") {
+		return readSelectedCategories(sheet.exercise.muscleGroups);
 	}
 
 	return [];

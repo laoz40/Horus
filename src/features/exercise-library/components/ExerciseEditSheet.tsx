@@ -28,12 +28,12 @@ import { formatWorkoutCount } from "@/features/exercise-library/lib/formatExerci
 import { useExerciseEditMutations } from "@/features/exercise-library/hooks/useExerciseEditMutations";
 
 interface ExerciseEditSheetProps {
-	state: ExerciseEditSheetState;
+	sheet: ExerciseEditSheetState;
 	onClose: () => void;
 }
 
 interface ExerciseEditFormProps {
-	state: OpenExerciseEditSheetState;
+	sheet: OpenExerciseEditSheetState;
 	onClose: () => void;
 }
 
@@ -73,29 +73,34 @@ function ExerciseEditDeleteButton({
 	);
 }
 
-function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
-	const [name, setName] = useState(() => getExerciseEditInitialName(state));
-	const [categories, setCategories] = useState(() => getExerciseEditInitialCategories(state));
-	const workoutCount = state.kind === "edit" ? state.exercise.workoutCount : 0;
+function ExerciseEditForm({ sheet, onClose }: ExerciseEditFormProps) {
+	const [name, setName] = useState(() => getExerciseEditInitialName(sheet));
+	const [categories, setCategories] = useState(() => getExerciseEditInitialCategories(sheet));
+	const workoutCount = sheet.state === "edit" ? sheet.exercise.workoutCount : 0;
 
-	const { saveExercise, combineExercises, deleteCurrentExercise, operation, cancelMerge } =
-		useExerciseEditMutations({
-			state,
-			onClose,
-		});
+	const {
+		state: operation,
+		saveExercise,
+		combineExercises,
+		deleteCurrentExercise,
+		cancelMerge,
+	} = useExerciseEditMutations({
+		sheet,
+		onClose,
+	});
 
-	const isSaving = operation.kind === "saving";
-	const isCombining = operation.kind === "combining";
-	const isDeleting = operation.kind === "deleting";
+	const isSaving = operation.state === "saving";
+	const isCombining = operation.state === "combining";
+	const isDeleting = operation.state === "deleting";
 	const trimmedName = name.trim();
-	const canSave = trimmedName.length > 0 && operation.kind === "editing";
-	const mergeSourceName = state.kind === "edit" ? state.exercise.name : trimmedName;
-	const mergeSourceWorkoutCount = state.kind === "edit" ? state.exercise.workoutCount : 0;
+	const canSave = trimmedName.length > 0 && operation.state === "editing";
+	const mergeSourceName = sheet.state === "edit" ? sheet.exercise.name : trimmedName;
+	const mergeSourceWorkoutCount = sheet.state === "edit" ? sheet.exercise.workoutCount : 0;
 
 	return (
 		<>
 			<DialogHeader>
-				<DialogTitle>{getExerciseEditSheetTitle(state)}</DialogTitle>
+				<DialogTitle>{getExerciseEditSheetTitle(sheet)}</DialogTitle>
 			</DialogHeader>
 
 			<div className="flex flex-col gap-5">
@@ -123,7 +128,7 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 					)}
 				</div>
 
-				{state.kind === "edit" && (
+				{sheet.state === "edit" && (
 					<p className="text-sm text-muted-foreground">
 						Used in {formatWorkoutCount(workoutCount)}
 					</p>
@@ -131,9 +136,9 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 			</div>
 
 			<DialogFooter className="flex-row justify-end">
-				{state.kind === "edit" && (
+				{sheet.state === "edit" && (
 					<ExerciseEditDeleteButton
-						exerciseName={state.exercise.name}
+						exerciseName={sheet.exercise.name}
 						workoutCount={workoutCount}
 						isSaving={isSaving}
 						isDeleting={isDeleting}
@@ -154,7 +159,7 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 				</Button>
 			</DialogFooter>
 
-			{(operation.kind === "confirmingMerge" || operation.kind === "combining") && (
+			{(operation.state === "confirmingMerge" || operation.state === "combining") && (
 				<ExerciseMergeDialog
 					open
 					onOpenChange={(open) => {
@@ -165,7 +170,7 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 					sourceName={mergeSourceName}
 					targetName={operation.existingExercise.name}
 					sourceWorkoutCount={mergeSourceWorkoutCount}
-					kind={state.kind}
+					kind={sheet.state}
 					onCombine={() => combineExercises(categories)}
 					isCombining={isCombining}
 				/>
@@ -174,9 +179,9 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 	);
 }
 
-export default function ExerciseEditSheet({ state, onClose }: ExerciseEditSheetProps) {
-	const isOpen = state.kind !== "closed";
-	const formKey = state.kind === "edit" ? state.exercise.id : state.kind;
+export default function ExerciseEditSheet({ sheet, onClose }: ExerciseEditSheetProps) {
+	const isOpen = sheet.state !== "closed";
+	const formKey = sheet.state === "edit" ? sheet.exercise.id : sheet.state;
 
 	return (
 		<Dialog
@@ -189,10 +194,10 @@ export default function ExerciseEditSheet({ state, onClose }: ExerciseEditSheetP
 			<DialogContent
 				aria-describedby={undefined}
 				className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
-				{state.kind !== "closed" && (
+				{sheet.state !== "closed" && (
 					<ExerciseEditForm
 						key={formKey}
-						state={state}
+						sheet={sheet}
 						onClose={onClose}
 					/>
 				)}
