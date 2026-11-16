@@ -1,9 +1,10 @@
-import { useEffect, useRef, type RefObject } from "react";
+import { useStore } from "zustand";
+import { useCallback, useRef, type RefCallback } from "react";
 
-import { useExerciseSelectionStore } from "@/features/workout-form/stores/exerciseSelectionStore";
+import type { ExerciseSelectionStore } from "@/features/workout-form/stores/exerciseSelectionStore";
 
 interface UseExerciseNavigationReturn {
-	exerciseListRef: RefObject<HTMLDivElement | null>;
+	exerciseListRef: RefCallback<HTMLDivElement>;
 	registerExerciseRef: (
 		exerciseId: string,
 		exerciseIndex: number,
@@ -13,9 +14,12 @@ interface UseExerciseNavigationReturn {
 	scrollToExerciseOnMount: (exerciseIndex: number) => void;
 }
 
-export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
-	const actions = useExerciseSelectionStore((store) => store.actions);
-	const exerciseListRef = useRef<HTMLDivElement | null>(null);
+export const useExerciseNavigation = ({
+	exerciseSelectionStore,
+}: {
+	exerciseSelectionStore: ExerciseSelectionStore;
+}): UseExerciseNavigationReturn => {
+	const actions = useStore(exerciseSelectionStore, (store) => store.actions);
 	const exerciseFormRefs = useRef<Record<string, HTMLDivElement | null>>({});
 	const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
 	const pendingScrollIndexRef = useRef<number | null>(null);
@@ -54,52 +58,52 @@ export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
 		});
 	};
 
-	// Create the visibility observer once; exercise forms register and unregister
-	// themselves through registerExerciseRef as they mount and unmount.
-	useEffect(() => {
-		const scrollContainer = exerciseListRef.current;
+	// Exercise forms register and unregister as they mount and unmount.
+	const exerciseListRef = useCallback(
+		(scrollContainer: HTMLDivElement | null) => {
+			if (!scrollContainer) return;
 
-		if (!scrollContainer) return;
+			const observer = new IntersectionObserver(
+				(forms) => {
+					const visible = forms.filter((form) => form.isIntersecting);
 
-		const observer = new IntersectionObserver(
-			(forms) => {
-				const visible = forms.filter((form) => form.isIntersecting);
+					if (visible.length === 0) return;
 
-				if (visible.length === 0) return;
+					const mostVisible = visible.toSorted(
+						(a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0),
+					)[0];
 
-				const mostVisible = visible.toSorted(
-					(a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0),
-				)[0];
+					if (!mostVisible) return;
 
-				if (!mostVisible) return;
+					const { target } = mostVisible;
+					const exerciseId = target instanceof HTMLElement ? target.dataset.exerciseId : undefined;
 
-				const { target } = mostVisible;
-				const exerciseId = target instanceof HTMLElement ? target.dataset.exerciseId : undefined;
+					if (exerciseId) {
+						actions.selectExercise(exerciseId);
+					}
+				},
+				{
+					root: scrollContainer,
+					rootMargin: "-45% 0px -45% 0px",
+					threshold: [0, 0.5, 1],
+				},
+			);
 
-				if (exerciseId) {
-					actions.selectExercise(exerciseId);
+			visibilityObserverRef.current = observer;
+
+			Object.values(exerciseFormRefs.current).forEach((exerciseForm) => {
+				if (exerciseForm) {
+					observer.observe(exerciseForm);
 				}
-			},
-			{
-				root: scrollContainer,
-				rootMargin: "-45% 0px -45% 0px",
-				threshold: [0, 0.5, 1],
-			},
-		);
+			});
 
-		visibilityObserverRef.current = observer;
-
-		Object.values(exerciseFormRefs.current).forEach((exerciseForm) => {
-			if (exerciseForm) {
-				observer.observe(exerciseForm);
-			}
-		});
-
-		return () => {
-			observer.disconnect();
-			visibilityObserverRef.current = null;
-		};
-	}, [actions]);
+			return () => {
+				observer.disconnect();
+				visibilityObserverRef.current = null;
+			};
+		},
+		[actions],
+	);
 
 	return {
 		exerciseListRef,

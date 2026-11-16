@@ -3,7 +3,6 @@ import "@/app/globals.css";
 import { ThemeProvider } from "next-themes";
 import { Oxanium } from "next/font/google";
 import DeferredToaster from "@/components/DeferredToaster";
-import RestTimerButton from "@/features/workout-form/components/RestTimerButton";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import { themeProviderProps } from "@/lib/theme";
 import { Providers } from "@/app/providers";
@@ -45,10 +44,7 @@ export default function RootLayout({
 				<DeferredToaster />
 				<ServiceWorkerRegistration />
 				<ThemeProvider {...themeProviderProps}>
-					<Providers>
-						<RestTimerButton />
-						{children}
-					</Providers>
+					<Providers>{children}</Providers>
 				</ThemeProvider>
 			</body>
 		</html>

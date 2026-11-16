@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { showRestTimerNotification } from "@/features/settings/lib/restTimerNotifications";
-import { useRestTimerStore } from "@/features/workout-form/stores/restTimerStore";
+import { useStore } from "zustand";
+import type { RestTimerStore } from "@/features/workout-form/stores/restTimerStore";
 
 const REST_TARGET_MS = 2 * 60 * 1000; // 2 minutes
 
@@ -14,12 +15,12 @@ const formatElapsedTime = (elapsedMs: number): string => {
 	return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 };
 
-export function useRestTimer() {
-	const startedAtMs = useRestTimerStore((state) =>
+export function useRestTimer({ restTimerStore }: { restTimerStore: RestTimerStore }) {
+	const startedAtMs = useStore(restTimerStore, (state) =>
 		state.restTimer.state === "idle" ? null : state.restTimer.startedAtMs,
 	);
 
-	const actions = useRestTimerStore((store) => store.actions);
+	const actions = useStore(restTimerStore, (store) => store.actions);
 	const [nowMs, setNowMs] = useState(() => Date.now());
 
 	// Update the rest clock and send due reminders while the timer is running.

@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { type Workout, validateCompletedSet } from "@/features/workout-form/lib/validateWorkout";
 import { orpc } from "@/lib/orpc/client";
-import { useRestTimerStore } from "@/features/workout-form/stores/restTimerStore";
+import { useStore } from "zustand";
+import type { RestTimerStore } from "@/features/workout-form/stores/restTimerStore";
 import { showSetPrToast } from "@/lib/toastMessages";
 import NumberInput from "@/features/workout-form/components/NumberInput";
 import { cn } from "@/lib/utils";
 
 interface SetRowProps {
+	restTimerStore: RestTimerStore;
 	exerciseIndex: number;
 	setIndex: number;
 	isEditing: boolean;
@@ -36,13 +38,14 @@ const parseOptionalNumber = (value: string | number | null): number | null => {
 type CompletedFieldName = `exercises.${number}.sets.${number}.completed`;
 
 export default function SetRow({
+	restTimerStore,
 	exerciseIndex,
 	setIndex,
 	isEditing,
 	weightPlaceholder,
 	onDeleteSet,
 }: SetRowProps): ReactElement {
-	const actions = useRestTimerStore((store) => store.actions);
+	const actions = useStore(restTimerStore, (store) => store.actions);
 
 	const {
 		register,

@@ -1,5 +1,7 @@
 "use client";
 
+import { useStore } from "zustand";
+
 import { useState, type ReactElement } from "react";
 import { FormProvider, type FieldErrors } from "react-hook-form";
 
@@ -8,8 +10,9 @@ import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { showExerciseDeletedToast } from "@/lib/toastMessages";
 import {
 	selectSelectedExerciseId,
-	useExerciseSelectionStore,
+	createExerciseSelectionStore,
 } from "@/features/workout-form/stores/exerciseSelectionStore";
+import { createRestTimerStore } from "@/features/workout-form/stores/restTimerStore";
 import { useExerciseNavigation } from "@/features/workout-form/hooks/useExerciseNavigation";
 import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit";
 import { useWorkoutExercises } from "@/features/workout-form/hooks/useWorkoutExercises";
@@ -19,6 +22,7 @@ import ExerciseForm from "@/features/workout-form/components/ExerciseForm";
 import WorkoutFormBottomBar from "@/features/workout-form/components/WorkoutFormBottomBar";
 import WorkoutFormTopBar from "@/features/workout-form/components/WorkoutFormTopBar";
 import RecentSetsDialog from "@/features/workout-form/components/RecentSetsDialog";
+import RestTimerButton from "@/features/workout-form/components/RestTimerButton";
 
 export type WorkoutFormMode =
 	| { kind: "create" }
@@ -29,22 +33,24 @@ interface WorkoutFormProps {
 }
 
 export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
+	const [exerciseSelectionStore] = useState(createExerciseSelectionStore);
+	const [restTimerStore] = useState(createRestTimerStore);
+
 	const [recentSetsDialog, setRecentSetsDialog] = useState<{
 		state: "closed" | "open";
 		exerciseName: string;
 	}>({ state: "closed", exerciseName: "" });
 
-	const isEditing = useExerciseSelectionStore(
+	const isEditing = useStore(
+		exerciseSelectionStore,
 		(store) => store.exerciseSelection.state === "editing",
 	);
 
-	const exerciseActions = useExerciseSelectionStore((store) => store.actions);
+	const exerciseActions = useStore(exerciseSelectionStore, (store) => store.actions);
 
 	const { methods, initialDurationSeconds, startedAtMs } = useWorkoutFormInit({
 		mode,
 	});
-
-	const { handleSubmit } = methods;
 
 	const {
 		fields: exercises,
@@ -55,7 +61,7 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 	const { isSubmitting, submitWorkout } = useWorkoutSubmit({ startedAtMs, mode });
 
 	const { exerciseListRef, registerExerciseRef, scrollToExercise, scrollToExerciseOnMount } =
-		useExerciseNavigation();
+		useExerciseNavigation({ exerciseSelectionStore });
 
 	const handleInvalidSubmit = (errors: FieldErrors<Workout>) => {
 		// find the first invalid exercise
@@ -73,7 +79,7 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 	// exercise ids to pass to the exercise selector
 	const exerciseIds = exercises.map((exercise) => exercise.id);
 
-	const selectedExerciseId = useExerciseSelectionStore((state) =>
+	const selectedExerciseId = useStore(exerciseSelectionStore, (state) =>
 		selectSelectedExerciseId(state, exerciseIds),
 	);
 
@@ -98,6 +104,7 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+			<RestTimerButton restTimerStore={restTimerStore} />
 			<FormProvider {...methods}>
 				<WorkoutFormTopBar
 					initialDurationSeconds={initialDurationSeconds}
@@ -110,13 +117,14 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 				<form
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
 					id="workout-form"
-					onSubmit={handleSubmit(submitWorkout, handleInvalidSubmit)}>
+					onSubmit={methods.handleSubmit(submitWorkout, handleInvalidSubmit)}>
 					{/* Exercise Form */}
 					<section
 						ref={exerciseListRef}
 						className="flex min-h-0 flex-1 snap-y snap-mandatory flex-col overflow-y-auto">
 						{exercises.map((exercise, exerciseIndex) => (
 							<ExerciseForm
+								restTimerStore={restTimerStore}
 								key={exercise.id}
 								exerciseIndex={exerciseIndex}
 								ref={(exerciseFormElement) => {
@@ -130,6 +138,7 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 				</form>
 
 				<WorkoutFormBottomBar
+					exerciseSelectionStore={exerciseSelectionStore}
 					exerciseIds={exerciseIds}
 					onAddExercise={handleAddAndScroll}
 					onDeleteExercise={handleDeleteExercise}

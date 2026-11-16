@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -17,29 +17,28 @@ export default function HistoryPagination({
 	onLoadMore,
 	className,
 }: Readonly<HistoryPaginationProps>) {
-	const sentinelRef = useRef<HTMLDivElement>(null);
-
 	// Observe the bottom sentinel and fetch the next page when it nears the viewport.
-	useEffect(() => {
-		const sentinel = sentinelRef.current;
+	const sentinelRef = useCallback(
+		(sentinel: HTMLDivElement | null) => {
+			if (!sentinel || !hasNextPage) return;
 
-		if (!sentinel || !hasNextPage) return;
+			const observer = new IntersectionObserver(
+				(entries) => {
+					if (entries[0]?.isIntersecting && !isLoading) {
+						onLoadMore();
+					}
+				},
+				{ rootMargin: "200px" },
+			);
 
-		const observer = new IntersectionObserver(
-			(entries) => {
-				if (entries[0]?.isIntersecting && !isLoading) {
-					onLoadMore();
-				}
-			},
-			{ rootMargin: "200px" },
-		);
+			observer.observe(sentinel);
 
-		observer.observe(sentinel);
-
-		return () => {
-			observer.disconnect();
-		};
-	}, [hasNextPage, isLoading, onLoadMore]);
+			return () => {
+				observer.disconnect();
+			};
+		},
+		[hasNextPage, isLoading, onLoadMore],
+	);
 
 	if (!hasNextPage && !isLoading) return null;
 
