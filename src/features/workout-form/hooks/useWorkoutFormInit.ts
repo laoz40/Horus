@@ -7,12 +7,8 @@ import type { WorkoutFormMode } from "@/features/workout-form/components/Workout
 import { createDefaultWorkoutValues } from "@/features/workout-form/lib/WorkoutFormDefaults";
 import { stripEmptyWorkoutEntries } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
 import { showErrorToast } from "@/lib/toastMessages";
-import {
-	initializeWorkoutSession,
-	resetWorkoutFormUi,
-	selectCreateWorkoutDraft,
-	useWorkoutFormUiStore,
-} from "@/features/workout-form/stores/workoutFormUiStore";
+import { useRestTimerStore } from "@/features/workout-form/stores/restTimerStore";
+import { useExerciseSelectionStore } from "@/features/workout-form/stores/exerciseSelectionStore";
 
 interface UseWorkoutFormInitProps {
 	mode: WorkoutFormMode;
@@ -29,14 +25,12 @@ export const useWorkoutFormInit = ({
 	mode,
 	missingGlobalExercisesCount = 0,
 }: UseWorkoutFormInitProps) => {
-	// Editing restores the server-loaded workout; a new workout restores the local draft.
-	const [startingWorkout] = useState(() => {
-		if (mode.kind === "edit") return mode.initialData;
+	const restTimerActions = useRestTimerStore((store) => store.actions);
+	const exerciseActions = useExerciseSelectionStore((store) => store.actions);
 
-		return selectCreateWorkoutDraft(useWorkoutFormUiStore.getState()) ?? undefined;
-	});
-
+	const startingWorkout = mode.kind === "edit" ? mode.initialData : undefined;
 	const initialDurationSeconds = startingWorkout?.durationSeconds ?? 0;
+	const [startedAtMs] = useState(() => Date.now() - Math.max(0, initialDurationSeconds) * 1000);
 
 	const methods = useForm<Workout>({
 		resolver: workoutResolver,
@@ -45,14 +39,16 @@ export const useWorkoutFormInit = ({
 		defaultValues: startingWorkout ?? createDefaultWorkoutValues(),
 	});
 
-	// Start the timer session on mount and clear form UI state on unmount.
+	// Clear shared form UI state when entering or leaving a workout.
 	useEffect(() => {
-		initializeWorkoutSession(initialDurationSeconds);
+		exerciseActions.reset();
+		restTimerActions.finishRestTimer();
 
 		return () => {
-			resetWorkoutFormUi();
+			exerciseActions.reset();
+			restTimerActions.finishRestTimer();
 		};
-	}, [initialDurationSeconds]);
+	}, [exerciseActions, restTimerActions]);
 
 	// Warn when a loaded workout references exercises that were deleted globally.
 	useEffect(() => {
@@ -64,5 +60,5 @@ export const useWorkoutFormInit = ({
 		);
 	}, [missingGlobalExercisesCount]);
 
-	return { methods, initialDurationSeconds };
+	return { methods, initialDurationSeconds, startedAtMs };
 };

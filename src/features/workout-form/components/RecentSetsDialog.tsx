@@ -17,8 +17,8 @@ import { orpc } from "@/lib/orpc/client";
 
 interface RecentSetsDialogProps {
 	open: boolean;
-	onOpenChange: (open: boolean) => void;
 	exerciseName: string;
+	onOpenChange: (open: boolean) => void;
 }
 
 function SetSkeletonRow() {
@@ -34,8 +34,8 @@ function SetSkeletonRow() {
 
 export default function RecentSetsDialog({
 	open,
-	onOpenChange,
 	exerciseName,
+	onOpenChange,
 }: RecentSetsDialogProps) {
 	const recentSetsQuery = useQuery(
 		orpc.exercises.recentSets.queryOptions({

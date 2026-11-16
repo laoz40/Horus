@@ -20,20 +20,20 @@ import MuscleGroupMultiSelect from "@/features/exercise-library/components/Muscl
 import {
 	getExerciseEditInitialCategories,
 	getExerciseEditInitialName,
-	getExerciseEditSheetTitle,
-	type ExerciseEditSheetState,
-	type OpenExerciseEditSheetState,
-} from "@/features/exercise-library/lib/exerciseEditSheet";
+	getExerciseEditorTitle,
+	type ExerciseEditorState,
+	type OpenExerciseEditorState,
+} from "@/features/exercise-library/lib/exerciseEditor";
 import { formatWorkoutCount } from "@/features/exercise-library/lib/formatExerciseCatalog";
 import { useExerciseEditMutations } from "@/features/exercise-library/hooks/useExerciseEditMutations";
 
-interface ExerciseEditSheetProps {
-	state: ExerciseEditSheetState;
+interface ExerciseEditorProps {
+	editor: ExerciseEditorState;
 	onClose: () => void;
 }
 
 interface ExerciseEditFormProps {
-	state: OpenExerciseEditSheetState;
+	editor: OpenExerciseEditorState;
 	onClose: () => void;
 }
 
@@ -73,29 +73,34 @@ function ExerciseEditDeleteButton({
 	);
 }
 
-function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
-	const [name, setName] = useState(() => getExerciseEditInitialName(state));
-	const [categories, setCategories] = useState(() => getExerciseEditInitialCategories(state));
-	const workoutCount = state.kind === "edit" ? state.exercise.workoutCount : 0;
+function ExerciseEditForm({ editor, onClose }: ExerciseEditFormProps) {
+	const [name, setName] = useState(() => getExerciseEditInitialName(editor));
+	const [categories, setCategories] = useState(() => getExerciseEditInitialCategories(editor));
+	const workoutCount = editor.state === "edit" ? editor.exercise.workoutCount : 0;
 
-	const { saveExercise, combineExercises, deleteCurrentExercise, operation, cancelMerge } =
-		useExerciseEditMutations({
-			state,
-			onClose,
-		});
+	const {
+		state: operation,
+		saveExercise,
+		combineExercises,
+		deleteCurrentExercise,
+		cancelMerge,
+	} = useExerciseEditMutations({
+		editor,
+		onClose,
+	});
 
-	const isSaving = operation.kind === "saving";
-	const isCombining = operation.kind === "combining";
-	const isDeleting = operation.kind === "deleting";
+	const isSaving = operation.state === "saving";
+	const isCombining = operation.state === "combining";
+	const isDeleting = operation.state === "deleting";
 	const trimmedName = name.trim();
-	const canSave = trimmedName.length > 0 && operation.kind === "editing";
-	const mergeSourceName = state.kind === "edit" ? state.exercise.name : trimmedName;
-	const mergeSourceWorkoutCount = state.kind === "edit" ? state.exercise.workoutCount : 0;
+	const canSave = trimmedName.length > 0 && operation.state === "editing";
+	const mergeSourceName = editor.state === "edit" ? editor.exercise.name : trimmedName;
+	const mergeSourceWorkoutCount = editor.state === "edit" ? editor.exercise.workoutCount : 0;
 
 	return (
 		<>
 			<DialogHeader>
-				<DialogTitle>{getExerciseEditSheetTitle(state)}</DialogTitle>
+				<DialogTitle>{getExerciseEditorTitle(editor)}</DialogTitle>
 			</DialogHeader>
 
 			<div className="flex flex-col gap-5">
@@ -123,7 +128,7 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 					)}
 				</div>
 
-				{state.kind === "edit" && (
+				{editor.state === "edit" && (
 					<p className="text-sm text-muted-foreground">
 						Used in {formatWorkoutCount(workoutCount)}
 					</p>
@@ -131,9 +136,9 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 			</div>
 
 			<DialogFooter className="flex-row justify-end">
-				{state.kind === "edit" && (
+				{editor.state === "edit" && (
 					<ExerciseEditDeleteButton
-						exerciseName={state.exercise.name}
+						exerciseName={editor.exercise.name}
 						workoutCount={workoutCount}
 						isSaving={isSaving}
 						isDeleting={isDeleting}
@@ -154,7 +159,7 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 				</Button>
 			</DialogFooter>
 
-			{(operation.kind === "confirmingMerge" || operation.kind === "combining") && (
+			{(operation.state === "confirmingMerge" || operation.state === "combining") && (
 				<ExerciseMergeDialog
 					open
 					onOpenChange={(open) => {
@@ -165,7 +170,7 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 					sourceName={mergeSourceName}
 					targetName={operation.existingExercise.name}
 					sourceWorkoutCount={mergeSourceWorkoutCount}
-					kind={state.kind}
+					kind={editor.state}
 					onCombine={() => combineExercises(categories)}
 					isCombining={isCombining}
 				/>
@@ -174,9 +179,9 @@ function ExerciseEditForm({ state, onClose }: ExerciseEditFormProps) {
 	);
 }
 
-export default function ExerciseEditSheet({ state, onClose }: ExerciseEditSheetProps) {
-	const isOpen = state.kind !== "closed";
-	const formKey = state.kind === "edit" ? state.exercise.id : state.kind;
+export default function ExerciseEditor({ editor, onClose }: ExerciseEditorProps) {
+	const isOpen = editor.state !== "closed";
+	const formKey = editor.state === "edit" ? editor.exercise.id : editor.state;
 
 	return (
 		<Dialog
@@ -189,10 +194,10 @@ export default function ExerciseEditSheet({ state, onClose }: ExerciseEditSheetP
 			<DialogContent
 				aria-describedby={undefined}
 				className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
-				{state.kind !== "closed" && (
+				{editor.state !== "closed" && (
 					<ExerciseEditForm
 						key={formKey}
-						state={state}
+						editor={editor}
 						onClose={onClose}
 					/>
 				)}
@@ -203,5 +208,5 @@ export default function ExerciseEditSheet({ state, onClose }: ExerciseEditSheetP
 
 export type {
 	ExerciseCatalogItem,
-	ExerciseEditSheetState,
-} from "@/features/exercise-library/lib/exerciseEditSheet";
+	ExerciseEditorState,
+} from "@/features/exercise-library/lib/exerciseEditor";

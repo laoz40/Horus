@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import type { ExerciseCatalogItem } from "@/features/exercise-library/lib/exerciseEditSheet";
+import type { ExerciseCatalogItem } from "@/features/exercise-library/lib/exerciseEditor";
 import { orpc } from "@/lib/orpc/client";
 
 type ExerciseListData = {

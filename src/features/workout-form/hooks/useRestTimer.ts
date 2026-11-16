@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import { showRestTimerNotification } from "@/features/settings/lib/restTimerNotifications";
-import {
-	selectRestTimerStartedAtMs,
-	setRestTimerDrawerOpen,
-	useWorkoutFormUiStore,
-} from "@/features/workout-form/stores/workoutFormUiStore";
+import { useRestTimerStore } from "@/features/workout-form/stores/restTimerStore";
 
 const REST_TARGET_MS = 2 * 60 * 1000; // 2 minutes
 
@@ -19,7 +15,11 @@ const formatElapsedTime = (elapsedMs: number): string => {
 };
 
 export function useRestTimer() {
-	const startedAtMs = useWorkoutFormUiStore(selectRestTimerStartedAtMs);
+	const startedAtMs = useRestTimerStore((state) =>
+		state.restTimer.state === "idle" ? null : state.restTimer.startedAtMs,
+	);
+
+	const actions = useRestTimerStore((store) => store.actions);
 	const [nowMs, setNowMs] = useState(() => Date.now());
 
 	// Update the rest clock and send due reminders while the timer is running.
@@ -34,7 +34,7 @@ export function useRestTimer() {
 
 			if (currentTimeMs < nextAutoOpenMs) return;
 
-			setRestTimerDrawerOpen(true);
+			actions.setRestTimerDrawerOpen(true);
 			void showRestTimerNotification(formatElapsedTime(currentTimeMs - startedAtMs));
 
 			// Ensure the next auto-open time is in the future.
@@ -47,7 +47,7 @@ export function useRestTimer() {
 		const intervalId = window.setInterval(tick, 1000);
 
 		return () => window.clearInterval(intervalId);
-	}, [startedAtMs]);
+	}, [startedAtMs, actions]);
 
 	if (!startedAtMs) return null;
 

@@ -11,15 +11,11 @@ import {
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 import { useRestTimer } from "@/features/workout-form/hooks/useRestTimer";
-import {
-	finishRestTimer,
-	selectIsRestTimerDrawerOpen,
-	setRestTimerDrawerOpen,
-	useWorkoutFormUiStore,
-} from "@/features/workout-form/stores/workoutFormUiStore";
+import { useRestTimerStore } from "@/features/workout-form/stores/restTimerStore";
 
 export default function RestTimerButton(): ReactElement {
-	const isOpen = useWorkoutFormUiStore(selectIsRestTimerDrawerOpen);
+	const isOpen = useRestTimerStore((state) => state.restTimer.state === "expanded");
+	const actions = useRestTimerStore((store) => store.actions);
 	const timer = useRestTimer();
 
 	if (!timer) return <></>;
@@ -31,7 +27,7 @@ export default function RestTimerButton(): ReactElement {
 			direction="left"
 			noBodyStyles
 			open={isOpen}
-			onOpenChange={setRestTimerDrawerOpen}>
+			onOpenChange={actions.setRestTimerDrawerOpen}>
 			<DrawerTrigger asChild>
 				<Button
 					className={cn(
@@ -58,7 +54,7 @@ export default function RestTimerButton(): ReactElement {
 				<Button
 					variant={isOverRestTarget ? "destructive" : "default"}
 					className="w-fit px-12"
-					onClick={finishRestTimer}>
+					onClick={actions.finishRestTimer}>
 					{isOverRestTarget ? "Stop timer!" : "Stop timer?"}
 				</Button>
 			</DrawerContent>

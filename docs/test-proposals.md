@@ -81,3 +81,27 @@
 - Risk: 6/10. Users see incorrect training totals after successfully saving or deleting workouts.
 - Gap: `tests/create-workout.spec.ts` and `tests/workout-history.spec.ts` cover persistence and history, but do not revisit and assert the dashboard graph.
 - Level: E2E, extending the existing create, edit, and delete journeys.
+
+### Failed workout creation preserves the form for retry
+
+- Behavior: While creating a workout, a pending save keeps the form mounted. A failed save keeps the exercise, set values, completion flags, and workout name. Retrying succeeds and only then navigates to history.
+- Regression: Navigation unmounts the form before success, a failed save clears entered values, or retry writes a duplicate workout.
+- Risk: 8/10. Losing a completed workout before persistence forces the user to reconstruct their session.
+- Gap: `tests/create-workout.spec.ts` covers successful creation and validation, but not delayed or failed requests and retry.
+- Level: E2E, extending the create journey with a controlled failed create response followed by a real successful retry.
+
+### Exercise merge confirmation survives a failed request
+
+- Behavior: A duplicate exercise name opens merge confirmation. Cancelling returns to editing; a failed combine keeps confirmation open and enables retry. A successful retry closes the editor and combines the exercises once.
+- Regression: Mutation settlement overwrites confirmation state, hides a failed merge, or leaves the action disabled.
+- Risk: 6/10. Users can lose their pending edits or misunderstand whether exercise history was combined.
+- Gap: Existing E2E tests cover workouts and authentication, but no exercise catalog collision or merge retry journey.
+- Level: E2E, creating exercises through settings and intercepting one merge request before a real successful retry.
+
+### Notification preference displays correctly after reload
+
+- Behavior: Enabling notifications persists the preference and displays the switch as enabled after a full reload.
+- Regression: Server-rendered switch attributes remain disabled even though browser storage and client state say enabled.
+- Risk: 3/10. Users can misunderstand whether rest reminders are enabled.
+- Gap: No notification settings coverage exists. Manual verification reproduced the reload mismatch with both the original reducer and the local-action refactor.
+- Level: E2E, granting browser notification permission, enabling through settings, reloading, and asserting the visible switch state.

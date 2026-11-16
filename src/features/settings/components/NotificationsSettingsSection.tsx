@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer } from "react";
+import { useState } from "react";
 
 import SectionCard from "@/components/SectionCard";
 import { Switch } from "@/components/ui/switch";
@@ -12,76 +12,55 @@ import {
 import { showErrorToast } from "@/lib/toastMessages";
 
 type NotificationPreferenceState =
-	| { kind: "disabled" }
-	| { kind: "requestingPermission" }
-	| { kind: "enabled" };
-
-type NotificationPreferenceEvent =
-	| { kind: "requestPermission" }
-	| { kind: "enableSucceeded" }
-	| { kind: "enableFailed" }
-	| { kind: "disableSucceeded" };
-
-function notificationPreferenceReducer(
-	state: NotificationPreferenceState,
-	event: NotificationPreferenceEvent,
-): NotificationPreferenceState {
-	switch (event.kind) {
-		case "requestPermission":
-			if (state.kind !== "disabled") return state;
-
-			return { kind: "requestingPermission" };
-		case "enableSucceeded":
-			if (state.kind !== "requestingPermission") return state;
-
-			return { kind: "enabled" };
-		case "enableFailed":
-			if (state.kind !== "requestingPermission") return state;
-
-			return { kind: "disabled" };
-		case "disableSucceeded":
-			if (state.kind !== "enabled") return state;
-
-			return { kind: "disabled" };
-		default: {
-			const exhaustiveEvent: never = event;
-
-			return exhaustiveEvent;
-		}
-	}
-}
+	| { state: "disabled" }
+	| { state: "requestingPermission" }
+	| { state: "enabled" };
 
 export default function NotificationsSettingsSection() {
-	const [state, dispatch] = useReducer(
-		notificationPreferenceReducer,
-		undefined,
-		(): NotificationPreferenceState => ({
-			kind: readRestTimerNotificationsEnabled() ? "enabled" : "disabled",
-		}),
-	);
+	const [preference, setPreference] = useState<NotificationPreferenceState>(() => ({
+		state: readRestTimerNotificationsEnabled() ? "enabled" : "disabled",
+	}));
 
-	async function handleRestTimerNotificationsChange(checked: boolean): Promise<void> {
-		if (state.kind === "requestingPermission") return;
-
-		if (checked) {
-			dispatch({ kind: "requestPermission" });
-			const enabled = await tryEnableRestTimerNotifications();
-
-			if (!enabled) {
-				dispatch({ kind: "enableFailed" });
-
+	async function handleNotificationsChange(enabled: boolean): Promise<void> {
+		switch (preference.state) {
+			case "requestingPermission":
 				return;
+			case "disabled": {
+				if (!enabled) return;
+
+				setPreference({ state: "requestingPermission" });
+
+				const permissionGranted = await tryEnableRestTimerNotifications();
+
+				if (!permissionGranted) {
+					setPreference({ state: "disabled" });
+
+					return;
+				}
+
+				break;
+			}
+
+			case "enabled":
+				if (enabled) return;
+
+				break;
+			default: {
+				const exhaustiveState: never = preference;
+
+				return exhaustiveState;
 			}
 		}
 
-		if (!writeRestTimerNotificationsEnabled(checked)) {
+		if (!writeRestTimerNotificationsEnabled(enabled)) {
 			showErrorToast("Couldn't save notification preference.");
-			dispatch({ kind: "enableFailed" });
+
+			if (enabled) setPreference({ state: "disabled" });
 
 			return;
 		}
 
-		dispatch({ kind: checked ? "enableSucceeded" : "disableSucceeded" });
+		setPreference({ state: enabled ? "enabled" : "disabled" });
 	}
 
 	return (
@@ -94,9 +73,9 @@ export default function NotificationsSettingsSection() {
 				</label>
 				<Switch
 					id="rest-timer-notifications"
-					checked={state.kind === "enabled"}
-					disabled={state.kind === "requestingPermission"}
-					onCheckedChange={(checked) => void handleRestTimerNotificationsChange(checked)}
+					checked={preference.state === "enabled"}
+					disabled={preference.state === "requestingPermission"}
+					onCheckedChange={(enabled) => void handleNotificationsChange(enabled)}
 				/>
 			</div>
 		</SectionCard>

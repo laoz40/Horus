@@ -1,6 +1,6 @@
 import { useEffect, useRef, type RefObject } from "react";
 
-import { selectExercise } from "@/features/workout-form/stores/workoutFormUiStore";
+import { useExerciseSelectionStore } from "@/features/workout-form/stores/exerciseSelectionStore";
 
 interface UseExerciseNavigationReturn {
 	exerciseListRef: RefObject<HTMLDivElement | null>;
@@ -14,6 +14,7 @@ interface UseExerciseNavigationReturn {
 }
 
 export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
+	const actions = useExerciseSelectionStore((store) => store.actions);
 	const exerciseListRef = useRef<HTMLDivElement | null>(null);
 	const exerciseFormRefs = useRef<Record<string, HTMLDivElement | null>>({});
 	const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
@@ -76,7 +77,7 @@ export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
 				const exerciseId = target instanceof HTMLElement ? target.dataset.exerciseId : undefined;
 
 				if (exerciseId) {
-					selectExercise(exerciseId);
+					actions.selectExercise(exerciseId);
 				}
 			},
 			{
@@ -98,7 +99,7 @@ export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
 			observer.disconnect();
 			visibilityObserverRef.current = null;
 		};
-	}, []);
+	}, [actions]);
 
 	return {
 		exerciseListRef,

@@ -9,10 +9,9 @@ import {
 } from "@/components/ui/select";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import {
-	selectExercise,
 	selectSelectedExerciseId,
-	useWorkoutFormUiStore,
-} from "@/features/workout-form/stores/workoutFormUiStore";
+	useExerciseSelectionStore,
+} from "@/features/workout-form/stores/exerciseSelectionStore";
 import { useFormContext, useWatch } from "react-hook-form";
 
 interface ExerciseSelectorProps {
@@ -25,8 +24,9 @@ export default function ExerciseSelector({
 	onScrollToExercise,
 }: ExerciseSelectorProps) {
 	const { control } = useFormContext<Workout>();
+	const actions = useExerciseSelectionStore((store) => store.actions);
 
-	const selectedExerciseId = useWorkoutFormUiStore((state) =>
+	const selectedExerciseId = useExerciseSelectionStore((state) =>
 		selectSelectedExerciseId(state, exerciseIds),
 	);
 
@@ -52,7 +52,7 @@ export default function ExerciseSelector({
 			value={selectedExerciseId ?? ""}
 			onValueChange={(value) => {
 				const nextExerciseId = value || null;
-				selectExercise(nextExerciseId);
+				actions.selectExercise(nextExerciseId);
 
 				if (nextExerciseId) onScrollToExercise(nextExerciseId);
 			}}>

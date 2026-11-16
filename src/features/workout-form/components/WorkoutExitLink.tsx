@@ -17,7 +17,6 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
 
 interface WorkoutExitLinkProps {
 	href: string;
@@ -26,14 +25,6 @@ interface WorkoutExitLinkProps {
 
 export default function WorkoutExitLink({ href, isCreate }: WorkoutExitLinkProps): ReactElement {
 	const router = useRouter();
-
-	const handleDiscard = () => {
-		if (isCreate) {
-			setCreateWorkoutDraft(null);
-		}
-
-		router.push(href);
-	};
 
 	const description = isCreate
 		? "Leaving will discard this workout. Your progress will not be saved."
@@ -57,7 +48,7 @@ export default function WorkoutExitLink({ href, isCreate }: WorkoutExitLinkProps
 					<AlertDialogCancel variant="secondary">Keep editing</AlertDialogCancel>
 					<AlertDialogAction
 						variant="destructive"
-						onClick={handleDiscard}>
+						onClick={() => router.push(href)}>
 						Discard
 					</AlertDialogAction>
 				</AlertDialogFooter>

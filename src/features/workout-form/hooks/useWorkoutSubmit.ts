@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import type { WorkoutFormMode } from "@/features/workout-form/components/WorkoutForm";
 import { parseWorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
-import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
 import { invalidateWorkoutCache } from "@/lib/orpc/mutationCache";
 import {
 	buildOptimisticHistoryFields,
@@ -37,32 +36,7 @@ export const useWorkoutSubmit = ({
 			onSuccess: async () => {
 				router.refresh();
 				await invalidateWorkoutCache(queryClient);
-				setCreateWorkoutDraft(null);
-			},
-			onError: (error) => {
-				if (!isDefinedError(error)) {
-					console.error(error);
-					router.push("/workouts/new");
-
-					return;
-				}
-
-				switch (error.code) {
-					case "INVALID_INPUT":
-					case "DATABASE_ERROR":
-						router.push("/workouts/new");
-
-						return;
-					case "UNAUTHORIZED":
-						router.push("/login");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
+				router.push("/workouts");
 			},
 		}),
 	);
@@ -133,9 +107,7 @@ export const useWorkoutSubmit = ({
 		}
 
 		if (mode.kind === "create") {
-			setCreateWorkoutDraft(workoutResult.data);
 			showWorkoutSaveToast(createWorkout.mutateAsync({ workout: workoutResult.data }));
-			router.push("/workouts");
 
 			return;
 		}

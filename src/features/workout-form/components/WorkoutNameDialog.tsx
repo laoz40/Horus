@@ -55,6 +55,11 @@ export function WorkoutNameDialog({ children, onInvalidSubmit }: WorkoutNameDial
 			<DialogTrigger asChild>{children}</DialogTrigger>
 			<DialogContent
 				className="sm:max-w-sm"
+				onOpenAutoFocus={(event) => {
+					event.preventDefault();
+
+					if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
+				}}
 				aria-describedby={undefined}>
 				<DialogHeader>
 					<DialogTitle>Save Workout</DialogTitle>
