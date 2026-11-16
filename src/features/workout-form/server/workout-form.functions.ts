@@ -5,6 +5,7 @@ import type { WorkoutForSave } from "@/features/workout-form/lib/validateWorkout
 import { normalizeName } from "@/lib/normalizeName";
 import { normalizeMuscleGroups } from "@/features/exercise-library/lib/normalizeMuscleGroups";
 import { DatabaseError } from "@/lib/db/database";
+import type { StoredWorkoutExercise } from "@/features/workout-form/server/workout-form.db";
 import type {
 	PreparedWorkoutWriteExercise,
 	StoredExercise,
@@ -57,6 +58,79 @@ export function buildNewWorkoutPrSets(
 			completed: set.completed,
 		})),
 	);
+}
+
+type WorkoutSetForComparison = Pick<
+	StoredWorkoutExercise["sets"][number],
+	"id" | "weight" | "reps" | "completed"
+>;
+
+function haveSameSets(previous: WorkoutSetForComparison[], current: WorkoutSetForComparison[]) {
+	return (
+		previous.length === current.length &&
+		previous.every((set, index) => {
+			const next = current[index];
+
+			return (
+				next !== undefined &&
+				set.id === next.id &&
+				set.weight === next.weight &&
+				set.reps === next.reps &&
+				set.completed === next.completed
+			);
+		})
+	);
+}
+
+function groupPrSetsByExercise(
+	exercises: { exerciseId: string; sets: WorkoutSetForComparison[] }[],
+) {
+	const setsByExerciseId = new Map<string, WorkoutSetForComparison[]>();
+
+	for (const exercise of exercises) {
+		const sets = setsByExerciseId.get(exercise.exerciseId) ?? [];
+		sets.push(...exercise.sets);
+		setsByExerciseId.set(exercise.exerciseId, sets);
+	}
+
+	return setsByExerciseId;
+}
+
+export function getWorkoutExerciseChanges({
+	previous,
+	current,
+}: {
+	previous: StoredWorkoutExercise[];
+	current: WorkoutExerciseWithDatabaseId[];
+}) {
+	const hasExerciseChanges =
+		previous.length !== current.length ||
+		previous.some((exercise, index) => {
+			const next = current[index];
+
+			return (
+				next === undefined ||
+				exercise.id !== next.id ||
+				exercise.exerciseId !== next.exerciseId ||
+				exercise.difficulty !== (next.difficulty ?? null) ||
+				exercise.notes !== (next.notes ?? "") ||
+				!haveSameSets(exercise.sets, next.sets)
+			);
+		});
+
+	if (!hasExerciseChanges) return { hasExerciseChanges, affectedExerciseIds: [] };
+
+	// Only ordering within the same catalog exercise can change its PR history.
+	const previousSets = groupPrSetsByExercise(previous);
+	const currentSets = groupPrSetsByExercise(current);
+	const exerciseIds = new Set([...previousSets.keys(), ...currentSets.keys()]);
+
+	const affectedExerciseIds = [...exerciseIds].filter(
+		(exerciseId) =>
+			!haveSameSets(previousSets.get(exerciseId) ?? [], currentSets.get(exerciseId) ?? []),
+	);
+
+	return { hasExerciseChanges, affectedExerciseIds };
 }
 
 export function getMissingExercises({

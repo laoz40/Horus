@@ -112,13 +112,6 @@ export const buildPrTotalsByWorkoutId = (prStatuses: PrSetUpdate[]) => {
 	return totalsByWorkoutId;
 };
 
-export function buildAffectedExerciseIds(
-	previousExerciseIds: string[],
-	currentExerciseIds: string[],
-) {
-	return [...new Set([...previousExerciseIds, ...currentExerciseIds])];
-}
-
 const calculatePrHistory = (
 	sets: PrHistorySet[],
 	initialRecordsByExerciseId: ExercisePrsByExerciseId = new Map(),
