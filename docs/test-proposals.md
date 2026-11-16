@@ -2,6 +2,14 @@
 
 ## Proposals
 
+### Rest reminders stop with the timer and workout form
+
+- Behavior: Completing a set starts the rest timer. Dismissing its drawer preserves the timer; it reopens after two minutes and every 30 seconds afterward. Stopping it or leaving the form prevents further reminders. A new workout starts fresh.
+- Regression: A shared clock stops updating one consumer, duplicate subscriptions create repeated reminders, or reminder scheduling survives form removal.
+- Risk: 4/10. Incorrect rest timing disrupts a workout and can produce unwanted reminders, but does not change saved sets.
+- Gap: Existing create-workout coverage starts and stops a timer but does not advance through reminder deadlines or discard a running timer.
+- Level: E2E through set completion and navigation, using the browser clock to advance time and asserting drawer state and displayed elapsed time.
+
 ### Saved profile follows verified session changes
 
 - Behavior: A successful session check saves the display profile; a network failure preserves it; an expired session or sign-out clears it. The saved greeting appears during client navigation while the session is loading.

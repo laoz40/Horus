@@ -2,7 +2,7 @@
 
 import { useStore } from "zustand";
 
-import { useState, type ReactElement } from "react";
+import { useCallback, useState, type ReactElement } from "react";
 import { FormProvider, type FieldErrors } from "react-hook-form";
 
 import { getFirstInvalidExerciseIndex } from "@/features/workout-form/lib/checkInvalidExercise";
@@ -46,7 +46,13 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 		(store) => store.exerciseSelection.state === "editing",
 	);
 
-	const exerciseActions = useStore(exerciseSelectionStore, (store) => store.actions);
+	// Leaving the form stops reminders as well as discarding its store.
+	const formRef = useCallback(
+		(element: HTMLDivElement | null) => {
+			if (element) return restTimerStore.getState().actions.finishRestTimer;
+		},
+		[restTimerStore],
+	);
 
 	const { methods, initialDurationSeconds, startedAtMs } = useWorkoutFormInit({
 		mode,
@@ -93,7 +99,7 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 		const nextExerciseId =
 			exerciseIds[selectedExerciseIndex + 1] ?? exerciseIds[selectedExerciseIndex - 1] ?? null;
 
-		exerciseActions.selectExerciseAfterDeletion(nextExerciseId);
+		exerciseSelectionStore.getState().actions.selectExerciseAfterDeletion(nextExerciseId);
 		showExerciseDeletedToast();
 	};
 
@@ -103,7 +109,9 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 	};
 
 	return (
-		<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+		<div
+			ref={formRef}
+			className="flex min-h-0 flex-1 flex-col overflow-hidden">
 			<RestTimerButton restTimerStore={restTimerStore} />
 			<FormProvider {...methods}>
 				<WorkoutFormTopBar
