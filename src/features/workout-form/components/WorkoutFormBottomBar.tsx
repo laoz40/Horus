@@ -6,12 +6,10 @@ import ExerciseActionButton from "@/features/workout-form/components/ExerciseAct
 import { Button } from "@/components/ui/button";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import {
-	openRecentSetsDialog,
 	selectSelectedExerciseId,
-	selectIsEditingExercise,
-	toggleExerciseEdit,
-	useWorkoutFormUiStore,
-} from "@/features/workout-form/stores/workoutFormUiStore";
+	useExerciseSelectionStore,
+} from "@/features/workout-form/stores/exerciseSelectionStore";
+import { useRecentSetsStore } from "@/features/workout-form/stores/recentSetsStore";
 
 import ExerciseSelector from "@/features/workout-form/components/ExerciseSelector";
 
@@ -30,11 +28,16 @@ export default function WorkoutFormBottomBar({
 }: WorkoutFormBottomBarProps): ReactElement | null {
 	const { control } = useFormContext<Workout>();
 
-	const selectedExerciseId = useWorkoutFormUiStore((state) =>
+	const selectedExerciseId = useExerciseSelectionStore((state) =>
 		selectSelectedExerciseId(state, exerciseIds),
 	);
 
-	const isEditing = useWorkoutFormUiStore(selectIsEditingExercise);
+	const isEditing = useExerciseSelectionStore(
+		(store) => store.exerciseSelection.state === "editing",
+	);
+
+	const exerciseActions = useExerciseSelectionStore((store) => store.actions);
+	const recentSetsActions = useRecentSetsStore((store) => store.actions);
 
 	const selectedExerciseIndex = exerciseIds.findIndex(
 		(exerciseId) => exerciseId === selectedExerciseId,
@@ -73,7 +76,7 @@ export default function WorkoutFormBottomBar({
 						type="button"
 						className="shrink-0"
 						disabled={!selectedExerciseName}
-						onClick={() => openRecentSetsDialog(selectedExerciseName)}
+						onClick={() => recentSetsActions.open(selectedExerciseName)}
 						aria-label="Recent sets">
 						<IconHistory />
 					</Button>
@@ -84,7 +87,7 @@ export default function WorkoutFormBottomBar({
 						className="w-full"
 						type="button"
 						disabled={!canToggleEdit}
-						onClick={() => toggleExerciseEdit(selectedExerciseId)}>
+						onClick={() => exerciseActions.toggleExerciseEdit(selectedExerciseId)}>
 						{isEditing ? "Done" : "Edit"}
 					</Button>
 					<ExerciseActionButton

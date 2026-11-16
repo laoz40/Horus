@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import type { WorkoutFormMode } from "@/features/workout-form/components/WorkoutForm";
 import { parseWorkoutForSave } from "@/features/workout-form/lib/validateWorkout";
-import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
+import { useWorkoutDraftStore } from "@/features/workout-form/stores/workoutDraftStore";
 import { invalidateWorkoutCache } from "@/lib/orpc/mutationCache";
 import {
 	buildOptimisticHistoryFields,
@@ -29,6 +29,7 @@ export const useWorkoutSubmit = ({
 	mode,
 }: UseWorkoutSubmitProps): UseWorkoutSubmitReturn => {
 	const router = useRouter();
+	const actions = useWorkoutDraftStore((store) => store.actions);
 	const queryClient = useQueryClient();
 	const historyListQueryKey = orpc.workouts.list.key({ type: "infinite" });
 
@@ -37,7 +38,7 @@ export const useWorkoutSubmit = ({
 			onSuccess: async () => {
 				router.refresh();
 				await invalidateWorkoutCache(queryClient);
-				setCreateWorkoutDraft(null);
+				actions.setDraft(null);
 			},
 			onError: (error) => {
 				if (!isDefinedError(error)) {
@@ -133,7 +134,7 @@ export const useWorkoutSubmit = ({
 		}
 
 		if (mode.kind === "create") {
-			setCreateWorkoutDraft(workoutResult.data);
+			actions.setDraft(workoutResult.data);
 			showWorkoutSaveToast(createWorkout.mutateAsync({ workout: workoutResult.data }));
 			router.push("/workouts");
 

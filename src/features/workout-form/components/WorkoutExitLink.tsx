@@ -17,7 +17,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { setCreateWorkoutDraft } from "@/features/workout-form/stores/workoutFormUiStore";
+import { useWorkoutDraftStore } from "@/features/workout-form/stores/workoutDraftStore";
 
 interface WorkoutExitLinkProps {
 	href: string;
@@ -26,10 +26,11 @@ interface WorkoutExitLinkProps {
 
 export default function WorkoutExitLink({ href, isCreate }: WorkoutExitLinkProps): ReactElement {
 	const router = useRouter();
+	const actions = useWorkoutDraftStore((store) => store.actions);
 
 	const handleDiscard = () => {
 		if (isCreate) {
-			setCreateWorkoutDraft(null);
+			actions.setDraft(null);
 		}
 
 		router.push(href);

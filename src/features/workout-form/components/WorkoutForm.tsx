@@ -7,14 +7,10 @@ import { getFirstInvalidExerciseIndex } from "@/features/workout-form/lib/checkI
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { showExerciseDeletedToast } from "@/lib/toastMessages";
 import {
-	selectIsRecentSetsDialogOpen,
-	selectIsEditingExercise,
 	selectSelectedExerciseId,
-	selectExerciseAfterDeletion,
-	selectRecentSetsExerciseName,
-	setRecentSetsDialogOpen,
-	useWorkoutFormUiStore,
-} from "@/features/workout-form/stores/workoutFormUiStore";
+	useExerciseSelectionStore,
+} from "@/features/workout-form/stores/exerciseSelectionStore";
+import { useWorkoutTimerStore } from "@/features/workout-form/stores/workoutTimerStore";
 import { useExerciseNavigation } from "@/features/workout-form/hooks/useExerciseNavigation";
 import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit";
 import { useWorkoutExercises } from "@/features/workout-form/hooks/useWorkoutExercises";
@@ -38,10 +34,12 @@ export default function WorkoutForm({
 	mode,
 	missingGlobalExercisesCount,
 }: WorkoutFormProps): ReactElement {
-	const isEditing = useWorkoutFormUiStore(selectIsEditingExercise);
-	const startedAtMs = useWorkoutFormUiStore((state) => state.startedAtMs);
-	const isRecentSetsDialogOpen = useWorkoutFormUiStore(selectIsRecentSetsDialogOpen);
-	const recentSetsExerciseName = useWorkoutFormUiStore(selectRecentSetsExerciseName);
+	const isEditing = useExerciseSelectionStore(
+		(store) => store.exerciseSelection.state === "editing",
+	);
+
+	const exerciseActions = useExerciseSelectionStore((store) => store.actions);
+	const startedAtMs = useWorkoutTimerStore((store) => store.startedAtMs);
 
 	const { methods, initialDurationSeconds } = useWorkoutFormInit({
 		mode,
@@ -77,7 +75,7 @@ export default function WorkoutForm({
 	// exercise ids to pass to the exercise selector
 	const exerciseIds = exercises.map((exercise) => exercise.id);
 
-	const selectedExerciseId = useWorkoutFormUiStore((state) =>
+	const selectedExerciseId = useExerciseSelectionStore((state) =>
 		selectSelectedExerciseId(state, exerciseIds),
 	);
 
@@ -91,7 +89,7 @@ export default function WorkoutForm({
 		const nextExerciseId =
 			exerciseIds[selectedExerciseIndex + 1] ?? exerciseIds[selectedExerciseIndex - 1] ?? null;
 
-		selectExerciseAfterDeletion(nextExerciseId);
+		exerciseActions.selectExerciseAfterDeletion(nextExerciseId);
 		showExerciseDeletedToast();
 	};
 
@@ -138,11 +136,7 @@ export default function WorkoutForm({
 					onDeleteExercise={handleDeleteExercise}
 					onScrollToExercise={scrollToExercise}
 				/>
-				<RecentSetsDialog
-					open={isRecentSetsDialogOpen}
-					onOpenChange={setRecentSetsDialogOpen}
-					exerciseName={recentSetsExerciseName}
-				/>
+				<RecentSetsDialog />
 			</FormProvider>
 		</div>
 	);

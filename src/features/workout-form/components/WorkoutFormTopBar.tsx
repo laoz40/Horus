@@ -7,7 +7,7 @@ import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 import { Button } from "@/components/ui/button";
 import { useWorkoutTimer } from "@/features/workout-form/hooks/useWorkoutTimer";
-import { useWorkoutFormUiStore } from "@/features/workout-form/stores/workoutFormUiStore";
+import { useWorkoutTimerStore } from "@/features/workout-form/stores/workoutTimerStore";
 import { formatDurationFull } from "@/lib/time";
 import type { WorkoutFormMode } from "@/features/workout-form/components/WorkoutForm";
 
@@ -26,7 +26,7 @@ interface WorkoutDurationProps {
 }
 
 function WorkoutDuration({ initialDurationSeconds }: WorkoutDurationProps): ReactElement {
-	const startedAtMs = useWorkoutFormUiStore((state) => state.startedAtMs);
+	const startedAtMs = useWorkoutTimerStore((state) => state.startedAtMs);
 	const { durationSeconds } = useWorkoutTimer({ initialDurationSeconds, startedAtMs });
 
 	return <span>{formatDurationFull(durationSeconds)}</span>;
