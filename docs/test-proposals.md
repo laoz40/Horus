@@ -2,6 +2,22 @@
 
 ## Proposals
 
+### Saved profile follows verified session changes
+
+- Behavior: A successful session check saves the display profile; a network failure preserves it; an expired session or sign-out clears it. The saved greeting appears during client navigation while the session is loading.
+- Regression: Cookie synchronization clears the cached profile on transient errors, keeps it after session expiry, or stops running after removal of the React sync component.
+- Risk: 3/10. Users can see a missing or stale greeting, but the display cookie cannot authorize requests.
+- Gap: `tests/auth.spec.ts` checks login and greetings, but does not cover the profile cookie across session failures or delayed client navigation.
+- Level: E2E, using real sign-in and sign-out with controlled session failures and delays, and checking the resulting cookie and visible greeting.
+
+### History restores its scroll position after navigation
+
+- Behavior: Scroll history, open a workout, then return through client navigation. The list restores its previous position once the cards are ready.
+- Regression: Ref attachment restores before cards exist, fails to register the scroll listener, or resets the position on unrelated renders.
+- Risk: 3/10. Users lose their place when browsing workout history.
+- Gap: `tests/workout-history.spec.ts` covers creating, renaming, and deleting workouts, but does not assert scroll restoration.
+- Level: E2E, creating enough workouts through the UI to scroll and checking the restored list position after returning from a workout.
+
 ### Online exercise search survives upstream failures
 
 - Behavior: When Wger is unreachable, times out during headers or body reading, rate-limits requests, or sends an invalid response, online exercise search shows its existing error toast and leaves local suggestions usable. A later successful search still adds online suggestions.

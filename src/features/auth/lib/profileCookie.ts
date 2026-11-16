@@ -43,7 +43,7 @@ export function saveProfileCookie(session: SessionData | null): void {
 }
 
 // Keep this function self-contained: the same code runs inline before hydration
-// and in a layout effect when the dashboard mounts through client navigation.
+// and in a ref callback when the dashboard mounts through client navigation.
 export function paintSavedProfileFromCookie(rootId: string, cookieName: string): void {
 	try {
 		const cookie = document.cookie.split("; ").find((part) => part.startsWith(`${cookieName}=`));
