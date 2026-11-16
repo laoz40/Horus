@@ -14,3 +14,13 @@ export const authClient = createAuthClient({
 		refetchInterval: 0,
 	},
 });
+
+// Keep this browser-lifetime subscription alongside the singleton auth client.
+// Use resolved session state so cancelled requests and network errors cannot clear the cookie.
+if ("window" in globalThis) {
+	authClient.$store.atoms.session?.subscribe(
+		({ data, error, isPending, isRefetching }: ReturnType<typeof authClient.useSession>) => {
+			if (!isPending && !isRefetching && (!error || error.status === 401)) saveProfileCookie(data);
+		},
+	);
+}

@@ -3,7 +3,7 @@
 import CalendarHeatmap from "react-calendar-heatmap";
 import { useQuery } from "@tanstack/react-query";
 import { IconLoader2 } from "@tabler/icons-react";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { Match } from "effect";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import TrainingYearSelector from "@/features/dashboard/components/TrainingYearSelector";
@@ -123,27 +123,24 @@ function YearInTrainingBody(state: YearInTrainingState) {
 }
 
 function YearInTrainingHeatmapCard({ year, values }: { year: number; values: HeatmapValue[] }) {
-	// Keep the ref stable so query updates don't reset the user's scroll position.
-	const scrollToToday = useCallback(
-		(container: HTMLDivElement | null) => {
-			const today = new Date();
+	// Center today's date when the current-year heatmap appears.
+	const scrollToToday = (container: HTMLDivElement | null) => {
+		const today = new Date();
 
-			if (!container || year !== today.getFullYear()) return;
+		if (!container || year !== today.getFullYear()) return;
 
-			const start = Date.UTC(year, 0, 1);
-			const end = Date.UTC(year + 1, 0, 1);
-			const date = Date.UTC(year, today.getMonth(), today.getDate());
-			const progress = (date - start) / (end - start);
+		const start = Date.UTC(year, 0, 1);
+		const end = Date.UTC(year + 1, 0, 1);
+		const date = Date.UTC(year, today.getMonth(), today.getDate());
+		const progress = (date - start) / (end - start);
 
-			container.scrollTo({
-				left: progress * container.scrollWidth - container.clientWidth / 2,
-				behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-					? "instant"
-					: "smooth",
-			});
-		},
-		[year],
-	);
+		container.scrollTo({
+			left: progress * container.scrollWidth - container.clientWidth / 2,
+			behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+				? "instant"
+				: "smooth",
+		});
+	};
 
 	if (values.length === 0) {
 		return (

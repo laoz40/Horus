@@ -1,3 +1,4 @@
+import { useStore } from "zustand";
 import {
 	Select,
 	SelectContent,
@@ -10,23 +11,25 @@ import {
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import {
 	selectSelectedExerciseId,
-	useExerciseSelectionStore,
+	type ExerciseSelectionStore,
 } from "@/features/workout-form/stores/exerciseSelectionStore";
 import { useFormContext, useWatch } from "react-hook-form";
 
 interface ExerciseSelectorProps {
+	exerciseSelectionStore: ExerciseSelectionStore;
 	exerciseIds: string[];
 	onScrollToExercise: (exerciseId: string) => void;
 }
 
 export default function ExerciseSelector({
+	exerciseSelectionStore,
 	exerciseIds,
 	onScrollToExercise,
 }: ExerciseSelectorProps) {
 	const { control } = useFormContext<Workout>();
-	const actions = useExerciseSelectionStore((store) => store.actions);
+	const actions = useStore(exerciseSelectionStore, (store) => store.actions);
 
-	const selectedExerciseId = useExerciseSelectionStore((state) =>
+	const selectedExerciseId = useStore(exerciseSelectionStore, (state) =>
 		selectSelectedExerciseId(state, exerciseIds),
 	);
 

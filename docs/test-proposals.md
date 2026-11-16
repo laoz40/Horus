@@ -2,6 +2,46 @@
 
 ## Proposals
 
+### Browser startup registers the notification worker
+
+- Behavior: A full page load registers `/sw.js` after loading completes. Client navigation does not register it again, and unsupported browsers still load the app.
+- Regression: Moving registration out of React leaves the startup file undiscovered, runs registration too early, or registers on every navigation.
+- Risk: 4/10. Rest notifications can stop working on mobile while the rest timer remains visible.
+- Gap: Existing browser tests do not assert service worker registration or its timing.
+- Level: E2E, observing the browser registration API during a full load and client navigation, and checking the active worker.
+
+### Rest reminders stop with the timer and workout form
+
+- Behavior: Completing a set starts the rest timer. Dismissing its drawer preserves the timer; it reopens after two minutes and every 30 seconds afterward. Stopping it or leaving the form prevents further reminders. A new workout starts fresh.
+- Regression: A shared clock stops updating one consumer, duplicate subscriptions create repeated reminders, or reminder scheduling survives form removal.
+- Risk: 4/10. Incorrect rest timing disrupts a workout and can produce unwanted reminders, but does not change saved sets.
+- Gap: Existing create-workout coverage starts and stops a timer but does not advance through reminder deadlines or discard a running timer.
+- Level: E2E through set completion and navigation, using the browser clock to advance time and asserting drawer state and displayed elapsed time.
+
+### Online searches cancel when their picker stops observing
+
+- Behavior: Online search starts only on Search Online. Changing the query, closing the picker, or leaving the form cancels its in-flight request without an error toast or stale suggestions. Reopening permits another search.
+- Regression: Query observer lifetime no longer matches the picker, cancelled requests display failure toasts, or typed input starts online searches automatically.
+- Risk: 4/10. Users can see misleading results or unnecessary external requests, but entered sets remain available.
+- Gap: Existing workout journeys select local exercises and do not cover online request cancellation.
+- Level: E2E through the exercise picker with delayed online responses and observed browser request cancellation.
+
+### Saved profile follows verified session changes
+
+- Behavior: A successful session check saves the display profile; a network failure preserves it; an expired session or sign-out clears it. The saved greeting appears during client navigation while the session is loading.
+- Regression: Cookie synchronization clears the cached profile on transient errors, keeps it after session expiry, or stops running after removal of the React sync component.
+- Risk: 3/10. Users can see a missing or stale greeting, but the display cookie cannot authorize requests.
+- Gap: `tests/auth.spec.ts` checks login and greetings, but does not cover the profile cookie across session failures or delayed client navigation.
+- Level: E2E, using real sign-in and sign-out with controlled session failures and delays, and checking the resulting cookie and visible greeting.
+
+### History restores its scroll position after navigation
+
+- Behavior: Scroll history, open a workout, then return through client navigation. The list restores its previous position once the cards are ready.
+- Regression: Ref attachment restores before cards exist, fails to register the scroll listener, or resets the position on unrelated renders.
+- Risk: 3/10. Users lose their place when browsing workout history.
+- Gap: `tests/workout-history.spec.ts` covers creating, renaming, and deleting workouts, but does not assert scroll restoration.
+- Level: E2E, creating enough workouts through the UI to scroll and checking the restored list position after returning from a workout.
+
 ### Workout edits preserve unaffected personal records
 
 - Behavior: Rename a saved workout, edit notes or difficulty, and change sets for one of its exercises. Existing badges for other exercises remain intact, while changed weights, reps, completion, additions, removals, and same-exercise set ordering update that exercise's records in the edited and later workouts. Removing an exercise also updates the edited workout's PR total.

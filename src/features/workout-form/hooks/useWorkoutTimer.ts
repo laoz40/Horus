@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+import { clock } from "@/lib/clock";
 
 interface UseWorkoutTimerOptions {
 	initialDurationSeconds: number;
@@ -13,24 +14,9 @@ export const useWorkoutTimer = ({
 	initialDurationSeconds,
 	startedAtMs,
 }: UseWorkoutTimerOptions): UseWorkoutTimerReturn => {
-	const [durationSeconds, setDurationSeconds] = useState<number>(initialDurationSeconds);
+	const nowMs = useSyncExternalStore(clock.subscribe, clock.getSnapshot, clock.getServerSnapshot);
 
-	// Update elapsed time from the session start immediately and every second.
-	useEffect(() => {
-		const updateDuration = () => {
-			setDurationSeconds(Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000)));
-		};
+	if (nowMs === 0) return { durationSeconds: initialDurationSeconds };
 
-		updateDuration();
-
-		const interval = window.setInterval(() => {
-			updateDuration();
-		}, 1000);
-
-		return () => {
-			window.clearInterval(interval);
-		};
-	}, [startedAtMs]);
-
-	return { durationSeconds };
+	return { durationSeconds: Math.max(0, Math.floor((nowMs - startedAtMs) / 1000)) };
 };

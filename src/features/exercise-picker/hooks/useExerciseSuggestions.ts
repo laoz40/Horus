@@ -1,7 +1,7 @@
 "use client";
 
 import { ORPCError } from "@orpc/client";
-import { useDeferredValue, useEffect, useState } from "react";
+import { useDeferredValue, useState } from "react";
 import { CancelledError, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Data, Effect } from "effect";
 import { showErrorToast } from "@/lib/toastMessages";
@@ -82,19 +82,12 @@ export function useExerciseSuggestions(rawQuery: string, isOpen: boolean) {
 		gcTime: 1000 * 60 * 3,
 	});
 
-	const onlineSearch = useQuery({ ...onlineSearchOptions, enabled: false });
-
-	// Cancel the previous online search when its text changes, the picker closes, or it unmounts.
-	useEffect(() => {
-		if (!isOpen || query.length === 0) return;
-
-		return () => {
-			void queryClient.cancelQueries({
-				queryKey: orpc.exercises.searchOnline.queryKey({ input: { query } }),
-				exact: true,
-			});
-		};
-	}, [isOpen, query, queryClient]);
+	// Query cancels the request when its last picker observer detaches.
+	const onlineSearch = useQuery({
+		...onlineSearchOptions,
+		enabled: false,
+		subscribed: isOpen && query.length > 0,
+	});
 
 	// Only prepare suggestions while the dropdown can display them.
 	let suggestions: ExerciseSuggestion[] = [];

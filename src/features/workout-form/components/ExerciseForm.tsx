@@ -12,15 +12,23 @@ import { createDefaultSet } from "@/features/workout-form/lib/WorkoutFormDefault
 import ExerciseCollapsibles from "@/features/workout-form/components/ExerciseCollapsibles";
 import { ExerciseNameInputDropdown } from "@/features/workout-form/components/ExerciseNameInputDropdown";
 import { MuscleGroupExercisePicker } from "@/features/workout-form/components/MuscleGroupExercisePicker";
+import type { RestTimerStore } from "@/features/workout-form/stores/restTimerStore";
 import SetRow from "@/features/workout-form/components/SetRow";
 
 interface ExerciseFormProps extends React.HTMLAttributes<HTMLDivElement> {
+	restTimerStore: RestTimerStore;
 	exerciseIndex: number;
 	isEditing: boolean;
 	ref?: Ref<HTMLDivElement>;
 }
 
-function ExerciseForm({ className, exerciseIndex, isEditing, ref }: ExerciseFormProps) {
+function ExerciseForm({
+	className,
+	exerciseIndex,
+	isEditing,
+	ref,
+	restTimerStore,
+}: ExerciseFormProps) {
 	const {
 		control,
 		formState: { errors },
@@ -86,6 +94,7 @@ function ExerciseForm({ className, exerciseIndex, isEditing, ref }: ExerciseForm
 						<div className="flex flex-col gap-3 pt-0.5">
 							{sets.map((set, setIndex) => (
 								<SetRow
+									restTimerStore={restTimerStore}
 									key={set.id}
 									setIndex={setIndex}
 									exerciseIndex={exerciseIndex}

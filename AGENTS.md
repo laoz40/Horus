@@ -12,8 +12,8 @@ Designed primarily for mobile touchscreen devices, usually used as an installed 
 
 ### Stack
 
-- Next.js 16 project (Your training data is likely outdated for Next)
-- Effect V4 (new release) for robust error handling
+- Next.js 16 project (updated version)
+- Use Effect V4 (new release)
 - pnpm
 - default to shadcn for ui, tabler icons
 
@@ -44,11 +44,8 @@ Designed primarily for mobile touchscreen devices, usually used as an installed 
 
 - This project uses React Compiler for automatic memoization. Avoid manual `useMemo` and `useCallback` unless there is a specific need.
 - Keep React components focused on rendering and user interactions.
-- Pass `useReducer`'s typed `dispatch` directly; avoid callback props that only wrap it.
-- Prefer `useReducer` for related state and centralized transitions rather than scattering state and business logic across React components.
+- Do not scatter state and business logic across React components.
 - Extract data fetching, reusable stateful logic, and external synchronisation into appropriately scoped hooks or modules.
-- Prefer derived state and event handlers over effects.
-- Only introduce effects when synchronising with external systems, and avoid abstractions that merely hide unnecessary effects.
 
 ### TypeScript
 
