@@ -238,6 +238,13 @@
 		{
 			"files": ["src/**"],
 			"rules": {
+				"no-restricted-properties": [
+					"error",
+					{
+						"property": "setState",
+						"message": "Send an event with store.getState().send({ event: ... }) instead. Keep mutations inside the store."
+					}
+				],
 				"effect-boundaries/no-native-try": "error",
 				"no-restricted-imports": [
 					"error",
