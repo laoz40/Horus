@@ -12,8 +12,8 @@ import {
 } from "@/features/exercise-library/lib/exerciseMuscleCategories";
 import type {
 	ExerciseCatalogItem,
-	OpenExerciseEditSheetState,
-} from "@/features/exercise-library/lib/exerciseEditSheet";
+	OpenExerciseEditorState,
+} from "@/features/exercise-library/lib/exerciseEditor";
 import {
 	addExerciseToListCache,
 	mergeExercisesInListCache,
@@ -51,11 +51,11 @@ const mutationErrorMessages = {
 };
 
 interface UseExerciseEditMutationsOptions {
-	sheet: OpenExerciseEditSheetState;
+	editor: OpenExerciseEditorState;
 	onClose: () => void;
 }
 
-export function useExerciseEditMutations({ sheet, onClose }: UseExerciseEditMutationsOptions) {
+export function useExerciseEditMutations({ editor, onClose }: UseExerciseEditMutationsOptions) {
 	const queryClient = useQueryClient();
 	const [operation, setOperation] = useState<ExerciseEditOperation>({ state: "editing" });
 
@@ -134,7 +134,7 @@ export function useExerciseEditMutations({ sheet, onClose }: UseExerciseEditMuta
 		}
 	}
 
-	const createExercise = useMutation(
+	const createMutation = useMutation(
 		orpc.exercises.create.mutationOptions({
 			onSettled: finishRequest,
 			onSuccess: (result) => {
@@ -147,7 +147,7 @@ export function useExerciseEditMutations({ sheet, onClose }: UseExerciseEditMuta
 		}),
 	);
 
-	const updateExercise = useMutation(
+	const updateMutation = useMutation(
 		orpc.exercises.update.mutationOptions({
 			onSettled: finishRequest,
 			onSuccess: (result) => {
@@ -160,7 +160,7 @@ export function useExerciseEditMutations({ sheet, onClose }: UseExerciseEditMuta
 		}),
 	);
 
-	const mergeExercises = useMutation(
+	const mergeMutation = useMutation(
 		orpc.exercises.merge.mutationOptions({
 			onSettled: finishRequest,
 			onSuccess: (result, variables) => {
@@ -173,7 +173,7 @@ export function useExerciseEditMutations({ sheet, onClose }: UseExerciseEditMuta
 		}),
 	);
 
-	const deleteExercise = useMutation(
+	const deleteMutation = useMutation(
 		orpc.exercises.delete.mutationOptions({
 			onSettled: finishRequest,
 			onSuccess: (_result, variables) => {
@@ -192,8 +192,8 @@ export function useExerciseEditMutations({ sheet, onClose }: UseExerciseEditMuta
 
 		const muscleGroups = writeSelectedCategories(categories);
 
-		if (sheet.state === "create") {
-			createExercise.mutate({
+		if (editor.state === "create") {
+			createMutation.mutate({
 				name,
 				muscleGroups,
 			});
@@ -201,8 +201,8 @@ export function useExerciseEditMutations({ sheet, onClose }: UseExerciseEditMuta
 			return;
 		}
 
-		updateExercise.mutate({
-			id: sheet.exercise.id,
+		updateMutation.mutate({
+			id: editor.exercise.id,
 			name,
 			muscleGroups,
 		});
@@ -215,8 +215,8 @@ export function useExerciseEditMutations({ sheet, onClose }: UseExerciseEditMuta
 		const muscleGroups = writeSelectedCategories(categories);
 		const { existingExercise } = operation;
 
-		if (sheet.state === "create") {
-			updateExercise.mutate({
+		if (editor.state === "create") {
+			updateMutation.mutate({
 				id: existingExercise.id,
 				name: existingExercise.name,
 				muscleGroups: unionSelectedCategories(existingExercise.muscleGroups, categories),
@@ -225,20 +225,20 @@ export function useExerciseEditMutations({ sheet, onClose }: UseExerciseEditMuta
 			return;
 		}
 
-		mergeExercises.mutate({
-			sourceId: sheet.exercise.id,
+		mergeMutation.mutate({
+			sourceId: editor.exercise.id,
 			targetId: existingExercise.id,
 			sourceMuscleGroups: muscleGroups,
 		});
 	}
 
 	function deleteCurrentExercise() {
-		if (sheet.state !== "edit" || operation.state !== "editing") {
+		if (editor.state !== "edit" || operation.state !== "editing") {
 			return;
 		}
 
 		setOperation({ state: "deleting" });
-		deleteExercise.mutate({ id: sheet.exercise.id });
+		deleteMutation.mutate({ id: editor.exercise.id });
 	}
 
 	function cancelMerge() {

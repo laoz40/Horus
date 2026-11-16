@@ -20,20 +20,20 @@ import MuscleGroupMultiSelect from "@/features/exercise-library/components/Muscl
 import {
 	getExerciseEditInitialCategories,
 	getExerciseEditInitialName,
-	getExerciseEditSheetTitle,
-	type ExerciseEditSheetState,
-	type OpenExerciseEditSheetState,
-} from "@/features/exercise-library/lib/exerciseEditSheet";
+	getExerciseEditorTitle,
+	type ExerciseEditorState,
+	type OpenExerciseEditorState,
+} from "@/features/exercise-library/lib/exerciseEditor";
 import { formatWorkoutCount } from "@/features/exercise-library/lib/formatExerciseCatalog";
 import { useExerciseEditMutations } from "@/features/exercise-library/hooks/useExerciseEditMutations";
 
-interface ExerciseEditSheetProps {
-	sheet: ExerciseEditSheetState;
+interface ExerciseEditorProps {
+	editor: ExerciseEditorState;
 	onClose: () => void;
 }
 
 interface ExerciseEditFormProps {
-	sheet: OpenExerciseEditSheetState;
+	editor: OpenExerciseEditorState;
 	onClose: () => void;
 }
 
@@ -73,10 +73,10 @@ function ExerciseEditDeleteButton({
 	);
 }
 
-function ExerciseEditForm({ sheet, onClose }: ExerciseEditFormProps) {
-	const [name, setName] = useState(() => getExerciseEditInitialName(sheet));
-	const [categories, setCategories] = useState(() => getExerciseEditInitialCategories(sheet));
-	const workoutCount = sheet.state === "edit" ? sheet.exercise.workoutCount : 0;
+function ExerciseEditForm({ editor, onClose }: ExerciseEditFormProps) {
+	const [name, setName] = useState(() => getExerciseEditInitialName(editor));
+	const [categories, setCategories] = useState(() => getExerciseEditInitialCategories(editor));
+	const workoutCount = editor.state === "edit" ? editor.exercise.workoutCount : 0;
 
 	const {
 		state: operation,
@@ -85,7 +85,7 @@ function ExerciseEditForm({ sheet, onClose }: ExerciseEditFormProps) {
 		deleteCurrentExercise,
 		cancelMerge,
 	} = useExerciseEditMutations({
-		sheet,
+		editor,
 		onClose,
 	});
 
@@ -94,13 +94,13 @@ function ExerciseEditForm({ sheet, onClose }: ExerciseEditFormProps) {
 	const isDeleting = operation.state === "deleting";
 	const trimmedName = name.trim();
 	const canSave = trimmedName.length > 0 && operation.state === "editing";
-	const mergeSourceName = sheet.state === "edit" ? sheet.exercise.name : trimmedName;
-	const mergeSourceWorkoutCount = sheet.state === "edit" ? sheet.exercise.workoutCount : 0;
+	const mergeSourceName = editor.state === "edit" ? editor.exercise.name : trimmedName;
+	const mergeSourceWorkoutCount = editor.state === "edit" ? editor.exercise.workoutCount : 0;
 
 	return (
 		<>
 			<DialogHeader>
-				<DialogTitle>{getExerciseEditSheetTitle(sheet)}</DialogTitle>
+				<DialogTitle>{getExerciseEditorTitle(editor)}</DialogTitle>
 			</DialogHeader>
 
 			<div className="flex flex-col gap-5">
@@ -128,7 +128,7 @@ function ExerciseEditForm({ sheet, onClose }: ExerciseEditFormProps) {
 					)}
 				</div>
 
-				{sheet.state === "edit" && (
+				{editor.state === "edit" && (
 					<p className="text-sm text-muted-foreground">
 						Used in {formatWorkoutCount(workoutCount)}
 					</p>
@@ -136,9 +136,9 @@ function ExerciseEditForm({ sheet, onClose }: ExerciseEditFormProps) {
 			</div>
 
 			<DialogFooter className="flex-row justify-end">
-				{sheet.state === "edit" && (
+				{editor.state === "edit" && (
 					<ExerciseEditDeleteButton
-						exerciseName={sheet.exercise.name}
+						exerciseName={editor.exercise.name}
 						workoutCount={workoutCount}
 						isSaving={isSaving}
 						isDeleting={isDeleting}
@@ -170,7 +170,7 @@ function ExerciseEditForm({ sheet, onClose }: ExerciseEditFormProps) {
 					sourceName={mergeSourceName}
 					targetName={operation.existingExercise.name}
 					sourceWorkoutCount={mergeSourceWorkoutCount}
-					kind={sheet.state}
+					kind={editor.state}
 					onCombine={() => combineExercises(categories)}
 					isCombining={isCombining}
 				/>
@@ -179,9 +179,9 @@ function ExerciseEditForm({ sheet, onClose }: ExerciseEditFormProps) {
 	);
 }
 
-export default function ExerciseEditSheet({ sheet, onClose }: ExerciseEditSheetProps) {
-	const isOpen = sheet.state !== "closed";
-	const formKey = sheet.state === "edit" ? sheet.exercise.id : sheet.state;
+export default function ExerciseEditor({ editor, onClose }: ExerciseEditorProps) {
+	const isOpen = editor.state !== "closed";
+	const formKey = editor.state === "edit" ? editor.exercise.id : editor.state;
 
 	return (
 		<Dialog
@@ -194,10 +194,10 @@ export default function ExerciseEditSheet({ sheet, onClose }: ExerciseEditSheetP
 			<DialogContent
 				aria-describedby={undefined}
 				className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
-				{sheet.state !== "closed" && (
+				{editor.state !== "closed" && (
 					<ExerciseEditForm
 						key={formKey}
-						sheet={sheet}
+						editor={editor}
 						onClose={onClose}
 					/>
 				)}
@@ -208,5 +208,5 @@ export default function ExerciseEditSheet({ sheet, onClose }: ExerciseEditSheetP
 
 export type {
 	ExerciseCatalogItem,
-	ExerciseEditSheetState,
-} from "@/features/exercise-library/lib/exerciseEditSheet";
+	ExerciseEditorState,
+} from "@/features/exercise-library/lib/exerciseEditor";

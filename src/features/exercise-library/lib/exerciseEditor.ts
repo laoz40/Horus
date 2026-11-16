@@ -8,34 +8,34 @@ export interface ExerciseCatalogItem {
 	workoutCount: number;
 }
 
-export type ExerciseEditSheetState =
+export type ExerciseEditorState =
 	| { state: "closed" }
 	| { state: "create" }
 	| { state: "edit"; exercise: ExerciseCatalogItem };
 
-export type OpenExerciseEditSheetState = Exclude<ExerciseEditSheetState, { state: "closed" }>;
+export type OpenExerciseEditorState = Exclude<ExerciseEditorState, { state: "closed" }>;
 
-export function getExerciseEditSheetTitle(sheet: OpenExerciseEditSheetState): string {
-	if (sheet.state === "create") {
+export function getExerciseEditorTitle(editor: OpenExerciseEditorState): string {
+	if (editor.state === "create") {
 		return "Add exercise";
 	}
 
 	return "Edit exercise";
 }
 
-export function getExerciseEditInitialName(sheet: OpenExerciseEditSheetState): string {
-	if (sheet.state === "edit") {
-		return sheet.exercise.name;
+export function getExerciseEditInitialName(editor: OpenExerciseEditorState): string {
+	if (editor.state === "edit") {
+		return editor.exercise.name;
 	}
 
 	return "";
 }
 
 export function getExerciseEditInitialCategories(
-	sheet: OpenExerciseEditSheetState,
+	editor: OpenExerciseEditorState,
 ): MuscleGroupCategory[] {
-	if (sheet.state === "edit") {
-		return readSelectedCategories(sheet.exercise.muscleGroups);
+	if (editor.state === "edit") {
+		return readSelectedCategories(editor.exercise.muscleGroups);
 	}
 
 	return [];

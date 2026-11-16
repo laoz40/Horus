@@ -7,36 +7,36 @@ import Link from "next/link";
 
 import PageLoadingSpinner from "@/components/PageLoadingSpinner";
 import { Button } from "@/components/ui/button";
-import ExerciseEditSheet, {
+import ExerciseEditor, {
 	type ExerciseCatalogItem,
-	type ExerciseEditSheetState,
-} from "@/features/exercise-library/components/ExerciseEditSheet";
+	type ExerciseEditorState,
+} from "@/features/exercise-library/components/ExerciseEditor";
 import ExerciseList from "@/features/exercise-library/components/ExerciseList";
 import { orpc } from "@/lib/orpc/client";
 
 export default function ExercisesSettingsPage() {
-	const [sheet, setSheet] = useState<ExerciseEditSheetState>({ state: "closed" });
+	const [editor, setEditor] = useState<ExerciseEditorState>({ state: "closed" });
 
-	function openCreateSheet() {
-		setSheet({ state: "create" });
+	function openCreateEditor() {
+		setEditor({ state: "create" });
 	}
 
-	function openEditSheet(exercise: ExerciseCatalogItem) {
-		setSheet({ state: "edit", exercise });
+	function openEditEditor(exercise: ExerciseCatalogItem) {
+		setEditor({ state: "edit", exercise });
 	}
 
-	function closeSheet() {
-		setSheet({ state: "closed" });
+	function closeEditor() {
+		setEditor({ state: "closed" });
 	}
 
 	return (
 		<>
-			<ExercisesPageShell onAddExercise={openCreateSheet}>
-				<ExercisesListContent onSelectExercise={openEditSheet} />
+			<ExercisesPageShell onAddExercise={openCreateEditor}>
+				<ExercisesListContent onSelectExercise={openEditEditor} />
 			</ExercisesPageShell>
-			<ExerciseEditSheet
-				sheet={sheet}
-				onClose={closeSheet}
+			<ExerciseEditor
+				editor={editor}
+				onClose={closeEditor}
 			/>
 		</>
 	);
