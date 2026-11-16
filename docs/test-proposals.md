@@ -10,6 +10,14 @@
 - Gap: Existing create-workout coverage starts and stops a timer but does not advance through reminder deadlines or discard a running timer.
 - Level: E2E through set completion and navigation, using the browser clock to advance time and asserting drawer state and displayed elapsed time.
 
+### Online searches cancel when their picker stops observing
+
+- Behavior: Online search starts only on Search Online. Changing the query, closing the picker, or leaving the form cancels its in-flight request without an error toast or stale suggestions. Reopening permits another search.
+- Regression: Query observer lifetime no longer matches the picker, cancelled requests display failure toasts, or typed input starts online searches automatically.
+- Risk: 4/10. Users can see misleading results or unnecessary external requests, but entered sets remain available.
+- Gap: Existing workout journeys select local exercises and do not cover online request cancellation.
+- Level: E2E through the exercise picker with delayed online responses and observed browser request cancellation.
+
 ### Saved profile follows verified session changes
 
 - Behavior: A successful session check saves the display profile; a network failure preserves it; an expired session or sign-out clears it. The saved greeting appears during client navigation while the session is loading.
