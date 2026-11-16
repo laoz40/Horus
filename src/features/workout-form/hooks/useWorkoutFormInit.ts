@@ -25,8 +25,8 @@ export const useWorkoutFormInit = ({
 	mode,
 	missingGlobalExercisesCount = 0,
 }: UseWorkoutFormInitProps) => {
-	const restTimerActions = useRestTimerStore((store) => store.actions);
-	const exerciseActions = useExerciseSelectionStore((store) => store.actions);
+	const sendRestTimer = useRestTimerStore((store) => store.send);
+	const sendExercise = useExerciseSelectionStore((store) => store.send);
 
 	const startingWorkout = mode.kind === "edit" ? mode.initialData : undefined;
 	const initialDurationSeconds = startingWorkout?.durationSeconds ?? 0;
@@ -41,14 +41,14 @@ export const useWorkoutFormInit = ({
 
 	// Clear shared form UI state when entering or leaving a workout.
 	useEffect(() => {
-		exerciseActions.reset();
-		restTimerActions.finishRestTimer();
+		sendExercise({ event: "RESET" });
+		sendRestTimer({ event: "FINISH_REST_TIMER" });
 
 		return () => {
-			exerciseActions.reset();
-			restTimerActions.finishRestTimer();
+			sendExercise({ event: "RESET" });
+			sendRestTimer({ event: "FINISH_REST_TIMER" });
 		};
-	}, [exerciseActions, restTimerActions]);
+	}, [sendExercise, sendRestTimer]);
 
 	// Warn when a loaded workout references exercises that were deleted globally.
 	useEffect(() => {

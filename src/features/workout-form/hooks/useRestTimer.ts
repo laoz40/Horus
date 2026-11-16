@@ -19,7 +19,7 @@ export function useRestTimer() {
 		state.restTimer.state === "idle" ? null : state.restTimer.startedAtMs,
 	);
 
-	const actions = useRestTimerStore((store) => store.actions);
+	const send = useRestTimerStore((store) => store.send);
 	const [nowMs, setNowMs] = useState(() => Date.now());
 
 	// Update the rest clock and send due reminders while the timer is running.
@@ -34,7 +34,7 @@ export function useRestTimer() {
 
 			if (currentTimeMs < nextAutoOpenMs) return;
 
-			actions.setRestTimerDrawerOpen(true);
+			send({ event: "SET_REST_TIMER_DRAWER_OPEN", open: true });
 			void showRestTimerNotification(formatElapsedTime(currentTimeMs - startedAtMs));
 
 			// Ensure the next auto-open time is in the future.
@@ -47,7 +47,7 @@ export function useRestTimer() {
 		const intervalId = window.setInterval(tick, 1000);
 
 		return () => window.clearInterval(intervalId);
-	}, [startedAtMs, actions]);
+	}, [startedAtMs, send]);
 
 	if (!startedAtMs) return null;
 

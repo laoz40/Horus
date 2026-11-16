@@ -5,32 +5,43 @@ type RestTimerState =
 	| { state: "expanded"; startedAtMs: number }
 	| { state: "collapsed"; startedAtMs: number };
 
+type RestTimerEvent =
+	| { event: "START_REST_TIMER" }
+	| { event: "SET_REST_TIMER_DRAWER_OPEN"; open: boolean }
+	| { event: "FINISH_REST_TIMER" };
+
 type RestTimerStore = {
 	restTimer: RestTimerState;
-	actions: {
-		startRestTimer: () => void;
-		setRestTimerDrawerOpen: (open: boolean) => void;
-		finishRestTimer: () => void;
-	};
+	send: (event: RestTimerEvent) => void;
 };
 
 export const useRestTimerStore = create<RestTimerStore>()((set) => ({
 	restTimer: { state: "idle" },
-	actions: {
-		startRestTimer: () => set({ restTimer: { state: "expanded", startedAtMs: Date.now() } }),
-		setRestTimerDrawerOpen: (open) =>
-			set((state) => {
-				const { restTimer } = state;
+	send: (event) =>
+		set((store) => {
+			switch (event.event) {
+				case "START_REST_TIMER":
+					return { restTimer: { state: "expanded", startedAtMs: Date.now() } };
+				case "SET_REST_TIMER_DRAWER_OPEN": {
+					const { restTimer } = store;
 
-				if (restTimer.state === "idle") return state;
+					if (restTimer.state === "idle") return store;
 
-				return {
-					restTimer: {
-						state: open ? "expanded" : "collapsed",
-						startedAtMs: restTimer.startedAtMs,
-					},
-				};
-			}),
-		finishRestTimer: () => set({ restTimer: { state: "idle" } }),
-	},
+					return {
+						restTimer: {
+							state: event.open ? "expanded" : "collapsed",
+							startedAtMs: restTimer.startedAtMs,
+						},
+					};
+				}
+
+				case "FINISH_REST_TIMER":
+					return { restTimer: { state: "idle" } };
+				default: {
+					const exhaustiveEvent: never = event;
+
+					return exhaustiveEvent;
+				}
+			}
+		}),
 }));

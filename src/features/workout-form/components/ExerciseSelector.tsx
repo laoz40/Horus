@@ -24,7 +24,7 @@ export default function ExerciseSelector({
 	onScrollToExercise,
 }: ExerciseSelectorProps) {
 	const { control } = useFormContext<Workout>();
-	const actions = useExerciseSelectionStore((store) => store.actions);
+	const send = useExerciseSelectionStore((store) => store.send);
 
 	const selectedExerciseId = useExerciseSelectionStore((state) =>
 		selectSelectedExerciseId(state, exerciseIds),
@@ -52,7 +52,7 @@ export default function ExerciseSelector({
 			value={selectedExerciseId ?? ""}
 			onValueChange={(value) => {
 				const nextExerciseId = value || null;
-				actions.selectExercise(nextExerciseId);
+				send({ event: "SELECT_EXERCISE", exerciseId: nextExerciseId });
 
 				if (nextExerciseId) onScrollToExercise(nextExerciseId);
 			}}>

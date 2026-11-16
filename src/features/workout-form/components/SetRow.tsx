@@ -42,7 +42,7 @@ export default function SetRow({
 	weightPlaceholder,
 	onDeleteSet,
 }: SetRowProps): ReactElement {
-	const actions = useRestTimerStore((store) => store.actions);
+	const send = useRestTimerStore((store) => store.send);
 
 	const {
 		register,
@@ -116,7 +116,7 @@ export default function SetRow({
 
 		if (previousChecked || !nextChecked) return;
 
-		actions.startRestTimer();
+		send({ event: "START_REST_TIMER" });
 
 		const exerciseName = getValues(fields.exerciseName)?.trim();
 

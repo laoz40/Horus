@@ -42,7 +42,7 @@ export default function WorkoutForm({
 		(store) => store.exerciseSelection.state === "editing",
 	);
 
-	const exerciseActions = useExerciseSelectionStore((store) => store.actions);
+	const sendExercise = useExerciseSelectionStore((store) => store.send);
 
 	const { methods, initialDurationSeconds, startedAtMs } = useWorkoutFormInit({
 		mode,
@@ -92,7 +92,7 @@ export default function WorkoutForm({
 		const nextExerciseId =
 			exerciseIds[selectedExerciseIndex + 1] ?? exerciseIds[selectedExerciseIndex - 1] ?? null;
 
-		exerciseActions.selectExerciseAfterDeletion(nextExerciseId);
+		sendExercise({ event: "SELECT_EXERCISE_AFTER_DELETION", exerciseId: nextExerciseId });
 		showExerciseDeletedToast();
 	};
 

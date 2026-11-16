@@ -15,7 +15,7 @@ import { useRestTimerStore } from "@/features/workout-form/stores/restTimerStore
 
 export default function RestTimerButton(): ReactElement {
 	const isOpen = useRestTimerStore((state) => state.restTimer.state === "expanded");
-	const actions = useRestTimerStore((store) => store.actions);
+	const send = useRestTimerStore((store) => store.send);
 	const timer = useRestTimer();
 
 	if (!timer) return <></>;
@@ -27,7 +27,7 @@ export default function RestTimerButton(): ReactElement {
 			direction="left"
 			noBodyStyles
 			open={isOpen}
-			onOpenChange={actions.setRestTimerDrawerOpen}>
+			onOpenChange={(open) => send({ event: "SET_REST_TIMER_DRAWER_OPEN", open })}>
 			<DrawerTrigger asChild>
 				<Button
 					className={cn(
@@ -54,7 +54,7 @@ export default function RestTimerButton(): ReactElement {
 				<Button
 					variant={isOverRestTarget ? "destructive" : "default"}
 					className="w-fit px-12"
-					onClick={actions.finishRestTimer}>
+					onClick={() => send({ event: "FINISH_REST_TIMER" })}>
 					{isOverRestTarget ? "Stop timer!" : "Stop timer?"}
 				</Button>
 			</DrawerContent>

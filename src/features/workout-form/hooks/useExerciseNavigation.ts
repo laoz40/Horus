@@ -14,7 +14,7 @@ interface UseExerciseNavigationReturn {
 }
 
 export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
-	const actions = useExerciseSelectionStore((store) => store.actions);
+	const send = useExerciseSelectionStore((store) => store.send);
 	const exerciseListRef = useRef<HTMLDivElement | null>(null);
 	const exerciseFormRefs = useRef<Record<string, HTMLDivElement | null>>({});
 	const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
@@ -77,7 +77,7 @@ export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
 				const exerciseId = target instanceof HTMLElement ? target.dataset.exerciseId : undefined;
 
 				if (exerciseId) {
-					actions.selectExercise(exerciseId);
+					send({ event: "SELECT_EXERCISE", exerciseId });
 				}
 			},
 			{
@@ -99,7 +99,7 @@ export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
 			observer.disconnect();
 			visibilityObserverRef.current = null;
 		};
-	}, [actions]);
+	}, [send]);
 
 	return {
 		exerciseListRef,
