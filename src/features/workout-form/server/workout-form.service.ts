@@ -109,7 +109,7 @@ const updateWorkoutAndRecalculatePrs = (updateInput: WorkoutUpdateInput) =>
 				current: exercisesWithDatabaseIds,
 			});
 
-			yield* workouts.updateFields(updateInput);
+			yield* workouts.updateNameAndDuration(updateInput);
 
 			if (!hasExerciseChanges) return workout.id;
 

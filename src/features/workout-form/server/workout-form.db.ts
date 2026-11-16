@@ -51,7 +51,9 @@ export class WorkoutFormDb extends Context.Service<
 			exercises: WorkoutExerciseWithDatabaseId[];
 			prStatusesBySetId?: ReadonlyMap<string, PrSetUpdate>;
 		}) => Effect.Effect<void, DatabaseError>;
-		readonly updateFields: (input: WorkoutUpdateInput) => Effect.Effect<void, DatabaseError>;
+		readonly updateNameAndDuration: (
+			input: WorkoutUpdateInput,
+		) => Effect.Effect<void, DatabaseError>;
 		readonly deleteExercises: (workoutId: string) => Effect.Effect<void, DatabaseError>;
 		readonly updatePrTotal: (input: {
 			workoutId: string;
@@ -137,7 +139,7 @@ export const workoutFormDb = Layer.effect(
 					{ discard: true },
 				).pipe(withDatabaseError);
 			},
-			updateFields: ({ workoutId, userId, workout }) => {
+			updateNameAndDuration: ({ workoutId, userId, workout }) => {
 				const updateWorkout = SqlSchema.void({
 					Request: Schema.Struct({
 						workoutId: Schema.String,
