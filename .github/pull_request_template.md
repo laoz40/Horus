@@ -6,10 +6,6 @@
 
 -
 
-# Changes
-
--
-
 # Notes
 
 -
