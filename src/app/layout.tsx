@@ -3,7 +3,6 @@ import "@/app/globals.css";
 import { ThemeProvider } from "next-themes";
 import { Oxanium } from "next/font/google";
 import DeferredToaster from "@/components/DeferredToaster";
-import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import { themeProviderProps } from "@/lib/theme";
 import { Providers } from "@/app/providers";
 
@@ -42,7 +41,6 @@ export default function RootLayout({
 			suppressHydrationWarning>
 			<body className="relative flex h-dvh w-full flex-col dark:bg-background">
 				<DeferredToaster />
-				<ServiceWorkerRegistration />
 				<ThemeProvider {...themeProviderProps}>
 					<Providers>{children}</Providers>
 				</ThemeProvider>

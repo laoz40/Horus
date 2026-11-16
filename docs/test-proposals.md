@@ -2,6 +2,14 @@
 
 ## Proposals
 
+### Browser startup registers the notification worker
+
+- Behavior: A full page load registers `/sw.js` after loading completes. Client navigation does not register it again, and unsupported browsers still load the app.
+- Regression: Moving registration out of React leaves the startup file undiscovered, runs registration too early, or registers on every navigation.
+- Risk: 4/10. Rest notifications can stop working on mobile while the rest timer remains visible.
+- Gap: Existing browser tests do not assert service worker registration or its timing.
+- Level: E2E, observing the browser registration API during a full load and client navigation, and checking the active worker.
+
 ### Rest reminders stop with the timer and workout form
 
 - Behavior: Completing a set starts the rest timer. Dismissing its drawer preserves the timer; it reopens after two minutes and every 30 seconds afterward. Stopping it or leaving the form prevents further reminders. A new workout starts fresh.
