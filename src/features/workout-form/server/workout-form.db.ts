@@ -17,6 +17,28 @@ type WorkoutWriteInput = {
 
 export type WorkoutUpdateInput = WorkoutWriteInput & { workoutId: string };
 
+const storedWorkoutExerciseSchema = Schema.Struct({
+	id: Schema.String,
+	exerciseId: Schema.String,
+	difficulty: Schema.NullOr(Schema.Finite),
+	notes: Schema.String,
+	sets: Schema.mutable(
+		Schema.Array(
+			Schema.Struct({
+				id: Schema.String,
+				weight: Schema.Finite,
+				reps: Schema.Finite,
+				completed: Schema.Boolean,
+				isWeightPr: Schema.Boolean,
+				isVolumePr: Schema.Boolean,
+				isBodyweightRepsPr: Schema.Boolean,
+			}),
+		),
+	),
+});
+
+export type StoredWorkoutExercise = typeof storedWorkoutExerciseSchema.Type;
+
 export class WorkoutFormDb extends Context.Service<
 	WorkoutFormDb,
 	{
@@ -29,7 +51,9 @@ export class WorkoutFormDb extends Context.Service<
 			exercises: WorkoutExerciseWithDatabaseId[];
 			prStatusesBySetId?: ReadonlyMap<string, PrSetUpdate>;
 		}) => Effect.Effect<void, DatabaseError>;
-		readonly updateFields: (input: WorkoutUpdateInput) => Effect.Effect<void, DatabaseError>;
+		readonly updateNameAndDuration: (
+			input: WorkoutUpdateInput,
+		) => Effect.Effect<void, DatabaseError>;
 		readonly deleteExercises: (workoutId: string) => Effect.Effect<void, DatabaseError>;
 		readonly updatePrTotal: (input: {
 			workoutId: string;
@@ -39,7 +63,9 @@ export class WorkoutFormDb extends Context.Service<
 			workoutId: string;
 			userId: string;
 		}) => Effect.Effect<{ id: string; name: string; createdAt: Date } | null, DatabaseError>;
-		readonly getExerciseIds: (workoutId: string) => Effect.Effect<string[], DatabaseError>;
+		readonly getExercises: (
+			workoutId: string,
+		) => Effect.Effect<StoredWorkoutExercise[], DatabaseError>;
 	}
 >()("horus/WorkoutFormDb") {}
 
@@ -113,7 +139,7 @@ export const workoutFormDb = Layer.effect(
 					{ discard: true },
 				).pipe(withDatabaseError);
 			},
-			updateFields: ({ workoutId, userId, workout }) => {
+			updateNameAndDuration: ({ workoutId, userId, workout }) => {
 				const updateWorkout = SqlSchema.void({
 					Request: Schema.Struct({
 						workoutId: Schema.String,
@@ -122,7 +148,7 @@ export const workoutFormDb = Layer.effect(
 						durationSeconds: Schema.NullOr(Schema.Int),
 					}),
 					execute: (input) => sql`
-						UPDATE workouts SET name = ${input.name}, duration_seconds = ${input.durationSeconds}, total_pr_sets = 0
+						UPDATE workouts SET name = ${input.name}, duration_seconds = ${input.durationSeconds}
 						WHERE id = ${input.workoutId}::uuid AND user_id = ${input.userId}
 					`,
 				});
@@ -163,18 +189,34 @@ export const workoutFormDb = Layer.effect(
 
 				return findWorkoutForUpdate(query).pipe(Effect.map(Option.getOrNull), withDatabaseError);
 			},
-			getExerciseIds: (workoutId) => {
-				const findExerciseIds = SqlSchema.findAll({
+			getExercises: (workoutId) => {
+				const getExercises = SqlSchema.findAll({
 					Request: Schema.String,
-					Result: Schema.Struct({ exerciseId: Schema.String }),
-					execute: (id) =>
-						sql`SELECT DISTINCT exercise_id AS "exerciseId" FROM workout_exercises WHERE workout_id = ${id}::uuid`,
+					Result: storedWorkoutExerciseSchema,
+					execute: (id) => sql`
+						SELECT we.id, we.exercise_id AS "exerciseId",
+							we.difficulty::double precision AS difficulty, we.notes,
+							coalesce(
+								json_agg(json_build_object(
+									'id', ws.id,
+									'weight', ws.weight::double precision,
+									'reps', ws.reps::double precision,
+									'completed', ws.completed,
+									'isWeightPr', ws.is_weight_pr,
+									'isVolumePr', ws.is_volume_pr,
+									'isBodyweightRepsPr', ws.is_bodyweight_reps_pr
+								) ORDER BY ws.position) FILTER (WHERE ws.id IS NOT NULL),
+								'[]'::json
+							) AS sets
+						FROM workout_exercises we
+						LEFT JOIN workout_sets ws ON ws.workout_exercise_id = we.id
+						WHERE we.workout_id = ${id}::uuid
+						GROUP BY we.id
+						ORDER BY we.position
+					`,
 				});
 
-				return findExerciseIds(workoutId).pipe(
-					Effect.map((rows) => rows.map((row) => row.exerciseId)),
-					withDatabaseError,
-				);
+				return getExercises(workoutId).pipe(withDatabaseError);
 			},
 		} satisfies WorkoutFormDb["Service"];
 	}),
