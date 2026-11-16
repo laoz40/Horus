@@ -2,6 +2,14 @@
 
 ## Proposals
 
+### Workout edits preserve unaffected personal records
+
+- Behavior: Rename a saved workout, edit notes or difficulty, and change sets for one of its exercises. Existing badges for other exercises remain intact, while changed weights, reps, completion, additions, removals, and same-exercise set ordering update that exercise's records in the edited and later workouts. Removing an exercise also updates the edited workout's PR total.
+- Regression: Replacement writes erase badges for exercises excluded from recalculation, selective recalculation misses changed sets, or removing an exercise leaves a stale PR total.
+- Risk: 7/10. Incorrect personal records and workout totals misrepresent saved training progress.
+- Gap: `tests/workout-history.spec.ts` covers renaming but not set edits or preservation and recalculation of records across workouts.
+- Level: E2E, extending the saved-workout editing journey with multiple exercises and checking badges and totals through workout history and details.
+
 ### Online exercise search survives upstream failures
 
 - Behavior: When Wger is unreachable, times out during headers or body reading, rate-limits requests, or sends an invalid response, online exercise search shows its existing error toast and leaves local suggestions usable. A later successful search still adds online suggestions.

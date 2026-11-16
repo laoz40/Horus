@@ -38,6 +38,10 @@ export const recalculateExercisePrHistory = (query: {
 		);
 
 		yield* db.updateSetStatuses(prStatuses);
-		// Count all sets in touched workouts because unchanged exercises may also contribute PRs.
-		yield* db.updateWorkoutTotals({ userId: query.userId, workoutIds: affectedWorkoutIds });
+		// Include the edited workout even when its last set of an affected exercise was removed.
+		// Count all its sets because unchanged exercises may also contribute PRs.
+		yield* db.updateWorkoutTotals({
+			userId: query.userId,
+			workoutIds: [...new Set([query.cutoff.workoutId, ...affectedWorkoutIds])],
+		});
 	});

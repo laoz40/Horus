@@ -13,14 +13,12 @@ import {
 	calculateSetPrsFromHistory,
 	recalculateExercisePrHistory,
 } from "@/features/personal-records/server/pr-history.service";
-import {
-	buildAffectedExerciseIds,
-	buildPrTotalsByWorkoutId,
-} from "@/features/personal-records/server/pr-history.functions";
+import { buildPrTotalsByWorkoutId } from "@/features/personal-records/server/pr-history.functions";
 import { requireWorkout } from "@/features/workout-view/server/workout-view.functions";
 import {
 	attachExerciseIdsToWorkout,
 	getMissingExercises,
+	getWorkoutExerciseChanges,
 	buildNewWorkoutPrSets,
 	normalizeWorkoutForWrite,
 	validateUniqueWorkoutChildIds,
@@ -99,25 +97,37 @@ const updateWorkoutAndRecalculatePrs = (updateInput: WorkoutUpdateInput) =>
 			});
 
 			if (!workout) return null;
-			const previousExerciseIds = yield* workouts.getExerciseIds(updateInput.workoutId);
+			const previousExercises = yield* workouts.getExercises(updateInput.workoutId);
 
 			const exercisesWithDatabaseIds = yield* createMissingExercisesAndAttachIds({
 				userId: updateInput.userId,
 				exercises: updateInput.workout.exercises,
 			});
 
-			const affectedExerciseIds = buildAffectedExerciseIds(
-				previousExerciseIds,
-				exercisesWithDatabaseIds.map((exercise) => exercise.exerciseId),
-			);
+			const { hasExerciseChanges, affectedExerciseIds } = getWorkoutExerciseChanges({
+				previous: previousExercises,
+				current: exercisesWithDatabaseIds,
+			});
 
 			yield* workouts.updateFields(updateInput);
+
+			if (!hasExerciseChanges) return workout.id;
+
+			// The replacement write must retain badges for exercises we do not recalculate.
+			const prStatusesBySetId = new Map(
+				previousExercises.flatMap((exercise) =>
+					exercise.sets.map(
+						(set) => [set.id, { ...set, setId: set.id, workoutId: workout.id }] as const,
+					),
+				),
+			);
+
 			yield* workouts.deleteExercises(updateInput.workoutId);
 			yield* workouts.insertExercises({
 				workoutId: updateInput.workoutId,
 				exercises: exercisesWithDatabaseIds,
 			});
-			yield* workouts.insertSets({ exercises: exercisesWithDatabaseIds });
+			yield* workouts.insertSets({ exercises: exercisesWithDatabaseIds, prStatusesBySetId });
 			yield* recalculateExercisePrHistory({
 				userId: updateInput.userId,
 				exerciseIds: affectedExerciseIds,
