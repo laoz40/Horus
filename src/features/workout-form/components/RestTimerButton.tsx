@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactElement } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import {
 	Drawer,
@@ -11,18 +12,23 @@ import {
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 import { useRestTimer } from "@/features/workout-form/hooks/useRestTimer";
-import { useRestTimerStore } from "@/features/workout-form/stores/restTimerStore";
+import { useStore } from "zustand";
+import type { RestTimerStore } from "@/features/workout-form/stores/restTimerStore";
 
-export default function RestTimerButton(): ReactElement {
-	const isOpen = useRestTimerStore((state) => state.restTimer.state === "expanded");
-	const send = useRestTimerStore((store) => store.send);
-	const timer = useRestTimer();
+export default function RestTimerButton({
+	restTimerStore,
+}: {
+	restTimerStore: RestTimerStore;
+}): ReactElement {
+	const isOpen = useStore(restTimerStore, (state) => state.restTimer.state === "expanded");
+	const send = useStore(restTimerStore, (store) => store.send);
+	const timer = useRestTimer({ restTimerStore });
 
 	if (!timer) return <></>;
 
 	const { elapsedTime, isOverRestTarget } = timer;
 
-	return (
+	return createPortal(
 		<Drawer
 			direction="left"
 			noBodyStyles
@@ -58,6 +64,7 @@ export default function RestTimerButton(): ReactElement {
 					{isOverRestTarget ? "Stop timer!" : "Stop timer?"}
 				</Button>
 			</DrawerContent>
-		</Drawer>
+		</Drawer>,
+		document.body,
 	);
 }

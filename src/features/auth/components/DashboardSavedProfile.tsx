@@ -1,6 +1,5 @@
 "use client";
 
-import { useLayoutEffect } from "react";
 import DashboardProfileFallback from "@/features/auth/components/DashboardProfileFallback";
 import {
 	paintSavedProfileFromCookie,
@@ -9,16 +8,17 @@ import {
 	savedProfileScript,
 } from "@/features/auth/lib/profileCookie";
 
-export default function DashboardSavedProfile({ isPending }: { isPending: boolean }) {
-	// Inline scripts run on document loads; this handles client-side navigation before paint.
-	useLayoutEffect(() => {
-		paintSavedProfileFromCookie(savedProfileId, profileCookieName);
-	}, []);
+// Inline scripts run on document loads; the ref handles client navigation before paint.
+const restoreSavedProfile = (element: HTMLDivElement | null) => {
+	if (element) paintSavedProfileFromCookie(savedProfileId, profileCookieName);
+};
 
+export default function DashboardSavedProfile({ isPending }: { isPending: boolean }) {
 	return (
 		<>
 			{/* Only the saved profile's marked attributes and text are changed before hydration. */}
 			<div
+				ref={restoreSavedProfile}
 				id={savedProfileId}
 				className="group"
 				suppressHydrationWarning>

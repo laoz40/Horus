@@ -1,9 +1,10 @@
-import { useEffect, useRef, type RefObject } from "react";
+import { useStore } from "zustand";
+import { useRef, type RefCallback } from "react";
 
-import { useExerciseSelectionStore } from "@/features/workout-form/stores/exerciseSelectionStore";
+import type { ExerciseSelectionStore } from "@/features/workout-form/stores/exerciseSelectionStore";
 
 interface UseExerciseNavigationReturn {
-	exerciseListRef: RefObject<HTMLDivElement | null>;
+	exerciseListRef: RefCallback<HTMLDivElement>;
 	registerExerciseRef: (
 		exerciseId: string,
 		exerciseIndex: number,
@@ -13,9 +14,12 @@ interface UseExerciseNavigationReturn {
 	scrollToExerciseOnMount: (exerciseIndex: number) => void;
 }
 
-export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
-	const send = useExerciseSelectionStore((store) => store.send);
-	const exerciseListRef = useRef<HTMLDivElement | null>(null);
+export const useExerciseNavigation = ({
+	exerciseSelectionStore,
+}: {
+	exerciseSelectionStore: ExerciseSelectionStore;
+}): UseExerciseNavigationReturn => {
+	const send = useStore(exerciseSelectionStore, (store) => store.send);
 	const exerciseFormRefs = useRef<Record<string, HTMLDivElement | null>>({});
 	const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
 	const pendingScrollIndexRef = useRef<number | null>(null);
@@ -54,11 +58,8 @@ export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
 		});
 	};
 
-	// Create the visibility observer once; exercise forms register and unregister
-	// themselves through registerExerciseRef as they mount and unmount.
-	useEffect(() => {
-		const scrollContainer = exerciseListRef.current;
-
+	// Exercise forms register and unregister as they mount and unmount.
+	const exerciseListRef = (scrollContainer: HTMLDivElement | null) => {
 		if (!scrollContainer) return;
 
 		const observer = new IntersectionObserver(
@@ -99,7 +100,7 @@ export const useExerciseNavigation = (): UseExerciseNavigationReturn => {
 			observer.disconnect();
 			visibilityObserverRef.current = null;
 		};
-	}, [send]);
+	};
 
 	return {
 		exerciseListRef,

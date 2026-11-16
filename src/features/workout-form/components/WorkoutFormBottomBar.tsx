@@ -1,3 +1,4 @@
+import { useStore } from "zustand";
 import { IconHistory } from "@tabler/icons-react";
 import { type ReactElement } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
@@ -7,12 +8,13 @@ import { Button } from "@/components/ui/button";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import {
 	selectSelectedExerciseId,
-	useExerciseSelectionStore,
+	type ExerciseSelectionStore,
 } from "@/features/workout-form/stores/exerciseSelectionStore";
 
 import ExerciseSelector from "@/features/workout-form/components/ExerciseSelector";
 
 interface WorkoutFormBottomBarProps {
+	exerciseSelectionStore: ExerciseSelectionStore;
 	exerciseIds: string[];
 	onAddExercise: () => void;
 	onDeleteExercise: () => void;
@@ -21,6 +23,7 @@ interface WorkoutFormBottomBarProps {
 }
 
 export default function WorkoutFormBottomBar({
+	exerciseSelectionStore,
 	exerciseIds,
 	onAddExercise,
 	onDeleteExercise,
@@ -29,15 +32,16 @@ export default function WorkoutFormBottomBar({
 }: WorkoutFormBottomBarProps): ReactElement | null {
 	const { control } = useFormContext<Workout>();
 
-	const selectedExerciseId = useExerciseSelectionStore((state) =>
+	const selectedExerciseId = useStore(exerciseSelectionStore, (state) =>
 		selectSelectedExerciseId(state, exerciseIds),
 	);
 
-	const isEditing = useExerciseSelectionStore(
+	const isEditing = useStore(
+		exerciseSelectionStore,
 		(store) => store.exerciseSelection.state === "editing",
 	);
 
-	const sendExercise = useExerciseSelectionStore((store) => store.send);
+	const sendExercise = useStore(exerciseSelectionStore, (store) => store.send);
 
 	const selectedExerciseIndex = exerciseIds.findIndex(
 		(exerciseId) => exerciseId === selectedExerciseId,
@@ -66,6 +70,7 @@ export default function WorkoutFormBottomBar({
 				<div className="flex items-center gap-2">
 					<div className="min-w-0 flex-1">
 						<ExerciseSelector
+							exerciseSelectionStore={exerciseSelectionStore}
 							exerciseIds={exerciseIds}
 							onScrollToExercise={onScrollToExercise}
 						/>

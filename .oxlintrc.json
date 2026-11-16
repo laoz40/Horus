@@ -4,6 +4,7 @@
 	"plugins": ["nextjs", "typescript", "unicorn", "effecttsgo"],
 	"jsPlugins": [
 		"@shadcn/lint",
+		{ "name": "react-effects", "specifier": "./tools/oxlint/react-effects/index.ts" },
 		{ "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" },
 		{ "name": "conditionals", "specifier": "./tools/oxlint/conditionals/index.ts" },
 		{ "name": "anti-slop-effect", "specifier": "./tools/oxlint/anti-slop/effect/index.ts" },
@@ -32,6 +33,7 @@
 		"src/components/ui/chart.tsx"
 	],
 	"rules": {
+		"react-effects/no-use-effect": "error",
 		"effecttsgo/unstable-api-usage": "off",
 		"effecttsgo/schema-number": "error",
 		"shadcn/no-raw-colors": "error",
