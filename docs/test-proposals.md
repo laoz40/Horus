@@ -2,6 +2,14 @@
 
 ## Proposals
 
+### Zustand mutations stay inside send
+
+- Behavior: Oxlint accepts setter calls directly in the store's returned `send` function and rejects calls in helpers, other actions, and nested callbacks, as well as setter aliases and forwarding.
+- Regression: Renamed imports or setter parameters, shadowed bindings, or a different store's `send` cause missed violations or false positives.
+- Risk: 3/10. A missed diagnostic permits state updates that bypass transition checks; it does not itself change workout data.
+- Gap: No automated coverage exists for `zustand/set-only-in-send`; temporary CLI smoke checks covered these cases during implementation.
+- Level: Unit coverage through Oxlint's rule tester, because browser E2E cannot assert source-code lint diagnostics.
+
 ### Browser startup registers the notification worker
 
 - Behavior: A full page load registers `/sw.js` after loading completes. Client navigation does not register it again, and unsupported browsers still load the app.
