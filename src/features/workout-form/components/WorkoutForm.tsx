@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { FormProvider, type FieldErrors } from "react-hook-form";
 
 import { getFirstInvalidExerciseIndex } from "@/features/workout-form/lib/checkInvalidExercise";
@@ -10,7 +10,6 @@ import {
 	selectSelectedExerciseId,
 	useExerciseSelectionStore,
 } from "@/features/workout-form/stores/exerciseSelectionStore";
-import { useWorkoutTimerStore } from "@/features/workout-form/stores/workoutTimerStore";
 import { useExerciseNavigation } from "@/features/workout-form/hooks/useExerciseNavigation";
 import { useWorkoutSubmit } from "@/features/workout-form/hooks/useWorkoutSubmit";
 import { useWorkoutExercises } from "@/features/workout-form/hooks/useWorkoutExercises";
@@ -34,14 +33,18 @@ export default function WorkoutForm({
 	mode,
 	missingGlobalExercisesCount,
 }: WorkoutFormProps): ReactElement {
+	const [recentSetsDialog, setRecentSetsDialog] = useState<{
+		state: "closed" | "open";
+		exerciseName: string;
+	}>({ state: "closed", exerciseName: "" });
+
 	const isEditing = useExerciseSelectionStore(
 		(store) => store.exerciseSelection.state === "editing",
 	);
 
 	const exerciseActions = useExerciseSelectionStore((store) => store.actions);
-	const startedAtMs = useWorkoutTimerStore((store) => store.startedAtMs);
 
-	const { methods, initialDurationSeconds } = useWorkoutFormInit({
+	const { methods, initialDurationSeconds, startedAtMs } = useWorkoutFormInit({
 		mode,
 		missingGlobalExercisesCount,
 	});
@@ -103,6 +106,7 @@ export default function WorkoutForm({
 			<FormProvider {...methods}>
 				<WorkoutFormTopBar
 					initialDurationSeconds={initialDurationSeconds}
+					startedAtMs={startedAtMs}
 					mode={mode.kind}
 					isSubmitting={isSubmitting}
 					onInvalidSubmit={handleInvalidSubmit}
@@ -135,8 +139,18 @@ export default function WorkoutForm({
 					onAddExercise={handleAddAndScroll}
 					onDeleteExercise={handleDeleteExercise}
 					onScrollToExercise={scrollToExercise}
+					onShowRecentSets={(exerciseName) => setRecentSetsDialog({ state: "open", exerciseName })}
 				/>
-				<RecentSetsDialog />
+				<RecentSetsDialog
+					open={recentSetsDialog.state === "open"}
+					exerciseName={recentSetsDialog.exerciseName}
+					onOpenChange={(open) =>
+						setRecentSetsDialog((dialog) => ({
+							...dialog,
+							state: open ? "open" : "closed",
+						}))
+					}
+				/>
 			</FormProvider>
 		</div>
 	);

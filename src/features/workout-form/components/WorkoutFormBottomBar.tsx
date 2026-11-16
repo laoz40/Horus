@@ -9,7 +9,6 @@ import {
 	selectSelectedExerciseId,
 	useExerciseSelectionStore,
 } from "@/features/workout-form/stores/exerciseSelectionStore";
-import { useRecentSetsStore } from "@/features/workout-form/stores/recentSetsStore";
 
 import ExerciseSelector from "@/features/workout-form/components/ExerciseSelector";
 
@@ -18,6 +17,7 @@ interface WorkoutFormBottomBarProps {
 	onAddExercise: () => void;
 	onDeleteExercise: () => void;
 	onScrollToExercise: (exerciseId: string) => void;
+	onShowRecentSets: (exerciseName: string) => void;
 }
 
 export default function WorkoutFormBottomBar({
@@ -25,6 +25,7 @@ export default function WorkoutFormBottomBar({
 	onAddExercise,
 	onDeleteExercise,
 	onScrollToExercise,
+	onShowRecentSets,
 }: WorkoutFormBottomBarProps): ReactElement | null {
 	const { control } = useFormContext<Workout>();
 
@@ -37,7 +38,6 @@ export default function WorkoutFormBottomBar({
 	);
 
 	const exerciseActions = useExerciseSelectionStore((store) => store.actions);
-	const recentSetsActions = useRecentSetsStore((store) => store.actions);
 
 	const selectedExerciseIndex = exerciseIds.findIndex(
 		(exerciseId) => exerciseId === selectedExerciseId,
@@ -76,7 +76,7 @@ export default function WorkoutFormBottomBar({
 						type="button"
 						className="shrink-0"
 						disabled={!selectedExerciseName}
-						onClick={() => recentSetsActions.open(selectedExerciseName)}
+						onClick={() => onShowRecentSets(selectedExerciseName)}
 						aria-label="Recent sets">
 						<IconHistory />
 					</Button>

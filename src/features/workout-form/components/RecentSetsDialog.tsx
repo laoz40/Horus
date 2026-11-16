@@ -14,7 +14,12 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { orpc } from "@/lib/orpc/client";
-import { useRecentSetsStore } from "@/features/workout-form/stores/recentSetsStore";
+
+interface RecentSetsDialogProps {
+	open: boolean;
+	exerciseName: string;
+	onOpenChange: (open: boolean) => void;
+}
 
 function SetSkeletonRow() {
 	return (
@@ -27,12 +32,11 @@ function SetSkeletonRow() {
 	);
 }
 
-export default function RecentSetsDialog() {
-	const dialog = useRecentSetsStore((store) => store.dialog);
-	const actions = useRecentSetsStore((store) => store.actions);
-	const { exerciseName } = dialog;
-	const open = dialog.state === "open";
-
+export default function RecentSetsDialog({
+	open,
+	exerciseName,
+	onOpenChange,
+}: RecentSetsDialogProps) {
 	const recentSetsQuery = useQuery(
 		orpc.exercises.recentSets.queryOptions({
 			input: { exerciseName },
@@ -104,7 +108,7 @@ export default function RecentSetsDialog() {
 	return (
 		<Dialog
 			open={open}
-			onOpenChange={actions.setOpen}>
+			onOpenChange={onOpenChange}>
 			<DialogContent
 				showCloseButton={false}
 				className="sm:max-w-lg">

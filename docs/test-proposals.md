@@ -81,3 +81,11 @@
 - Risk: 6/10. Users see incorrect training totals after successfully saving or deleting workouts.
 - Gap: `tests/create-workout.spec.ts` and `tests/workout-history.spec.ts` cover persistence and history, but do not revisit and assert the dashboard graph.
 - Level: E2E, extending the existing create, edit, and delete journeys.
+
+### Failed workout creation preserves the form for retry
+
+- Behavior: While creating a workout, a pending save keeps the form mounted. A failed save keeps the exercise, set values, completion flags, and workout name. Retrying succeeds and only then navigates to history.
+- Regression: Navigation unmounts the form before success, a failed save clears entered values, or retry writes a duplicate workout.
+- Risk: 8/10. Losing a completed workout before persistence forces the user to reconstruct their session.
+- Gap: `tests/create-workout.spec.ts` covers successful creation and validation, but not delayed or failed requests and retry.
+- Level: E2E, extending the create journey with a controlled failed create response followed by a real successful retry.

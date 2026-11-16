@@ -7,7 +7,6 @@ import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 
 import { Button } from "@/components/ui/button";
 import { useWorkoutTimer } from "@/features/workout-form/hooks/useWorkoutTimer";
-import { useWorkoutTimerStore } from "@/features/workout-form/stores/workoutTimerStore";
 import { formatDurationFull } from "@/lib/time";
 import type { WorkoutFormMode } from "@/features/workout-form/components/WorkoutForm";
 
@@ -16,6 +15,7 @@ import WorkoutExitLink from "@/features/workout-form/components/WorkoutExitLink"
 
 interface WorkoutFormTopBarProps {
 	initialDurationSeconds: number;
+	startedAtMs: number;
 	mode: WorkoutFormMode["kind"];
 	isSubmitting: boolean;
 	onInvalidSubmit: SubmitErrorHandler<Workout>;
@@ -23,10 +23,13 @@ interface WorkoutFormTopBarProps {
 
 interface WorkoutDurationProps {
 	initialDurationSeconds: number;
+	startedAtMs: number;
 }
 
-function WorkoutDuration({ initialDurationSeconds }: WorkoutDurationProps): ReactElement {
-	const startedAtMs = useWorkoutTimerStore((state) => state.startedAtMs);
+function WorkoutDuration({
+	initialDurationSeconds,
+	startedAtMs,
+}: WorkoutDurationProps): ReactElement {
 	const { durationSeconds } = useWorkoutTimer({ initialDurationSeconds, startedAtMs });
 
 	return <span>{formatDurationFull(durationSeconds)}</span>;
@@ -34,6 +37,7 @@ function WorkoutDuration({ initialDurationSeconds }: WorkoutDurationProps): Reac
 
 export default function WorkoutFormTopBar({
 	initialDurationSeconds,
+	startedAtMs,
 	mode,
 	isSubmitting,
 	onInvalidSubmit,
@@ -45,7 +49,10 @@ export default function WorkoutFormTopBar({
 					href={mode === "edit" ? "/workouts" : "/"}
 					isCreate={mode === "create"}
 				/>
-				<WorkoutDuration initialDurationSeconds={initialDurationSeconds} />
+				<WorkoutDuration
+					initialDurationSeconds={initialDurationSeconds}
+					startedAtMs={startedAtMs}
+				/>
 				<WorkoutNameDialog onInvalidSubmit={onInvalidSubmit}>
 					<Button
 						variant="ghost"
