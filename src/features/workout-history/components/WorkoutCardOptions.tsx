@@ -1,10 +1,7 @@
 "use client";
 
-import { isDefinedError } from "@orpc/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -16,10 +13,7 @@ import {
 import { IconDotsVertical, IconEdit, IconShare, IconTrash } from "@tabler/icons-react";
 import { AlertDialogDestructive } from "@/components/DeleteWorkoutDialog";
 import { Button } from "@/components/ui/button";
-import type { WorkoutHistoryInfiniteData } from "@/features/workout-history/lib/optimisticHistoryItem";
-import { orpc } from "@/lib/orpc/client";
-import { removeDeletedWorkoutsAndInvalidateCache } from "@/lib/orpc/mutationCache";
-import { showErrorToast, showWorkoutDeletedToast } from "@/lib/toastMessages";
+import { useWorkoutDeletion } from "@/features/workout-history/hooks/useWorkoutDeletion";
 
 interface WorkoutCardOptionsProps {
 	workoutId: string;
@@ -30,68 +24,7 @@ export default function WorkoutCardOptions({
 	workoutId,
 	workoutName,
 }: WorkoutCardOptionsProps): ReactElement {
-	const queryClient = useQueryClient();
-	const router = useRouter();
-
-	const deleteWorkout = useMutation(
-		orpc.workouts.delete.mutationOptions({
-			onSuccess: async (result) => {
-				router.refresh();
-				const queryKey = orpc.workouts.list.key({ type: "infinite" });
-				await queryClient.cancelQueries({ queryKey });
-				queryClient.setQueriesData<WorkoutHistoryInfiniteData>({ queryKey }, (data) => {
-					if (!data) return data;
-
-					return {
-						...data,
-						pages: data.pages.map((page) => ({
-							...page,
-							items: page.items.filter((workout) => workout.id !== result.deletedWorkoutId),
-						})),
-					};
-				});
-				showWorkoutDeletedToast(result.deletedWorkoutName);
-				await removeDeletedWorkoutsAndInvalidateCache(queryClient, {
-					kind: "one",
-					workoutId: result.deletedWorkoutId,
-				});
-			},
-			onError: (error) => {
-				if (!isDefinedError(error)) {
-					showErrorToast("Failed to delete workout.");
-					console.error(error);
-
-					return;
-				}
-
-				switch (error.code) {
-					case "NOT_FOUND":
-						showErrorToast("Couldn't find workout in the database.");
-
-						return;
-					case "DATABASE_ERROR":
-						showErrorToast("Couldn't access the database. Please try again.");
-
-						return;
-					case "UNAUTHORIZED":
-						showErrorToast("You must be signed in to delete workouts.");
-
-						return;
-					default: {
-						const exhaustiveError: never = error;
-
-						return exhaustiveError;
-					}
-				}
-			},
-		}),
-	);
-
-	function handleDeleteWorkout() {
-		if (deleteWorkout.isPending) return;
-
-		deleteWorkout.mutate({ workoutId });
-	}
+	const { state, send } = useWorkoutDeletion(workoutId);
 
 	return (
 		<>
@@ -130,11 +63,13 @@ export default function WorkoutCardOptions({
 						<AlertDialogDestructive
 							title="Delete workout?"
 							description={`This will permanently delete workout: ${workoutName}`}
-							handleDelete={handleDeleteWorkout}>
+							open={state.state === "confirming"}
+							onOpenChange={(open) => send({ event: open ? "OPEN" : "CLOSE" })}
+							handleDelete={() => send({ event: "CONFIRM" })}>
 							<DropdownMenuItem
 								className="h-10 gap-1"
 								variant="destructive"
-								disabled={deleteWorkout.isPending}
+								disabled={state.state === "deleting"}
 								onSelect={(e) => e.preventDefault()}>
 								<IconTrash className="size-4" />
 								Delete

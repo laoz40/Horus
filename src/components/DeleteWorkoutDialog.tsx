@@ -14,6 +14,8 @@ import { IconTrash } from "@tabler/icons-react";
 
 interface AlertDialogDestructiveProps {
 	children: React.ReactNode;
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
 	handleDelete?: () => void;
 	title: string;
 	description: string;
@@ -21,12 +23,16 @@ interface AlertDialogDestructiveProps {
 
 export function AlertDialogDestructive({
 	children,
+	open,
+	onOpenChange,
 	handleDelete,
 	title,
 	description,
 }: AlertDialogDestructiveProps) {
 	return (
-		<AlertDialog>
+		<AlertDialog
+			open={open}
+			onOpenChange={onOpenChange}>
 			<AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
 			<AlertDialogContent size="sm">
 				<AlertDialogHeader>
