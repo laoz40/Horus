@@ -61,7 +61,7 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 		handleAddExercise,
 	} = useWorkoutExercises({ control: methods.control });
 
-	const { isSubmitting, submitWorkout } = useWorkoutSubmit({ startedAtMs, mode });
+	const { isSubmitting, send } = useWorkoutSubmit({ startedAtMs, mode });
 
 	const { exerciseListRef, registerExerciseRef, scrollToExercise, scrollToExerciseOnMount } =
 		useExerciseNavigation({ exerciseSelectionStore });
@@ -125,7 +125,10 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 				<form
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
 					id="workout-form"
-					onSubmit={methods.handleSubmit(submitWorkout, handleInvalidSubmit)}>
+					onSubmit={methods.handleSubmit(
+						(workout) => send({ event: "SUBMIT", workout }),
+						handleInvalidSubmit,
+					)}>
 					{/* Exercise Form */}
 					<section
 						ref={exerciseListRef}

@@ -169,3 +169,11 @@
 - Risk: 6/10. A completion from an earlier edit can discard a user's new draft or show a collision for the wrong exercise.
 - Gap: Existing E2E tests cover workouts and authentication, but do not cover the exercise editor's close/reopen lifecycle or delayed request completion.
 - Level: E2E, using the exercise catalog UI and delaying a save response before reopening the editor.
+
+### Failed workout edits restore history
+
+- Behavior: Saving an edit navigates immediately and shows the edited history summary while the request is pending. A failed save restores the previous summary and shows the save error toast.
+- Regression: Submission sequencing waits before navigating, omits the optimistic patch, or leaves unsaved edits in history after failure.
+- Risk: 7/10. Users may believe workout changes were saved when the database still contains the previous values.
+- Gap: `tests/workout-history.spec.ts` covers successful edits, but does not delay or fail the update request to assert optimistic history and rollback. The existing failed-create proposal covers the separate create flow.
+- Level: E2E, extending the edit journey with a delayed failed update response and visible history assertions.
