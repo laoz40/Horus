@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { showSetDeletedToast } from "@/lib/toastMessages";
 import { cn } from "@/lib/utils";
-import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { createDefaultSet } from "@/features/workout-form/lib/WorkoutFormDefaults";
 import ExerciseCollapsibles from "@/features/workout-form/components/ExerciseCollapsibles";
 import { ExerciseNameInputDropdown } from "@/features/workout-form/components/ExerciseNameInputDropdown";
@@ -29,10 +29,8 @@ function ExerciseForm({
 	ref,
 	restTimerStore,
 }: ExerciseFormProps) {
-	const {
-		control,
-		formState: { errors },
-	} = useFormContext<Workout>();
+	const { control } = useFormContext<Workout>();
+	const { errors } = useFormState({ control });
 
 	const {
 		fields: sets,
