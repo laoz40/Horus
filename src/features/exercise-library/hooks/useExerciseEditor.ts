@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import { isDefinedError, safe, type InferClientErrorUnion } from "@orpc/client";
 import { type QueryClient, useQueryClient } from "@tanstack/react-query";
-import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
 
 import type { MuscleGroupCategory } from "@/features/exercise-library/lib/muscleGroupCategories";
@@ -304,5 +303,7 @@ export function useExerciseEditor({ editor, onClose }: UseExerciseEditorOptions)
 	const queryClient = useQueryClient();
 	const [store] = useState(() => createExerciseEditorStore({ editor, onClose, queryClient }));
 
-	return useStore(store);
+	return store;
 }
+
+export type ExerciseEditorStoreApi = ReturnType<typeof useExerciseEditor>;
