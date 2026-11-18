@@ -1,4 +1,4 @@
-import { useReducer, useRef } from "react";
+import { useRef, useState } from "react";
 import { isDefinedError, type InferClientErrorUnion } from "@orpc/client";
 import { orpc } from "@/lib/orpc/client";
 import { showErrorToast } from "@/lib/toastMessages";
@@ -77,32 +77,27 @@ export function reportDeletionError(
 	}
 }
 
-export function useWorkoutDeletionMachine({
-	remove,
-	onError,
-}: {
-	remove: () => Promise<void>;
-	onError: (cause: unknown) => void;
-}) {
-	const [state, dispatch] = useReducer(transitionDeletion, { state: "idle" });
+export function useWorkoutDeletionMachine({ remove }: { remove: () => void }) {
+	const [state, setState] = useState<DeletionState>({ state: "idle" });
 	// Block overlapping requests before React renders the deleting state.
 	const deletionInProgress = useRef(false);
 
-	async function send(event: DeletionEvent) {
+	function send(event: DeletionEvent): void {
+		if (event.event === "SETTLED") {
+			deletionInProgress.current = false;
+			setState((current) => transitionDeletion(current, event));
+
+			return;
+		}
+
 		if (deletionInProgress.current) return;
 
-		dispatch(event);
+		setState((current) => transitionDeletion(current, event));
 
 		if (event.event !== "CONFIRM" || state.state !== "confirming") return;
 
 		deletionInProgress.current = true;
-
-		await remove()
-			.catch(onError)
-			.finally(() => {
-				deletionInProgress.current = false;
-				dispatch({ event: "SETTLED" });
-			});
+		remove();
 	}
 
 	return { state, send };

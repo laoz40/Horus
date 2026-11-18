@@ -1,7 +1,6 @@
 "use client";
 
-import { safe } from "@orpc/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { orpc } from "@/lib/orpc/client";
 import { removeDeletedWorkoutsAndInvalidateCache } from "@/lib/orpc/mutationCache";
@@ -21,21 +20,19 @@ export function useDeleteAllWorkouts() {
 	const queryClient = useQueryClient();
 	const router = useRouter();
 
-	async function remove() {
-		const result = await safe(orpc.workouts.deleteAll.call({}));
+	const machine = useWorkoutDeletionMachine({ remove: () => deletion.mutate({}) });
 
-		if (result.error) {
-			reportDeletionError(result.error, reportFailure);
+	const deletion = useMutation(
+		orpc.workouts.deleteAll.mutationOptions({
+			onSettled: () => machine.send({ event: "SETTLED" }),
+			onError: (error) => reportDeletionError(error, reportFailure),
+			onSuccess: async (data) => {
+				router.refresh();
+				showWorkoutsDeletedToast(data.deletedCount);
+				await removeDeletedWorkoutsAndInvalidateCache(queryClient, { kind: "all" });
+			},
+		}),
+	);
 
-			return;
-		}
-
-		const data = result.data;
-
-		router.refresh();
-		showWorkoutsDeletedToast(data.deletedCount);
-		await removeDeletedWorkoutsAndInvalidateCache(queryClient, { kind: "all" });
-	}
-
-	return useWorkoutDeletionMachine({ remove, onError: reportFailure });
+	return machine;
 }
