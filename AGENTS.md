@@ -44,7 +44,7 @@ Designed primarily for mobile touchscreen devices, usually used as an installed 
 
 - This project uses React Compiler for automatic memoization. Avoid manual `useMemo` and `useCallback` unless there is a specific need.
 - Keep React components focused on rendering and user interactions.
-- Do not scatter state and business logic across React components.
+- Model workflows as explicit state machines in custom hooks or Zustand stores. Expose state and typed `send(event)`; keep setters private. Handle events with an exhaustive `switch`. Keep transitions and workflow sequencing in `send`; pure transition helpers may calculate the next state.
 - Extract data fetching, reusable stateful logic, and external synchronisation into appropriately scoped hooks or modules.
 
 ### TypeScript
