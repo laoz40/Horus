@@ -158,155 +158,139 @@ function canSend(
 	return true;
 }
 
-function createExerciseEditorStore({
-	editor,
-	mutate,
-}: {
-	editor: OpenExerciseEditorState;
-	mutate: (
-		event: "SAVE" | "DELETE" | "COMBINE",
-		state: ExerciseEditOperation,
-		name: string,
-		categories: MuscleGroupCategory[],
-	) => void;
-}) {
-	return createStore<ExerciseEditorStore>()((set, get) => ({
-		state: { state: "editing" },
-		name: getExerciseEditInitialName(editor),
-		categories: getExerciseEditInitialCategories(editor),
-		send(event) {
-			const { state, name, categories } = get();
-
-			if (!canSend(event, state, editor)) return;
-
-			switch (event.event) {
-				case "FAILED": {
-					const outcome = failureState(state, event.error);
-
-					set({ state: outcome.state });
-
-					if (outcome.report) handleMutationError(event.error, event.action);
-
-					return;
-				}
-
-				case "NAME_CHANGED":
-					set({ name: event.name });
-
-					return;
-				case "CATEGORIES_CHANGED":
-					set({ categories: event.categories });
-
-					return;
-				case "CANCEL_MERGE":
-					if (state.state === "confirmingMerge") set({ state: { state: "editing" } });
-
-					return;
-				case "SAVE":
-					set({ state: { state: "saving" } });
-					break;
-				case "DELETE":
-					set({ state: { state: "deleting" } });
-					break;
-				case "COMBINE":
-					if (state.state === "confirmingMerge")
-						set({ state: { state: "combining", existingExercise: state.existingExercise } });
-					break;
-				default: {
-					const exhaustiveEvent: never = event;
-
-					return exhaustiveEvent;
-				}
-			}
-
-			mutate(event.event, state, name, categories);
-		},
-	}));
-}
-
 export function useExerciseEditor({ editor, onClose }: UseExerciseEditorOptions) {
 	const queryClient = useQueryClient();
 
-	const createExercise = useMutation({
-		...orpc.exercises.create.mutationOptions(),
-		onSuccess: (data) => {
-			addExerciseToListCache(queryClient, data.exercise);
-			showInfoToast("Exercise added");
-			finish("catalog");
-		},
-		onError: (error) => reportFailure(error, "add"),
-	});
+	const saveExercise = useMutation({
+		mutationFn: ({ name, categories }: Pick<ExerciseEditorStore, "name" | "categories">) => {
+			const input = { name: name.trim(), muscleGroups: writeSelectedCategories(categories) };
 
-	const updateExercise = useMutation({
-		...orpc.exercises.update.mutationOptions(),
+			if (editor.state === "create") return orpc.exercises.create.call(input);
+
+			return orpc.exercises.update.call({ id: editor.exercise.id, ...input });
+		},
 		onSuccess: (data) => {
-			patchExerciseListCache(queryClient, data.exercise);
-			showInfoToast("Exercise saved");
+			if (editor.state === "create") {
+				addExerciseToListCache(queryClient, data.exercise);
+				showInfoToast("Exercise added");
+			} else {
+				patchExerciseListCache(queryClient, data.exercise);
+				showInfoToast("Exercise saved");
+			}
+
 			finish("catalog");
 		},
-		onError: (error) => reportFailure(error, "save"),
+		onError: (error: Parameters<typeof handleMutationError>[0]) =>
+			reportFailure(error, editor.state === "create" ? "add" : "save"),
 	});
 
 	const deleteExercise = useMutation({
-		...orpc.exercises.delete.mutationOptions(),
-		onSuccess: (_data, input) => {
-			removeExerciseFromListCache(queryClient, input.id);
+		mutationFn: async () => {
+			if (editor.state !== "edit") throw new Error("Cannot delete an unsaved exercise.");
+
+			await orpc.exercises.delete.call({ id: editor.exercise.id });
+
+			return editor.exercise.id;
+		},
+		onSuccess: (exerciseId) => {
+			removeExerciseFromListCache(queryClient, exerciseId);
 			showExerciseDeletedToast();
 			finish("catalog");
 		},
-		onError: (error) => reportFailure(error, "delete"),
+		onError: (error: Parameters<typeof handleMutationError>[0]) => reportFailure(error, "delete"),
 	});
 
-	const mergeExercises = useMutation({
-		...orpc.exercises.merge.mutationOptions(),
-		onSuccess: (data, input) => {
-			mergeExercisesInListCache(queryClient, input.sourceId, data.targetExercise);
-			showInfoToast("Exercises combined");
-			finish("merge");
+	const combineExercises = useMutation({
+		mutationFn: async ({
+			existingExercise,
+			categories,
+		}: {
+			existingExercise: ExerciseCatalogItem;
+			categories: MuscleGroupCategory[];
+		}) => {
+			if (editor.state === "create") {
+				const data = await orpc.exercises.update.call({
+					id: existingExercise.id,
+					name: existingExercise.name,
+					muscleGroups: unionSelectedCategories(existingExercise.muscleGroups, categories),
+				});
+
+				return data.exercise;
+			}
+
+			const data = await orpc.exercises.merge.call({
+				sourceId: editor.exercise.id,
+				targetId: existingExercise.id,
+				sourceMuscleGroups: writeSelectedCategories(categories),
+			});
+
+			return data.targetExercise;
 		},
-		onError: (error) => reportFailure(error, "combine"),
+		onSuccess: (exercise) => {
+			if (editor.state === "create") {
+				patchExerciseListCache(queryClient, exercise);
+				showInfoToast("Exercise saved");
+				finish("catalog");
+			} else {
+				mergeExercisesInListCache(queryClient, editor.exercise.id, exercise);
+				showInfoToast("Exercises combined");
+				finish("merge");
+			}
+		},
+		onError: (error: Parameters<typeof handleMutationError>[0]) =>
+			reportFailure(error, editor.state === "create" ? "save" : "combine"),
 	});
 
 	const [store] = useState(function initializeStore() {
-		return createExerciseEditorStore({
-			editor,
-			mutate(event, state, name, categories) {
-				const muscleGroups = writeSelectedCategories(categories);
+		return createStore<ExerciseEditorStore>()((set, get) => ({
+			state: { state: "editing" },
+			name: getExerciseEditInitialName(editor),
+			categories: getExerciseEditInitialCategories(editor),
+			send(event) {
+				const { state, name, categories } = get();
 
-				switch (event) {
-					case "SAVE": {
-						const input = { name: name.trim(), muscleGroups };
+				if (!canSend(event, state, editor)) return;
 
-						if (editor.state === "create") return createExercise.mutate(input);
+				switch (event.event) {
+					case "FAILED": {
+						const outcome = failureState(state, event.error);
 
-						return updateExercise.mutate({ id: editor.exercise.id, ...input });
+						set({ state: outcome.state });
+
+						if (outcome.report) handleMutationError(event.error, event.action);
+
+						return;
 					}
 
+					case "NAME_CHANGED":
+						set({ name: event.name });
+
+						return;
+					case "CATEGORIES_CHANGED":
+						set({ categories: event.categories });
+
+						return;
+					case "CANCEL_MERGE":
+						if (state.state === "confirmingMerge") set({ state: { state: "editing" } });
+
+						return;
+					case "SAVE":
+						set({ state: { state: "saving" } });
+						saveExercise.mutate({ name, categories });
+
+						return;
 					case "DELETE":
-						if (editor.state !== "edit") return;
+						set({ state: { state: "deleting" } });
+						deleteExercise.mutate();
 
-						return deleteExercise.mutate({ id: editor.exercise.id });
-
-					case "COMBINE": {
+						return;
+					case "COMBINE":
 						if (state.state !== "confirmingMerge") return;
 
-						const existing = state.existingExercise;
+						set({ state: { state: "combining", existingExercise: state.existingExercise } });
+						combineExercises.mutate({ existingExercise: state.existingExercise, categories });
 
-						if (editor.state === "create") {
-							return updateExercise.mutate({
-								id: existing.id,
-								name: existing.name,
-								muscleGroups: unionSelectedCategories(existing.muscleGroups, categories),
-							});
-						}
-
-						return mergeExercises.mutate({
-							sourceId: editor.exercise.id,
-							targetId: existing.id,
-							sourceMuscleGroups: muscleGroups,
-						});
-					}
-
+						return;
 					default: {
 						const exhaustiveEvent: never = event;
 
@@ -314,7 +298,7 @@ export function useExerciseEditor({ editor, onClose }: UseExerciseEditorOptions)
 					}
 				}
 			},
-		});
+		}));
 	});
 
 	function finish(kind: "catalog" | "merge") {
