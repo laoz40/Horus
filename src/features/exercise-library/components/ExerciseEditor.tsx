@@ -61,7 +61,7 @@ function ExerciseEditDeleteButton({
 		<AlertDialogDestructive
 			title={`Delete ${editor.exercise.name}?`}
 			description="This exercise will be permanently removed."
-			handleDelete={() => void send({ event: "DELETE" })}>
+			handleDelete={() => send({ event: "DELETE" })}>
 			<Button
 				type="button"
 				variant="destructive"
@@ -89,7 +89,7 @@ function ExerciseEditNameField({ store }: ExerciseEditorStoreProps) {
 					id="exercise-name"
 					maxLength={MAX_EXERCISE_NAME_LENGTH}
 					value={name}
-					onChange={(event) => void send({ event: "NAME_CHANGED", name: event.target.value })}
+					onChange={(event) => send({ event: "NAME_CHANGED", name: event.target.value })}
 					autoComplete="off"
 				/>
 			</FieldContent>
@@ -108,7 +108,7 @@ function ExerciseEditCategoriesField({ store }: ExerciseEditorStoreProps) {
 			<MuscleGroupMultiSelect
 				selectedCategories={categories}
 				onChange={(nextCategories) =>
-					void send({ event: "CATEGORIES_CHANGED", categories: nextCategories })
+					send({ event: "CATEGORIES_CHANGED", categories: nextCategories })
 				}
 			/>
 			{categories.length === 0 && (
@@ -128,7 +128,7 @@ function ExerciseEditSaveButton({ store }: ExerciseEditorStoreProps) {
 	return (
 		<Button
 			type="button"
-			onClick={() => void send({ event: "SAVE" })}
+			onClick={() => send({ event: "SAVE" })}
 			disabled={!canSave}>
 			<ExerciseMutationLabel
 				isPending={isSaving}
@@ -161,13 +161,13 @@ function ExerciseEditMergeDialog({
 		<ExerciseMergeDialog
 			open
 			onOpenChange={(open) => {
-				if (!open) void send({ event: "CANCEL_MERGE" });
+				if (!open) send({ event: "CANCEL_MERGE" });
 			}}
 			sourceName={sourceName}
 			targetName={state.existingExercise.name}
 			sourceWorkoutCount={editor.state === "edit" ? editor.exercise.workoutCount : 0}
 			kind={editor.state}
-			onCombine={() => void send({ event: "COMBINE" })}
+			onCombine={() => send({ event: "COMBINE" })}
 			isCombining={state.state === "combining"}
 		/>
 	);
