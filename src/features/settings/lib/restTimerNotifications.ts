@@ -31,7 +31,16 @@ export function writeRestTimerNotificationsEnabled(enabled: boolean): boolean {
 		catch: (): LocalStorageError => ({ reason: "UNAVAILABLE" }),
 	});
 
-	return Effect.runSync(Effect.isSuccess(writePreference));
+	return Effect.runSync(
+		Effect.match(writePreference, {
+			onFailure: () => {
+				showErrorToast("Couldn't save notification preference.");
+
+				return false;
+			},
+			onSuccess: () => true,
+		}),
+	);
 }
 
 type RestTimerNotificationPermissionError = "unsupported" | "blocked" | "dismissed" | "failed";

@@ -3,7 +3,13 @@
 import { type ReactElement } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { IconTrash } from "@tabler/icons-react";
-import { type ControllerRenderProps, Controller, useFormContext, useWatch } from "react-hook-form";
+import {
+	type ControllerRenderProps,
+	Controller,
+	useFormContext,
+	useFormState,
+	useWatch,
+} from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { type Workout, validateCompletedSet } from "@/features/workout-form/lib/validateWorkout";
@@ -47,14 +53,8 @@ export default function SetRow({
 }: SetRowProps): ReactElement {
 	const send = useStore(restTimerStore, (store) => store.send);
 
-	const {
-		register,
-		control,
-		getValues,
-		setError,
-		clearErrors,
-		formState: { errors },
-	} = useFormContext<Workout>();
+	const { register, control, getValues, setError, clearErrors } = useFormContext<Workout>();
+	const { errors } = useFormState({ control });
 
 	const checkSetPrMutation = useMutation(
 		orpc.exercises.checkSetPr.mutationOptions({
@@ -182,7 +182,6 @@ export default function SetRow({
 		isChecked && "border-primary text-primary",
 	);
 
-	const separatorClassName = cn("text-base", isChecked ? "text-primary" : "text-muted-foreground");
 	const repsErrorMessage = errors.exercises?.[exerciseIndex]?.sets?.[setIndex]?.reps?.message;
 
 	return (
@@ -196,7 +195,9 @@ export default function SetRow({
 					maxLength={6}
 					{...register(fields.weight, { setValueAs: parseOptionalNumber })}
 				/>
-				<span className={separatorClassName}>×</span>
+				<span className={cn("text-base", isChecked ? "text-primary" : "text-muted-foreground")}>
+					×
+				</span>
 				<NumberInput
 					variant="integer"
 					aria-label="Reps"

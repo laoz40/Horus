@@ -10,7 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { IconFlame, IconNotes } from "@tabler/icons-react";
 
 import { Textarea } from "@/components/ui/textarea";
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useFormState } from "react-hook-form";
 import {
 	MAX_EXERCISE_NOTES_LENGTH,
 	type Workout,
@@ -83,10 +83,8 @@ function DifficultySlider({ exerciseIndex }: ExerciseCollapsiblesProps) {
 }
 
 function ExerciseNotes({ exerciseIndex }: ExerciseCollapsiblesProps) {
-	const {
-		register,
-		formState: { errors },
-	} = useFormContext<Workout>();
+	const { register, control } = useFormContext<Workout>();
+	const { errors } = useFormState({ control });
 
 	return (
 		<AccordionItem

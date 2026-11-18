@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 
-import { isDefinedError, safe, type InferClientErrorUnion } from "@orpc/client";
-import { type QueryClient, useQueryClient } from "@tanstack/react-query";
-import { useStore } from "zustand";
+import { isDefinedError, type InferClientErrorUnion } from "@orpc/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createStore } from "zustand/vanilla";
 
 import type { MuscleGroupCategory } from "@/features/exercise-library/lib/muscleGroupCategories";
@@ -53,7 +52,12 @@ type ExerciseEditorEvent =
 	| { event: "SAVE" }
 	| { event: "DELETE" }
 	| { event: "COMBINE" }
-	| { event: "CANCEL_MERGE" };
+	| { event: "CANCEL_MERGE" }
+	| {
+			event: "FAILED";
+			error: Parameters<typeof handleMutationError>[0];
+			action: keyof typeof mutationErrorMessages;
+	  };
 
 type ExerciseEditOperation =
 	| { state: "editing" }
@@ -66,7 +70,7 @@ type ExerciseEditorStore = {
 	state: ExerciseEditOperation;
 	name: string;
 	categories: MuscleGroupCategory[];
-	send: (event: ExerciseEditorEvent) => Promise<void>;
+	send: (event: ExerciseEditorEvent) => void;
 };
 
 interface UseExerciseEditorOptions {
@@ -156,109 +160,36 @@ function canSend(
 
 function createExerciseEditorStore({
 	editor,
-	onClose,
-	queryClient,
-}: UseExerciseEditorOptions & { queryClient: QueryClient }) {
-	async function save(name: string, categories: MuscleGroupCategory[]) {
-		const input = { name: name.trim(), muscleGroups: writeSelectedCategories(categories) };
-		let request;
-
-		if (editor.state === "create") request = orpc.exercises.create.call(input);
-		else request = orpc.exercises.update.call({ id: editor.exercise.id, ...input });
-
-		const result = await safe(request);
-
-		if (result.error)
-			return { error: result.error, action: editor.state === "create" ? "add" : "save" } as const;
-
-		const updateCache = editor.state === "create" ? addExerciseToListCache : patchExerciseListCache;
-
-		updateCache(queryClient, result.data.exercise);
-		showInfoToast(editor.state === "create" ? "Exercise added" : "Exercise saved");
-	}
-
-	async function remove() {
-		if (editor.state !== "edit") return;
-
-		const exerciseId = editor.exercise.id;
-		const result = await safe(orpc.exercises.delete.call({ id: exerciseId }));
-
-		if (result.error) return { error: result.error, action: "delete" } as const;
-
-		removeExerciseFromListCache(queryClient, exerciseId);
-		showExerciseDeletedToast();
-	}
-
-	async function combine(existingExercise: ExerciseCatalogItem, categories: MuscleGroupCategory[]) {
-		if (editor.state === "create") {
-			const result = await safe(
-				orpc.exercises.update.call({
-					id: existingExercise.id,
-					name: existingExercise.name,
-					muscleGroups: unionSelectedCategories(existingExercise.muscleGroups, categories),
-				}),
-			);
-
-			if (result.error) return { error: result.error, action: "save" } as const;
-
-			patchExerciseListCache(queryClient, result.data.exercise);
-			showInfoToast("Exercise saved");
-
-			return;
-		}
-
-		const sourceId = editor.exercise.id;
-
-		const result = await safe(
-			orpc.exercises.merge.call({
-				sourceId,
-				targetId: existingExercise.id,
-				sourceMuscleGroups: writeSelectedCategories(categories),
-			}),
-		);
-
-		if (result.error) return { error: result.error, action: "combine" } as const;
-
-		mergeExercisesInListCache(queryClient, sourceId, result.data.targetExercise);
-		showInfoToast("Exercises combined");
-	}
-
-	async function mutate(
+	mutate,
+}: {
+	editor: OpenExerciseEditorState;
+	mutate: (
 		event: "SAVE" | "DELETE" | "COMBINE",
 		state: ExerciseEditOperation,
 		name: string,
 		categories: MuscleGroupCategory[],
-	) {
-		let failure;
-
-		if (event === "SAVE") {
-			failure = await save(name, categories);
-		} else if (event === "DELETE") {
-			failure = await remove();
-		} else if (state.state === "confirmingMerge") {
-			failure = await combine(state.existingExercise, categories);
-		} else {
-			return;
-		}
-
-		if (failure) return failure;
-
-		onClose();
-		invalidateExerciseCache(queryClient, {
-			kind: event === "COMBINE" && editor.state === "edit" ? "merge" : "catalog",
-		});
-	}
-
+	) => void;
+}) {
 	return createStore<ExerciseEditorStore>()((set, get) => ({
 		state: { state: "editing" },
 		name: getExerciseEditInitialName(editor),
 		categories: getExerciseEditInitialCategories(editor),
-		async send(event) {
+		send(event) {
 			const { state, name, categories } = get();
 
 			if (!canSend(event, state, editor)) return;
 
 			switch (event.event) {
+				case "FAILED": {
+					const outcome = failureState(state, event.error);
+
+					set({ state: outcome.state });
+
+					if (outcome.report) handleMutationError(event.error, event.action);
+
+					return;
+				}
+
 				case "NAME_CHANGED":
 					set({ name: event.name });
 
@@ -288,21 +219,117 @@ function createExerciseEditorStore({
 				}
 			}
 
-			const failure = await mutate(event.event, state, name, categories);
-
-			if (!failure) return;
-			const outcome = failureState(get().state, failure.error);
-
-			set({ state: outcome.state });
-
-			if (outcome.report) handleMutationError(failure.error, failure.action);
+			mutate(event.event, state, name, categories);
 		},
 	}));
 }
 
 export function useExerciseEditor({ editor, onClose }: UseExerciseEditorOptions) {
 	const queryClient = useQueryClient();
-	const [store] = useState(() => createExerciseEditorStore({ editor, onClose, queryClient }));
 
-	return useStore(store);
+	const createExercise = useMutation({
+		...orpc.exercises.create.mutationOptions(),
+		onSuccess: (data) => {
+			addExerciseToListCache(queryClient, data.exercise);
+			showInfoToast("Exercise added");
+			finish("catalog");
+		},
+		onError: (error) => reportFailure(error, "add"),
+	});
+
+	const updateExercise = useMutation({
+		...orpc.exercises.update.mutationOptions(),
+		onSuccess: (data) => {
+			patchExerciseListCache(queryClient, data.exercise);
+			showInfoToast("Exercise saved");
+			finish("catalog");
+		},
+		onError: (error) => reportFailure(error, "save"),
+	});
+
+	const deleteExercise = useMutation({
+		...orpc.exercises.delete.mutationOptions(),
+		onSuccess: (_data, input) => {
+			removeExerciseFromListCache(queryClient, input.id);
+			showExerciseDeletedToast();
+			finish("catalog");
+		},
+		onError: (error) => reportFailure(error, "delete"),
+	});
+
+	const mergeExercises = useMutation({
+		...orpc.exercises.merge.mutationOptions(),
+		onSuccess: (data, input) => {
+			mergeExercisesInListCache(queryClient, input.sourceId, data.targetExercise);
+			showInfoToast("Exercises combined");
+			finish("merge");
+		},
+		onError: (error) => reportFailure(error, "combine"),
+	});
+
+	const [store] = useState(function initializeStore() {
+		return createExerciseEditorStore({
+			editor,
+			mutate(event, state, name, categories) {
+				const muscleGroups = writeSelectedCategories(categories);
+
+				switch (event) {
+					case "SAVE": {
+						const input = { name: name.trim(), muscleGroups };
+
+						if (editor.state === "create") return createExercise.mutate(input);
+
+						return updateExercise.mutate({ id: editor.exercise.id, ...input });
+					}
+
+					case "DELETE":
+						if (editor.state !== "edit") return;
+
+						return deleteExercise.mutate({ id: editor.exercise.id });
+
+					case "COMBINE": {
+						if (state.state !== "confirmingMerge") return;
+
+						const existing = state.existingExercise;
+
+						if (editor.state === "create") {
+							return updateExercise.mutate({
+								id: existing.id,
+								name: existing.name,
+								muscleGroups: unionSelectedCategories(existing.muscleGroups, categories),
+							});
+						}
+
+						return mergeExercises.mutate({
+							sourceId: editor.exercise.id,
+							targetId: existing.id,
+							sourceMuscleGroups: muscleGroups,
+						});
+					}
+
+					default: {
+						const exhaustiveEvent: never = event;
+
+						return exhaustiveEvent;
+					}
+				}
+			},
+		});
+	});
+
+	function finish(kind: "catalog" | "merge") {
+		onClose();
+		invalidateExerciseCache(queryClient, { kind });
+	}
+
+	function reportFailure(
+		error: Parameters<typeof handleMutationError>[0],
+		action: keyof typeof mutationErrorMessages,
+	) {
+		store.getState().send({ event: "FAILED", error, action });
+	}
+
+	return store;
 }
+
+export type ExerciseEditorStoreApi = ReturnType<typeof useExerciseEditor>;

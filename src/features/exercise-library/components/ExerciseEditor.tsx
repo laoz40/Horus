@@ -1,5 +1,7 @@
 "use client";
 
+import { useStore } from "zustand";
+
 import ExerciseMutationLabel from "@/features/exercise-library/components/ExerciseMutationLabel";
 import { MAX_EXERCISE_NAME_LENGTH } from "@/features/workout-form/lib/validateWorkout";
 
@@ -22,7 +24,10 @@ import {
 	type OpenExerciseEditorState,
 } from "@/features/exercise-library/lib/exerciseEditor";
 import { formatWorkoutCount } from "@/features/exercise-library/lib/formatExerciseCatalog";
-import { useExerciseEditor } from "@/features/exercise-library/hooks/useExerciseEditor";
+import {
+	useExerciseEditor,
+	type ExerciseEditorStoreApi,
+} from "@/features/exercise-library/hooks/useExerciseEditor";
 
 interface ExerciseEditorProps {
 	editor: ExerciseEditorState;
@@ -34,32 +39,33 @@ interface ExerciseEditFormProps {
 	onClose: () => void;
 }
 
-interface ExerciseEditDeleteButtonProps {
-	exerciseName: string;
-	workoutCount: number;
-	isSaving: boolean;
-	isDeleting: boolean;
-	isCombining: boolean;
-	onDelete: () => void;
+interface ExerciseEditorStoreProps {
+	store: ExerciseEditorStoreApi;
 }
 
 function ExerciseEditDeleteButton({
-	exerciseName,
-	workoutCount,
-	isSaving,
-	isDeleting,
-	isCombining,
-	onDelete,
-}: ExerciseEditDeleteButtonProps) {
+	store,
+	editor,
+}: ExerciseEditorStoreProps & { editor: Extract<OpenExerciseEditorState, { state: "edit" }> }) {
+	const isDeleting = useStore(store, (s) => s.state.state === "deleting");
+
+	const isBusy = useStore(
+		store,
+		(s) =>
+			s.state.state === "saving" || s.state.state === "deleting" || s.state.state === "combining",
+	);
+
+	const send = useStore(store, (s) => s.send);
+
 	return (
 		<AlertDialogDestructive
-			title={`Delete ${exerciseName}?`}
+			title={`Delete ${editor.exercise.name}?`}
 			description="This exercise will be permanently removed."
-			handleDelete={onDelete}>
+			handleDelete={() => send({ event: "DELETE" })}>
 			<Button
 				type="button"
 				variant="destructive"
-				disabled={workoutCount > 0 || isSaving || isDeleting || isCombining}>
+				disabled={editor.exercise.workoutCount > 0 || isBusy}>
 				<ExerciseMutationLabel
 					isPending={isDeleting}
 					label="Delete"
@@ -70,17 +76,107 @@ function ExerciseEditDeleteButton({
 	);
 }
 
-function ExerciseEditForm({ editor, onClose }: ExerciseEditFormProps) {
-	const { state, name, categories, send } = useExerciseEditor({ editor, onClose });
-	const workoutCount = editor.state === "edit" ? editor.exercise.workoutCount : 0;
+function ExerciseEditNameField({ store }: ExerciseEditorStoreProps) {
+	const name = useStore(store, (s) => s.name);
 
-	const isSaving = state.state === "saving";
-	const isCombining = state.state === "combining";
-	const isDeleting = state.state === "deleting";
-	const trimmedName = name.trim();
-	const canSave = trimmedName.length > 0 && state.state === "editing";
-	const mergeSourceName = editor.state === "edit" ? editor.exercise.name : trimmedName;
-	const mergeSourceWorkoutCount = editor.state === "edit" ? editor.exercise.workoutCount : 0;
+	const send = useStore(store, (s) => s.send);
+
+	return (
+		<Field>
+			<FieldLabel htmlFor="exercise-name">Name</FieldLabel>
+			<FieldContent>
+				<Input
+					id="exercise-name"
+					maxLength={MAX_EXERCISE_NAME_LENGTH}
+					value={name}
+					onChange={(event) => send({ event: "NAME_CHANGED", name: event.target.value })}
+					autoComplete="off"
+				/>
+			</FieldContent>
+		</Field>
+	);
+}
+
+function ExerciseEditCategoriesField({ store }: ExerciseEditorStoreProps) {
+	const categories = useStore(store, (s) => s.categories);
+
+	const send = useStore(store, (s) => s.send);
+
+	return (
+		<div className="flex flex-col gap-2">
+			<p className="text-sm font-medium">Categories</p>
+			<MuscleGroupMultiSelect
+				selectedCategories={categories}
+				onChange={(nextCategories) =>
+					send({ event: "CATEGORIES_CHANGED", categories: nextCategories })
+				}
+			/>
+			{categories.length === 0 && (
+				<p className="text-sm text-muted-foreground">Won&apos;t appear in category browse.</p>
+			)}
+		</div>
+	);
+}
+
+function ExerciseEditSaveButton({ store }: ExerciseEditorStoreProps) {
+	const canSave = useStore(store, (s) => s.name.trim().length > 0 && s.state.state === "editing");
+
+	const isSaving = useStore(store, (s) => s.state.state === "saving");
+
+	const send = useStore(store, (s) => s.send);
+
+	return (
+		<Button
+			type="button"
+			onClick={() => send({ event: "SAVE" })}
+			disabled={!canSave}>
+			<ExerciseMutationLabel
+				isPending={isSaving}
+				label="Save"
+				pendingLabel="Saving"
+			/>
+		</Button>
+	);
+}
+
+function ExerciseEditMergeDialog({
+	store,
+	editor,
+}: ExerciseEditorStoreProps & { editor: OpenExerciseEditorState }) {
+	const state = useStore(store, (s) => s.state);
+
+	const sourceName = useStore(store, (s) => {
+		if (editor.state === "edit") return editor.exercise.name;
+
+		if (s.state.state !== "confirmingMerge" && s.state.state !== "combining") return "";
+
+		return s.name.trim();
+	});
+
+	const send = useStore(store, (s) => s.send);
+
+	if (state.state !== "confirmingMerge" && state.state !== "combining") return null;
+
+	return (
+		<ExerciseMergeDialog
+			open
+			onOpenChange={(open) => {
+				if (!open) send({ event: "CANCEL_MERGE" });
+			}}
+			sourceName={sourceName}
+			targetName={state.existingExercise.name}
+			sourceWorkoutCount={editor.state === "edit" ? editor.exercise.workoutCount : 0}
+			kind={editor.state}
+			onCombine={() => send({ event: "COMBINE" })}
+			isCombining={state.state === "combining"}
+		/>
+	);
+}
+
+function ExerciseEditForm({ editor, onClose }: ExerciseEditFormProps) {
+	const store = useExerciseEditor({ editor, onClose });
+
+	const workoutCount = editor.state === "edit" ? editor.exercise.workoutCount : 0;
 
 	return (
 		<>
@@ -89,31 +185,8 @@ function ExerciseEditForm({ editor, onClose }: ExerciseEditFormProps) {
 			</DialogHeader>
 
 			<div className="flex flex-col gap-5">
-				<Field>
-					<FieldLabel htmlFor="exercise-name">Name</FieldLabel>
-					<FieldContent>
-						<Input
-							id="exercise-name"
-							maxLength={MAX_EXERCISE_NAME_LENGTH}
-							value={name}
-							onChange={(event) => void send({ event: "NAME_CHANGED", name: event.target.value })}
-							autoComplete="off"
-						/>
-					</FieldContent>
-				</Field>
-
-				<div className="flex flex-col gap-2">
-					<p className="text-sm font-medium">Categories</p>
-					<MuscleGroupMultiSelect
-						selectedCategories={categories}
-						onChange={(nextCategories) =>
-							void send({ event: "CATEGORIES_CHANGED", categories: nextCategories })
-						}
-					/>
-					{categories.length === 0 && (
-						<p className="text-sm text-muted-foreground">Won&apos;t appear in category browse.</p>
-					)}
-				</div>
+				<ExerciseEditNameField store={store} />
+				<ExerciseEditCategoriesField store={store} />
 
 				{editor.state === "edit" && (
 					<p className="text-sm text-muted-foreground">
@@ -125,43 +198,16 @@ function ExerciseEditForm({ editor, onClose }: ExerciseEditFormProps) {
 			<DialogFooter className="flex-row justify-end">
 				{editor.state === "edit" && (
 					<ExerciseEditDeleteButton
-						exerciseName={editor.exercise.name}
-						workoutCount={workoutCount}
-						isSaving={isSaving}
-						isDeleting={isDeleting}
-						isCombining={isCombining}
-						onDelete={() => void send({ event: "DELETE" })}
+						store={store}
+						editor={editor}
 					/>
 				)}
-
-				<Button
-					type="button"
-					onClick={() => void send({ event: "SAVE" })}
-					disabled={!canSave}>
-					<ExerciseMutationLabel
-						isPending={isSaving}
-						label="Save"
-						pendingLabel="Saving"
-					/>
-				</Button>
+				<ExerciseEditSaveButton store={store} />
 			</DialogFooter>
-
-			{(state.state === "confirmingMerge" || state.state === "combining") && (
-				<ExerciseMergeDialog
-					open
-					onOpenChange={(open) => {
-						if (!open) {
-							void send({ event: "CANCEL_MERGE" });
-						}
-					}}
-					sourceName={mergeSourceName}
-					targetName={state.existingExercise.name}
-					sourceWorkoutCount={mergeSourceWorkoutCount}
-					kind={editor.state}
-					onCombine={() => void send({ event: "COMBINE" })}
-					isCombining={isCombining}
-				/>
-			)}
+			<ExerciseEditMergeDialog
+				store={store}
+				editor={editor}
+			/>
 		</>
 	);
 }

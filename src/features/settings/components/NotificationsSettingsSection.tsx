@@ -1,67 +1,11 @@
 "use client";
 
-import { useState } from "react";
-
 import SectionCard from "@/components/SectionCard";
 import { Switch } from "@/components/ui/switch";
-import {
-	readRestTimerNotificationsEnabled,
-	tryEnableRestTimerNotifications,
-	writeRestTimerNotificationsEnabled,
-} from "@/features/settings/lib/restTimerNotifications";
-import { showErrorToast } from "@/lib/toastMessages";
-
-type NotificationPreferenceState =
-	| { state: "disabled" }
-	| { state: "requestingPermission" }
-	| { state: "enabled" };
+import { useNotificationPreference } from "@/features/settings/hooks/useNotificationPreference";
 
 export default function NotificationsSettingsSection() {
-	const [preference, setPreference] = useState<NotificationPreferenceState>(() => ({
-		state: readRestTimerNotificationsEnabled() ? "enabled" : "disabled",
-	}));
-
-	async function handleNotificationsChange(enabled: boolean): Promise<void> {
-		switch (preference.state) {
-			case "requestingPermission":
-				return;
-			case "disabled": {
-				if (!enabled) return;
-
-				setPreference({ state: "requestingPermission" });
-
-				const permissionGranted = await tryEnableRestTimerNotifications();
-
-				if (!permissionGranted) {
-					setPreference({ state: "disabled" });
-
-					return;
-				}
-
-				break;
-			}
-
-			case "enabled":
-				if (enabled) return;
-
-				break;
-			default: {
-				const exhaustiveState: never = preference;
-
-				return exhaustiveState;
-			}
-		}
-
-		if (!writeRestTimerNotificationsEnabled(enabled)) {
-			showErrorToast("Couldn't save notification preference.");
-
-			if (enabled) setPreference({ state: "disabled" });
-
-			return;
-		}
-
-		setPreference({ state: enabled ? "enabled" : "disabled" });
-	}
+	const { state, send } = useNotificationPreference();
 
 	return (
 		<SectionCard header="Notifications">
@@ -73,9 +17,9 @@ export default function NotificationsSettingsSection() {
 				</label>
 				<Switch
 					id="rest-timer-notifications"
-					checked={preference.state === "enabled"}
-					disabled={preference.state === "requestingPermission"}
-					onCheckedChange={(enabled) => void handleNotificationsChange(enabled)}
+					checked={state.kind === "enabled"}
+					disabled={state.kind === "requestingPermission"}
+					onCheckedChange={(enabled) => void send({ kind: enabled ? "enable" : "disable" })}
 				/>
 			</div>
 		</SectionCard>

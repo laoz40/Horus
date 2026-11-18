@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { isDefinedError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -18,15 +19,9 @@ interface UseWorkoutSubmitProps {
 	mode: WorkoutFormMode;
 }
 
-interface UseWorkoutSubmitReturn {
-	isSubmitting: boolean;
-	submitWorkout: (data: Workout) => void;
-}
+type WorkoutSubmissionEvent = { event: "SUBMIT"; workout: Workout };
 
-export const useWorkoutSubmit = ({
-	startedAtMs,
-	mode,
-}: UseWorkoutSubmitProps): UseWorkoutSubmitReturn => {
+export const useWorkoutSubmit = ({ startedAtMs, mode }: UseWorkoutSubmitProps) => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const historyListQueryKey = orpc.workouts.list.key({ type: "infinite" });
@@ -95,9 +90,13 @@ export const useWorkoutSubmit = ({
 		}),
 	);
 
-	const submitWorkout = (data: Workout) => {
+	const saveInProgress = useRef(false);
+
+	const send = (event: WorkoutSubmissionEvent) => {
+		if (saveInProgress.current) return;
+
 		const durationSeconds = Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000));
-		const workoutResult = parseWorkoutForSave(data, durationSeconds);
+		const workoutResult = parseWorkoutForSave(event.workout, durationSeconds);
 
 		if (!workoutResult.success) {
 			const [firstIssue] = workoutResult.error.issues;
@@ -106,20 +105,30 @@ export const useWorkoutSubmit = ({
 			return;
 		}
 
-		if (mode.kind === "create") {
-			showWorkoutSaveToast(createWorkout.mutateAsync({ workout: workoutResult.data }));
+		saveInProgress.current = true;
 
-			return;
+		let saveRequest;
+
+		if (mode.kind === "create") {
+			saveRequest = createWorkout.mutateAsync({ workout: workoutResult.data });
+		} else {
+			saveRequest = updateWorkout.mutateAsync({
+				workoutId: mode.workoutId,
+				workout: workoutResult.data,
+			});
 		}
 
-		showWorkoutSaveToast(
-			updateWorkout.mutateAsync({ workoutId: mode.workoutId, workout: workoutResult.data }),
-		);
-		router.push("/workouts");
+		const trackedRequest = saveRequest.finally(() => {
+			saveInProgress.current = false;
+		});
+
+		showWorkoutSaveToast(trackedRequest);
+
+		if (mode.kind === "edit") router.push("/workouts");
 	};
 
 	return {
 		isSubmitting: createWorkout.isPending || updateWorkout.isPending,
-		submitWorkout,
+		send,
 	};
 };
