@@ -36,10 +36,7 @@ export default function WorkoutFormBottomBar({
 		selectSelectedExerciseId(state, exerciseIds),
 	);
 
-	const isEditing = useStore(
-		exerciseSelectionStore,
-		(store) => store.exerciseSelection.state === "editing",
-	);
+	const isEditing = useStore(exerciseSelectionStore, (store) => store.state.type === "editing");
 
 	const sendExercise = useStore(exerciseSelectionStore, (store) => store.send);
 
