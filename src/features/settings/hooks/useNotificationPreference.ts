@@ -25,32 +25,40 @@ export function useNotificationPreference() {
 	async function send(event: NotificationPreferenceEvent): Promise<void> {
 		if (isRequestingPermission.current || state.kind === "requestingPermission") return;
 
-		const enabled = event.kind === "enable";
+		switch (event.kind) {
+			case "enable": {
+				if (state.kind === "enabled") return;
 
-		if (enabled === (state.kind === "enabled")) return;
+				isRequestingPermission.current = true;
+				setState({ kind: "requestingPermission" });
 
-		if (enabled) {
-			isRequestingPermission.current = true;
-			setState({ kind: "requestingPermission" });
+				const permissionGranted = await tryEnableRestTimerNotifications();
 
-			const permissionGranted = await tryEnableRestTimerNotifications();
+				isRequestingPermission.current = false;
 
-			isRequestingPermission.current = false;
+				if (!permissionGranted || !writeRestTimerNotificationsEnabled(true)) {
+					setState({ kind: "disabled" });
 
-			if (!permissionGranted) {
-				setState({ kind: "disabled" });
+					return;
+				}
+
+				setState({ kind: "enabled" });
 
 				return;
 			}
+
+			case "disable":
+				if (state.kind === "disabled" || !writeRestTimerNotificationsEnabled(false)) return;
+
+				setState({ kind: "disabled" });
+
+				return;
+			default: {
+				const exhaustiveEvent: never = event;
+
+				return exhaustiveEvent;
+			}
 		}
-
-		if (!writeRestTimerNotificationsEnabled(enabled)) {
-			if (enabled) setState({ kind: "disabled" });
-
-			return;
-		}
-
-		setState({ kind: enabled ? "enabled" : "disabled" });
 	}
 
 	return { state, send };

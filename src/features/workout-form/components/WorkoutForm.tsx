@@ -41,10 +41,7 @@ export default function WorkoutForm({ mode }: WorkoutFormProps): ReactElement {
 		exerciseName: string;
 	}>({ state: "closed", exerciseName: "" });
 
-	const isEditing = useStore(
-		exerciseSelectionStore,
-		(store) => store.exerciseSelection.state === "editing",
-	);
+	const isEditing = useStore(exerciseSelectionStore, (store) => store.state.type === "editing");
 
 	// Leaving the form stops reminders as well as discarding its store.
 	const [formRef] = useState(() => (element: HTMLDivElement | null) => {
