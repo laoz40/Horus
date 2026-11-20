@@ -11,37 +11,6 @@ type DeletionEvent =
 	| { event: "CONFIRM" }
 	| { event: "SETTLED" };
 
-function transitionDeletion(current: DeletionState, event: DeletionEvent): DeletionState {
-	let next: DeletionState;
-
-	switch (event.event) {
-		case "OPEN":
-			if (current.state !== "idle") return current;
-			next = { state: "confirming" };
-			break;
-		case "CLOSE":
-			// Closing the confirmation does not finish an active deletion.
-			if (current.state !== "confirming") return current;
-			next = { state: "idle" };
-			break;
-		case "CONFIRM":
-			if (current.state !== "confirming") return current;
-			next = { state: "deleting" };
-			break;
-		case "SETTLED":
-			if (current.state !== "deleting") return current;
-			next = { state: "idle" };
-			break;
-		default: {
-			const exhaustiveEvent: never = event;
-
-			return exhaustiveEvent;
-		}
-	}
-
-	return next;
-}
-
 export function reportDeletionError(
 	error: InferClientErrorUnion<(typeof orpc.workouts)["delete" | "deleteAll"]["call"]>,
 	onUnexpectedError: (cause: unknown) => void,
@@ -83,21 +52,48 @@ export function useWorkoutDeletionMachine({ remove }: { remove: () => void }) {
 	const deletionInProgress = useRef(false);
 
 	function send(event: DeletionEvent): void {
-		if (event.event === "SETTLED") {
-			deletionInProgress.current = false;
-			setState((current) => transitionDeletion(current, event));
+		if (deletionInProgress.current && event.event !== "SETTLED") return;
 
-			return;
+		switch (event.event) {
+			case "OPEN":
+				setState((current) => {
+					if (current.state !== "idle") return current;
+
+					return { state: "confirming" };
+				});
+
+				return;
+			case "CLOSE":
+				setState((current) => {
+					if (current.state !== "confirming") return current;
+
+					return { state: "idle" };
+				});
+
+				return;
+			case "CONFIRM":
+				if (state.state !== "confirming") return;
+
+				deletionInProgress.current = true;
+				setState({ state: "deleting" });
+				remove();
+
+				return;
+			case "SETTLED":
+				deletionInProgress.current = false;
+				setState((current) => {
+					if (current.state !== "deleting") return current;
+
+					return { state: "idle" };
+				});
+
+				return;
+			default: {
+				const exhaustiveEvent: never = event;
+
+				return exhaustiveEvent;
+			}
 		}
-
-		if (deletionInProgress.current) return;
-
-		setState((current) => transitionDeletion(current, event));
-
-		if (event.event !== "CONFIRM" || state.state !== "confirming") return;
-
-		deletionInProgress.current = true;
-		remove();
 	}
 
 	return { state, send };
