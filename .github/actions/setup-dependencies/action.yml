@@ -1,0 +1,25 @@
+name: Set up dependencies
+description: Set up Node.js and Bun and restore the exact dependency tree
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v5
+      with:
+        node-version: 22
+        package-manager-cache: false
+
+    - uses: oven-sh/setup-bun@v2
+
+    - name: Cache installed dependencies
+      id: dependencies
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-${{ runner.arch }}-node22-bun-modules-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml') }}
+
+    - name: Install dependencies
+      if: steps.dependencies.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      run: bun install --frozen-lockfile

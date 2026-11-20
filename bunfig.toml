@@ -1,0 +1,2 @@
+# Next.js and the repo's scripts load their own environment files.
+env = false

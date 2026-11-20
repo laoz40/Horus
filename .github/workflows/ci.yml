@@ -33,19 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-dependencies
 
       - name: Set branch expiration
         if: github.event_name == 'pull_request'
@@ -89,7 +77,7 @@ jobs:
         run: echo "DATABASE_URL=$(cat database-url.txt)" >> "$GITHUB_ENV"
 
       - name: Apply migrations
-        run: pnpm db:migrate
+        run: bun run db:migrate
 
       - name: Upload database URL
         uses: actions/upload-artifact@v5
@@ -117,34 +105,22 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-dependencies
 
       - name: Check formatting
-        run: pnpm format:check
+        run: bun run format:check
 
       - name: Lint
-        run: pnpm lint:check
+        run: bun run lint:check
 
       - name: Typecheck
-        run: pnpm typecheck
+        run: bun run typecheck
 
       - name: Check for dead code (Fallow)
-        run: pnpm fallow:check-dead-code
+        run: bun run fallow:check-dead-code
 
       - name: Check for duplication (Fallow)
-        run: pnpm fallow:check-dupes
+        run: bun run fallow:check-dupes
 
   e2e:
     name: E2E tests
@@ -158,22 +134,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-dependencies
 
       - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
+        run: bun run playwright install --with-deps chromium
 
       - name: Download database URL
         uses: actions/download-artifact@v5
@@ -220,17 +184,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .next/cache
-          key: ${{ runner.os }}-${{ runner.arch }}-nextjs-e2e-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**', 'public/**', '*.json', '*.ts', '*.mjs', '*.js', '*.css') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-nextjs-e2e-${{ hashFiles('bun.lock') }}-${{ hashFiles('src/**', 'public/**', '*.json', '*.ts', '*.mjs', '*.js', '*.css') }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-nextjs-e2e-${{ hashFiles('pnpm-lock.yaml') }}-
+            ${{ runner.os }}-${{ runner.arch }}-nextjs-e2e-${{ hashFiles('bun.lock') }}-
 
       - name: Build app for E2E
         run: |
-          pnpm build
+          bun run build
 
       - name: Run Playwright tests
         run: |
-          pnpm start &
+          bun run start &
           server_pid=$!
           for _ in $(seq 1 60); do
             if curl -fsS http://localhost:8000 >/dev/null; then
@@ -248,7 +212,7 @@ jobs:
             exit 1
           fi
 
-          pnpm test
+          bun run test
           test_status=$?
 
           kill "$server_pid" 2>/dev/null || true
@@ -274,26 +238,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-dependencies
 
       - name: Pull Vercel production env
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
-        run: pnpm dlx vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+        run: bunx vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
 
       # vercel pull writes [SENSITIVE] for dashboard secrets. Overlay GitHub
       # Production values so the build does not use those placeholders.
@@ -315,11 +267,11 @@ jobs:
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
         run: |
-          pnpm dlx vercel build --prod --token="$VERCEL_TOKEN"
+          bunx vercel build --prod --token="$VERCEL_TOKEN"
 
       - name: Deploy prebuilt output to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
-        run: pnpm dlx vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+        run: bunx vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"

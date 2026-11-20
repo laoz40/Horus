@@ -1,5 +1,4 @@
 {
-	"$schema": "./node_modules/oxfmt/configuration_schema.json",
 	"printWidth": 100,
 	"tabWidth": 2,
 	"useTabs": true,
@@ -17,11 +16,5 @@
 		"stylesheet": "src/app/globals.css",
 		"functions": ["cn"]
 	},
-	"ignorePatterns": [
-		"dist",
-		"node_modules",
-		"pnpm-lock.yaml",
-		"src/components/ui/**",
-		"tools/oxlint/anti-slop/**"
-	]
+	"ignorePatterns": ["dist", "node_modules", "src/components/ui/**", "tools/oxlint/anti-slop/**"]
 }
