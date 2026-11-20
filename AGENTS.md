@@ -14,7 +14,7 @@ Designed primarily for mobile touchscreen devices, usually used as an installed 
 
 - Next.js 16 project (updated version)
 - Use Effect V4 (new release)
-- pnpm
+- Bun
 - default to shadcn for ui, tabler icons
 
 ### Preserving long-term maintainability of the codebase
@@ -36,7 +36,7 @@ Designed primarily for mobile touchscreen devices, usually used as an installed 
 
 - Ask user before making assumptions that change behavior, UX, architecture
 - never use ignore to bypass linter
-- Match verification to risk: skip checks for non-functional edits (comments, docs, wording); use relevant checks for small, low-risk code changes (lint, format, typecheck). Run `pnpm verify` after substantive changes and before PRs containing functional changes.
+- Match verification to risk: skip checks for non-functional edits (comments, docs, wording); use relevant checks for small, low-risk code changes (lint, format, typecheck). Run `bun run verify` after substantive changes and before PRs containing functional changes.
 
 ## Code Style Guidelines
 

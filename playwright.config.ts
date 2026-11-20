@@ -26,14 +26,14 @@ const config: PlaywrightTestConfig = {
 };
 
 // CI starts the server in the workflow so Playwright is not stuck waiting on webServer
-// teardown after all tests pass (pnpm/next child processes can outlive SIGKILL on GHA).
+// teardown after all tests pass (Bun/Next.js child processes can outlive SIGKILL on GHA).
 if (!isCI) {
 	config.reporter = [
 		["list"],
 		["html", { outputFolder: "tests/playwright-report", open: "never" }],
 	];
 	config.webServer = {
-		command: serverMode === "production" ? "pnpm build && pnpm start" : "pnpm dev",
+		command: serverMode === "production" ? "bun run build && bun run start" : "bun run dev",
 		url: BASE_URL,
 		// Only reuse a server when the caller explicitly identifies it as their dev server.
 		reuseExistingServer: serverMode === "attach",

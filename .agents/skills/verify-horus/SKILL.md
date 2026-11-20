@@ -14,8 +14,8 @@ The app runs on `http://localhost:8000` and binds `127.0.0.1`. Choose the launch
 ### Current-source development verification
 
 - Check whether port 8000 is occupied before starting anything. Attach only after identifying the listener as `next dev` from this checkout, using its process command and working directory. An unknown listener or an existing `next start` is not current-source proof. Stop and ask its owner to free the port; never kill a server the run did not start.
-- If nothing is listening, start `pnpm dev` from this checkout, record the process ownership, and wait for readiness. Tear down only that run's server and children on completion or failure. Port 8000 is also claimed by `tailscale serve` on the tailnet IP; that is a proxy, not the app. Do not touch it.
-- `pnpm test` and `pnpm verify` now refuse an occupied app port by default. To reuse an identified user-owned dev server for Playwright, explicitly run `HORUS_TEST_SERVER=attach pnpm test` or `HORUS_TEST_SERVER=attach pnpm verify`. Attached servers remain running afterward.
+- If nothing is listening, start `bun run dev` from this checkout, record the process ownership, and wait for readiness. Tear down only that run's server and children on completion or failure. Port 8000 is also claimed by `tailscale serve` on the tailnet IP; that is a proxy, not the app. Do not touch it.
+- `bun run test` and `bun run verify` now refuse an occupied app port by default. To reuse an identified user-owned dev server for Playwright, explicitly run `HORUS_TEST_SERVER=attach bun run test` or `HORUS_TEST_SERVER=attach bun run verify`. Attached servers remain running afterward.
 - Env lives in `.env.local` (t3env-validated). External deps are real: Neon dev Postgres, Upstash Redis, Resend, OAuth. Writing rows is acceptable (dev DB), but only as the verify user for skill-driven flows (see Doctor). The Playwright suite uses its separate E2E user.
 
 ### Fresh-production verification
@@ -23,12 +23,12 @@ The app runs on `http://localhost:8000` and binds `127.0.0.1`. Choose the launch
 From this checkout, with port 8000 free, run:
 
 ```sh
-pnpm test:production
+bun run test:production
 ```
 
-This uses Playwright's existing server lifecycle to run `pnpm build && pnpm start` before the existing E2E suite. It rebuilds current source every time and never reuses a listener. Playwright owns the launched process group and tears it down on success, failure, or interruption. An occupied port fails the run without killing or attaching to the existing server. Do not run another dev server or edit source during the build and verification.
+This uses Playwright's existing server lifecycle to run `bun run build && bun run start` before the existing E2E suite. It rebuilds current source every time and never reuses a listener. Playwright owns the launched process group and tears it down on success, failure, or interruption. An occupied port fails the run without killing or attaching to the existing server. Do not run another dev server or edit source during the build and verification.
 
-For additional skill-driven browser flows against a fresh production build, use two terminals. In the first, confirm port 8000 is free, then run `pnpm build && pnpm start` in the foreground from this checkout. Record that this terminal owns the server. After it reports ready, run `doctor` and the needed flows in the second terminal. Stop the owned server with Ctrl-C when finished, including after failed flows, and confirm it released the port. Do not reuse a production server whose build and launch were not part of this run.
+For additional skill-driven browser flows against a fresh production build, use two terminals. In the first, confirm port 8000 is free, then run `bun run build && bun run start` in the foreground from this checkout. Record that this terminal owns the server. After it reports ready, run `doctor` and the needed flows in the second terminal. Stop the owned server with Ctrl-C when finished, including after failed flows, and confirm it released the port. Do not reuse a production server whose build and launch were not part of this run.
 
 CI already builds before production E2E and owns its server in the workflow. This local path does not change CI.
 
