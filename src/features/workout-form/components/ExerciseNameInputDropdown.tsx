@@ -1,7 +1,5 @@
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { useRef } from "react";
-import { useController, useFormContext } from "react-hook-form";
-import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import type { SyntheticEvent } from "react";
 
 import { IconLoader2, IconSearch, IconXboxX } from "@tabler/icons-react";
@@ -12,7 +10,7 @@ import {
 	InputGroupButton,
 	InputGroupInput,
 } from "@/components/ui/input-group";
-import { useExerciseNamePicker } from "@/features/workout-form/hooks/useExerciseNamePicker";
+import type { useExerciseNamePicker } from "@/features/workout-form/hooks/useExerciseNamePicker";
 import { MAX_EXERCISE_NAME_LENGTH } from "@/features/workout-form/lib/validateWorkout";
 
 // Keep the keyboard open when tapping Search Online. iOS can also send a
@@ -21,18 +19,17 @@ const preventInputBlur = (event: SyntheticEvent) => {
 	event.preventDefault();
 };
 
-export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: number }) {
+export function ExerciseNameInputDropdown({
+	picker,
+}: {
+	picker: ReturnType<typeof useExerciseNamePicker>;
+}) {
 	const anchorRef = useRef<HTMLDivElement | null>(null);
-	const { control } = useFormContext<Workout>();
 
-	const {
-		field: { ref: inputRef, ...field },
-	} = useController({ control, name: `exercises.${exerciseIndex}.global.name` });
+	const { field, inputRef, state, suggestions, isDbSearchLoading, isOnlineSearchLoading, send } =
+		picker;
 
 	const query = field.value;
-
-	const { state, suggestions, isDbSearchLoading, isOnlineSearchLoading, send } =
-		useExerciseNamePicker({ exerciseIndex, query, setName: field.onChange });
 
 	const isEmpty = !query.trim();
 	const isSearching = isDbSearchLoading || isOnlineSearchLoading;
@@ -59,7 +56,14 @@ export function ExerciseNameInputDropdown({ exerciseIndex }: { exerciseIndex: nu
 					return;
 				}
 
-				void send({ kind: details.reason === "item-press" ? "select" : "type", name });
+				if (details.reason === "item-press") {
+					const exercise = suggestions.find((suggestion) => suggestion.name === name);
+					void send({ kind: "select", exercise: exercise ?? { name } });
+
+					return;
+				}
+
+				void send({ kind: "type", name });
 			}}>
 			<div className="relative w-full">
 				<Autocomplete.InputGroup

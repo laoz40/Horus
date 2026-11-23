@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import { showSetDeletedToast } from "@/lib/toastMessages";
 import { cn } from "@/lib/utils";
-import { useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
+import { useFieldArray, useFormContext, useFormState } from "react-hook-form";
 import { createDefaultSet } from "@/features/workout-form/lib/WorkoutFormDefaults";
 import ExerciseCollapsibles from "@/features/workout-form/components/ExerciseCollapsibles";
 import { ExerciseNameInputDropdown } from "@/features/workout-form/components/ExerciseNameInputDropdown";
-import { MuscleGroupExercisePicker } from "@/features/workout-form/components/MuscleGroupExercisePicker";
+import { MuscleGroupExerciseBrowser } from "@/features/exercise-picker/components/MuscleGroupExerciseBrowser";
+import { useExerciseNamePicker } from "@/features/workout-form/hooks/useExerciseNamePicker";
 import type { RestTimerStore } from "@/features/workout-form/stores/restTimerStore";
 import SetRow from "@/features/workout-form/components/SetRow";
 
@@ -57,11 +58,8 @@ function ExerciseForm({
 		showSetDeletedToast();
 	};
 
-	const exerciseName = useWatch({
-		control,
-		name: `exercises.${exerciseIndex}.global.name` as const,
-	});
-
+	const picker = useExerciseNamePicker(exerciseIndex);
+	const exerciseName = picker.field.value;
 	const hasExerciseName = Boolean(exerciseName?.trim());
 
 	const { weightPlaceholder, isWeightPlaceholderLoading } = useWeightPlaceholder(
@@ -79,13 +77,15 @@ function ExerciseForm({
 			className={cn("flex min-h-full flex-col gap-3 p-4", className)}>
 			{/* Exercise Name */}
 			<div className="flex shrink-0 flex-col gap-2">
-				<ExerciseNameInputDropdown exerciseIndex={exerciseIndex} />
+				<ExerciseNameInputDropdown picker={picker} />
 				{nameError && <span className="text-sm text-destructive">{nameError.message}</span>}
 			</div>
 
 			{!hasExerciseName && (
 				<div className="flex min-h-0 flex-1 flex-col">
-					<MuscleGroupExercisePicker exerciseIndex={exerciseIndex} />
+					<MuscleGroupExerciseBrowser
+						onSelectExercise={(exercise) => void picker.send({ kind: "select", exercise })}
+					/>
 				</div>
 			)}
 
