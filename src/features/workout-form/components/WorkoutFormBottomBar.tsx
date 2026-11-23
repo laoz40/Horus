@@ -5,6 +5,7 @@ import { useFormContext, useWatch } from "react-hook-form";
 
 import ExerciseActionButton from "@/features/workout-form/components/ExerciseActionButton";
 import { Button } from "@/components/ui/button";
+import { isEmptyWorkoutExercise } from "@/features/workout-form/lib/stripEmptyWorkoutEntries";
 import type { Workout } from "@/features/workout-form/lib/validateWorkout";
 import {
 	selectSelectedExerciseId,
@@ -49,15 +50,29 @@ export default function WorkoutFormBottomBar({
 		name: exerciseIds.map((_, exerciseIndex) => `exercises.${exerciseIndex}.global.name` as const),
 	});
 
-	let selectedExerciseName = "";
+	const isExerciseEmptyByIndex = useWatch({
+		control,
+		name: "exercises",
+		compute: (exercises) => exercises.map(isEmptyWorkoutExercise),
+	});
 
-	if (selectedExerciseIndex >= 0) {
-		selectedExerciseName = exerciseNames[selectedExerciseIndex]?.trim() ?? "";
-	}
+	const isAddDisabled = isExerciseEmptyByIndex[selectedExerciseIndex] === true;
 
-	const show = exerciseIds.length > 0;
+	const handleAddExercise = () => {
+		const firstEmptyExerciseId = exerciseIds[isExerciseEmptyByIndex.indexOf(true)];
 
-	if (!show) return null;
+		if (firstEmptyExerciseId) {
+			onScrollToExercise(firstEmptyExerciseId);
+
+			return;
+		}
+
+		onAddExercise();
+	};
+
+	const selectedExerciseName = exerciseNames[selectedExerciseIndex]?.trim() ?? "";
+
+	if (exerciseIds.length === 0) return null;
 
 	const canToggleEdit = Boolean(selectedExerciseId);
 
@@ -96,7 +111,8 @@ export default function WorkoutFormBottomBar({
 					</Button>
 					<ExerciseActionButton
 						isEditing={isEditing}
-						onAddExercise={onAddExercise}
+						isAddDisabled={isAddDisabled}
+						onAddExercise={handleAddExercise}
 						onDeleteExercise={onDeleteExercise}
 					/>
 				</div>
