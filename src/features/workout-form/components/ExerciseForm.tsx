@@ -63,7 +63,11 @@ function ExerciseForm({
 	});
 
 	const hasExerciseName = Boolean(exerciseName?.trim());
-	const weightPlaceholder = useWeightPlaceholder(exerciseIndex, exerciseName ?? "");
+
+	const { weightPlaceholder, isWeightPlaceholderLoading } = useWeightPlaceholder(
+		exerciseIndex,
+		exerciseName ?? "",
+	);
 
 	const exerciseError = errors.exercises?.[exerciseIndex];
 	const nameError = exerciseError?.global?.name;
@@ -98,6 +102,7 @@ function ExerciseForm({
 									exerciseIndex={exerciseIndex}
 									isEditing={isEditing}
 									weightPlaceholder={weightPlaceholder}
+									isWeightPlaceholderLoading={isWeightPlaceholderLoading}
 									onDeleteSet={handleDeleteSet}
 								/>
 							))}

@@ -26,6 +26,7 @@ interface SetRowProps {
 	setIndex: number;
 	isEditing: boolean;
 	weightPlaceholder: string;
+	isWeightPlaceholderLoading: boolean;
 	onDeleteSet: (setIndex: number) => void;
 }
 
@@ -49,6 +50,7 @@ export default function SetRow({
 	setIndex,
 	isEditing,
 	weightPlaceholder,
+	isWeightPlaceholderLoading,
 	onDeleteSet,
 }: SetRowProps): ReactElement {
 	const send = useStore(restTimerStore, (store) => store.send);
@@ -191,7 +193,9 @@ export default function SetRow({
 					variant="decimal"
 					aria-label="Weight (kg)"
 					placeholder={weightPlaceholder}
-					className={inputClassName}
+					className={cn(inputClassName, {
+						"motion-safe:placeholder:animate-pulse": isWeightPlaceholderLoading,
+					})}
 					maxLength={6}
 					{...register(fields.weight, { setValueAs: parseOptionalNumber })}
 				/>
