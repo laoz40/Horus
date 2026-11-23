@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 
 interface ExerciseActionButtonProps {
 	isEditing: boolean;
+	isAddDisabled: boolean;
 	onAddExercise: () => void;
 	onDeleteExercise: () => void;
 }
 
 export default function ExerciseActionButton({
 	isEditing,
+	isAddDisabled,
 	onAddExercise,
 	onDeleteExercise,
 }: ExerciseActionButtonProps) {
@@ -35,6 +37,7 @@ export default function ExerciseActionButton({
 			variant="default"
 			className="w-full"
 			type="button"
+			disabled={isAddDisabled}
 			onClick={onAddExercise}>
 			Add Exercise
 		</Button>
