@@ -18,7 +18,11 @@ export function useWeightPlaceholder(exerciseIndex: number, exerciseName: string
 	);
 
 	const [latestSavedSet] = recentSetsQuery.data ?? [];
-	const latestCurrentWeight = currentSets?.findLast((set) => set.weight !== undefined)?.weight;
+	const latestCurrentSet = currentSets?.findLast((set) => set.completed);
+	const latestWeight = latestCurrentSet ? (latestCurrentSet.weight ?? 0) : latestSavedSet?.weight;
 
-	return String(latestCurrentWeight ?? latestSavedSet?.weight ?? "kg");
+	return {
+		weightPlaceholder: String(latestWeight ?? "kg"),
+		isWeightPlaceholderLoading: latestWeight === undefined && recentSetsQuery.isLoading,
+	};
 }
