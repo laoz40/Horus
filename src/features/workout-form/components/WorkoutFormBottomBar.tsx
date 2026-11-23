@@ -50,21 +50,29 @@ export default function WorkoutFormBottomBar({
 		name: exerciseIds.map((_, exerciseIndex) => `exercises.${exerciseIndex}.global.name` as const),
 	});
 
-	const emptyExercises = useWatch({
+	const isExerciseEmptyByIndex = useWatch({
 		control,
 		name: "exercises",
 		compute: (exercises) => exercises.map(isEmptyWorkoutExercise),
 	});
 
-	let selectedExerciseName = "";
+	const isAddDisabled = isExerciseEmptyByIndex[selectedExerciseIndex] === true;
 
-	if (selectedExerciseIndex >= 0) {
-		selectedExerciseName = exerciseNames[selectedExerciseIndex]?.trim() ?? "";
-	}
+	const handleAddExercise = () => {
+		const firstEmptyExerciseId = exerciseIds[isExerciseEmptyByIndex.indexOf(true)];
 
-	const show = exerciseIds.length > 0;
+		if (firstEmptyExerciseId) {
+			onScrollToExercise(firstEmptyExerciseId);
 
-	if (!show) return null;
+			return;
+		}
+
+		onAddExercise();
+	};
+
+	const selectedExerciseName = exerciseNames[selectedExerciseIndex]?.trim() ?? "";
+
+	if (exerciseIds.length === 0) return null;
 
 	const canToggleEdit = Boolean(selectedExerciseId);
 
@@ -103,16 +111,8 @@ export default function WorkoutFormBottomBar({
 					</Button>
 					<ExerciseActionButton
 						isEditing={isEditing}
-						isAddDisabled={emptyExercises[selectedExerciseIndex] === true}
-						onAddExercise={() => {
-							const emptyExerciseId = exerciseIds[emptyExercises.indexOf(true)];
-
-							if (emptyExerciseId) {
-								onScrollToExercise(emptyExerciseId);
-							} else {
-								onAddExercise();
-							}
-						}}
+						isAddDisabled={isAddDisabled}
+						onAddExercise={handleAddExercise}
 						onDeleteExercise={onDeleteExercise}
 					/>
 				</div>
