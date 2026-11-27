@@ -1,0 +1,13 @@
+{
+	"name": "draw-icons",
+	"private": true,
+	"type": "module",
+	"description": "CLI for the draw-icons skill: check, shape, lint, render, sheet, preview, build.",
+	"bin": {
+		"icons": "./icons.js"
+	},
+	"dependencies": {
+		"@resvg/resvg-js": "2.6.2",
+		"yaml": "2.9.1"
+	}
+}
