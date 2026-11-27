@@ -4,6 +4,7 @@ import { IconChevronLeft, IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { MuscleGroupIcon } from "@/features/exercise-picker/components/MuscleGroupIcon";
 import { useExercisesByCategory } from "@/features/exercise-picker/hooks/useExercisesByCategory";
 import {
 	CATEGORY_LABELS,
@@ -125,8 +126,12 @@ export function MuscleGroupExerciseBrowser({
 							key={category}
 							type="button"
 							variant="outline"
-							className="h-full min-h-11 w-full text-xl font-semibold"
+							className="h-full min-h-11 w-full flex-col gap-1 py-1 text-xl font-semibold"
 							onClick={() => setSelectedCategory(category)}>
+							<MuscleGroupIcon
+								category={category}
+								className="size-10 text-primary"
+							/>
 							{CATEGORY_LABELS[category]}
 						</Button>
 					))}
